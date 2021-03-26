@@ -13,7 +13,7 @@ class Warehouse{
 
   int id;
   String name;
-  String size;
+  double size;
   int companyId;
 
   //不同的类使用不同的mixin即可

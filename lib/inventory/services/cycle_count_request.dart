@@ -1,9 +1,10 @@
 
 import 'dart:convert';
 
-import 'package:cwms_mobile/common/http_client.dart';
+
 import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
+import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:dio/dio.dart';
 
 class CycleCountRequestService {
@@ -41,7 +42,6 @@ class CycleCountRequestService {
 
     print("response from cycle count request / inventory summary: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
-    List<dynamic> responseData = responseString["data"];
 
     List<CycleCountResult> _cycleCountResults
     = (responseString["data"] as List)?.map((e) =>

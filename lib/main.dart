@@ -1,16 +1,24 @@
 import 'dart:io';
 
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
+import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/states/profile_change_notifier.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
 
 import 'package:cwms_mobile/sub_menus.dart';
 import 'package:flutter/material.dart';
 
 import 'auth/routes/login.dart';
-import 'common/global.dart';
+
+import 'i18n/localization_intl.dart';
 import 'inventory/routes/cycle_count_batch.dart';
 import 'inventory/routes/cycle_count_request.dart';
 import 'launch_page.dart';
 import 'menus.dart';
+import 'outbound/routes/pick.dart';
 
 void main() {
   Global.init().then((e) => runApp(MyApp()));
@@ -18,11 +26,113 @@ void main() {
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+  static GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MultiProvider(
+      providers: <SingleChildWidget>[
+        ChangeNotifierProvider.value(value: ThemeModel()),
+        ChangeNotifierProvider.value(value: UserModel()),
+        ChangeNotifierProvider.value(value: LocaleModel()),
+      ],
+      child: Consumer2<ThemeModel, LocaleModel>(
+        builder: (BuildContext context, themeModel, localeModel, Widget child) {
+          return MaterialApp(
+            theme: ThemeData(
+              primarySwatch: themeModel.theme,
+            ),
+            navigatorKey: navigatorKey,
+            onGenerateTitle: (context) {
+              return CWMSLocalizations
+                  .of(context)
+                  .title;
+            },
+            home: LaunchPage(),
+            locale: localeModel.getLocale(),
+            //我们只支持美国英语和中文简体
+            supportedLocales: [
+              const Locale('en', 'US'), // 美国英语
+              const Locale('zh', 'CN'), // 中文简体
+              //其它Locales
+            ],
+            localizationsDelegates: [
+              // 本地化的代理类
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              CWMSLocalizationsDelegate()
+            ],
+            localeResolutionCallback:
+                (Locale _locale, Iterable<Locale> supportedLocales) {
+              if (localeModel.getLocale() != null) {
+                //如果已经选定语言，则不跟随系统
+                return localeModel.getLocale();
+              }
+              else {
+                //跟随系统
+                Locale locale;
+                if (supportedLocales.contains(_locale)) {
+                  locale = _locale;
+                }
+                else {
+                  //如果系统语言不是中文简体或美国英语，则默认使用美国英语
+                  locale = Locale('en', 'US');
+                }
+                return locale;
+              }
+            },
+            routes: {
+              "login_page": (context) => LoginPage(),
+              "menus_page": (context) => Menus(),
+              "sub_menus_page": (context) => SubMenus(),
+              "cycle_cycle_batch": (context) => CycleCountBatchPage(),
+              "cycle_cycle_request": (context) => CycleCountRequestPage(),
+              "pick_by_order": (context) => PickByOrderPage(),
+              "pick": (context) => PickPage(),
+              // "/": (context) => LaunchPage(), //注册首页路由
+              // "/":(context) => WebViewExample(), //注册首页路由
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+/***
+  return MaterialApp(
       title: 'CWMS',
       initialRoute:"/",
+      locale: localeModel.getLocale(),
+      //我们只支持美国英语和中文简体
+      supportedLocales: [
+        const Locale('en', 'US'), // 美国英语
+        const Locale('zh', 'CN'), // 中文简体
+        //其它Locales
+      ],
+      localizationsDelegates: [
+        // 本地化的代理类
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        DecLocalizationsDelegate()
+      ],
+      localeResolutionCallback:
+          (Locale _locale, Iterable<Locale> supportedLocales) {
+        if (localeModel.getLocale() != null) {
+          //如果已经选定语言，则不跟随系统
+          return localeModel.getLocale();
+        } else {
+          //跟随系统
+          Locale locale;
+          if (supportedLocales.contains(_locale)) {
+            locale= _locale;
+          } else {
+            //如果系统语言不是中文简体或美国英语，则默认使用美国英语
+            locale= Locale('en', 'US');
+          }
+          return locale;
+        }
+      },
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -46,6 +156,8 @@ class MyApp extends StatelessWidget {
         "sub_menus_page":(context) => SubMenus(),
         "cycle_cycle_batch":(context) => CycleCountBatchPage(),
         "cycle_cycle_request":(context) => CycleCountRequestPage(),
+        "pick_by_order":(context) => PickByOrderPage(),
+        "pick":(context) => PickPage(),
         "/":(context) => LaunchPage(), //注册首页路由
         // "/":(context) => WebViewExample(), //注册首页路由
       },
@@ -73,3 +185,4 @@ class WebViewExampleState extends State<WebViewExample> {
     );
   }
 }
+    **/

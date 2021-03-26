@@ -1,20 +1,22 @@
 import 'dart:convert';
 
 import 'package:cwms_mobile/auth/models/user.dart';
-import 'package:cwms_mobile/common/http_client.dart';
-import 'package:cwms_mobile/common/models/http_response_wrapper.dart';
-import 'package:cwms_mobile/common/models/login_response_wrapper.dart';
+import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/shared/http_client.dart';
+
+import 'package:cwms_mobile/shared/models/login_response_wrapper.dart';
 import 'package:dio/dio.dart';
 
 class LoginService {
   // 登录接口，登录成功后返回用户信息
-  static Future<User> login(String username, String password) async {
+  static Future<User> login(int companyId, String username, String password) async {
+    Global.currentUsername = username;
     Dio httpClient = CWMSHttpClient.dio;
 
 
     Response response = await httpClient.post(
       "/auth/login",
-      data:{"username":username,"password": password}
+      data:{"companyId": companyId, "username":username,"password": password}
     );
 
     print("login response: $response");

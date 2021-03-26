@@ -1,10 +1,14 @@
 
 
+import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
+import 'package:cwms_mobile/shared/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'auth/services/menu_service.dart';
 import 'package:cwms_mobile/auth/models/menu_group.dart';
+
 
 
 class Menus extends StatefulWidget {
@@ -29,7 +33,9 @@ class _MenusState extends State<Menus> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-        appBar: AppBar(title: Text("CWMS - Menu")),
+        appBar: AppBar(title: Text(
+            "CWMS"
+        )),
         body: GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2, //每行三列
@@ -55,7 +61,8 @@ class _MenusState extends State<Menus> {
 
 
             }
-        )
+        ),
+        bottomNavigationBar: buildBottomNavigationBar(context)
     );
   }
 

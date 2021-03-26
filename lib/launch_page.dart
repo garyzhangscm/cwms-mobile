@@ -1,14 +1,14 @@
 
+import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
+import 'package:cwms_mobile/shared/models/http_response_wrapper.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
-import 'common/functions.dart';
-import 'common/global.dart';
-import 'common/models/cwms_server.dart';
-import 'common/http_client.dart';
-import 'common/models/http_response_wrapper.dart';
+
 
 class LaunchPage extends StatefulWidget{
 
@@ -33,16 +33,18 @@ class _LaunchPageState extends State<LaunchPage> {
   @override
   void initState(){
     super.initState();
-    CWMSServer server = Global.getAutoConnectServer();
+    CWMSSiteInformation server = Global.getAutoConnectServer();
 
     if (server != null) {
 
-      _serverURLController =  TextEditingController(text: server.url);
+      // _serverURLController =  TextEditingController(text: server.url);
+      _serverURLController =  TextEditingController(text: 'http://k8s-staging-webclien-d59c548886-1603149749.us-west-1.elb.amazonaws.com/api');
+
       _autoConnect = server.autoConnectFlag;
       _onAutoConnect(server);
     }
     else {
-      _serverURLController =  TextEditingController(text: 'http://ec2-54-176-121-184.us-west-1.compute.amazonaws.com:5555/api/resource/mobile');
+      _serverURLController =  TextEditingController(text: 'http://k8s-staging-webclien-d59c548886-1603149749.us-west-1.elb.amazonaws.com/api');
       _autoConnect = true;
     }
 
@@ -116,7 +118,7 @@ class _LaunchPageState extends State<LaunchPage> {
   }
 
 
-  void _onAutoConnect(CWMSServer server) async  {
+  void _onAutoConnect(CWMSSiteInformation server) async  {
 
     try {
       Response response = await Dio().get(server.url + "/resource/mobile");
@@ -142,7 +144,7 @@ class _LaunchPageState extends State<LaunchPage> {
     if ((_formKey.currentState as FormState).validate()) {
 
       showLoading(context);
-      CWMSServer server;
+      CWMSSiteInformation server;
       try {
         print("start to connect to $serverUrl");
         Response response = await Dio().get(serverUrl + "/resource/mobile");
@@ -155,13 +157,19 @@ class _LaunchPageState extends State<LaunchPage> {
         if (httpResponseWrapper.result == 0) {
           // ok, we can connect to the server. Add it to the history
           //
-          server = CWMSServer.fromJson(httpResponseWrapper.data);
+          server = CWMSSiteInformation.fromJson(httpResponseWrapper.data);
+
+          print("extracted the server");
           // The server will return the name / description / version
           // we will set the url and auto connection flag based on
           // user's input
+          if (!serverUrl.endsWith("/")) {
+            serverUrl += "/";
+          }
 
           server.url = serverUrl;
           server.autoConnectFlag = autoConnectFlag;
+          print("finished setup the server infor");
         }
       } catch (e) {
         //登录失败则提示

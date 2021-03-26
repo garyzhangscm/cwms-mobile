@@ -10,7 +10,7 @@ Warehouse _$WarehouseFromJson(Map<String, dynamic> json) {
   return Warehouse()
     ..id = json['id'] as int
     ..name = json['name'] as String
-    ..size = json['size'] as String
+    ..size = double.parse(json['size'].toString())
     ..companyId = json['companyId'] as int;
 }
 

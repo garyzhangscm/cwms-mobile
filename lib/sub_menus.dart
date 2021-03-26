@@ -1,12 +1,14 @@
 
 
 import 'package:cwms_mobile/auth/models/menu_sub_group.dart';
+import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'auth/models/menu.dart';
 import 'auth/services/menu_service.dart';
 import 'package:cwms_mobile/auth/models/menu_group.dart';
+
 
 
 class SubMenus extends StatefulWidget {
@@ -59,7 +61,9 @@ class _SubMenusState extends State<SubMenus> {
 
 
             }
-        )
+        ),
+
+        bottomNavigationBar: buildBottomNavigationBar(context)
     );
   }
 
@@ -89,6 +93,7 @@ class _SubMenusState extends State<SubMenus> {
   }
   void _onPressed(Menu menu){
 
+    print("will flow to menu: ${menu.link}");
 
     Navigator.of(context).pushNamed(menu.link);
   }

@@ -1,9 +1,10 @@
 import 'dart:convert';
 
 import 'package:cwms_mobile/auth/models/menu_group.dart';
+import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/shared/http_client.dart';
 
-import 'package:cwms_mobile/common/global.dart';
-import 'package:cwms_mobile/common/http_client.dart';
+
 
 import 'package:dio/dio.dart';
 
@@ -16,10 +17,11 @@ class MenuService {
     Response response = await httpClient.get(
       "/resource/site-information/mobile",
         queryParameters: {
-          "companyId": Global.companyId
+          "companyId": Global.lastLoginCompanyId
         }
     );
     Map<String, dynamic> responseString = json.decode(response.toString());
+    print("getAccessibleMenus response: ${responseString}");
     Map<String, dynamic> responseData = responseString["data"];
 
     List<MenuGroup> menuGroups
