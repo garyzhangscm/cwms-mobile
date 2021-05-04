@@ -45,6 +45,9 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
   List<Order> orders = [];
 
+  // selected orders from the order selection pop up
+  List<Order> selectedOrders = [];
+
   Pick currentPick;
 
 
@@ -170,24 +173,6 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
               );
             }),
       );
-/***
-    if (orders.isEmpty) {
-
-      return Column(children: <Widget>[
-        ListTile(title:Text("Empty Order List")),
-      ]);
-    }
-    else {
-
-    }
-
-    return
-      Expanded(
-        child: ListView.builder(
-            itemBuilder: (BuildContext context, int index) {
-              return OrderListItem(orders[index]);
-            }),
-      );**/
   }
   void _changePriority(Order order) {
     print("will change the priority for order: ${order.number}");
@@ -221,20 +206,30 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
         !_orderAlreadyInList(_orderNumberController.text)) {
 
       Order order =
-      await OrderService.getOrderByNumber(_orderNumberController.text);
+        await OrderService.getOrderByNumber(_orderNumberController.text);
 
 
       if (order != null) {
-
+        _assignOrderToUser(order);
         print("Will add order ${order.number} to the list");
-        setState(() {
-          orderPriorityMap[order.number] = false;
-          orderSharedFlagMap[order.number] = false;
-          orders.add(order);
-
-        });
         _orderNumberController.clear();
       }
+    }
+
+  }
+  void _assignOrderToUser(Order order) {
+    // only continue if the order is not in the list yet
+
+    int index = orders.indexWhere(
+            (element) => element.number == order.number);
+    if (index < 0) {
+
+      setState(() {
+        orderPriorityMap[order.number] = false;
+        orderSharedFlagMap[order.number] = false;
+        orders.add(order);
+
+      });
     }
 
   }
@@ -245,6 +240,8 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   }
   void _onChooseOrder() async {
 
+    selectedOrders = [];
+    _showOrdersWithOpenPickDialog();
 
 
   }
@@ -290,5 +287,95 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
       return picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity);
     }
   }
+
+  // prompt a dialog for user to choose valid orders
+  Future<void> _showOrdersWithOpenPickDialog() async {
+    List<Order> ordersWithOpenPick =
+        await OrderService.getAvailableOrdersWithPick();
+    await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        var child = Column(
+          children: <Widget>[
+            Row(
+              children: [
+                FlatButton(
+                  child: Text(CWMSLocalizations
+                            .of(context)
+                            .cancel),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                FlatButton(
+                  child: Text(CWMSLocalizations
+                              .of(context)
+                              .confirm),
+                  onPressed: () {
+                    _confirmOrderSelection();
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+            ListTile(title: Text(CWMSLocalizations
+                      .of(context)
+                      .chooseOrder)),
+            _buildOrdersWithOpenPickList(context, ordersWithOpenPick)
+          ],
+        );
+        //使用AlertDialog会报错
+        //return AlertDialog(content: child);
+        return Dialog(child: child);
+      },
+    );
+  }
+
+  Widget _buildOrdersWithOpenPickList(BuildContext context,
+      List<Order> ordersWithOpenPick) {
+    return
+      Expanded(
+        child: ListView.builder(
+            itemCount: ordersWithOpenPick.length,
+            itemBuilder: (BuildContext context, int index) {
+
+              return OrderListItem(
+                  index: index,
+                  order: ordersWithOpenPick[index],
+                  highPriorityFlag: false,
+                  sharedFlag: false,
+                  displayOnlyFlag: true,
+                  onPriorityChanged:  null,
+                  onSharedFlagChanged: null,
+                  onRemove:  null,
+                  onToggleHightlighted:  (selected) => _selectOrderFromList(selected, ordersWithOpenPick[index])
+              );
+            }),
+      );
+  }
+
+  void _selectOrderFromList(bool selected, Order order) {
+    // check if the order is already in the list
+    int index = selectedOrders.indexWhere(
+            (element) => element.number == order.number);
+    if (selected && index < 0) {
+      // the user select the order but it is not in the list yet
+      // let's add it to the list
+      selectedOrders.add(order);
+    }
+    else if (!selected && index >= 0) {
+      // the user unselect the order and it is already in the list
+      // let's remove it from the list
+      selectedOrders.removeAt(index);
+    }
+  }
+
+  void _confirmOrderSelection() {
+    // let's add assign the selected orders into current user
+    selectedOrders.forEach((order) {
+      _assignOrderToUser(order);
+    });
+
+  }
+
+
 
 }

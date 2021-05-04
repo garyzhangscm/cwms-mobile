@@ -8,19 +8,25 @@ class OrderListItem extends StatefulWidget {
   OrderListItem({this.index, this.order,
        this.highPriorityFlag: false,
        this.sharedFlag: false,
+       this.displayOnlyFlag: false,
+       this.highlighted: false,
        @required this.onPriorityChanged,
        @required this.onSharedFlagChanged,
-       @required this.onRemove}
+       @required this.onRemove,
+       @required this.onToggleHightlighted}
        ) : super(key: ValueKey(order.number));
 
   final ValueChanged<Order> onPriorityChanged;
   final ValueChanged<Order> onSharedFlagChanged;
   final ValueChanged<int> onRemove;
+  final ValueChanged<bool> onToggleHightlighted;
 
   final int index;
   final Order order;
   final bool highPriorityFlag;
   final bool sharedFlag;
+  final bool displayOnlyFlag;
+  bool highlighted;
 
 
 
@@ -33,14 +39,30 @@ class OrderListItem extends StatefulWidget {
 class _OrderListItemState extends State<OrderListItem> {
 
   void _togglePriority() {
-    widget.onPriorityChanged(widget.order);
+    if (!widget.displayOnlyFlag) {
+
+      widget.onPriorityChanged(widget.order);
+    }
   }
 
   void _toggleSharedFlag() {
-    widget.onSharedFlagChanged(widget.order);
+    if (!widget.displayOnlyFlag) {
+      widget.onSharedFlagChanged(widget.order);
+    }
   }
   void _removeOrderFromlist() {
-    widget.onRemove(widget.index);
+    if (!widget.displayOnlyFlag) {
+      widget.onRemove(widget.index);
+    }
+  }
+  void _onToggleHightlighted() {
+    if (widget.onToggleHightlighted != null) {
+
+      setState(() {
+        widget.highlighted = !widget.highlighted;
+      });
+      widget.onToggleHightlighted(widget.highlighted);
+    }
   }
 
   @override
@@ -48,7 +70,7 @@ class _OrderListItemState extends State<OrderListItem> {
     return Padding(
       padding: const EdgeInsets.only(top: 12.0),
       child: Material(
-        color: Colors.white,
+        color: widget.highlighted ? Colors.lightGreen : Colors.white,
         shape: BorderDirectional(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
@@ -56,6 +78,7 @@ class _OrderListItemState extends State<OrderListItem> {
           ),
         ),
         child: InkWell(
+          onTap: _onToggleHightlighted,
           child: Padding(
             padding: const EdgeInsets.only(top: 0.0, bottom: 16),
             child: Column(
@@ -74,7 +97,7 @@ class _OrderListItemState extends State<OrderListItem> {
 
                   ),
                   subtitle: Text(
-                    widget.order.shipToContactorFirstname + ","
+                    widget.order.shipToContactorFirstname + " , "
                         + widget.order.shipToContactorLastname,
                     style: TextStyle(
                       color: Colors.blueGrey[700],
@@ -106,7 +129,7 @@ class _OrderListItemState extends State<OrderListItem> {
                   ),
                 ),
                 // 构建卡片底部信息
-                _buildBottom()
+                widget.displayOnlyFlag ? Container() : _buildBottom(),
               ],
             ),
           ),

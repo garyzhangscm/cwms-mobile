@@ -55,6 +55,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addOrder" : MessageLookupByLibrary.simpleMessage("添加订单"),
     "chooseOrder": MessageLookupByLibrary.simpleMessage("选择订单"),
     "start" : MessageLookupByLibrary.simpleMessage("开始"),
+    "confirm" : MessageLookupByLibrary.simpleMessage("确认"),
 
 
     'greetingMessage':greetingMessage,

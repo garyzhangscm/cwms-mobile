@@ -57,6 +57,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addOrder" : MessageLookupByLibrary.simpleMessage("Add Order"),
     "chooseOrder" : MessageLookupByLibrary.simpleMessage("Choose Order"),
     "start" : MessageLookupByLibrary.simpleMessage("Start"),
+    "confirm" : MessageLookupByLibrary.simpleMessage("Confirm"),
 
 
     'greetingMessage':greetingMessage,

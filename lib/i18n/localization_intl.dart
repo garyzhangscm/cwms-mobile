@@ -71,6 +71,7 @@ class CWMSLocalizations {
   String get addOrder => Intl.message('Add Order', name: 'addOrder');
   String get chooseOrder => Intl.message('Choose Order', name: 'chooseOrder');
   String get start => Intl.message('Start', name: 'start');
+  String get confirm => Intl.message('Confirm', name: 'confirm');
 
   String greetingMessage(Object name) {
     return Intl.message(

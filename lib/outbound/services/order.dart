@@ -40,6 +40,31 @@ class OrderService {
   }
 
 
+  // Get available Orders
+  // 1. with open picks
+  // 2. no
+  static Future<List<Order>> getAvailableOrdersWithPick() async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "outbound/orders-with-open-pick",
+        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+    );
+
+    // print("response from Order: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    // List<dynamic> responseData = responseString["data"];
+
+    List<Order> orders
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : Order.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+    print("get ${orders.length} orders");
+
+    return orders;
+
+  }
 
 }
 
