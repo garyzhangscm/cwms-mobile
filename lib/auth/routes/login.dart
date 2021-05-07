@@ -54,12 +54,7 @@ class _LoginPageState extends State<LoginPage> {
       _processAutoLogin(Global.autoLoginUser);
     }
     _validWarehouses = [];
-    /***
-    Warehouse warehouse = new Warehouse();
-    warehouse.id = 100;
-    warehouse.name = "test";
-    _validWarehouses.add(warehouse);
-***/
+
   }
 
   @override
@@ -242,6 +237,13 @@ class _LoginPageState extends State<LoginPage> {
 
         print("login with user: ${autoLoginUser.username}, token: ${autoLoginUser.token}, into warehouse ${Global.getAutoLoginWarehouse().name}");
         Global.setCurrentWarehouse(Global.getAutoLoginWarehouse());
+
+        // setup current company
+        Global.lastLoginCompanyId = user.companyId;
+        CompanyService.getCompanyById(user.companyId).then(
+                (company) => Global.lastLoginCompanyCode = company.code);
+
+
         Navigator.pushNamed(context, "menus_page");
       } catch (e) {
         //登录失败则提示
@@ -293,6 +295,7 @@ class _LoginPageState extends State<LoginPage> {
           user.password = _pwdController.text;
           user.companyId = companyId;
           Global.addAutoLoginUser(user);
+          Global.setAutoLoginWarehouse(selectedWarehouse);
         }
 
         // setup current user

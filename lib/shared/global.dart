@@ -122,7 +122,7 @@ class Global {
   }
   static _initAutoLingWarehouse(){
     var _warehouse = _prefs.getString("auto_login_warehouse");
-    print("_initAutoLingUser: ${_warehouse}");
+    print("_initAutoLingWarehouse: ${_warehouse}");
     if (_warehouse != null ) {
       try {
         autoLoginWarehouse = Warehouse.fromJson(json.decode(_warehouse));
@@ -136,7 +136,12 @@ class Global {
     return autoLoginWarehouse;
   }
 
-  static setAutoLoginWarehouse(Warehouse warehouse){
+  static setAutoLoginWarehouse(Warehouse warehouse)  async {
+
+    _prefs = await SharedPreferences.getInstance();
+    _prefs.setString("auto_login_warehouse", json.encode(warehouse.toJson()));
+
+    print("set auto loginc warehouse to ${json.encode(warehouse.toJson())}");
     autoLoginWarehouse = warehouse;
   }
 

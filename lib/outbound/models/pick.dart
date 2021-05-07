@@ -20,6 +20,10 @@ class Pick{
   int pickedQuantity;
   int warehouseId;
   InventoryStatus inventoryStatus;
+  bool confirmItemFlag;
+  bool confirmLocationFlag;
+  bool confirmLocationCodeFlag;
+
 
 
 

@@ -68,9 +68,13 @@ class _OrderListItemState extends State<OrderListItem> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
+      padding: const EdgeInsets.only(top: 2.0),
       child: Material(
-        color: widget.highlighted ? Colors.lightGreen : Colors.white,
+        // If the user highlight the widget, display green
+        // otherwise if there's no open pick, display grey
+        color: widget.highlighted ? Colors.lightGreen:
+              widget.order.totalOpenPickQuantity == 0 ?
+              Colors.grey : Colors.white,
         shape: BorderDirectional(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
@@ -86,6 +90,9 @@ class _OrderListItemState extends State<OrderListItem> {
               children: <Widget>[
                 ListTile(
                   dense: true,
+                  // tileColor: widget.highlighted ? Colors.lightGreen:
+                  //     widget.order.totalOpenPickQuantity == 0 ?
+                  //                Colors.grey : Colors.white,
                   title: Text(
                     widget.order.number,
                     textScaleFactor: .9,
@@ -96,7 +103,7 @@ class _OrderListItemState extends State<OrderListItem> {
                     ),
 
                   ),
-                  subtitle: Text(
+                  trailing: Text(
                     widget.order.shipToContactorFirstname + " , "
                         + widget.order.shipToContactorLastname,
                     style: TextStyle(
@@ -104,30 +111,10 @@ class _OrderListItemState extends State<OrderListItem> {
                       fontSize: 12,
                     ),
                   ),
-                  // trailing: Text(widget.repo.language ?? ""),
+                  subtitle: Text(widget.order.totalOpenPickQuantity.toString()),
                 ),
                 // 构建项目标题和简介
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 1, bottom: 1),
-                        child:
-                        Text(
-                          widget.order.totalOpenPickQuantity.toString(),
-                          maxLines: 3,
-                          style: TextStyle(
-                            height: 1.15,
-                            color: Colors.blueGrey[700],
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+
                 // 构建卡片底部信息
                 widget.displayOnlyFlag ? Container() : _buildBottom(),
               ],
@@ -144,11 +131,11 @@ class _OrderListItemState extends State<OrderListItem> {
     const paddingWidth = 10;
     return IconTheme(
       data: IconThemeData(
-        color: Colors.grey,
+        color: Colors.black ,
         size: 15,
       ),
       child: DefaultTextStyle(
-        style: TextStyle(color: Colors.grey, fontSize: 12),
+        style: TextStyle(color: Colors.black, fontSize: 12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Builder(builder: (context) {

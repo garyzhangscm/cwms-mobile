@@ -1,13 +1,16 @@
 
 import 'dart:collection';
+import 'dart:core';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
+import 'package:cwms_mobile/outbound/models/pick_result.dart';
 import 'package:cwms_mobile/outbound/services/order.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
+import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -29,7 +32,13 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   // input batch id
   TextEditingController _orderNumberController = new TextEditingController();
   GlobalKey _formKey = new GlobalKey<FormState>();
-  List<Pick> picks = [];
+  // all picks that assigned to current user
+  List<Pick> assignedPicks = [];
+
+  // a map of relationship beteen order and pick id
+  HashMap orderPicks = new HashMap<String, Set<int>>();
+
+
   // map to store order's priority
   // Order can be either hight priority or not.
   // High priority orders will be picked first
@@ -43,7 +52,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   // value: whether the order can be shared
   HashMap orderSharedFlagMap = new HashMap<String, bool>();
 
-  List<Order> orders = [];
+  List<Order> assignedOrders = [];
 
   // selected orders from the order selection pop up
   List<Order> selectedOrders = [];
@@ -55,8 +64,13 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   void initState() {
     super.initState();
     print("Start to initial picks to empty list");
-    picks = [];
+    assignedPicks = [];
     currentPick = null;
+    orderPicks.clear();
+    orderPriorityMap.clear();
+    orderSharedFlagMap.clear();
+    assignedOrders = [];
+    selectedOrders = [];
   }
 
   @override
@@ -158,15 +172,18 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
     return
       Expanded(
-        child: ListView.builder(
-            itemCount: orders.length,
+        child: ListView.separated(
+            separatorBuilder: (context, index) => Divider(
+              color: Colors.black,
+            ),
+            itemCount: assignedOrders.length,
             itemBuilder: (BuildContext context, int index) {
 
               return OrderListItem(
                 index: index,
-                order: orders[index],
-                highPriorityFlag: orderPriorityMap[orders[index].number],
-                sharedFlag: orderSharedFlagMap[orders[index].number],
+                order: assignedOrders[index],
+                highPriorityFlag: orderPriorityMap[assignedOrders[index].number],
+                sharedFlag: orderSharedFlagMap[assignedOrders[index].number],
                 onPriorityChanged:  (order) =>  _changePriority(order),
                 onSharedFlagChanged:  (order) =>  _changeSharedFlag(order),
                 onRemove:  (index) =>  _removeOrder(index)
@@ -189,9 +206,12 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     });
   }
   void _removeOrder(int index) {
-    print("will remove for order: ${orders[index].number}");
+    print("will remove for order: ${assignedOrders[index].number}");
     setState(() {
-      orders.removeAt(index);
+      // remove the picks first
+      _deassignPickFromUser(assignedOrders[index]);
+      // remove the order from the user
+      assignedOrders.removeAt(index);
     });
   }
 
@@ -220,23 +240,60 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   void _assignOrderToUser(Order order) {
     // only continue if the order is not in the list yet
 
-    int index = orders.indexWhere(
+    int index = assignedOrders.indexWhere(
             (element) => element.number == order.number);
     if (index < 0) {
 
       setState(() {
         orderPriorityMap[order.number] = false;
         orderSharedFlagMap[order.number] = false;
-        orders.add(order);
+        assignedOrders.add(order);
+        _assignPickToUser(order);
+
 
       });
     }
 
   }
 
+
+  void _assignPickToUser(Order order) async {
+    List<Pick> picksByOrder =  await PickService.getPicksByOrder(order.id);
+
+    assignedPicks.addAll(picksByOrder);
+
+    // save the relationship between the order and the picks so that
+    // when we remove the order from current assignment, we can
+    // remove the picks as well
+    Set<int> existingPicks = orderPicks[order.number];
+    if (existingPicks == null) {
+      existingPicks = new Set<int>();
+    }
+
+    picksByOrder.forEach((pick) => existingPicks.add(pick.id));
+    orderPicks[order.number] = existingPicks;
+
+    print("_assignPickToUser: Now we have ${assignedPicks.length} picks from ${orderPicks.length} orders assigned");
+
+
+  }
+
+  void _deassignPickFromUser(Order order) {
+    // find the pick ids and remove them from the pick list
+
+    Set<int> existingPicks = orderPicks[order.number];
+    existingPicks.forEach((pickId) =>
+        assignedPicks.removeWhere((assignedPick) => assignedPick.id == pickId));
+
+    // remove order from the relationship map
+    orderPicks.remove(order.number);
+    print("_deassignPickFromUser: Now we have ${assignedPicks.length} picks from ${orderPicks.length} orders assigned");
+
+  }
+
   bool _orderAlreadyInList(String orderNumber) {
     return
-      orders.indexWhere((element) => element.number == orderNumber) >= 0;
+      assignedOrders.indexWhere((element) => element.number == orderNumber) >= 0;
   }
   void _onChooseOrder() async {
 
@@ -247,12 +304,10 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   }
 
 
+
   void _onStartingPicking() async {
-    List<Pick> picksByOrder =  await PickService.getPicksByOrder(_orderNumberController.text);
 
-    this.picks = picksByOrder;
-
-    print("we get ${picks.length} picks by order ${_orderNumberController.text}");
+    print("we get ${assignedPicks.length} picks by order ${_orderNumberController.text}");
 
     await this._startPickingForOrder();
 
@@ -266,11 +321,63 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
     if (currentPick != null) {
       final result = await Navigator.of(context).pushNamed("pick", arguments: currentPick);
-      int pickedQuantity = result as int;
-      print("confirmed with picked quantity: $pickedQuantity");
+      if (result == null) {
+        // if the user click the return button instead of confirming
+        // let's do nothing
+        return;
+      }
+      var pickResult = result as PickResult;
+      print("pick result: $pickResult for pick: ${currentPick.number}");
+
+      // refresh the orders
+      if (pickResult.result == true) {
+        // update the current pick
+        currentPick.pickedQuantity
+          = currentPick.pickedQuantity + pickResult.confirmedQuantity;
+        // update the order's open pick quantity to reflect the
+        // pick status
+        Order order = _getOrderByPick(currentPick);
+        if (order != null) {
+          setState(() {
+
+            order.totalOpenPickQuantity -= pickResult.confirmedQuantity;
+            order.totalPickedQuantity +=  pickResult.confirmedQuantity;
+          });
+        }
+
+        // continue with next available pick
+        _startPickingForOrder();
+      }
 
     }
   }
+
+  Order _getOrderByPick(Pick pick) {
+    // Since the pick doesn't have the information of the pick, we will
+    // need to get the order number from the map orderPicks, which
+    // is the only place we store the relationship between
+    // order number and pick id
+
+    Order order;
+    Iterator<MapEntry<String, Set<int>>> orderPickIterator = orderPicks.entries.iterator;
+    while(orderPickIterator.moveNext()) {
+      MapEntry<String, Set<int>> orderPick = orderPickIterator.current;
+      String orderNumber = orderPick.key;
+      Set<int> pickIdSet =  orderPick.value;
+      // check if the pick belongs to the current order
+      if (pickIdSet.contains(pick.id)) {
+        order = assignedOrders.firstWhere((assignedOrder) => assignedOrder.number == orderNumber);
+        if (order != null) {
+          // we found such order, let's return
+          break;
+        }
+      }
+
+    }
+
+    return order;
+  }
+
   Future<void> _startBarcodeScanner() async {
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
@@ -280,18 +387,27 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   }
 
   Pick _getNextValidPick() {
-    if (picks.isEmpty) {
+    print(" =====   _getNextValidPick      =====");
+    assignedPicks.forEach((pick) {
+      print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity}");
+    });
+    if (assignedPicks.isEmpty) {
        return null;
     }
     else {
-      return picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity);
+      return assignedPicks.firstWhere((pick) => pick.quantity > pick.pickedQuantity, orElse: () => null);
     }
   }
 
   // prompt a dialog for user to choose valid orders
   Future<void> _showOrdersWithOpenPickDialog() async {
+
+    showLoading(context);
     List<Order> ordersWithOpenPick =
         await OrderService.getAvailableOrdersWithPick();
+
+    // 隐藏loading框
+    Navigator.of(context).pop();
     await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {

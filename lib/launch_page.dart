@@ -34,6 +34,7 @@ class _LaunchPageState extends State<LaunchPage> {
   void initState(){
     super.initState();
     CWMSSiteInformation server = Global.getAutoConnectServer();
+    print("get auto connect server? ${server == null? '' : server.url}");
 
     if (server != null) {
 

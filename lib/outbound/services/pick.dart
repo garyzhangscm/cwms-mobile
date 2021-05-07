@@ -9,12 +9,12 @@ import 'package:dio/dio.dart';
 
 class PickService {
   // Get all cycle count requests by batch id
-  static Future<List<Pick>> getPicksByOrder(String orderNumber) async {
+  static Future<List<Pick>> getPicksByOrder(int orderId) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
         "outbound/picks",
-        queryParameters: {"orderNumber": orderNumber, "warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"orderId": orderId, "warehouseId": Global.currentWarehouse.id}
     );
 
     print("response from Pick by Order: $response");
@@ -39,16 +39,35 @@ class PickService {
       // if we don't know where the user is, then we will sort
       // the picks either forward, or backward
       if (isMovingForward) {
-        picks.sort((pickA, pickB) =>
-            pickA.sourceLocation.pickSequence.compareTo(
-            pickB.sourceLocation.pickSequence
-        ) );
+        picks.sort((pickA, pickB)   {
+          if (pickB.sourceLocation.pickSequence == null) {
+            return -1;
+          }
+          else if (pickA.sourceLocation.pickSequence == null) {
+            return 1;
+          }
+          else {
+            return pickA.sourceLocation.pickSequence.compareTo(
+                pickB.sourceLocation.pickSequence
+            );
+          }
+        });
       }
       else {
-        picks.sort((pickA, pickB) =>
-            pickB.sourceLocation.pickSequence.compareTo(
+        picks.sort((pickA, pickB) {
+
+          if (pickA.sourceLocation.pickSequence == null) {
+            return -1;
+          }
+          else if (pickB.sourceLocation.pickSequence == null) {
+            return 1;
+          }
+          else {
+            return pickB.sourceLocation.pickSequence.compareTo(
                 pickA.sourceLocation.pickSequence
-            ) );
+            );
+          }
+        });
       }
     }
     else {
@@ -86,6 +105,33 @@ class PickService {
            }
         });
       }
+  }
+
+  static Future<void> confirmWholePick(Pick pick)  async{
+    return confirmPick(pick, (pick.quantity - pick.pickedQuantity));
+
+  }
+  // Confirm pick, with picking quantity
+  static Future<void> confirmPick(Pick pick, int confirmQuantity) async{
+
+    print("start to confirm pick ${pick.number}");
+
+    // only continue when the confirmed quantity is bigger than 0
+    if (confirmQuantity <= 0) {
+      return;
+    }
+    if (confirmQuantity >  (pick.quantity - pick.pickedQuantity)) {
+      // throw error as we can't over pick
+    }
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "outbound/picks/${pick.id}/confirm",
+        queryParameters: {"quantity": confirmQuantity}
+    );
+
+    print("response from confirm pick: $response");
 
   }
 
