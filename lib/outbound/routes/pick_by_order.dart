@@ -3,6 +3,8 @@ import 'dart:collection';
 import 'dart:core';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/inventory/models/inventory.dart';
+import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
@@ -14,7 +16,7 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:infinite_listview/infinite_listview.dart';
+import 'package:badges/badges.dart';
 
 
 class PickByOrderPage extends StatefulWidget{
@@ -59,6 +61,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
   Pick currentPick;
 
+  List<Inventory>  inventoryOnRF;
 
   @override
   void initState() {
@@ -71,6 +74,10 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     orderSharedFlagMap.clear();
     assignedOrders = [];
     selectedOrders = [];
+    inventoryOnRF = new List<Inventory>();
+
+    _reloadInventoryOnRF();
+
   }
 
   @override
@@ -133,7 +140,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
         verticalDirection: VerticalDirection.down,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
+            padding: const EdgeInsets.only(left: 10),
             child:
             RaisedButton(
               color: Theme.of(context).primaryColor,
@@ -144,7 +151,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
+            padding: const EdgeInsets.only(left: 10),
             child:
             RaisedButton(
               color: Theme.of(context).primaryColor,
@@ -155,13 +162,30 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
+            padding: const EdgeInsets.only(left: 10),
             child: RaisedButton(
               color: Theme.of(context).primaryColor,
               onPressed: _onStartingPicking,
               textColor: Colors.white,
               child: Text(CWMSLocalizations.of(context).start),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child:
+              Badge(
+                showBadge: true,
+                padding: EdgeInsets.all(8),
+                badgeColor: Colors.deepPurple,
+                badgeContent: Text(
+                  inventoryOnRF.length.toString(),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                child: RaisedButton(
+                  onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                ),
+              )
           ),
         ],
     );
@@ -345,11 +369,26 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
           });
         }
 
+        // refresh the pick on the RF
+        _reloadInventoryOnRF();
+
+
         // continue with next available pick
         _startPickingForOrder();
       }
 
     }
+  }
+
+  void _reloadInventoryOnRF() {
+
+    InventoryService.getInventoryOnCurrentRF()
+        .then((value) {
+      setState(() {
+        inventoryOnRF = value;
+      });
+    });
+
   }
 
   Order _getOrderByPick(Pick pick) {
@@ -490,6 +529,13 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
       _assignOrderToUser(order);
     });
 
+  }
+
+  Future<void> _startDeposit() async {
+    await Navigator.of(context).pushNamed("inventory_deposit");
+
+    // refresh the pick on the RF
+    _reloadInventoryOnRF();
   }
 
 

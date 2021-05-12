@@ -16,6 +16,7 @@ import 'auth/routes/login.dart';
 import 'i18n/localization_intl.dart';
 import 'inventory/routes/cycle_count_batch.dart';
 import 'inventory/routes/cycle_count_request.dart';
+import 'inventory/routes/inventory_deposit.dart';
 import 'launch_page.dart';
 import 'menus.dart';
 import 'outbound/routes/pick.dart';
@@ -90,6 +91,7 @@ class MyApp extends StatelessWidget {
               "cycle_cycle_request": (context) => CycleCountRequestPage(),
               "pick_by_order": (context) => PickByOrderPage(),
               "pick": (context) => PickPage(),
+              "inventory_deposit": (context) => InventoryDepositPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

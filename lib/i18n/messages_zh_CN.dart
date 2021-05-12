@@ -58,6 +58,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "confirm" : MessageLookupByLibrary.simpleMessage("确认"),
 
 
+    "lpn" : MessageLookupByLibrary.simpleMessage("lpn"),
+    "inputLPNHint" : MessageLookupByLibrary.simpleMessage("请输入LPN"),
+    "chooseLPN" : MessageLookupByLibrary.simpleMessage("请选择LPN"),
+
+    "location" : MessageLookupByLibrary.simpleMessage("库位"),
+    "inputLocationHint" : MessageLookupByLibrary.simpleMessage("请输入库位"),
+
+    "depositInventory" : MessageLookupByLibrary.simpleMessage("放置"),
+
+
+
     'greetingMessage':greetingMessage,
 ////////////////////////////////////////////////////
     "auto" : MessageLookupByLibrary.simpleMessage("跟随系统"),

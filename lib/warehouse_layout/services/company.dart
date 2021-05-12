@@ -20,7 +20,7 @@ class CompanyService {
     );
 
     print("reponse from company: $response");
-    Map<String, dynamic> responseString = json.decode(response.toString());
+
     Company company =
         Company.fromJson(json.decode(response.toString()));
 

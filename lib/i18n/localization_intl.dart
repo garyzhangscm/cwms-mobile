@@ -73,6 +73,19 @@ class CWMSLocalizations {
   String get start => Intl.message('Start', name: 'start');
   String get confirm => Intl.message('Confirm', name: 'confirm');
 
+  String get lpn => Intl.message('lpn', name: 'lpn');
+  String get inputLPNHint => Intl.message('Please input an LPN', name: 'inputLPNHint');
+  String get chooseLPN => Intl.message('Please choose an LPN', name: 'chooseLPN');
+
+  String get location => Intl.message('location', name: 'location');
+  String get inputLocationHint => Intl.message('Please input a Location', name: 'inputLocationHint');
+
+  String get depositInventory => Intl.message('Deposit', name: 'depositInventory');
+
+
+
+
+
   String greetingMessage(Object name) {
     return Intl.message(
       'Hi $name, Welcome to CWMS',

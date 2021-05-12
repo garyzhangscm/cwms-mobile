@@ -30,6 +30,8 @@ class Global {
   static String currentUsername;
   static User autoLoginUser;
 
+  static String lastLoginRFCode;
+
   static Warehouse currentWarehouse;
   static Warehouse autoLoginWarehouse;
 
@@ -61,8 +63,9 @@ class Global {
     WidgetsFlutterBinding.ensureInitialized();
     _prefs = await SharedPreferences.getInstance();
     _initServers();
-    _initAutoLingUser();
-    _initAutoLingWarehouse();
+    _initAutoLoginUser();
+    _initAutoLoginWarehouse();
+    _initLastLoginRFCode();
 
     // initial profile
     var _profile = _prefs.getString("profile");
@@ -109,7 +112,7 @@ class Global {
 
   }
 
-  static _initAutoLingUser(){
+  static _initAutoLoginUser(){
     var _user = _prefs.getString("auto_login_user");
     print("_initAutoLingUser: ${_user}");
     if (_user != null ) {
@@ -120,7 +123,7 @@ class Global {
       }
     }
   }
-  static _initAutoLingWarehouse(){
+  static _initAutoLoginWarehouse(){
     var _warehouse = _prefs.getString("auto_login_warehouse");
     print("_initAutoLingWarehouse: ${_warehouse}");
     if (_warehouse != null ) {
@@ -130,6 +133,18 @@ class Global {
         print(e);
       }
     }
+  }
+
+  static _initLastLoginRFCode(){
+    lastLoginRFCode = _prefs.getString("last_login_rf_code");
+  }
+  static String getLastLoginRFCode(){
+    return lastLoginRFCode;
+  }
+  static setLastLoginRFCode(String rfCode){
+    lastLoginRFCode = rfCode;
+
+    _prefs.setString("last_login_rf_code", lastLoginRFCode);
   }
 
   static Warehouse getAutoLoginWarehouse(){

@@ -26,26 +26,29 @@ class _LaunchPageState extends State<LaunchPage> {
   bool _autoConnect;
 
   TextEditingController _serverURLController;
+  TextEditingController _rfCodeController;
 
-  GlobalKey _formKey= new GlobalKey<FormState>();
+  final _formKey= new GlobalKey<FormState>();
 
 
   @override
   void initState(){
     super.initState();
     CWMSSiteInformation server = Global.getAutoConnectServer();
+    _rfCodeController = TextEditingController(
+        text: Global.getLastLoginRFCode());
     print("get auto connect server? ${server == null? '' : server.url}");
 
     if (server != null) {
 
       // _serverURLController =  TextEditingController(text: server.url);
-      _serverURLController =  TextEditingController(text: 'http://k8s-staging-webclien-d59c548886-1603149749.us-west-1.elb.amazonaws.com/api');
+      _serverURLController =  TextEditingController(text: server.url);
 
       _autoConnect = server.autoConnectFlag;
       _onAutoConnect(server);
     }
     else {
-      _serverURLController =  TextEditingController(text: 'http://k8s-staging-webclien-d59c548886-1603149749.us-west-1.elb.amazonaws.com/api');
+      _serverURLController =  TextEditingController(text: '');
       _autoConnect = true;
     }
 
@@ -82,6 +85,20 @@ class _LaunchPageState extends State<LaunchPage> {
                         .length > 0 ? null : "Please input a valid server";
                   }
               ),
+              TextFormField(
+                  controller: _rfCodeController, //设置controller
+                  decoration: InputDecoration(
+                      labelText: "RF code",
+                      hintText: "RF code",
+                      prefixIcon: Icon(Icons.web)
+                  ),
+                  //
+                  validator: (v) {
+                    return v
+                        .trim()
+                        .length > 0 ? null : "Please input a valid RF";
+                  }
+              ),
               Row(
                   children: <Widget>[
 
@@ -108,7 +125,10 @@ class _LaunchPageState extends State<LaunchPage> {
                 child: Text("Connect"),
                 shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
                 onPressed: () {
-                  _onConnect(_serverURLController.text, _autoConnect);
+                  if (_formKey.currentState.validate()) {
+                     _onConnect(_serverURLController.text, _autoConnect);
+
+                  }
                 },
               )
             ],
@@ -121,6 +141,8 @@ class _LaunchPageState extends State<LaunchPage> {
 
   void _onAutoConnect(CWMSSiteInformation server) async  {
 
+    _onConnect(server.url, true);
+    /***
     try {
       Response response = await Dio().get(server.url + "/resource/mobile");
       HttpResponseWrapper httpResponseWrapper =
@@ -128,11 +150,13 @@ class _LaunchPageState extends State<LaunchPage> {
 
       // if we can connect, then flow to
       Global.setCurrentServer(server);
+      Global.setCurrentLoginRFCode(Global.getAutoLoginRFCode());
       Navigator.pushNamed(context, "login_page");
     } catch (e) {
       //登录失败则提示
       print(e.toString());
     }
+        ***/
 
 
   }
@@ -141,14 +165,16 @@ class _LaunchPageState extends State<LaunchPage> {
   //    url and connect
   void _onConnect(String serverUrl, bool autoConnectFlag) async {
 
-    // If not auto connecting, then make sure the user intpu the right value
-    if ((_formKey.currentState as FormState).validate()) {
 
-      showLoading(context);
+      // showLoading(context);
       CWMSSiteInformation server;
+      String rfCode = _rfCodeController.text;
       try {
         print("start to connect to $serverUrl");
-        Response response = await Dio().get(serverUrl + "/resource/mobile");
+        Response response = await Dio().get(
+            serverUrl + "/resource/mobile",
+            queryParameters: {"rfCode": rfCode});
+
         print("get response: $response");
 
 
@@ -178,15 +204,15 @@ class _LaunchPageState extends State<LaunchPage> {
         showToast(e.toString());
       } finally {
         // 隐藏loading框
-        Navigator.of(context).pop();
+        // Navigator.of(context).pop();
       }
       if (server != null) {
         // 返回
         Global.addServer(server);
         Global.setCurrentServer(server);
+        Global.setLastLoginRFCode(rfCode);
         Navigator.pushNamed(context, "login_page");
       }
-    }
 
   }
 

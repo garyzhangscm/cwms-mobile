@@ -19,7 +19,6 @@ class PickService {
 
     print("response from Pick by Order: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
-    List<dynamic> responseData = responseString["data"];
 
     List<Pick> picks
     = (responseString["data"] as List)?.map((e) =>
@@ -126,9 +125,11 @@ class PickService {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
+    // pick to RF
     Response response = await httpClient.post(
         "outbound/picks/${pick.id}/confirm",
-        queryParameters: {"quantity": confirmQuantity}
+        queryParameters: {"quantity": confirmQuantity,
+          "nextLocationName": Global.getLastLoginRFCode()}
     );
 
     print("response from confirm pick: $response");

@@ -59,6 +59,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "start" : MessageLookupByLibrary.simpleMessage("Start"),
     "confirm" : MessageLookupByLibrary.simpleMessage("Confirm"),
 
+    "lpn" : MessageLookupByLibrary.simpleMessage("lpn"),
+    "inputLPNHint" : MessageLookupByLibrary.simpleMessage("Please input an LPN"),
+    "chooseLPN" : MessageLookupByLibrary.simpleMessage("Please choose an LPN"),
+
+    "location" : MessageLookupByLibrary.simpleMessage("location"),
+    "inputLocationHint" : MessageLookupByLibrary.simpleMessage("Please input a Location"),
+
+    "depositInventory" : MessageLookupByLibrary.simpleMessage("Deposit"),
+
 
     'greetingMessage':greetingMessage,
 

@@ -56,6 +56,9 @@ dependencies:
 
   infinite_listview: 1.0.0
 
+  # badges
+  # https://pub.dev/packages/badges
+  badges: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
