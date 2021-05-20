@@ -13,6 +13,7 @@ class Menu{
   String link;
   String text;
   String icon;
+  String i18n;
 
 
 

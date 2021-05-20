@@ -13,6 +13,7 @@ class MenuSubGroup{
   String name;
   String text;
   String icon;
+  String i18n;
 
   List<Menu> menus;
 

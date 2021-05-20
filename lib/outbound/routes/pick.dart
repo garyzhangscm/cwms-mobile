@@ -2,6 +2,7 @@ import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
+import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -246,6 +247,7 @@ class _PickPageState extends State<PickPage> {
           ),
         ),
       ),
+      endDrawer: MyDrawer(),
     );
   }
   void _onPickConfirm(Pick pick, int confirmedQuantity) async {

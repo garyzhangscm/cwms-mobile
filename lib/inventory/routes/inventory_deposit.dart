@@ -3,6 +3,7 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dart';
+import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
@@ -204,6 +205,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
           ),
         ),
       ),
+      endDrawer: MyDrawer(),
     );
   }
 

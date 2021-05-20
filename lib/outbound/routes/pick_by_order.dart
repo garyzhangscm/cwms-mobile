@@ -11,6 +11,7 @@ import 'package:cwms_mobile/outbound/models/pick_result.dart';
 import 'package:cwms_mobile/outbound/services/order.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
+import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
@@ -93,7 +94,8 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
               _buildOrderList(context)
             ],
           ),
-      bottomNavigationBar: buildBottomNavigationBar(context)
+      // bottomNavigationBar: buildBottomNavigationBar(context)
+      endDrawer: MyDrawer(),
     );
   }
 

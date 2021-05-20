@@ -1,5 +1,8 @@
+import 'package:cwms_mobile/common/models/client.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'item_package_type.dart';
 
 // user.g.dart 将在我们运行生成命令后自动生成
 part 'item.g.dart';
@@ -8,12 +11,26 @@ part 'item.g.dart';
 @JsonSerializable()
 
 class Item{
-  Item();
+  Item() {
+    id = null;
+    name = "";
+    description = "";
+    warehouseId = null;
+    clientId = null;
+    client = null;
+    itemPackageTypes = new List<ItemPackageType>();
+
+  }
 
   int id;
   String name;
   String description;
 
+  int clientId;
+
+  Client client;
+
+  List<ItemPackageType> itemPackageTypes;
 
   int warehouseId;
 

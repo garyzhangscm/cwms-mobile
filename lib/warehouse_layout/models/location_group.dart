@@ -3,6 +3,8 @@ import 'package:cwms_mobile/auth/models/menu_sub_group.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import 'location_group_type.dart';
+
 // user.g.dart 将在我们运行生成命令后自动生成
 part 'location_group.g.dart';
 
@@ -22,6 +24,9 @@ class LocationGroup{
   bool countable;
   bool adjustable;
   bool trackingVolume;
+
+
+  LocationGroupType locationGroupType;
 
   //不同的类使用不同的mixin即可
   factory LocationGroup.fromJson(Map<String, dynamic> json) => _$LocationGroupFromJson(json);

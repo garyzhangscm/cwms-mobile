@@ -27,7 +27,7 @@ class PickService {
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
-    sortPicks(picks, Global.lastActivityLocation, Global.isMovingForward());
+    sortPicks(picks, Global.getLastActivityLocation(), Global.isMovingForward());
 
     return picks;
   }

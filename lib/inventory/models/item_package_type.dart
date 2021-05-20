@@ -13,7 +13,13 @@ part 'item_package_type.g.dart';
 @JsonSerializable()
 
 class ItemPackageType{
-  ItemPackageType();
+  ItemPackageType() {
+    id = null;
+    name = "";
+    description = "";
+    itemUnitOfMeasures = new List<ItemUnitOfMeasure>();
+
+  }
 
   int id;
 

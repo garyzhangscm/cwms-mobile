@@ -1,7 +1,12 @@
 import 'dart:io';
 
+import 'package:cwms_mobile/inventory/routes/audit_count_batch.dart';
+import 'package:cwms_mobile/inventory/routes/audit_count_request.dart';
+import 'package:cwms_mobile/inventory/routes/inventory_detail.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
 import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/shared/language.dart';
+import 'package:cwms_mobile/shared/work_profile_information.dart';
 import 'package:cwms_mobile/states/profile_change_notifier.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -14,9 +19,11 @@ import 'package:flutter/material.dart';
 import 'auth/routes/login.dart';
 
 import 'i18n/localization_intl.dart';
+import 'inbound/routes/receiving.dart';
 import 'inventory/routes/cycle_count_batch.dart';
 import 'inventory/routes/cycle_count_request.dart';
 import 'inventory/routes/inventory_deposit.dart';
+import 'inventory/routes/inventory_query.dart';
 import 'launch_page.dart';
 import 'menus.dart';
 import 'outbound/routes/pick.dart';
@@ -85,13 +92,20 @@ class MyApp extends StatelessWidget {
             },
             routes: {
               "login_page": (context) => LoginPage(),
+              "language": (context) => LanguageRoute(),
+              "work_profile": (context) => WorkProfileInfoPage(),
               "menus_page": (context) => Menus(),
               "sub_menus_page": (context) => SubMenus(),
-              "cycle_cycle_batch": (context) => CycleCountBatchPage(),
-              "cycle_cycle_request": (context) => CycleCountRequestPage(),
+              "cycle_count_batch": (context) => CycleCountBatchPage(),
+              "cycle_count_request": (context) => CycleCountRequestPage(),
+              "audit_count_batch": (context) => AuditCountBatchPage(),
+              "audit_count_request": (context) => AuditCountRequestPage(),
               "pick_by_order": (context) => PickByOrderPage(),
               "pick": (context) => PickPage(),
               "inventory_deposit": (context) => InventoryDepositPage(),
+              "receive": (context) => ReceivingPage(),
+              "inventory": (context) => InventoryQueryPage(),
+              "inventory_display": (context) => InventoryDetailPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

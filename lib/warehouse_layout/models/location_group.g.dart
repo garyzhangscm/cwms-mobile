@@ -18,7 +18,10 @@ LocationGroup _$LocationGroupFromJson(Map<String, dynamic> json) {
     ..storable = json['storable'] as bool
     ..countable = json['countable'] as bool
     ..adjustable = json['adjustable'] as bool
-    ..trackingVolume = json['trackingVolume'] as bool;
+    ..trackingVolume = json['trackingVolume'] as bool
+    ..locationGroupType = json['locationGroupType'] == null
+        ? null
+        : LocationGroupType.fromJson(json['locationGroupType'] as Map<String, dynamic>);
 }
 
 Map<String, dynamic> _$LocationGroupToJson(LocationGroup instance) =>
@@ -32,4 +35,5 @@ Map<String, dynamic> _$LocationGroupToJson(LocationGroup instance) =>
       'countable': instance.countable,
       'adjustable': instance.adjustable,
       'trackingVolume': instance.trackingVolume,
+      'locationGroupType': instance.locationGroupType,
     };

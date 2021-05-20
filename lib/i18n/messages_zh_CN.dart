@@ -22,6 +22,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static greetingMessage(name) => "Hi ${name}, 欢迎";
 
+  static missingField(name) => "$name 不可为空";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
     "home" : MessageLookupByLibrary.simpleMessage("首页"),
@@ -58,7 +60,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "confirm" : MessageLookupByLibrary.simpleMessage("确认"),
 
 
-    "lpn" : MessageLookupByLibrary.simpleMessage("lpn"),
+    "lpn" : MessageLookupByLibrary.simpleMessage("LPN"),
     "inputLPNHint" : MessageLookupByLibrary.simpleMessage("请输入LPN"),
     "chooseLPN" : MessageLookupByLibrary.simpleMessage("请选择LPN"),
 
@@ -68,8 +70,63 @@ class MessageLookup extends MessageLookupByLibrary {
     "depositInventory" : MessageLookupByLibrary.simpleMessage("放置"),
 
 
+    "chooseReceipt" : MessageLookupByLibrary.simpleMessage("选择入库单"),
+    "chooseItem" : MessageLookupByLibrary.simpleMessage("选择商品"),
+
+    "addCountBatch" : MessageLookupByLibrary.simpleMessage("添加盘点单"),
+    "chooseCountBatch": MessageLookupByLibrary.simpleMessage("选择盘点单"),
+
+    "noMoreCycleCountInBatch" : MessageLookupByLibrary.simpleMessage("当前盘点单已没有盘点任务"),
+    "noMoreAuditCountInBatch" : MessageLookupByLibrary.simpleMessage("当前盘点单已没有复盘任务"),
+
+    "confirmCycleCount" : MessageLookupByLibrary.simpleMessage("确认"),
+    "skipCycleCount" : MessageLookupByLibrary.simpleMessage("跳过"),
+    "cancelCycleCount" : MessageLookupByLibrary.simpleMessage("取消"),
+
+    "confirmAuditCount" : MessageLookupByLibrary.simpleMessage("确认"),
+    "skipAuditCount" : MessageLookupByLibrary.simpleMessage("跳过"),
+    "cancelAuditCount" : MessageLookupByLibrary.simpleMessage("取消"),
+
+    "addItem" : MessageLookupByLibrary.simpleMessage("添加商品"),
+    "item" : MessageLookupByLibrary.simpleMessage("商品"),
+    "itemPackageType" : MessageLookupByLibrary.simpleMessage("包装规格"),
+    "inventoryStatus" : MessageLookupByLibrary.simpleMessage("库存状态"),
+
+
+    "expectedQuantity" : MessageLookupByLibrary.simpleMessage("预期数量"),
+    "receivedQuantity" : MessageLookupByLibrary.simpleMessage("收货数量"),
+    "countQuantity" : MessageLookupByLibrary.simpleMessage("盘点数量"),
+    "quantity" : MessageLookupByLibrary.simpleMessage("数量"),
+
+
+    "cycleCount" : MessageLookupByLibrary.simpleMessage("盘点"),
+    "auditCount" : MessageLookupByLibrary.simpleMessage("复盘"),
+    "workProfile" : MessageLookupByLibrary.simpleMessage("工作信息"),
+    "currentLocation" : MessageLookupByLibrary.simpleMessage("当前库位"),
+
+
+    "menuMobileInbound" : MessageLookupByLibrary.simpleMessage("入库"),
+    "menuMobileOutbound" : MessageLookupByLibrary.simpleMessage("出库"),
+    "menuMobileInventory" : MessageLookupByLibrary.simpleMessage("库存管理"),
+    "menuMobileInboundReceive" : MessageLookupByLibrary.simpleMessage("收货"),
+    "menuMobileOutboundPickByOrder" : MessageLookupByLibrary.simpleMessage("按单拣选"),
+    "menuMobileOutboundPickByList" : MessageLookupByLibrary.simpleMessage("列表拣货"),
+    "menuMobileOutboundPickByWorkOrder" : MessageLookupByLibrary.simpleMessage("加工拣货"),
+    "menuMobileOutboundPickByTote" : MessageLookupByLibrary.simpleMessage("装箱拣货"),
+    "menuMobileInventoryInventory" : MessageLookupByLibrary.simpleMessage("库存显示"),
+    "menuMobileInventoryCount" : MessageLookupByLibrary.simpleMessage("盘点"),
+    "menuMobileInventoryAuditCount" : MessageLookupByLibrary.simpleMessage("复盘"),
+
+    "chooseServer" : MessageLookupByLibrary.simpleMessage("选择服务器"),
+    "query" : MessageLookupByLibrary.simpleMessage("查询"),
+
+
+    "inputItemHint" : MessageLookupByLibrary.simpleMessage("请输入商品或者条码"),
+    "noInventoryFound" : MessageLookupByLibrary.simpleMessage("没有找到任何库存"),
+    "inventory" : MessageLookupByLibrary.simpleMessage("库存"),
 
     'greetingMessage':greetingMessage,
+    'missingField':missingField,
 ////////////////////////////////////////////////////
     "auto" : MessageLookupByLibrary.simpleMessage("跟随系统"),
     "cancel" : MessageLookupByLibrary.simpleMessage("取消"),

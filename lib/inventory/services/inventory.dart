@@ -2,8 +2,6 @@
 import 'dart:convert';
 
 
-import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -13,7 +11,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
 
 class InventoryService {
-  // Get all cycle count requests by batch id
+  // Get inventory that on the current RF
   static Future<List<Inventory>> getInventoryOnCurrentRF() async {
     Dio httpClient = CWMSHttpClient.getDio();
 
@@ -23,7 +21,7 @@ class InventoryService {
           'location': Global.getLastLoginRFCode()}
     );
 
-    print("response from inventory on RF:");
+    printLongLogMessage("response from inventory on RF:");
 
     printLongLogMessage(response.toString());
 
@@ -39,6 +37,8 @@ class InventoryService {
     return inventories;
   }
 
+  // Get inventory deposit request from a list of inventory
+  // we may group inventories together based on same item / same status
   static List<InventoryDepositRequest> getInventoryDepositRequests(
       List<Inventory> inventories, bool groupItemFlag,
       bool groupInventoryStatusFlag
@@ -72,6 +72,8 @@ class InventoryService {
 
   }
 
+  // Get key for the inventory. We will use the key to group
+  // inventory into deposit request
   static String _getKey(Inventory inventory, bool groupItemFlag,
       bool groupInventoryStatusFlag) {
     String key = inventory.lpn;
@@ -84,13 +86,14 @@ class InventoryService {
     return key;
   }
 
+  // Get the next deposit request from a list of inventory
   static InventoryDepositRequest getNextInventoryDepositRequest(
       List<Inventory> inventories, bool groupItemFlag, 
       bool groupInventoryStatusFlag
   ) {
 
     if (inventories.isEmpty) {
-      print("no inventory to be deposit");
+      printLongLogMessage("no inventory to be deposit");
       return null;
     }
 
@@ -100,24 +103,25 @@ class InventoryService {
       if (inventoryDepositRequest.lpn.isEmpty) {
         // OK, this is the first inventory we can check.
         // let's assign to the inventory deposit request
-        print("get the first inventory in the list, init the inventory request by the inventory");
+        printLongLogMessage("get the first inventory in the list, init the inventory request by the inventory");
         inventoryDepositRequest = InventoryDepositRequest.fromInventory(inventory);
       }
       else {
         // check if we can add the inventory to the current
         // deposit request
-        print("see if we can add the current inventory into the existing request");
+        printLongLogMessage("see if we can add the current inventory into the existing request");
         _addInventoryToDepositRequest(
                 inventoryDepositRequest, inventory,
             groupItemFlag, groupInventoryStatusFlag);
 
       }
     });
-    print("we got inventoryDepositRequest: $inventoryDepositRequest");
+    printLongLogMessage("we got inventoryDepositRequest: $inventoryDepositRequest");
     return inventoryDepositRequest;
   }
  
 
+  // Add new inventory into current deposit request
   static void _addInventoryToDepositRequest(
       InventoryDepositRequest inventoryDepositRequest,
       Inventory inventory,
@@ -157,6 +161,7 @@ class InventoryService {
 
   }
 
+  // move inventory
   static Future<Inventory> moveInventory  (
       {int inventoryId, int pickId, bool immediateMove = true,
         String destinationLpn = "", WarehouseLocation destinationLocation}) async {
@@ -177,7 +182,7 @@ class InventoryService {
         data: destinationLocation
     );
 
-    print("response from move inventory:");
+    printLongLogMessage("response from move inventory:");
 
     printLongLogMessage(response.toString());
 
@@ -186,6 +191,78 @@ class InventoryService {
   }
 
 
+  static Future<List<Inventory>> findInventory(
+      {String locationName = "", String itemName = "", String lpn = ""}
+      )  async {
+    List<Inventory> resultInventories = new List<Inventory>();
 
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response;
+
+    if (locationName.isNotEmpty) {
+      response = await httpClient.get(
+          "/inventory/inventories",
+          queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+            'location': locationName}
+      );
+
+      printLongLogMessage("response from inventory by location: ${locationName}");
+
+      printLongLogMessage(response.toString());
+
+      Map<String, dynamic> responseString = json.decode(response.toString());
+
+      List<Inventory> inventories
+        = (responseString["data"] as List)?.map((e) =>
+        e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+            ?.toList();
+      resultInventories.addAll(inventories);
+    }
+
+
+    if (itemName.isNotEmpty) {
+      response = await httpClient.get(
+          "/inventory/inventories",
+          queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+            'itemName': itemName}
+      );
+
+      printLongLogMessage("response from inventory by item: ${itemName}");
+
+      printLongLogMessage(response.toString());
+
+      Map<String, dynamic> responseString = json.decode(response.toString());
+
+      List<Inventory> inventories
+      = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+          ?.toList();
+      resultInventories.addAll(inventories);
+    }
+
+    if (lpn.isNotEmpty) {
+      response = await httpClient.get(
+          "/inventory/inventories",
+          queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+            'lpn': lpn}
+      );
+
+      printLongLogMessage("response from inventory by lpn: ${lpn}");
+
+      printLongLogMessage(response.toString());
+
+      Map<String, dynamic> responseString = json.decode(response.toString());
+
+      List<Inventory> inventories
+      = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+          ?.toList();
+      resultInventories.addAll(inventories);
+    }
+
+
+    return resultInventories;
+  }
 
 }

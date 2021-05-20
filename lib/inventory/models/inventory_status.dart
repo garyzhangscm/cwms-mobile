@@ -8,7 +8,11 @@ part 'inventory_status.g.dart';
 @JsonSerializable()
 
 class InventoryStatus{
-  InventoryStatus();
+  InventoryStatus() {
+    id = null;
+    name = "";
+    description = "";
+  }
 
   int id;
   String name;

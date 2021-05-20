@@ -22,6 +22,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static greetingMessage(name) => "Hi ${name}, Jesus Loves You";
 
+  static missingField(name) => "$name is required";
+
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
     "home" : MessageLookupByLibrary.simpleMessage("Home"),
@@ -59,7 +62,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "start" : MessageLookupByLibrary.simpleMessage("Start"),
     "confirm" : MessageLookupByLibrary.simpleMessage("Confirm"),
 
-    "lpn" : MessageLookupByLibrary.simpleMessage("lpn"),
+    "lpn" : MessageLookupByLibrary.simpleMessage("LPN"),
     "inputLPNHint" : MessageLookupByLibrary.simpleMessage("Please input an LPN"),
     "chooseLPN" : MessageLookupByLibrary.simpleMessage("Please choose an LPN"),
 
@@ -68,8 +71,62 @@ class MessageLookup extends MessageLookupByLibrary {
 
     "depositInventory" : MessageLookupByLibrary.simpleMessage("Deposit"),
 
+    "chooseReceipt" : MessageLookupByLibrary.simpleMessage("Choose Receipt"),
+    "chooseItem" : MessageLookupByLibrary.simpleMessage("Choose Item"),
+
+    "addCountBatch" : MessageLookupByLibrary.simpleMessage("Add Batch"),
+    "chooseCountBatch" : MessageLookupByLibrary.simpleMessage("Choose Batch"),
+
+    "noMoreCycleCountInBatch" : MessageLookupByLibrary.simpleMessage("No More Cycle Count in this Batch"),
+    "noMoreAuditCountInBatch" : MessageLookupByLibrary.simpleMessage("No More Audit Count in this Batch"),
+
+    "confirmCycleCount" : MessageLookupByLibrary.simpleMessage("Confirm"),
+    "skipCycleCount" : MessageLookupByLibrary.simpleMessage("Skip"),
+    "cancelCycleCount" : MessageLookupByLibrary.simpleMessage("Cancel"),
+
+    "confirmAuditCount" : MessageLookupByLibrary.simpleMessage("Confirm"),
+    "skipAuditCount" : MessageLookupByLibrary.simpleMessage("Skip"),
+    "cancelAuditCount" : MessageLookupByLibrary.simpleMessage("Cancel"),
+
+    "addItem" : MessageLookupByLibrary.simpleMessage("Add Item"),
+    "item" : MessageLookupByLibrary.simpleMessage("Item"),
+    "itemPackageType" : MessageLookupByLibrary.simpleMessage("Item Package Type"),
+
+    "inventoryStatus" : MessageLookupByLibrary.simpleMessage("Inventory Status"),
+
+    "expectedQuantity" : MessageLookupByLibrary.simpleMessage("Expected Quantity"),
+    "receivedQuantity" : MessageLookupByLibrary.simpleMessage("Received Quantity"),
+    "countQuantity" : MessageLookupByLibrary.simpleMessage("Count Quantity"),
+    "quantity" : MessageLookupByLibrary.simpleMessage("Quantity"),
+
+    "cycleCount" : MessageLookupByLibrary.simpleMessage("Cycle Count"),
+    "auditCount" : MessageLookupByLibrary.simpleMessage("Audit Count"),
+
+    "workProfile" : MessageLookupByLibrary.simpleMessage("Work Profile"),
+
+    "currentLocation" : MessageLookupByLibrary.simpleMessage("Current Location"),
+
+    "menuMobileInbound" : MessageLookupByLibrary.simpleMessage("Inbound"),
+    "menuMobileOutbound" : MessageLookupByLibrary.simpleMessage("Outbound"),
+    "menuMobileInventory" : MessageLookupByLibrary.simpleMessage("Inventory"),
+    "menuMobileInboundReceive" : MessageLookupByLibrary.simpleMessage("Receive"),
+    "menuMobileOutboundPickByOrder" : MessageLookupByLibrary.simpleMessage("Pick By Order"),
+    "menuMobileOutboundPickByList" : MessageLookupByLibrary.simpleMessage("Pick By List"),
+    "menuMobileOutboundPickByWorkOrder" : MessageLookupByLibrary.simpleMessage("Pick By WO"),
+    "menuMobileOutboundPickByTote" : MessageLookupByLibrary.simpleMessage("Pick By Tote"),
+    "menuMobileInventoryInventory" : MessageLookupByLibrary.simpleMessage("Inventory"),
+    "menuMobileInventoryCount" : MessageLookupByLibrary.simpleMessage("Cycle Count"),
+    "menuMobileInventoryAuditCount" : MessageLookupByLibrary.simpleMessage("Audit Count"),
+
+    "chooseServer" : MessageLookupByLibrary.simpleMessage("Choose Server"),
+    "query" : MessageLookupByLibrary.simpleMessage("Query"),
+
+    "inputItemHint" : MessageLookupByLibrary.simpleMessage("Please input an Item or Barcode"),
+    "noInventoryFound" : MessageLookupByLibrary.simpleMessage("Cannot find any inventory"),
+    "inventory" : MessageLookupByLibrary.simpleMessage("Inventory"),
 
     'greetingMessage':greetingMessage,
+    'missingField':missingField,
 
     ////////////////////////////////////////////////
     "auto" : MessageLookupByLibrary.simpleMessage("Auto"),

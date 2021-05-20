@@ -50,7 +50,7 @@ class Global {
   // Last activity location;
   // The system will use this information to assign
   // next activity
-  static WarehouseLocation lastActivityLocation;
+  static WarehouseLocation _lastActivityLocation;
   // whether we need to move forward (1) or backward(-1)
   static int _lastActivityDirection;
 
@@ -123,6 +123,11 @@ class Global {
       }
     }
   }
+
+  static _clearAutoLoginUser() {
+    _prefs.setString("auto_login_user", "");
+  }
+
   static _initAutoLoginWarehouse(){
     var _warehouse = _prefs.getString("auto_login_warehouse");
     print("_initAutoLingWarehouse: ${_warehouse}");
@@ -133,6 +138,10 @@ class Global {
         print(e);
       }
     }
+  }
+
+  static _clearAutoLoginWarehouse() {
+    _prefs.setString("auto_login_warehouse", "");
   }
 
   static _initLastLoginRFCode(){
@@ -262,4 +271,27 @@ class Global {
   static saveProfile() =>
       _prefs.setString("profile", jsonEncode(profile.toJson()));
 
+
+  static WarehouseLocation getLastActivityLocation() {
+    return _lastActivityLocation;
+  }
+
+  static void setLastActivityLocation(WarehouseLocation location) {
+    print("_lastActivityLocation is changed to ${location.name}");
+    _lastActivityLocation = location;
+  }
+
+  // logout the current user
+  static logout() {
+    currentUser = null;
+    currentUsername = "";
+    _clearAutoLoginUser();
+
+    currentWarehouse = null;
+    _clearAutoLoginWarehouse();
+
+    lastLoginCompanyCode = "";
+    lastLoginCompanyId = null;
+
+  }
 }

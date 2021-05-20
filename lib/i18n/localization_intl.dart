@@ -73,7 +73,7 @@ class CWMSLocalizations {
   String get start => Intl.message('Start', name: 'start');
   String get confirm => Intl.message('Confirm', name: 'confirm');
 
-  String get lpn => Intl.message('lpn', name: 'lpn');
+  String get lpn => Intl.message('LPN', name: 'lpn');
   String get inputLPNHint => Intl.message('Please input an LPN', name: 'inputLPNHint');
   String get chooseLPN => Intl.message('Please choose an LPN', name: 'chooseLPN');
 
@@ -82,10 +82,58 @@ class CWMSLocalizations {
 
   String get depositInventory => Intl.message('Deposit', name: 'depositInventory');
 
+  String get chooseReceipt => Intl.message('Choose Receipt', name: 'chooseReceipt');
+  String get chooseItem => Intl.message('Choose Item', name: 'chooseItem');
 
 
+  String get addCountBatch => Intl.message('Add Batch', name: 'addCountBatch');
+  String get chooseCountBatch => Intl.message('Choose Batch', name: 'chooseCountBatch');
+
+  String get noMoreCycleCountInBatch => Intl.message('No More Cycle Count In this Batch', name: 'noMoreCycleCountInBatch');
+  String get noMoreAuditCountInBatch => Intl.message('No More Audit Count In this Batch', name: 'noMoreAuditCountInBatch');
+
+  String get confirmCycleCount => Intl.message('Confirm', name: 'confirmCycleCount');
+  String get skipCycleCount => Intl.message('Skip', name: 'skipCycleCount');
+  String get cancelCycleCount => Intl.message('Cancel', name: 'cancelCycleCount');
+
+  String get confirmAuditCount => Intl.message('Confirm', name: 'confirmAuditCount');
+  String get skipAuditCount => Intl.message('Skip', name: 'skipAuditCount');
+  String get cancelAuditCount => Intl.message('Cancel', name: 'cancelAuditCount');
+
+  String get addItem => Intl.message('Add Item', name: 'addItem');
+  String get item => Intl.message('Item', name: 'item');
+
+  String get itemPackageType => Intl.message('Item Package Type', name: 'itemPackageType');
+  String get inventoryStatus => Intl.message('Inventory Status', name: 'inventoryStatus');
+
+  String get expectedQuantity => Intl.message('Expected Quantity', name: 'expectedQuantity');
+  String get receivedQuantity => Intl.message('Received Quantity', name: 'receivedQuantity');
+  String get countQuantity => Intl.message('Count Quantity', name: 'countQuantity');
+  String get quantity => Intl.message('Quantity', name: 'quantity');
+
+  String get cycleCount => Intl.message('Cycle Count', name: 'cycleCount');
+  String get auditCount => Intl.message('Audit Count', name: 'auditCount');
+  String get workProfile => Intl.message('Work Profile', name: 'workProfile');
+  String get currentLocation => Intl.message('Current Location', name: 'currentLocation');
+
+  String get chooseServer => Intl.message('Choose a Server', name: 'chooseServer');
+  String get query => Intl.message('Query', name: 'query');
 
 
+  String get inputItemHint => Intl.message('Please input an Item or Barcode', name: 'inputItemHint');
+
+  String get noInventoryFound => Intl.message('Cannont find any inventory', name: 'noInventoryFound');
+  String get inventory => Intl.message('inventory', name: 'inventory');
+
+
+  String missingField(Object name) {
+    return Intl.message(
+      '$name is required',
+      name: 'missingField',
+      desc: '',
+      args: [name],
+    );
+  }
   String greetingMessage(Object name) {
     return Intl.message(
       'Hi $name, Welcome to CWMS',
@@ -93,6 +141,45 @@ class CWMSLocalizations {
       desc: '',
       args: [name],
     );
+  }
+
+  String get menuMobileInbound => Intl.message('Inbound', name: 'menuMobileInbound');
+  String get menuMobileOutbound => Intl.message('Outbound', name: 'menuMobileOutbound');
+  String get menuMobileInventory => Intl.message('Inventory', name: 'menuMobileInventory');
+  String get menuMobileInboundReceive => Intl.message('Receive', name: 'menuMobileInboundReceive');
+  String get menuMobileOutboundPickByOrder => Intl.message('Pick By Order', name: 'menuMobileOutboundPickByOrder');
+  String get menuMobileOutboundPickByList => Intl.message('Pick By List', name: 'menuMobileOutboundPickByList');
+  String get menuMobileOutboundPickByWorkOrder => Intl.message('Pick By WO', name: 'menuMobileOutboundPickByWorkOrder');
+  String get menuMobileOutboundPickByTote => Intl.message('Pick By Tote', name: 'menuMobileOutboundPickByTote');
+  String get menuMobileInventoryInventory => Intl.message('Inventory', name: 'menuMobileInventoryInventory');
+  String get menuMobileInventoryCount => Intl.message('Cycle Count', name: 'menuMobileInventoryCount');
+  String get menuMobileInventoryAuditCount => Intl.message('Audit Count', name: 'menuMobileInventoryAuditCount');
+
+  ///////////////////    动态取得菜单的中文  /////////////////////////////////////////////////
+  Map<String, dynamic> _menuMap() {
+    return {
+      'menu.mobile.inbound': menuMobileInbound,
+      'menu.mobile.outbound': menuMobileOutbound,
+      'menu.mobile.inventory': menuMobileInventory,
+      'menu.mobile.inbound.receive': menuMobileInboundReceive,
+      'menu.mobile.outbound.pick-by-order': menuMobileOutboundPickByOrder,
+      'menu.mobile.outbound.pick-by-list': menuMobileOutboundPickByList,
+      'menu.mobile.outbound.pick-by-work-order': menuMobileOutboundPickByWorkOrder,
+      'menu.mobile.outbound.pick-by-tote': menuMobileOutboundPickByTote,
+      'menu.mobile.inventory.inventory': menuMobileInventoryInventory,
+      'menu.mobile.inventory.count': menuMobileInventoryCount,
+      'menu.mobile.inventory.audit-count':menuMobileInventoryAuditCount,
+    };
+  }
+
+  String getMenuDisplayText(String menuI18n, String defaultText) {
+    var _mapRep = _menuMap();
+    if (_mapRep.containsKey(menuI18n)) {
+      return _mapRep[menuI18n];
+    }
+    else {
+      return defaultText;
+    }
   }
 
   ///////////////////////////////////////////////////////////////////////////////

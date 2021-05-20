@@ -6,26 +6,29 @@ part 'cycle_count_batch.g.dart';
 ///这个标注是告诉生成器，这个类是需要生成Model类的
 @JsonSerializable()
 
-class Menu{
-  Menu();
+class CycleCountBatch{
+  CycleCountBatch();
 
-  String name;
-  String link;
-  String text;
 
+  int id;
+  String batchId;
+  int warehouseId;
+
+  int requestLocationCount;
+  int openLocationCount;
+  int finishedLocationCount;
+  int cancelledLocationCount;
+  int openAuditLocationCount;
+  int finishedAuditLocationCount;
 
 
 
 
   //不同的类使用不同的mixin即可
-  factory Menu.fromJson(Map<String, dynamic> json) => _$MenuFromJson(json);
-  Map<String, dynamic> toJson() => _$MenuToJson(this);
+  factory CycleCountBatch.fromJson(Map<String, dynamic> json) => _$CycleCountBatchFromJson(json);
+  Map<String, dynamic> toJson() => _$CycleCountBatchToJson(this);
 
 
-  static List<Menu> decodeMenus(List<dynamic> menus) =>
-      menus
-          .map<Menu>((item) => Menu.fromJson(item))
-          .toList();
 
 
 }

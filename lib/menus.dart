@@ -1,6 +1,7 @@
 
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:flutter/cupertino.dart';
@@ -52,7 +53,11 @@ class _MenusState extends State<Menus> {
                     children: <Widget>[
                       Icon(IconData(int.parse(_menuGroup.menuSubGroups[index].icon), fontFamily: 'MaterialIcons')),
                       RaisedButton(
-                        child: Text(_menuGroup.menuSubGroups[index].text),
+                        child: Text(
+                            CWMSLocalizations.of(context)
+                                .getMenuDisplayText(
+                                    _menuGroup.menuSubGroups[index].i18n,
+                                    _menuGroup.menuSubGroups[index].text)),
                         onPressed: () => _onPressed(index),
                       ),
                     ],
@@ -62,7 +67,9 @@ class _MenusState extends State<Menus> {
 
             }
         ),
-        bottomNavigationBar: buildBottomNavigationBar(context)
+        // bottomNavigationBar: buildBottomNavigationBar(context)
+
+        endDrawer: MyDrawer(),
     );
   }
 

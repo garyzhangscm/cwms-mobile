@@ -23,7 +23,7 @@ class WarehouseLocationService {
           'name': locationName}
     );
 
-    print("response from inventory on RF:");
+    print("response from warehouse location:");
 
     printLongLogMessage(response.toString());
 
@@ -44,4 +44,90 @@ class WarehouseLocationService {
     }
   }
 
+
+
+  static WarehouseLocation getBestLocationForNextPick(
+      WarehouseLocation currentLocation,
+      WarehouseLocation firstLocation,
+      WarehouseLocation secondLocation) {
+    if (_getBestLocationForNextActivity(
+            currentLocation.pickSequence == null ? 0 : currentLocation.pickSequence,
+            firstLocation.pickSequence == null ? 0 : firstLocation.pickSequence,
+            secondLocation.pickSequence == null ? 0 : secondLocation.pickSequence) > 0) {
+      return secondLocation;
+    }
+    else {
+      return firstLocation;
+    }
+  }
+
+  static WarehouseLocation getBestLocationForNextCount(
+      WarehouseLocation currentLocation,
+      WarehouseLocation firstLocation,
+      WarehouseLocation secondLocation) {
+    if (_getBestLocationForNextActivity(
+        currentLocation.countSequence == null ? 0 : currentLocation.countSequence,
+        firstLocation.countSequence == null ? 0 : firstLocation.countSequence,
+        secondLocation.countSequence == null ? 0 : secondLocation.countSequence) > 0) {
+      return secondLocation;
+    }
+    else {
+      return firstLocation;
+    }
+  }
+  static WarehouseLocation getBestLocationForNextPutaway(
+      WarehouseLocation currentLocation,
+      WarehouseLocation firstLocation,
+      WarehouseLocation secondLocation) {
+    if (_getBestLocationForNextActivity(
+        currentLocation.putawaySequence == null ? 0 : currentLocation.putawaySequence,
+        firstLocation.putawaySequence == null ? 0 : firstLocation.putawaySequence,
+        secondLocation.putawaySequence == null ? 0 : secondLocation.putawaySequence) > 0) {
+      return secondLocation;
+    }
+    else {
+      return firstLocation;
+    }
+  }
+
+  // return positive if second location first
+  // return negative if first location first
+  static int _getBestLocationForNextActivity(
+      int currentLocationSequence,
+      int firstLocationSequence,
+      int secondLocationSequence) {
+
+    print("_getBestLocationForNextActivity: ${currentLocationSequence} / ${firstLocationSequence} / ${secondLocationSequence}");
+    int firstDistance = firstLocationSequence - currentLocationSequence;
+    int secondDistance = secondLocationSequence - currentLocationSequence;
+    // check if we are working forward or backward
+    if (Global.isMovingForward()) {
+      // if we are working forward but there's nothing left in front
+      if (firstDistance < 0 && secondDistance < 0) {
+        // get the location that's close to the current location
+        return secondDistance - firstDistance;
+      }
+      else if (firstDistance > 0 && secondDistance > 0) {
+        return firstDistance - secondDistance;
+      }
+      else {
+        return secondDistance;
+      }
+    }
+    else {
+
+      // if we are working forward but there's nothing left at the back
+      if (firstDistance > 0 && secondDistance > 0) {
+        // get the location that's close to the current location
+        return firstDistance - secondDistance;
+      }
+      else if (firstDistance < 0 && secondDistance < 0) {
+        return secondDistance - firstDistance;
+      }
+      else {
+        return firstDistance;
+      }
+
+    }
+  }
 }

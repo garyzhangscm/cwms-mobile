@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/auth/services/login.dart';
+import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 
@@ -9,6 +10,7 @@ import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/services/company.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse.dart';
+import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -61,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Login")),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).login)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -244,6 +246,17 @@ class _LoginPageState extends State<LoginPage> {
                 (company) => Global.lastLoginCompanyCode = company.code);
 
 
+
+        // TO-DO: as a temporary solution, we will init the
+        // start location as the RF. It will be changed when
+        // the user start any location based activity like
+        // count, deposit, pick, etc.
+        WarehouseLocationService.getWarehouseLocationByName(Global.lastLoginRFCode)
+            .then((rfLocation) {
+          print("start last activity location to ${rfLocation.name}");
+          Global.setLastActivityLocation(rfLocation);
+        });
+
         Navigator.pushNamed(context, "menus_page");
       } catch (e) {
         //登录失败则提示
@@ -306,6 +319,16 @@ class _LoginPageState extends State<LoginPage> {
         // setup current company
         Global.lastLoginCompanyId = companyId;
         Global.lastLoginCompanyCode = _companyCodeController.text;
+
+        // TO-DO: as a temporary solution, we will init the
+        // start location as the RF. It will be changed when
+        // the user start any location based activity like
+        // count, deposit, pick, etc.
+        WarehouseLocationService.getWarehouseLocationByName(Global.lastLoginRFCode)
+            .then((rfLocation) {
+          print("start last activity location to ${rfLocation.name}");
+          Global.setLastActivityLocation(rfLocation);
+        });
 
         print("login with user: ${user.username}, token: ${user.token}. companyCode: ${Global.lastLoginCompanyId}, company Id: ${Global.lastLoginCompanyCode}");
         Navigator.pushNamed(context, "menus_page");

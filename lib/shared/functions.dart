@@ -27,13 +27,13 @@ Widget gmAvatar(String url, {
 }
 
 void showToast(String text, {
-  gravity: ToastGravity.CENTER,
+  gravity: ToastGravity.TOP,
   toastLength: Toast.LENGTH_SHORT,
 }) {
   Fluttertoast.showToast(
     msg: text,
-    toastLength: Toast.LENGTH_SHORT,
-    gravity: ToastGravity.BOTTOM,
+    toastLength: toastLength,
+    gravity: gravity,
     timeInSecForIos: 1,
     backgroundColor: Colors.grey[600],
     fontSize: 16.0,

@@ -7,11 +7,23 @@ part of 'item.dart';
 // **************************************************************************
 
 Item _$ItemFromJson(Map<String, dynamic> json) {
+  print("convert into item: $json");
   return Item()
     ..id = json['id'] as int
     ..name = json['name'] as String
     ..description = json['description'] as String
-    ..warehouseId = json['warehouseId'] as int;
+    ..warehouseId = json['warehouseId'] as int
+    ..clientId = json['clientId'] as int;
+    /**
+    ..client = json['client'] == null
+        ? null
+        : Client.fromJson(json['client'] as Map<String, dynamic>)
+
+    ..itemPackageTypes = (json['itemPackageTypes'] as List)
+        ?.map(
+            (e) => e == null ? null : ItemPackageType.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+        **/
 }
 
 Map<String, dynamic> _$ItemToJson(Item instance) => <String, dynamic>{
@@ -19,4 +31,7 @@ Map<String, dynamic> _$ItemToJson(Item instance) => <String, dynamic>{
       'name': instance.name,
       'description': instance.description,
       'warehouseId': instance.warehouseId,
+      'clientId': instance.clientId,
+      'client': instance.client,
+      'itemPackageTypes': instance.itemPackageTypes,
     };

@@ -36,6 +36,8 @@ class Inventory{
   int workOrderLineId;
   int workOrderByProductId;
 
+  bool virtual;
+
   Item item;
   ItemPackageType itemPackageType;
   InventoryStatus inventoryStatus;

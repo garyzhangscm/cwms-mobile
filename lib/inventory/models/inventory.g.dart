@@ -11,6 +11,7 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
     ..id = json['id'] as int
     ..lpn = json['lpn'] as String
     ..locationId = json['locationId'] as int
+    ..virtual = json['virtual'] as bool
     ..location = json['location'] == null
         ? null
         : WarehouseLocation.fromJson(json['location'] as Map<String, dynamic>)
@@ -45,6 +46,7 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'lpn': instance.lpn,
       'locationId': instance.locationId,
       'location': instance.location,
+      'virtual': instance.virtual,
       'pickId': instance.pickId,
       'pick': instance.pick,
       'receiptId': instance.receiptId,
