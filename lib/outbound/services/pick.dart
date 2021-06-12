@@ -5,6 +5,7 @@ import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
+import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:dio/dio.dart';
 
 class PickService {
@@ -31,6 +32,36 @@ class PickService {
 
     return picks;
   }
+
+  static Future<List<Pick>> getPicksByWorkOrder(WorkOrder workOrder) async {
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    String workOrderLineIds = "";
+    workOrder.workOrderLines.forEach((workOrderLine) {
+      workOrderLineIds += workOrderLine.id.toString() + ",";
+    });
+
+    Response response = await httpClient.get(
+        "outbound/picks",
+        queryParameters: {"workOrderLineIds": workOrderLineIds, "warehouseId": Global.currentWarehouse.id}
+    );
+
+    print("response from Pick by work order: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    List<Pick> picks
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+    // Sort the picks according to the current location. We
+    // will assign the closed pick to the user
+    sortPicks(picks, Global.getLastActivityLocation(), Global.isMovingForward());
+
+    return picks;
+  }
+
 
   static void sortPicks(List<Pick> picks, WarehouseLocation currentLocation,
       bool isMovingForward) {

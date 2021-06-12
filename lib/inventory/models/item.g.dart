@@ -13,16 +13,16 @@ Item _$ItemFromJson(Map<String, dynamic> json) {
     ..name = json['name'] as String
     ..description = json['description'] as String
     ..warehouseId = json['warehouseId'] as int
-    ..clientId = json['clientId'] as int;
+    ..clientId = json['clientId'] as int
+    ..itemPackageTypes = (json['itemPackageTypes'] as List)
+        ?.map(
+          (e) => e == null ? null : ItemPackageType.fromJson(e as Map<String, dynamic>))
+              ?.toList();
     /**
     ..client = json['client'] == null
         ? null
         : Client.fromJson(json['client'] as Map<String, dynamic>)
 
-    ..itemPackageTypes = (json['itemPackageTypes'] as List)
-        ?.map(
-            (e) => e == null ? null : ItemPackageType.fromJson(e as Map<String, dynamic>))
-        ?.toList();
         **/
 }
 

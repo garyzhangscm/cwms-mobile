@@ -1,6 +1,7 @@
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
+import 'package:cwms_mobile/inventory/models/cycle_count_request_action.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/services/cycle_count_batch.dart';
 import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
@@ -153,6 +154,8 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
               return CountBatchListItem(
                   index: index,
                   countBatch: _assignedBatches[index],
+                  cycleCountFlag: true,
+                  auditCountFlag: false,
                   onRemove:  (index) =>  _removeCycleCountBatch(index)
               );
             }),
@@ -296,6 +299,8 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
                   countBatch: countBatchesWithOpenCycleCount[index],
                   displayOnlyFlag: true,
                   onRemove:  null,
+                  cycleCountFlag: true,
+                  auditCountFlag: false,
                   onToggleHightlighted:  (selected) => _selectCountBatchFromList(selected, countBatchesWithOpenCycleCount[index])
               );
             }),
@@ -351,14 +356,21 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
       _refreshCycleCountBatchQuantities();
       return null;
     }
-    else {
-      // The user just finished the previous cycle count, let's continue with next one
-      // let's remove the one we just finished from the batch first
-      _assignedCycleCountRequests.removeWhere(
-              (cycleCountRequest) => cycleCountRequest.id == nextCycleCountRequest.id);
 
-      _onStartingCycleCount();
+    if ((result as CycleCountRequestAction) == CycleCountRequestAction.SKIPPED) {
+        // if the user skip the current location, let's just add the count
+        // and put it back to the list
+        nextCycleCountRequest.skippedCount++;
     }
+    else {
+        // The user just finished / cancelled the previous cycle count, let's continue with next one
+        // let's remove the one we just finished / cancelled from the batch first
+        _assignedCycleCountRequests.removeWhere(
+                (cycleCountRequest) => cycleCountRequest.id == nextCycleCountRequest.id);
+
+    }
+    // continue with next cycle count in the list
+    _onStartingCycleCount();
 
   }
 

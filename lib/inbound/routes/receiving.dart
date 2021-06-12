@@ -75,7 +75,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Receiving")),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).receiving)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -89,7 +89,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                 child:
                   Row(
                       children: <Widget>[
-                        Text("Receipt Number:",
+                        Text(CWMSLocalizations.of(context).receiptNumber,
                           textAlign: TextAlign.left,
                         ),
                         Expanded(
@@ -195,7 +195,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                   child:
                     Row(
                         children: <Widget>[
-                          Text("Expected Quantity:",
+                          Text(CWMSLocalizations.of(context).expectedQuantity,
                             textAlign: TextAlign.left,
                           ),
                           Text(_currentReceiptLine.expectedQuantity.toString(),
@@ -209,7 +209,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                 child:
                   Row(
                       children: <Widget>[
-                        Text("Received Quantity:",
+                        Text(CWMSLocalizations.of(context).receivedQuantity,
                           textAlign: TextAlign.left,
                         ),
                         Text(_currentReceiptLine.receivedQuantity.toString(),

@@ -1,6 +1,7 @@
 
 
 import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
+import 'package:cwms_mobile/shared/functions.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,9 @@ class CountBatchListItem extends StatefulWidget {
   CountBatchListItem({this.index, this.countBatch,
        this.displayOnlyFlag: false,
        this.highlighted: false,
+      this.cycleCountFlag: true,
+      this.auditCountFlag: false,
+
        @required this.onRemove,
        @required this.onToggleHightlighted}
        ) : super(key: ValueKey(countBatch.batchId));
@@ -19,6 +23,10 @@ class CountBatchListItem extends StatefulWidget {
   final int index;
   final CycleCountBatch countBatch;
   final bool displayOnlyFlag;
+  // whether we display the information for
+  // audit count or cycle count
+  final bool auditCountFlag;
+  final bool cycleCountFlag;
   bool highlighted;
 
 
@@ -54,8 +62,8 @@ class _CountBatchListItemState extends State<CountBatchListItem> {
         // If the user highlight the widget, display green
         // otherwise if there's no open pick, display grey
         color: widget.highlighted ? Colors.lightGreen:
-          (widget.countBatch.openLocationCount == 0  &&
-              widget.countBatch.openAuditLocationCount == 0) ?
+        ((widget.countBatch.openLocationCount == 0  && widget.cycleCountFlag == true) ||
+            (widget.countBatch.openAuditLocationCount == 0  && widget.auditCountFlag == true)) ?
               Colors.grey : Colors.white,
         shape: BorderDirectional(
           bottom: BorderSide(

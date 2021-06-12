@@ -40,6 +40,35 @@ class InventoryStatusService {
   }
 
 
+  static Future<InventoryStatus> getInventoryStatusByName(String name) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "/inventory/inventory-statuses",
+        queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+          'name': name}
+    );
+
+    printLongLogMessage("response from inventory status by name $name");
+
+    printLongLogMessage(response.toString());
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    List<InventoryStatus> inventoryStatuses
+    = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : InventoryStatus.fromJson(e as Map<String, dynamic>))
+          ?.toList();
+    printLongLogMessage("items.length: ${inventoryStatuses.length}");
+
+    if (inventoryStatuses.length == 1) {
+      return inventoryStatuses[0];
+    }
+    else {
+      return null;
+    }
+  }
+
 
 
 }

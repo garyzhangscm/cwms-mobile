@@ -59,6 +59,10 @@ dependencies:
   # badges
   # https://pub.dev/packages/badges
   badges: ^1.2.0
+
+  # cast between enum and string
+  enum_to_string: ^1.0.14
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

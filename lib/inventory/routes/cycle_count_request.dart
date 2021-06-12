@@ -1,11 +1,13 @@
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
+import 'package:cwms_mobile/inventory/models/cycle_count_request_action.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
-import 'package:cwms_mobile/inventory/widgets/count_request_list_item.dart';
+import 'package:cwms_mobile/inventory/widgets/count_result_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -30,25 +32,27 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
 
   @override
   void didChangeDependencies() {
-    // print("_CycleCountRequestPageState / didChangeDependencies / 1");
     super.didChangeDependencies();
-    // print("_CycleCountRequestPageState / didChangeDependencies / 2");
     _cycleCountRequest = ModalRoute.of(context).settings.arguments;
-    // print("_CycleCountRequestPageState / didChangeDependencies / 3");
 
     CycleCountRequestService.getInventorySummariesForCounts(_cycleCountRequest.id)
         .then((inventorySummaries) {
-      // print("_CycleCountRequestPageState / didChangeDependencies / 4");
 
       setState(() {
 
-        // print("_CycleCountRequestPageState / didChangeDependencies / 5");
         _inventorySummaries = inventorySummaries;
-        // print("_inventorySummaries: ${_inventorySummaries.toString()}");
-        // print("_CycleCountRequestPageState / didChangeDependencies / 6");
-        _inventorySummaries.forEach((inventorySummary) => inventorySummary.countQuantity = inventorySummary.quantity);
+        _inventorySummaries.forEach((inventorySummary) {
+          if (inventorySummary.item == null) {
+            inventorySummary.unexpectedItem = true;
+          }
+          else {
+            inventorySummary.unexpectedItem = false;
+          }
+          inventorySummary.countQuantity = inventorySummary.quantity;
+          // inventorySummary.location = _cycleCountRequest.location;
+          // inventorySummary.locationId = _cycleCountRequest.location.id;
+        });
 
-        // print("_CycleCountRequestPageState / didChangeDependencies / 7");
       });
     });
   }
@@ -56,7 +60,6 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
   @override
   Widget build(BuildContext context) {
 
-    // print("_CycleCountRequestPageState / rebuild!");
     return Scaffold(
       appBar: AppBar(title: Text("CWMS - Cycle Count - ${_cycleCountRequest?.location?.name}")),
       body: _buildInventorySummaryList(context),
@@ -85,50 +88,7 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
         onTap: (index) => _onActionItemTapped(index),
 
       );
-      /***
-      Row(
 
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.max,
-        //交叉轴的布局方式，对于column来说就是水平方向的布局方式
-        crossAxisAlignment: CrossAxisAlignment.center,
-        //就是字child的垂直布局方向，向上还是向下
-        verticalDirection: VerticalDirection.down,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onConfirmCycleCount,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).confirmCycleCount),
-            ),
-
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onSkipCycleCount,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).skipCycleCount),
-            ),
-
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onCancelCycleCount,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).cancelCycleCount),
-            ),
-          ),
-        ],
-      );
-          **/
   }
   void _onActionItemTapped(int index) {
     if (index == 0) {
@@ -137,13 +97,27 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
     else if (index == 1) {
       _onSkipCycleCount();
     }
-    else if (index == 1) {
+    else if (index == 2) {
       // index == 2
       _onCancelCycleCount();
     }
   }
   void _onAddItem() {
+    CycleCountResult _newCycleCountResult = new CycleCountResult();
+    _newCycleCountResult.batchId = _cycleCountRequest.batchId;
+    _newCycleCountResult.location = _cycleCountRequest.location;
+    _newCycleCountResult.locationId = _cycleCountRequest.location.id;
+    _newCycleCountResult.warehouseId = Global.currentWarehouse.id;
+    _newCycleCountResult.warehouse = Global.currentWarehouse;
+    _newCycleCountResult.item = null;
+    _newCycleCountResult.quantity = 0;
+    _newCycleCountResult.countQuantity = 0;
+    _newCycleCountResult.unexpectedItem = true;
 
+    setState(() {
+
+      _inventorySummaries.add(_newCycleCountResult);
+    });
   }
 
   Widget _buildInventorySummaryList(BuildContext context) {
@@ -160,21 +134,41 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
         itemCount: _inventorySummaries.length,
 
         itemBuilder: (BuildContext context, int index) {
-          return CountRequestListItem(
+          return CountResultListItem(
               index: index,
               cycleCountResult: _inventorySummaries[index],
               onItemValueChange: (item) => _setupUnexpectedItem(index, item),
-              onQuantityValueChange:  (newValue) => _inventorySummaries[index].countQuantity = int.parse(newValue)
+              onQuantityValueChange:  (newValue) {
+
+                _inventorySummaries[index].countQuantity = int.parse(newValue);
+              },
+              onRemove: (index) => _removeInventorySummary(index),
           );
         })
       );
 
   }
 
+  _removeInventorySummary(int index) {
+
+    setState(() {
+
+      _inventorySummaries.removeAt(index);
+    });
+  }
   _setupUnexpectedItem(int index, Item item) {
     // print("will change the item of index / $index to $item");
+    printLongLogMessage("setup item ${item.name} for index: ${index}");
+    setState(() {
+
+      _inventorySummaries[index].item = item;
+    });
   }
   void _onConfirmCycleCount() async {
+    // since the user is able to confirm the cycle count, let's assume the user is
+    // already in the location
+    Global.setLastActivityLocation(_cycleCountRequest.location);
+
     FormState formState = _formKey.currentState as FormState;
 
     if (!formState.validate()) {
@@ -195,24 +189,41 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
 
     //return true to the previous page
 
-    Navigator.pop(context, true);
+    Navigator.pop(context, CycleCountRequestAction.CONFIRMED);
   }
 
   void _onSkipCycleCount() {
+
+    // since the user is able to skip the cycle count, let's assume the user is
+    // already in the location
+
+    // Note: we can't set the last activity location to the current location.
+    // otherwise we won't be able to go back to the previous locaiton if we
+    // skip all locations in the batch
+    // Global.setLastActivityLocation(_cycleCountRequest.location);
 
     // do nothing but return true to the previous page
     // The previous page is supposed to remove the request
     // from current assignment but since it is not finished yet
     // it will be pickup by the next count attempt
-    Navigator.pop(context, true);
+    Navigator.pop(context, CycleCountRequestAction.SKIPPED);
   }
 
   void _onCancelCycleCount() async {
 
+    showLoading(context);
+    // since the user is able to cancel the cycle count, let's assume the user is
+    // already in the location
+    Global.setLastActivityLocation(_cycleCountRequest.location);
+
+
     await CycleCountRequestService.cancelCycleCount(_cycleCountRequest);
     //return true to the previous page
 
-    Navigator.pop(context, true);
+    // hide the loading page
+    Navigator.of(context).pop();
+
+    Navigator.pop(context, CycleCountRequestAction.CANCELLED);
 
   }
 }

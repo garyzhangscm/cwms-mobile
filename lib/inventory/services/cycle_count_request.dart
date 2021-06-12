@@ -41,12 +41,10 @@ class CycleCountRequestService {
     Dio httpClient = CWMSHttpClient.getDio();
 
 
-    printLongLogMessage("start to get data from /cycle-count-request/$cycleCountRequestId/inventory-summary");
     Response response = await httpClient.get(
         "/inventory/cycle-count-request/$cycleCountRequestId/inventory-summary",
     );
 
-    printLongLogMessage("response from cycle count request / inventory summary: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<CycleCountResult> _cycleCountResults
@@ -64,19 +62,32 @@ class CycleCountRequestService {
     }
     CycleCountRequest nextCycleCountRequest = cycleCountRequests[0];
 
-    cycleCountRequests.forEach((cycleCountRequest) {
-      // printLongLogMessage("Global.getLastActivityLocation(): ${Global.getLastActivityLocation().name}");
-      WarehouseLocation nextLocation =
-          WarehouseLocationService.getBestLocationForNextCount(
-              Global.getLastActivityLocation(),
-              nextCycleCountRequest.location,
-              cycleCountRequest.location);
+    printLongLogMessage("start to consider next location: ${nextCycleCountRequest.location.name}");
+    // skip this location if it is already skipped more times than the
+    // previous best location
+    cycleCountRequests
+        .where((cycleCountRequest) => cycleCountRequest.skippedCount <= nextCycleCountRequest.skippedCount)
+        .forEach((cycleCountRequest) {
+          if (nextCycleCountRequest.skippedCount > cycleCountRequest.skippedCount) {
+            // the last cycle has more time skipped than the current one, let's use the current one
+            return nextCycleCountRequest = cycleCountRequest;
+          }
+          else {
+            // printLongLogMessage("Global.getLastActivityLocation(): ${Global.getLastActivityLocation().name}");
+            WarehouseLocation nextLocation =
+            WarehouseLocationService.getBestLocationForNextCount(
+                Global.getLastActivityLocation(),
+                nextCycleCountRequest.location,
+                cycleCountRequest.location);
 
-      if (nextLocation.name == cycleCountRequest.location.name) {
-        // OK, this location is better than last one, let's assign
-        // it as the next best location
-        nextCycleCountRequest = cycleCountRequest;
-      }
+            if (nextLocation.name == cycleCountRequest.location.name) {
+              // OK, this location is better than last one, let's assign
+              // it as the next best location
+              nextCycleCountRequest = cycleCountRequest;
+            }
+
+          }
+
     });
 
     return nextCycleCountRequest;
@@ -94,8 +105,10 @@ class CycleCountRequestService {
       data: inventorySummaries
     );
 
+    printLongLogMessage("confirmCycleCount with result: ${response.toString()}");
 
     Map<String, dynamic> responseString = json.decode(response.toString());
+
 
     List<CycleCountResult> _cycleCountResults
       = (responseString["data"] as List)?.map((e) =>

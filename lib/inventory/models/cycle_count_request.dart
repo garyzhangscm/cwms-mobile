@@ -14,6 +14,12 @@ class CycleCountRequest{
   String batchId;
   WarehouseLocation location;
 
+  // how many times this cycle count has been skiped
+  // if the cycle count is skipped, then we will put it
+  // to the last in the queue so as the user can skip
+  // this count request for now and come back later
+  int skippedCount;
+
   //不同的类使用不同的mixin即可
   factory CycleCountRequest.fromJson(Map<String, dynamic> json) => _$CycleCountRequestFromJson(json);
   Map<String, dynamic> toJson() => _$CycleCountRequestToJson(this);

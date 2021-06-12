@@ -46,19 +46,27 @@ class AuditCountRequestService {
     }
     AuditCountRequest nextAuditCountRequest = auditCountRequests[0];
 
-    auditCountRequests.forEach((auditCountRequest) {
-      // printLongLogMessage("Global.getLastActivityLocation(): ${Global.getLastActivityLocation().name}");
-      WarehouseLocation nextLocation =
-      WarehouseLocationService.getBestLocationForNextCount(
-          Global.getLastActivityLocation(),
-          nextAuditCountRequest.location,
-          auditCountRequest.location);
+    auditCountRequests
+        .where((auditCountRequest) => auditCountRequest.skippedCount <= nextAuditCountRequest.skippedCount)
+        .forEach((auditCountRequest) {
+            if (nextAuditCountRequest.skippedCount > auditCountRequest.skippedCount) {
+              // the last cycle has more time skipped than the current one, let's use the current one
+              return nextAuditCountRequest = auditCountRequest;
+            }
+            else {
+              // printLongLogMessage("Global.getLastActivityLocation(): ${Global.getLastActivityLocation().name}");
+              WarehouseLocation nextLocation =
+              WarehouseLocationService.getBestLocationForNextCount(
+                  Global.getLastActivityLocation(),
+                  nextAuditCountRequest.location,
+                  auditCountRequest.location);
 
-      if (nextLocation.name == auditCountRequest.location.name) {
-        // OK, this location is better than last one, let's assign
-        // it as the next best location
-        nextAuditCountRequest = auditCountRequest;
-      }
+              if (nextLocation.name == auditCountRequest.location.name) {
+                // OK, this location is better than last one, let's assign
+                // it as the next best location
+                nextAuditCountRequest = auditCountRequest;
+              }
+            }
     });
 
     return nextAuditCountRequest;
@@ -95,6 +103,10 @@ class AuditCountRequestService {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
+    printLongLogMessage("start to confirm ${inventories.length} inventory");
+    inventories.forEach((element) {
+      printLongLogMessage("inventory LPN: ${element.inventory.lpn}, inventory item: ${element.inventory.item.name}, inventory quantity ${element.inventory.quantity}, count quantity ${element.countQuantity}");
+    });
 
     Response response = await httpClient.post(
         "inventory/audit-count-result/${auditCountRequest.batchId}/${auditCountRequest.locationId}/confirm",

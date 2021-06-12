@@ -15,7 +15,7 @@ part 'inventory.g.dart';
 @JsonSerializable()
 
 class Inventory{
-  Inventory();
+  Inventory() ;
 
   int id;
   String lpn;

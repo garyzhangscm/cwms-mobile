@@ -11,14 +11,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
-class CountRequestListItem extends StatefulWidget {
-  CountRequestListItem({this.index, this.cycleCountResult,
+class CountResultListItem extends StatefulWidget {
+  CountResultListItem({this.index, this.cycleCountResult,
        this.onItemValueChange,
+       this.onRemove,
        @required this.onQuantityValueChange}
        ) : super(key: ValueKey(cycleCountResult.id));
 
   final ValueChanged<String> onQuantityValueChange;
   final ValueChanged<Item> onItemValueChange;
+  final ValueChanged<int> onRemove;
 
 
 
@@ -28,12 +30,12 @@ class CountRequestListItem extends StatefulWidget {
 
 
   @override
-  _CountRequestListItemState createState() => _CountRequestListItemState();
+  _CountResultListItemState createState() => _CountResultListItemState();
 
 
 }
 
-class _CountRequestListItemState extends State<CountRequestListItem> {
+class _CountResultListItemState extends State<CountResultListItem> {
 
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _itemController = new TextEditingController();
@@ -46,11 +48,19 @@ class _CountRequestListItemState extends State<CountRequestListItem> {
     printLongLogMessage("item name changed to ${value}");
 
     ItemService.getItemByName(value).then((item) {
+      if (item != null) {
 
-      widget.onItemValueChange(item);
+        widget.onItemValueChange(item);
+
+      }
+
 
     });
 
+  }
+
+  void _removeCountResultFromlist() {
+      widget.onRemove(widget.index);
   }
 
   @override
@@ -82,6 +92,12 @@ class _CountRequestListItemState extends State<CountRequestListItem> {
                   //                Colors.grey : Colors.white,
 
                   title: _buildCycleCountResult(),
+                  trailing:
+                     IconButton(
+                         icon: new Icon(Icons.delete),
+                         onPressed: () => _removeCountResultFromlist()
+                      ),
+
                 ),
               ],
             ),
@@ -103,33 +119,40 @@ class _CountRequestListItemState extends State<CountRequestListItem> {
                 child:
                 Row(
                   children: [
-                    Text("Item: "),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 25.0),
+                        child:
+                            Text(CWMSLocalizations.of(context).item),
+                      ),
                     // if the cycle count result doesn't have item,
                     // it means the locaiton doesn't any inventory
-                    widget.cycleCountResult.item == null ?
+                    widget.cycleCountResult.unexpectedItem == true ?
 
-                    new Expanded(
-                      child: TextFormField(
-                          textAlign: TextAlign.end,
-                          controller: _itemController,
-                          onFieldSubmitted: (value) => _onItemValueChange(value),
-                          decoration: InputDecoration(
-                            suffixIcon:
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                              mainAxisSize: MainAxisSize.min, // added line
-                              children: <Widget>[
-                                IconButton(
-                                  onPressed: _startItemBarcodeScanner,
-                                  icon: Icon(Icons.scanner),
-                                )
-                              ],
-                            ),
-                          ),
+                        new Expanded(
+                          child: TextFormField(
+                              textAlign: TextAlign.end,
+                              controller: _itemController,
+                              onChanged: (value) => _onItemValueChange(value),
+                              decoration: InputDecoration(
+                                suffixIcon:
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                                  mainAxisSize: MainAxisSize.min, // added line
+                                  children: <Widget>[
+                                    IconButton(
+                                      onPressed: _startItemBarcodeScanner,
+                                      icon: Icon(Icons.scanner),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            )
                         )
-                    )
                         :
-                    Text(widget.cycleCountResult.item.name)
+                    Padding(
+                        padding: const EdgeInsets.only(left: 25.0),
+                        child: Text(widget.cycleCountResult.item.name)
+                    )
                   ],
                 ),
               ),
@@ -138,11 +161,20 @@ class _CountRequestListItemState extends State<CountRequestListItem> {
                 child:
                 Row(
                   children: [
-                    Text("Item: "),
-                    widget.cycleCountResult.item == null ?
-                    Text("")
-                        :
-                    Text(widget.cycleCountResult.item.description)
+
+                    Padding(
+                      padding: const EdgeInsets.only(right: 25.0),
+                      child:
+                         Text(CWMSLocalizations.of(context).item),
+                    ),
+                    // widget.cycleCountResult.unexpectedItem == true ?
+                    // Text("")
+                    //    :
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25.0),
+                      child:
+                        Text(widget.cycleCountResult.item == null ? "" : widget.cycleCountResult.item.description)
+                    )
                   ],
                 ),
               ),
@@ -153,19 +185,19 @@ class _CountRequestListItemState extends State<CountRequestListItem> {
                     //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(right: 2.0),
+                        padding: const EdgeInsets.only(right: 15.0),
                         child:
-                            Text("Expected Quantity: "),
+                            Text(CWMSLocalizations.of(context).expectedQuantity),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 25.0),
+                        padding: const EdgeInsets.only(right: 50.0),
                         child:
                             Text(widget.cycleCountResult.quantity.toString()),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 2.0),
+                        padding: const EdgeInsets.only(right: 15.0),
                         child:
-                            Text("Actual Quantity: "),
+                            Text(CWMSLocalizations.of(context).countQuantity),
                       ),
                       new Expanded(
                         // flex: 3,
@@ -174,14 +206,14 @@ class _CountRequestListItemState extends State<CountRequestListItem> {
                             textAlign: TextAlign.end,
                             keyboardType: TextInputType.number,
                             controller: _quantityController,
-                            onFieldSubmitted: (value) => _onQuantityValueChange(value),
+                            onChanged:(value) => _onQuantityValueChange(value),
                             // 校验ITEM NUMBER（不能为空）
                             validator: (v) {
                               // if we specify a item, either by manually input
                               // or an existing item, we will force the user to type in the quantity
                               if (( _itemController.text.isNotEmpty || widget.cycleCountResult.item != null) &&
                                   v.trim() == "") {
-                                return "please type in quantity";
+                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).countQuantity);
                               }
                               return null;
                             }),

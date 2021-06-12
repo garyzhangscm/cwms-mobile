@@ -1,5 +1,6 @@
 
 
+import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:flutter/cupertino.dart';
@@ -83,7 +84,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                "item number: ",
+                                CWMSLocalizations.of(context).item,
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -105,7 +106,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                  "inventory status: ",
+                                  CWMSLocalizations.of(context).inventoryStatus,
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,
@@ -127,7 +128,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                  "quantity: ",
+                                  CWMSLocalizations.of(context).quantity,
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,

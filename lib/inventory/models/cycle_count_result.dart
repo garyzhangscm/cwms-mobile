@@ -15,6 +15,7 @@ class CycleCountResult{
 
   int id;
   String batchId;
+  int locationId;
   WarehouseLocation location;
   int warehouseId;
   Warehouse warehouse;
@@ -22,6 +23,10 @@ class CycleCountResult{
   Item item;
   int quantity;
   int countQuantity;
+  // flag used by the client only.
+  // set to true when adding new item
+  // during the count
+  bool unexpectedItem;
 
   //不同的类使用不同的mixin即可
   factory CycleCountResult.fromJson(Map<String, dynamic> json) => _$CycleCountResultFromJson(json);

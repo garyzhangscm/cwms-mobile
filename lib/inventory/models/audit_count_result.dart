@@ -25,6 +25,11 @@ class AuditCountResult{
   int warehouseId;
   Warehouse warehouse;
 
+  // flag used by the client only.
+  // set to true when adding new item
+  // during the count
+  bool unexpectedItem;
+
 
   //不同的类使用不同的mixin即可
   factory AuditCountResult.fromJson(Map<String, dynamic> json) => _$AuditCountResultFromJson(json);

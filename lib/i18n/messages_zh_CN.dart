@@ -49,13 +49,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "nextStep" : MessageLookupByLibrary.simpleMessage("下一步"),
 
     "pickByOrder" : MessageLookupByLibrary.simpleMessage("按订单拣选"),
+    "pickByWorkOrder" : MessageLookupByLibrary.simpleMessage("按加工单拣选"),
 
     "orderNumber" : MessageLookupByLibrary.simpleMessage("订单号"),
     "inputOrderNumberHint" : MessageLookupByLibrary.simpleMessage(
         "请输入订单号"),
 
+    "workOrderNumber" : MessageLookupByLibrary.simpleMessage("加工单号"),
+    "inputWorkOrderNumberHint" : MessageLookupByLibrary.simpleMessage(
+        "请输入加工单号"),
+
     "addOrder" : MessageLookupByLibrary.simpleMessage("添加订单"),
     "chooseOrder": MessageLookupByLibrary.simpleMessage("选择订单"),
+    "addWorkOrder" : MessageLookupByLibrary.simpleMessage("添加加工单"),
+    "chooseWorkOrder": MessageLookupByLibrary.simpleMessage("选择加工单"),
     "start" : MessageLookupByLibrary.simpleMessage("开始"),
     "confirm" : MessageLookupByLibrary.simpleMessage("确认"),
 
@@ -108,6 +115,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "menuMobileInbound" : MessageLookupByLibrary.simpleMessage("入库"),
     "menuMobileOutbound" : MessageLookupByLibrary.simpleMessage("出库"),
     "menuMobileInventory" : MessageLookupByLibrary.simpleMessage("库存管理"),
+    "menuMobileWorkOrder" : MessageLookupByLibrary.simpleMessage("工单"),
     "menuMobileInboundReceive" : MessageLookupByLibrary.simpleMessage("收货"),
     "menuMobileOutboundPickByOrder" : MessageLookupByLibrary.simpleMessage("按单拣选"),
     "menuMobileOutboundPickByList" : MessageLookupByLibrary.simpleMessage("列表拣货"),
@@ -116,6 +124,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "menuMobileInventoryInventory" : MessageLookupByLibrary.simpleMessage("库存显示"),
     "menuMobileInventoryCount" : MessageLookupByLibrary.simpleMessage("盘点"),
     "menuMobileInventoryAuditCount" : MessageLookupByLibrary.simpleMessage("复盘"),
+    "menuMobileWorkOrderProduce" : MessageLookupByLibrary.simpleMessage("生产"),
 
     "chooseServer" : MessageLookupByLibrary.simpleMessage("选择服务器"),
     "query" : MessageLookupByLibrary.simpleMessage("查询"),
@@ -124,6 +133,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputItemHint" : MessageLookupByLibrary.simpleMessage("请输入商品或者条码"),
     "noInventoryFound" : MessageLookupByLibrary.simpleMessage("没有找到任何库存"),
     "inventory" : MessageLookupByLibrary.simpleMessage("库存"),
+
+    "highPriority" : MessageLookupByLibrary.simpleMessage("优先"),
+    "share" : MessageLookupByLibrary.simpleMessage("共享"),
+    "remove" : MessageLookupByLibrary.simpleMessage("移除"),
+    "receiving" : MessageLookupByLibrary.simpleMessage("收货"),
+    "receiptNumber" : MessageLookupByLibrary.simpleMessage("入库单号"),
+    "receivingQuantity" : MessageLookupByLibrary.simpleMessage("本次收货数量"),
+    "add" : MessageLookupByLibrary.simpleMessage("添加"),
+    "actionComplete" : MessageLookupByLibrary.simpleMessage("操作完成"),
+
+
+    "productionLine" : MessageLookupByLibrary.simpleMessage("生产线"),
+    "inputProductionLineHint" : MessageLookupByLibrary.simpleMessage(
+        "请输入生产线"),
+
+
+    "workOrderProduce" : MessageLookupByLibrary.simpleMessage("生产"),
+    "producedQuantity" : MessageLookupByLibrary.simpleMessage("已生成数量"),
+    "producingQuantity" : MessageLookupByLibrary.simpleMessage("本次生产数量"),
+
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

@@ -52,13 +52,22 @@ class MessageLookup extends MessageLookupByLibrary {
     "nextStep" : MessageLookupByLibrary.simpleMessage("Next Step"),
 
     "pickByOrder" : MessageLookupByLibrary.simpleMessage("Pick By Order"),
+    "pickByWorkOrder" : MessageLookupByLibrary.simpleMessage("Pick By Work Order"),
 
     "orderNumber" : MessageLookupByLibrary.simpleMessage("Order Number"),
     "inputOrderNumberHint" : MessageLookupByLibrary.simpleMessage(
         "Please input an order number"),
 
+    "workOrderNumber" : MessageLookupByLibrary.simpleMessage("Work Order Number"),
+    "inputWorkOrderNumberHint" : MessageLookupByLibrary.simpleMessage(
+        "Please input an work order number"),
+
     "addOrder" : MessageLookupByLibrary.simpleMessage("Add Order"),
     "chooseOrder" : MessageLookupByLibrary.simpleMessage("Choose Order"),
+
+    "addWorkOrder" : MessageLookupByLibrary.simpleMessage("Add Work Order"),
+    "chooseWorkOrder" : MessageLookupByLibrary.simpleMessage("Choose Work Order"),
+
     "start" : MessageLookupByLibrary.simpleMessage("Start"),
     "confirm" : MessageLookupByLibrary.simpleMessage("Confirm"),
 
@@ -109,6 +118,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "menuMobileInbound" : MessageLookupByLibrary.simpleMessage("Inbound"),
     "menuMobileOutbound" : MessageLookupByLibrary.simpleMessage("Outbound"),
     "menuMobileInventory" : MessageLookupByLibrary.simpleMessage("Inventory"),
+    "menuMobileWorkOrder" : MessageLookupByLibrary.simpleMessage("Work Order"),
     "menuMobileInboundReceive" : MessageLookupByLibrary.simpleMessage("Receive"),
     "menuMobileOutboundPickByOrder" : MessageLookupByLibrary.simpleMessage("Pick By Order"),
     "menuMobileOutboundPickByList" : MessageLookupByLibrary.simpleMessage("Pick By List"),
@@ -117,6 +127,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "menuMobileInventoryInventory" : MessageLookupByLibrary.simpleMessage("Inventory"),
     "menuMobileInventoryCount" : MessageLookupByLibrary.simpleMessage("Cycle Count"),
     "menuMobileInventoryAuditCount" : MessageLookupByLibrary.simpleMessage("Audit Count"),
+    "menuMobileWorkOrderProduce" : MessageLookupByLibrary.simpleMessage("Produce"),
 
     "chooseServer" : MessageLookupByLibrary.simpleMessage("Choose Server"),
     "query" : MessageLookupByLibrary.simpleMessage("Query"),
@@ -124,6 +135,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputItemHint" : MessageLookupByLibrary.simpleMessage("Please input an Item or Barcode"),
     "noInventoryFound" : MessageLookupByLibrary.simpleMessage("Cannot find any inventory"),
     "inventory" : MessageLookupByLibrary.simpleMessage("Inventory"),
+    "highPriority" : MessageLookupByLibrary.simpleMessage("High Priority"),
+    "share" : MessageLookupByLibrary.simpleMessage("Share"),
+    "remove" : MessageLookupByLibrary.simpleMessage("Remove"),
+    "receiving" : MessageLookupByLibrary.simpleMessage("Receiving"),
+    "receiptNumber" : MessageLookupByLibrary.simpleMessage("Receipt Number"),
+    "receivingQuantity" : MessageLookupByLibrary.simpleMessage("Receiving Quantity"),
+
+    "add" : MessageLookupByLibrary.simpleMessage("Add"),
+
+    "actionComplete" : MessageLookupByLibrary.simpleMessage("Action Complete"),
+
+    "productionLine" : MessageLookupByLibrary.simpleMessage("Production Line"),
+    "inputProductionLineHint" : MessageLookupByLibrary.simpleMessage(
+        "Please input a production line"),
+
+    "workOrderProduce" : MessageLookupByLibrary.simpleMessage("Produce"),
+    "producedQuantity" : MessageLookupByLibrary.simpleMessage("Produced Quantity"),
+    "producingQuantity" : MessageLookupByLibrary.simpleMessage("Producing Quantity"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

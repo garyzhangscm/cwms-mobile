@@ -10,6 +10,7 @@ AuditCountRequest _$AuditCountRequestFromJson(Map<String, dynamic> json) {
   return AuditCountRequest()
     ..id = json['id'] as int
     ..batchId = json['batchId'] as String
+    ..skippedCount = json['skippedCount'] == null ? 0 : json['skippedCount'] as int
     ..locationId = json['locationId'] as int
     ..location = json['location'] == null
         ? null

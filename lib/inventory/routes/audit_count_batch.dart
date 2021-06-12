@@ -1,5 +1,6 @@
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/audit_count_request.dart';
+import 'package:cwms_mobile/inventory/models/audit_count_request_action.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
@@ -155,6 +156,8 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
               return CountBatchListItem(
                   index: index,
                   countBatch: _assignedBatches[index],
+                  cycleCountFlag: false,
+                  auditCountFlag: true,
                   onRemove:  (index) =>  _removeCycleCountBatch(index)
               );
             }),
@@ -296,6 +299,8 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
                   index: index,
                   countBatch: countBatchesWithOpenAuditCount[index],
                   displayOnlyFlag: true,
+                  cycleCountFlag: false,
+                  auditCountFlag: true,
                   onRemove:  null,
                   onToggleHightlighted:  (selected) => _selectCountBatchFromList(selected, countBatchesWithOpenAuditCount[index])
               );
@@ -353,14 +358,24 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
       _refreshCycleCountBatchQuantities();
       return null;
     }
+
+    if ((result as AuditCountRequestAction) == AuditCountRequestAction.SKIPPED) {
+
+      // if the user skip the current location, let's just add the count
+      // and put it back to the list
+      nextAuditCountRequest.skippedCount++;
+    }
     else {
       // The user just finished the previous cycle count, let's continue with next one
       // let's remove the one we just finished from the batch first
       _assignedAuditCountRequests.removeWhere(
               (auditCountRequest) => auditCountRequest.id == nextAuditCountRequest.id);
 
-      _onStartingAuditCount();
     }
+
+
+    // continue with next audit count in the list
+    _onStartingAuditCount();
 
   }
 
