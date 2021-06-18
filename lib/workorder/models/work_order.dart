@@ -37,12 +37,11 @@ class WorkOrder{
   int producedQuantity;
 
 
-  int totalLineCount;
-  int totalItemCount;
-  int totalExpectedQuantity;
-  int totalOpenQuantity;
-  int totalOpenPickQuantity;
-  int totalPickedQuantity;
+  int totalLineExpectedQuantity;
+  int totalLineOpenQuantity;
+  int totalLineInprocessQuantity;
+  int totalLineDeliveredQuantity;
+  int totalLineConsumedQuantity;
 
 
 

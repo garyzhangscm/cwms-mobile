@@ -19,6 +19,10 @@ WorkOrderProduceTransaction _$WorkOrderProduceTransactionFromJson(Map<String, dy
         ?.map(
             (e) => e == null ? null : WorkOrderProducedInventory.fromJson(e as Map<String, dynamic>))
         ?.toList()
+    ..workOrderKPITransactions = (json['workOrderKPITransactions'] as List)
+        ?.map(
+            (e) => e == null ? null : WorkOrderKPITransaction.fromJson(e as Map<String, dynamic>))
+        ?.toList()
     ..consumeByBomQuantity = json['consumeByBomQuantity'] as bool
     ..productionLine = json['productionLine'] == null
         ? null
@@ -29,6 +33,7 @@ Map<String, dynamic> _$WorkOrderProduceTransactionToJson(WorkOrderProduceTransac
   'workOrder': instance.workOrder,
   'workOrderLineConsumeTransactions': instance.workOrderLineConsumeTransactions,
   'workOrderProducedInventories': instance.workOrderProducedInventories,
+  'workOrderKPITransactions': instance.workOrderKPITransactions,
   'consumeByBomQuantity': instance.consumeByBomQuantity,
   'matchedBillOfMaterial': instance.matchedBillOfMaterial,
   'productionLine': instance.productionLine,

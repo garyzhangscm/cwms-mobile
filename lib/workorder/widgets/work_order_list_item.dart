@@ -75,7 +75,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
         // If the user highlight the widget, display green
         // otherwise if there's no open pick, display grey
         color: widget.highlighted ? Colors.lightGreen:
-              widget.workOrder.totalOpenPickQuantity == 0 ?
+              widget.workOrder.totalLineInprocessQuantity == 0 ?
               Colors.grey : Colors.white,
         shape: BorderDirectional(
           bottom: BorderSide(
@@ -105,7 +105,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
                     ),
 
                   ),
-                  subtitle: Text(widget.workOrder.totalOpenPickQuantity.toString()),
+                  subtitle: Text(widget.workOrder.totalLineInprocessQuantity.toString()),
                 ),
                 // 构建项目标题和简介
 

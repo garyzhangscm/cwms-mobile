@@ -90,7 +90,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
       body:
           Column(
             children: [
@@ -189,6 +189,8 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 child: RaisedButton(
+                  color: inventoryOnRF.length == 0 ? Colors.grey : Theme.of(context).primaryColor,
+                  textColor: inventoryOnRF.length == 0 ? Colors.black : Colors.white,
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
                   child: Text(CWMSLocalizations.of(context).depositInventory),
                 ),
@@ -361,7 +363,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
         return;
       }
       var pickResult = result as PickResult;
-      print("pick result: $pickResult for pick: ${currentPick.number}");
+      print("pick result: ${pickResult.result} for pick: ${currentPick.number}");
 
       // refresh the orders
       if (pickResult.result == true) {
@@ -374,8 +376,8 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
         if (workOrder != null) {
           setState(() {
 
-            workOrder.totalOpenPickQuantity -= pickResult.confirmedQuantity;
-            workOrder.totalPickedQuantity +=  pickResult.confirmedQuantity;
+            workOrder.totalLineOpenQuantity -= pickResult.confirmedQuantity;
+            workOrder.totalLineDeliveredQuantity +=  pickResult.confirmedQuantity;
           });
         }
 

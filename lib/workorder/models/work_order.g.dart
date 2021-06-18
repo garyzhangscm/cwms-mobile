@@ -25,12 +25,11 @@ WorkOrder _$WorkOrderFromJson(Map<String, dynamic> json) {
     ..status =  EnumToString.fromString(WorkOrderStatus.values, json['status'] as String)
     ..expectedQuantity = json['expectedQuantity'] as int
     ..producedQuantity = json['producedQuantity'] as int
-    ..totalLineCount = json['totalLineCount'] as int
-    ..totalItemCount = json['totalItemCount'] as int
-    ..totalExpectedQuantity = json['totalExpectedQuantity'] as int
-    ..totalOpenQuantity = json['totalOpenQuantity'] as int
-    ..totalOpenPickQuantity = json['totalOpenPickQuantity'] as int
-    ..totalPickedQuantity = json['totalPickedQuantity'] as int;
+    ..totalLineExpectedQuantity = json['totalLineExpectedQuantity'] as int
+    ..totalLineOpenQuantity = json['totalLineOpenQuantity'] as int
+    ..totalLineInprocessQuantity = json['totalLineInprocessQuantity'] as int
+    ..totalLineDeliveredQuantity = json['totalLineDeliveredQuantity'] as int
+    ..totalLineConsumedQuantity = json['totalLineConsumedQuantity'] as int;
 }
 
 Map<String, dynamic> _$WorkOrderToJson(WorkOrder instance) => <String, dynamic>{
@@ -44,10 +43,9 @@ Map<String, dynamic> _$WorkOrderToJson(WorkOrder instance) => <String, dynamic>{
   'workOrderLines': instance.workOrderLines,
   'expectedQuantity': instance.expectedQuantity,
   'producedQuantity': instance.producedQuantity,
-  'totalLineCount': instance.totalLineCount,
-  'totalItemCount': instance.totalItemCount,
-  'totalExpectedQuantity': instance.totalExpectedQuantity,
-  'totalOpenQuantity': instance.totalOpenQuantity,
-  'totalOpenPickQuantity': instance.totalOpenPickQuantity,
-  'totalPickedQuantity': instance.totalPickedQuantity,
+  'totalLineExpectedQuantity': instance.totalLineExpectedQuantity,
+  'totalLineOpenQuantity': instance.totalLineOpenQuantity,
+  'totalLineInprocessQuantity': instance.totalLineInprocessQuantity,
+  'totalLineDeliveredQuantity': instance.totalLineDeliveredQuantity,
+  'totalLineConsumedQuantity': instance.totalLineConsumedQuantity,
 };

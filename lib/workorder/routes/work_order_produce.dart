@@ -14,10 +14,12 @@ import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
 import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
+import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/services/production_line.dart';
 import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
@@ -50,7 +52,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
       body:
           Column(
             children: [
@@ -116,6 +118,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     return
       SizedBox(
         width: double.infinity,
+          height: 50,
         child:
           RaisedButton(
             color: Theme.of(context).primaryColor,
@@ -166,15 +169,21 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
       List<WorkOrder> workOrders =
           await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
+      BillOfMaterial billOfMaterial =
+          await BillOfMaterialService.findMatchedBillOfMaterial(workOrders[0]);
 
       printLongLogMessage("get ${workOrders.length} work order that assigned to this production line");
 
       // hide the loading indicator
       Navigator.of(context).pop();
 
+
+
       Map argumentMap = new HashMap();
       argumentMap['workOrder'] = workOrders[0];
       argumentMap['productionLine'] = productionLine;
+
+      argumentMap['billOfMaterial'] = billOfMaterial;
 
 
 

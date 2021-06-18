@@ -65,8 +65,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "addOrder" : MessageLookupByLibrary.simpleMessage("Add Order"),
     "chooseOrder" : MessageLookupByLibrary.simpleMessage("Choose Order"),
 
-    "addWorkOrder" : MessageLookupByLibrary.simpleMessage("Add Work Order"),
-    "chooseWorkOrder" : MessageLookupByLibrary.simpleMessage("Choose Work Order"),
+    "addWorkOrder" : MessageLookupByLibrary.simpleMessage("Add WO"),
+    "chooseWorkOrder" : MessageLookupByLibrary.simpleMessage("Choose WO"),
 
     "start" : MessageLookupByLibrary.simpleMessage("Start"),
     "confirm" : MessageLookupByLibrary.simpleMessage("Confirm"),
@@ -153,6 +153,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "workOrderProduce" : MessageLookupByLibrary.simpleMessage("Produce"),
     "producedQuantity" : MessageLookupByLibrary.simpleMessage("Produced Quantity"),
     "producingQuantity" : MessageLookupByLibrary.simpleMessage("Producing Quantity"),
+    "billOfMaterial" : MessageLookupByLibrary.simpleMessage("BOM"),
+     "workingTeamName": MessageLookupByLibrary.simpleMessage("Working Team"),
+
+    "kpi": MessageLookupByLibrary.simpleMessage("KPI"),
+
+    "kpiAmount": MessageLookupByLibrary.simpleMessage("Amount"),
+    "kpiMeasurement": MessageLookupByLibrary.simpleMessage("Measurement"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

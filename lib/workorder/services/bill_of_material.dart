@@ -16,6 +16,7 @@ class BillOfMaterialService {
   // Get all cycle count requests by batch id
   static Future<BillOfMaterial> findMatchedBillOfMaterial(WorkOrder workOrder) async {
     Dio httpClient = CWMSHttpClient.getDio();
+    printLongLogMessage("findMatchedBillOfMaterial by work order id ${workOrder.id}");
 
     Response response = await httpClient.get(
         "workorder/bill-of-materials/matched-with-work-order",

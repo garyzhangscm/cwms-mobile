@@ -1,0 +1,4 @@
+enum WorkOrderKPITransactionType{
+  ADD,
+  OVERRIDE
+}

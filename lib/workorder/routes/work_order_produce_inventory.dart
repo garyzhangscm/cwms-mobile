@@ -16,6 +16,7 @@ import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/models/bill_of_material_line.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
+import 'package:cwms_mobile/workorder/models/work_order_kpi_transaction_action.dart';
 import 'package:cwms_mobile/workorder/models/work_order_line_consume_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produced_inventory.dart';
@@ -51,6 +52,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   InventoryStatus _selectedInventoryStatus;
   ItemPackageType _selectedItemPackageType;
 
+  BillOfMaterial _matchedBillOfMaterial;
+
 
 
   @override
@@ -71,17 +74,17 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
   final  _formKey = GlobalKey<FormState>();
 
+
   @override
   Widget build(BuildContext context) {
 
-    printLongLogMessage("start to produce");
-    Map arguments  = ModalRoute.of(context).settings.arguments as Map;
-    printLongLogMessage("we have ${arguments.length} argument");
+    Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
     _currentWorkOrder = arguments['workOrder'];
     
     _currentProductionLine = arguments['productionLine'];
-    printLongLogMessage("argument processed");
-    printLongLogMessage("_currentWorkOrder.item.name: ${_currentWorkOrder.item.name}");
+
+    _matchedBillOfMaterial = arguments['billOfMaterial'];
+
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
@@ -164,6 +167,25 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             ),
                       ),
                       Text(_currentWorkOrder.expectedQuantity.toString(),
+                        textAlign: TextAlign.left,
+                      ),
+                    ]
+                ),
+              ),
+             // show the matched BOM
+              Padding(
+                padding: EdgeInsets.only(top: 10, bottom: 10),
+                child:
+                Row(
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(right: 20),
+                        child:
+                        Text(CWMSLocalizations.of(context).billOfMaterial,
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                      Text(_matchedBillOfMaterial == null ? "" : _matchedBillOfMaterial.number,
                         textAlign: TextAlign.left,
                       ),
                     ]
@@ -342,24 +364,62 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         width: double.infinity,
         height: 50,
             child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: () {
-                if (_formKey.currentState.validate()) {
-                  print("form validation passed");
-                  _onWorkOrderProduceConfirm(_currentWorkOrder,
-                      int.parse(_quantityController.text),
-                      _lpnController.text);
-                }
+                Row(
+                  children: <Widget> [
+                    Expanded(
+                      child:
+                        Padding(
+                            padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                            child:
+                              RaisedButton(
+                                color: Theme.of(context).primaryColor,
+                                onPressed: () {
+                                  if (_formKey.currentState.validate()) {
+                                    print("form validation passed");
+                                    _onWorkOrderProduceConfirm(_currentWorkOrder,
+                                        int.parse(_quantityController.text),
+                                        _lpnController.text);
+                                  }
 
-              },
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations
-                  .of(context)
-                  .confirm),
-            ),
+                                },
+                                textColor: Colors.white,
+                                child: Text(CWMSLocalizations
+                                    .of(context)
+                                    .confirm),
+                              ),
+                        ),
+                    ),
+                    Expanded(
+                      child:
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                          child:
+                            RaisedButton(
+                              color: Theme.of(context).primaryColor,
+                              onPressed: () {
+                                if (_formKey.currentState.validate()) {
+                                  print("form validation passed");
+                                  _onWorkOrderProduceWithKPI(_currentWorkOrder,
+                                      int.parse(_quantityController.text),
+                                      _lpnController.text);
+                                }
+
+                              },
+                              textColor: Colors.white,
+                              child: Text(CWMSLocalizations
+                                  .of(context)
+                                  .kpi),
+                            ),
+                        ),
+                    ),
+
+
+                  ]
+                )
+
       );
   }
+
 
 
 
@@ -397,6 +457,44 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
 
 
+  Future<void> _onWorkOrderProduceWithKPI(WorkOrder workOrder, int confirmedQuantity,
+      String lpn) async {
+
+
+    showLoading(context);
+
+    WorkOrderProduceTransaction workOrderProduceTransaction =
+        await generateWorkOrderProduceTransaction(
+        _lpnController.text, _selectedInventoryStatus,
+        _selectedItemPackageType, int.parse(_quantityController.text)
+    );
+
+    Navigator.of(context).pop();
+    // flow to the KPI capture page
+
+    final result = await Navigator.of(context).pushNamed(
+        "work_order_produce_kpi", arguments: workOrderProduceTransaction);
+
+
+    if (result ==  null) {
+      // the user press Return, let's do nothing
+
+      return null;
+    }
+
+    if ((result as WorkOrderKPITransactionAction) == WorkOrderKPITransactionAction.CANCELLED) {
+      // THE USER cancelled the KPI transaction, let's do nothing and wait the user
+      // to either start a new KPI capture transaction, or confirm without KPI
+      return null;
+    }
+    else {
+      // The user confirmed the whole produce transaction with KPI, let's
+      // clear the page
+
+      _lpnController.clear();
+      _quantityController.clear();
+    }
+  }
 
 
 
@@ -419,10 +517,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     await WorkOrderService.saveWorkOrderProduceTransaction(
         workOrderProduceTransaction
     );
-    print("inventory received!");
+    print("inventory produced!");
 
     Navigator.of(context).pop();
-    showToast("inventory received");
+    showToast("inventory produced");
     // we will allow the user to continue receiving with the same
     // receipt and line
     _lpnController.clear();
@@ -438,6 +536,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     workOrderProduceTransaction.workOrder = _currentWorkOrder;
     workOrderProduceTransaction.productionLine = _currentProductionLine;
 
+    workOrderProduceTransaction.workOrderKPITransactions = [];
+
     WorkOrderProducedInventory workOrderProducedInventory = new WorkOrderProducedInventory();
     workOrderProducedInventory.lpn = lpn;
     workOrderProducedInventory.quantity = quantity;
@@ -452,10 +552,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     List<WorkOrderLineConsumeTransaction> workOrderLineConsumeTransactions =
        [];
-    BillOfMaterial matchedBillOfMaterial =
-        await BillOfMaterialService.findMatchedBillOfMaterial(_currentWorkOrder);
     workOrderProduceTransaction.consumeByBomQuantity = true;
-    workOrderProduceTransaction.matchedBillOfMaterial = matchedBillOfMaterial;
+    workOrderProduceTransaction.matchedBillOfMaterial = _matchedBillOfMaterial;
 
     // setup the work order line consume transaction based on teh 
     // matched bom
@@ -464,16 +562,16 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction
           = new WorkOrderLineConsumeTransaction();
       workOrderLineConsumeTransaction.workOrderLine = workOrderLine;
-      printLongLogMessage("matchedBillOfMaterial: ${matchedBillOfMaterial.toJson()}");
-      printLongLogMessage("matchedBillOfMaterial.billOfMaterialLines: ${matchedBillOfMaterial.billOfMaterialLines.length}");
+      printLongLogMessage("matchedBillOfMaterial: ${_matchedBillOfMaterial.toJson()}");
+      printLongLogMessage("matchedBillOfMaterial.billOfMaterialLines: ${_matchedBillOfMaterial.billOfMaterialLines.length}");
       BillOfMaterialLine matchedBillOfMaterialLine =
-        matchedBillOfMaterial.billOfMaterialLines.firstWhere((billOfMaterialLine) =>
+      _matchedBillOfMaterial.billOfMaterialLines.firstWhere((billOfMaterialLine) =>
             billOfMaterialLine.itemId == workOrderLine.itemId
         );
 
       workOrderLineConsumeTransaction.consumedQuantity =
           ((matchedBillOfMaterialLine.expectedQuantity * quantity) /
-              matchedBillOfMaterial.expectedQuantity).round();
+              _matchedBillOfMaterial.expectedQuantity).round();
       workOrderLineConsumeTransactions.add(workOrderLineConsumeTransaction);
 
     });
@@ -485,5 +583,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     return workOrderProduceTransaction;
   }
+
 
 }

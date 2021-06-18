@@ -75,8 +75,8 @@ class CWMSLocalizations {
 
   String get addOrder => Intl.message('Add Order', name: 'addOrder');
   String get chooseOrder => Intl.message('Choose Order', name: 'chooseOrder');
-  String get addWorkOrder => Intl.message('Add Work Order', name: 'addWorkOrder');
-  String get chooseWorkOrder => Intl.message('Choose Work Order', name: 'chooseWorkOrder');
+  String get addWorkOrder => Intl.message('Add WO', name: 'addWorkOrder');
+  String get chooseWorkOrder => Intl.message('Choose WO', name: 'chooseWorkOrder');
   String get start => Intl.message('Start', name: 'start');
   String get confirm => Intl.message('Confirm', name: 'confirm');
 
@@ -152,6 +152,14 @@ class CWMSLocalizations {
   String get workOrderProduce => Intl.message('Produce', name: 'workOrderProduce');
   String get producedQuantity => Intl.message('Produced Quantity', name: 'producedQuantity');
   String get producingQuantity => Intl.message('Producing Quantity', name: 'producingQuantity');
+
+
+  String get billOfMaterial => Intl.message('BOM', name: 'billOfMaterial');
+  String get workingTeamName => Intl.message('Working Team', name: 'workingTeamName');
+  String get kpi => Intl.message('KPI', name: 'kpi');
+  String get kpiAmount => Intl.message('Amount', name: 'kpiAmount');
+  String get kpiMeasurement => Intl.message('Measurement', name: 'kpiMeasurement');
+
 
   String missingField(Object name) {
     return Intl.message(

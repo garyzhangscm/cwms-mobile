@@ -152,7 +152,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "workOrderProduce" : MessageLookupByLibrary.simpleMessage("生产"),
     "producedQuantity" : MessageLookupByLibrary.simpleMessage("已生成数量"),
     "producingQuantity" : MessageLookupByLibrary.simpleMessage("本次生产数量"),
+    "billOfMaterial" : MessageLookupByLibrary.simpleMessage("BOM"),
+    "workingTeamName": MessageLookupByLibrary.simpleMessage("工作组"),
 
+    "kpi": MessageLookupByLibrary.simpleMessage("KPI"),
+    "kpiAmount": MessageLookupByLibrary.simpleMessage("数量"),
+    "kpiMeasurement": MessageLookupByLibrary.simpleMessage("单位"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

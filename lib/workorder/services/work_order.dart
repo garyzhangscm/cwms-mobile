@@ -64,6 +64,9 @@ class WorkOrderService {
 
     print("get ${workOrders.length} work orders");
 
+    setupStatisticQuantityForWorkOrders(workOrders);
+
+
     return workOrders;
 
   }
@@ -84,6 +87,30 @@ class WorkOrderService {
 
 
   }
+
+  static void setupStatisticQuantityForWorkOrders(List<WorkOrder> workOrders) {
+    workOrders.forEach((workOrder) { setupStatisticQuantityForWorkOrder(workOrder); });
+
+  }
+  static void setupStatisticQuantityForWorkOrder(WorkOrder workOrder) {
+
+    workOrder.totalLineExpectedQuantity = 0;
+    workOrder.totalLineOpenQuantity = 0;
+    workOrder.totalLineInprocessQuantity = 0;
+    workOrder.totalLineDeliveredQuantity = 0;
+    workOrder.totalLineConsumedQuantity = 0;
+
+    workOrder.workOrderLines.forEach((workOrderLine)  {
+      workOrder.totalLineExpectedQuantity = workOrder.totalLineExpectedQuantity + workOrderLine.expectedQuantity;
+      workOrder.totalLineOpenQuantity = workOrder.totalLineOpenQuantity + workOrderLine.openQuantity;
+      workOrder.totalLineInprocessQuantity = workOrder.totalLineInprocessQuantity + workOrderLine.inprocessQuantity;
+      workOrder.totalLineDeliveredQuantity = workOrder.totalLineDeliveredQuantity + workOrderLine.deliveredQuantity;
+      workOrder.totalLineConsumedQuantity = workOrder.totalLineConsumedQuantity + workOrderLine.consumedQuantity;
+    });
+
+
+  }
+
 
 }
 

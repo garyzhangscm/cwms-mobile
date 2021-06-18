@@ -1,0 +1,4 @@
+enum WorkOrderKPITransactionAction{
+  CONFIRMED,
+  CANCELLED
+}
