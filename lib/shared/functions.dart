@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -99,4 +100,32 @@ printLongLogMessage(String message) {
     end = end > message.length ? message.length : end;
     print("${DateTime.now().toString()} : ${message.substring(start, end)}");
   }
+}
+
+showErrorDialog(BuildContext context, String message) {
+
+  // set up the button
+  Widget okButton = FlatButton(
+    child: Text("OK"),
+    onPressed: () {
+      Navigator.of(context).pop();
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text(CWMSLocalizations.of(context).error),
+    content: Text(message),
+    actions: [
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
 }

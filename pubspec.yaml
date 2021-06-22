@@ -29,7 +29,8 @@ dependencies:
 
 
   # i18n support
-  intl: ^0.16.1
+  # intl: ^0.16.1
+  intl: 0.17.0
 
   provider: ^4.3.2+1
 

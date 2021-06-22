@@ -23,6 +23,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static greetingMessage(name) => "Hi ${name}, Jesus Loves You";
 
   static missingField(name) => "$name is required";
+  static incorrectValue(name) => "incorrect $name";
 
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -161,8 +162,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "kpiAmount": MessageLookupByLibrary.simpleMessage("Amount"),
     "kpiMeasurement": MessageLookupByLibrary.simpleMessage("Measurement"),
 
+    "workingTeamMemberCount": MessageLookupByLibrary.simpleMessage("Work Team Member Count"),
+    "productionLineCheckIn": MessageLookupByLibrary.simpleMessage("Production Line Check In"),
+    "productionLineCheckOut": MessageLookupByLibrary.simpleMessage("Production Line Check Out"),
+    "transactionTime": MessageLookupByLibrary.simpleMessage("Transaction Time"),
+    "noWorkOrderFoundOnProductionLine": MessageLookupByLibrary.simpleMessage("No Work Order Found on This Production Line"),
+    "error": MessageLookupByLibrary.simpleMessage("Error"),
+
+
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
+    'incorrectValue':incorrectValue,
 
     ////////////////////////////////////////////////
     "auto" : MessageLookupByLibrary.simpleMessage("Auto"),

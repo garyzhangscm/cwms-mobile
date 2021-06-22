@@ -23,6 +23,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static greetingMessage(name) => "Hi ${name}, 欢迎";
 
   static missingField(name) => "$name 不可为空";
+  static incorrectValue(name) => "$name 值不正确";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
@@ -158,9 +159,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "kpi": MessageLookupByLibrary.simpleMessage("KPI"),
     "kpiAmount": MessageLookupByLibrary.simpleMessage("数量"),
     "kpiMeasurement": MessageLookupByLibrary.simpleMessage("单位"),
+    "workingTeamMemberCount": MessageLookupByLibrary.simpleMessage("班组人数"),
+    "productionLineCheckIn": MessageLookupByLibrary.simpleMessage("上工"),
+    "productionLineCheckOut": MessageLookupByLibrary.simpleMessage("下工"),
+    "transactionTime": MessageLookupByLibrary.simpleMessage("事务发生时间"),
+    "noWorkOrderFoundOnProductionLine": MessageLookupByLibrary.simpleMessage("该产线上未发现任何工单"),
+    "error": MessageLookupByLibrary.simpleMessage("错误"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,
+    'incorrectValue':incorrectValue,
 ////////////////////////////////////////////////////
     "auto" : MessageLookupByLibrary.simpleMessage("跟随系统"),
     "cancel" : MessageLookupByLibrary.simpleMessage("取消"),

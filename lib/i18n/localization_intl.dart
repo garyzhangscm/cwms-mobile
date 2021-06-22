@@ -161,10 +161,28 @@ class CWMSLocalizations {
   String get kpiMeasurement => Intl.message('Measurement', name: 'kpiMeasurement');
 
 
+  String get workingTeamMemberCount => Intl.message('Work Team Member Count', name: 'workingTeamMemberCount');
+  String get productionLineCheckIn => Intl.message('Production Line Check In', name: 'productionLineCheckIn');
+  String get productionLineCheckOut => Intl.message('Production Line Check Out', name: 'productionLineCheckOut');
+  String get transactionTime => Intl.message('Transaction Time', name: 'transactionTime');
+  String get  noWorkOrderFoundOnProductionLine => Intl.message('No Work Order Found on This Production Line', name: 'noWorkOrderFoundOnProductionLine');
+
+  String get  error => Intl.message('Error', name: 'error');
+
+
   String missingField(Object name) {
     return Intl.message(
       '$name is required',
       name: 'missingField',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  String incorrectValue(Object name) {
+    return Intl.message(
+      'incorrect $name',
+      name: 'incorrectValue',
       desc: '',
       args: [name],
     );

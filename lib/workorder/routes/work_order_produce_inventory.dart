@@ -66,10 +66,12 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // get all inventory status to display
     InventoryStatusService.getAllInventoryStatus()
         .then((value) {
-      _validInventoryStatus = value;
-      if (_validInventoryStatus.length > 0) {
-        _selectedInventoryStatus = _validInventoryStatus[0];
-      }
+          setState(() {
+            _validInventoryStatus = value;
+            if (_validInventoryStatus.length > 0) {
+              _selectedInventoryStatus = _validInventoryStatus[0];
+            }
+          });
     });
   }
   final  _formKey = GlobalKey<FormState>();
@@ -92,7 +94,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
+          //autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
           child: Column(
             children: <Widget>[
 
@@ -389,6 +391,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                               ),
                         ),
                     ),
+                    /***
+                     * Remove the KPI button as of 06/22/2021
                     Expanded(
                       child:
                         Padding(
@@ -412,7 +416,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             ),
                         ),
                     ),
-
+                    **/
 
                   ]
                 )
@@ -425,9 +429,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   List<DropdownMenuItem> _getInventoryStatusItems() {
     List<DropdownMenuItem> items = new List();
-    if (_validInventoryStatus == null) {
+    if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
       return items;
     }
+
+    _selectedInventoryStatus = _validInventoryStatus[0];
     for (int i = 0; i < _validInventoryStatus.length; i++) {
       print("start to create download list for _getInventoryStatusItems: ");
       items.add(DropdownMenuItem(
