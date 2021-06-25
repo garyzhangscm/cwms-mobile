@@ -202,7 +202,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                       Padding(
                         padding: EdgeInsets.only(right: 20),
                         child:
-                            Text(CWMSLocalizations.of(context).receivedQuantity,
+                            Text(CWMSLocalizations.of(context).producedQuantity,
                               textAlign: TextAlign.left,
                             ),
                       ),
@@ -298,7 +298,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                         child:
                             Text(CWMSLocalizations
                                 .of(context)
-                                .producedQuantity+ ": ",
+                                .producingQuantity + ": ",
                               textAlign: TextAlign.left,
                             ),
                       ),

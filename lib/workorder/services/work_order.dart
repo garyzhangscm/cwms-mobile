@@ -22,7 +22,7 @@ class WorkOrderService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    print("response from Order: $response");
+    // print("response from Order: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<WorkOrder> workOrders

@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
@@ -29,6 +30,14 @@ class _PickPageState extends State<PickPage> {
   final  _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+
+    _itemController.clear();
+    _sourceLocationController.clear();
+    _quantityController.clear();
+  }
+  @override
   Widget build(BuildContext context) {
     Pick currentPick  = ModalRoute.of(context).settings.arguments;
 
@@ -40,7 +49,7 @@ class _PickPageState extends State<PickPage> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          autovalidateMode: AutovalidateMode.always, //开启自动校验
+          //autovalidateMode: AutovalidateMode.always, //开启自动校验
           child: Column(
             children: <Widget>[
 
@@ -239,7 +248,7 @@ class _PickPageState extends State<PickPage> {
 
                     },
                     textColor: Colors.white,
-                    child: Text("Confirm"),
+                    child: Text(CWMSLocalizations.of(context).confirm),
                   ),
                 ),
               ),

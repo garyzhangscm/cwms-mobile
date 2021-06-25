@@ -47,7 +47,7 @@ class PickService {
         queryParameters: {"workOrderLineIds": workOrderLineIds, "warehouseId": Global.currentWarehouse.id}
     );
 
-    print("response from Pick by work order: $response");
+    // print("response from Pick by work order: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<Pick> picks

@@ -7,7 +7,6 @@ part of 'item.dart';
 // **************************************************************************
 
 Item _$ItemFromJson(Map<String, dynamic> json) {
-  print("convert into item: $json");
   return Item()
     ..id = json['id'] as int
     ..name = json['name'] as String
