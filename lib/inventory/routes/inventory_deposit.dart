@@ -56,7 +56,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
             builder: (context) {
               return
                 AlertDialog(
-                  title: Text("提示"),
+                  title: Text(""),
                   content: Text("No more inventory on the RF"),
                   actions: <Widget>[
 

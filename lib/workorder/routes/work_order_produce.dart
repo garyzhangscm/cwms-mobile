@@ -167,12 +167,14 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
           await ProductionLineService.getProductionLineByNumber(_productionLineNameController.text);
       printLongLogMessage("get production line: ${productionLine.name}");
 
-      List<WorkOrder> workOrders =
-          await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
-      BillOfMaterial billOfMaterial =
-          await BillOfMaterialService.findMatchedBillOfMaterial(workOrders[0]);
+      WorkOrder assignedWorkOrder = await _getAssignedWorkOrder(productionLine);
+      if (assignedWorkOrder == null) {
+        return;
+      }
 
-      printLongLogMessage("get ${workOrders.length} work order that assigned to this production line");
+      BillOfMaterial billOfMaterial =
+          await BillOfMaterialService.findMatchedBillOfMaterial(assignedWorkOrder);
+
 
       // hide the loading indicator
       Navigator.of(context).pop();
@@ -180,7 +182,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
 
       Map argumentMap = new HashMap();
-      argumentMap['workOrder'] = workOrders[0];
+      argumentMap['workOrder'] = assignedWorkOrder;
       argumentMap['productionLine'] = productionLine;
 
       argumentMap['billOfMaterial'] = billOfMaterial;
@@ -190,6 +192,33 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
       await Navigator.of(context).pushNamed("work_order_produce_inventory", arguments: argumentMap);
 
     }
+  }
+
+  Future<WorkOrder> _getAssignedWorkOrder(ProductionLine productionLine) async {
+
+    WorkOrder assignedWorkOrder;
+    List<WorkOrder> workOrders =
+        await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
+
+    if (workOrders.length == 0) {
+      // we should only have one work order that assigned to the specific production line
+      // at a time
+      showErrorDialog(context, "Can't find any work order that assigned to the production line ${productionLine.name}");
+    }
+    else if (workOrders.length == 1 ){
+      assignedWorkOrder = workOrders[0];
+    }
+    // we found multiple work order that assigned to the production line, make sure
+    // the user specify the work order number as well
+    else if (_workOrderNumberController.text.isEmpty) {
+      showErrorDialog(context, "multiple work orders found. please specify the work order number as well");
+    }
+    else {
+      // see if the work order number specified by the user matches any of the work order that
+      // assigned to the production
+      assignedWorkOrder = workOrders.firstWhere((workOrder) => _workOrderNumberController.text == workOrder.number);
+    }
+    return assignedWorkOrder;
   }
 
 

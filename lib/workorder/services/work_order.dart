@@ -16,13 +16,14 @@ class WorkOrderService {
   static Future<WorkOrder> getWorkOrderByNumber(String workOrderNumber) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
+    printLongLogMessage("Start to get work order by ${workOrderNumber}");
     Response response = await httpClient.get(
         "workorder/work-orders",
         queryParameters: {"number": workOrderNumber,
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    // print("response from Order: $response");
+    printLongLogMessage("response from getWorkOrderByNumber: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<WorkOrder> workOrders

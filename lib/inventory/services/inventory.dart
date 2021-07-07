@@ -9,6 +9,9 @@ import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class InventoryService {
   // Get inventory that on the current RF
@@ -265,6 +268,24 @@ class InventoryService {
 
 
     return resultInventories;
+  }
+
+
+  static Future<void> printLPNLabel(String lpn) async {
+    printLongLogMessage("Start calling printLPNLabel with lpn $lpn");
+    final doc = pw.Document();
+
+    doc.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Center(
+            child: pw.Text('Hello World'),
+          ); // Center
+        })); //
+     
+
+    await Printing.directPrintPdf(
+        onLayout: (PdfPageFormat format) async => doc.save());
   }
 
 }

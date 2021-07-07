@@ -8,6 +8,7 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
+import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/item.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -63,6 +64,10 @@ class _InventoryListItemState extends State<InventoryListItem> {
                   //leading: _buildInventoryImage(),
 
                   title: _buildInventoryDetail(),
+                  trailing: IconButton(
+                        icon: new Icon(Icons.print),
+                        onPressed: () => _printLPNLabel()
+                    ),
                 ),
               ],
             ),
@@ -79,12 +84,18 @@ class _InventoryListItemState extends State<InventoryListItem> {
     );
 
   }
+  void _printLPNLabel() {
+      InventoryService.printLPNLabel(widget.inventory.lpn);
+  }
+
   Widget _buildInventoryDetail() {
     return
       new Container(
         child:
           Column(
             children: <Widget>[
+              _buildInformationRow(
+                  CWMSLocalizations.of(context).lpn, widget.inventory.lpn),
               _buildInformationRow(
                   CWMSLocalizations.of(context).item, widget.inventory.item.name),
               _buildInformationRow(

@@ -12,6 +12,7 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/models/bill_of_material_line.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
@@ -21,6 +22,7 @@ import 'package:cwms_mobile/workorder/models/work_order_line_consume_transaction
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produced_inventory.dart';
 import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
+import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -341,7 +343,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                       Expanded(
                         child:
                         Focus(
-                          child: TextFormField(
+
+                          child: SystemControllerNumberTextBox(
+                              type: "lpn",
                               controller: _lpnController,
                               validator: (v) {
                                 return null;
@@ -524,6 +528,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         workOrderProduceTransaction
     );
     print("inventory produced!");
+    // refresh the work order to reflect the produced quantity
+    _refreshWorkOrderInformation();
 
     Navigator.of(context).pop();
     showToast("inventory produced");
@@ -535,6 +541,17 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   }
 
+  _refreshWorkOrderInformation() {
+    WorkOrderService.getWorkOrderByNumber(_currentWorkOrder.number)
+        .then((workOrder)  { 
+
+            setState(() {
+              _currentWorkOrder.producedQuantity = workOrder.producedQuantity;
+            });
+        });
+
+
+  }
   Future<WorkOrderProduceTransaction> generateWorkOrderProduceTransaction(
       String lpn, InventoryStatus selectedInventoryStatus,
       ItemPackageType selectedItemPackageType, int quantity) async {

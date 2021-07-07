@@ -64,6 +64,9 @@ dependencies:
   # cast between enum and string
   enum_to_string: ^1.0.14
 
+  # print PDF files from local printer
+  printing: ^5.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
