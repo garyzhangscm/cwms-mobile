@@ -16,7 +16,7 @@ import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart';
 
 
@@ -420,11 +420,12 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   }
 
   Future<void> _startBarcodeScanner() async {
+    /***
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
     print("barcode scanned: $barcodeScanRes");
     _orderNumberController.text = barcodeScanRes;
-
+**/
   }
 
   Pick _getNextValidPick() {

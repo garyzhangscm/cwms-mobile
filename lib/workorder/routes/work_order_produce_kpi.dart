@@ -27,7 +27,7 @@ import 'package:cwms_mobile/workorder/widgets/work_order_kpi_item.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class WorkOrderKPIPage extends StatefulWidget{

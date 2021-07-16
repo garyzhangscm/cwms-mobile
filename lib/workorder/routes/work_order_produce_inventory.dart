@@ -26,7 +26,7 @@ import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class WorkOrderProduceInventoryPage extends StatefulWidget{
@@ -101,7 +101,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
             children: <Widget>[
 
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 Row(
                     children: <Widget>[
@@ -119,7 +119,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 // confirm the location
                 Row(
@@ -138,7 +138,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 // confirm the location
                 Row(
@@ -159,7 +159,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               ),
               // display the item
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 Row(
                     children: <Widget>[
@@ -178,7 +178,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               ),
              // show the matched BOM
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 Row(
                     children: <Widget>[
@@ -196,7 +196,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 Row(
                     children: <Widget>[
@@ -216,7 +216,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               ),
               // Allow the user to choose item package type
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 Row(
                     children: <Widget>[
@@ -252,7 +252,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               ),
               // Allow the user to choose inventory status
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 Row(
                     children: <Widget>[
@@ -288,7 +288,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 // always force the user to input / confirm the quantity
                 // picked this time
@@ -324,7 +324,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
+                padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
                 // always force the user to input / confirm the quantity
                 // picked this time
@@ -512,9 +512,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       String lpn) async {
 
 
-    // TO-DO:Current we don't support the location code. Will add
-    //      it later
-
 
     showLoading(context);
 
@@ -530,6 +527,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     print("inventory produced!");
     // refresh the work order to reflect the produced quantity
     _refreshWorkOrderInformation();
+    printLongLogMessage("start to print lpn label: $lpn, findPrinterBy: ${workOrderProduceTransaction.productionLine.name}");
+    InventoryService.printLPNLabel(lpn, workOrderProduceTransaction.productionLine.name);
 
     Navigator.of(context).pop();
     showToast("inventory produced");
@@ -585,17 +584,27 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction
           = new WorkOrderLineConsumeTransaction();
       workOrderLineConsumeTransaction.workOrderLine = workOrderLine;
-      printLongLogMessage("matchedBillOfMaterial: ${_matchedBillOfMaterial.toJson()}");
-      printLongLogMessage("matchedBillOfMaterial.billOfMaterialLines: ${_matchedBillOfMaterial.billOfMaterialLines.length}");
-      BillOfMaterialLine matchedBillOfMaterialLine =
-      _matchedBillOfMaterial.billOfMaterialLines.firstWhere((billOfMaterialLine) =>
-            billOfMaterialLine.itemId == workOrderLine.itemId
-        );
+      if (_matchedBillOfMaterial != null) {
 
-      workOrderLineConsumeTransaction.consumedQuantity =
-          ((matchedBillOfMaterialLine.expectedQuantity * quantity) /
-              _matchedBillOfMaterial.expectedQuantity).round();
-      workOrderLineConsumeTransactions.add(workOrderLineConsumeTransaction);
+        printLongLogMessage("matchedBillOfMaterial: ${_matchedBillOfMaterial.toJson()}");
+        printLongLogMessage("matchedBillOfMaterial.billOfMaterialLines: ${_matchedBillOfMaterial.billOfMaterialLines.length}");
+
+
+        BillOfMaterialLine matchedBillOfMaterialLine =
+            _matchedBillOfMaterial.billOfMaterialLines.firstWhere((billOfMaterialLine) =>
+              billOfMaterialLine.itemId == workOrderLine.itemId
+            );
+
+        workOrderLineConsumeTransaction.consumedQuantity =
+            ((matchedBillOfMaterialLine.expectedQuantity * quantity) /
+                _matchedBillOfMaterial.expectedQuantity).round();
+        workOrderLineConsumeTransactions.add(workOrderLineConsumeTransaction);
+      }
+      else {
+
+        workOrderLineConsumeTransaction.consumedQuantity = 0;
+        workOrderLineConsumeTransactions.add(workOrderLineConsumeTransaction);
+      }
 
     });
     printLongLogMessage("workOrderLineConsumeTransactions.length: ${workOrderLineConsumeTransactions.length}");

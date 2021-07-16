@@ -7,7 +7,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+//import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class PickPage extends StatefulWidget{
@@ -299,17 +299,23 @@ class _PickPageState extends State<PickPage> {
   }
 
   _startItemBarcodeScanner()  async {
-    String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+    /**
+     *
+        String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
-    print("barcode scanned: $barcodeScanRes");
-    _sourceLocationController.text = barcodeScanRes;
+        print("barcode scanned: $barcodeScanRes");
+        _sourceLocationController.text = barcodeScanRes;
+     * */
 
   }
   _startLocationBarcodeScanner() async {
-    String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+    /**
+     *
+        String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
-    print("barcode scanned: $barcodeScanRes");
-    _itemController.text = barcodeScanRes;
+        print("barcode scanned: $barcodeScanRes");
+        _itemController.text = barcodeScanRes;
+     * */
 
   }
 

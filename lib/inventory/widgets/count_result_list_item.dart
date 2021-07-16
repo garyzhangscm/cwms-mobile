@@ -9,7 +9,7 @@ import 'package:cwms_mobile/shared/functions.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class CountResultListItem extends StatefulWidget {
   CountResultListItem({this.index, this.cycleCountResult,
@@ -227,11 +227,15 @@ class _CountResultListItemState extends State<CountResultListItem> {
   }
 
   Future<void> _startItemBarcodeScanner() async {
-
+/*
+*
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
     printLongLogMessage("barcode scanned: $barcodeScanRes");
     return barcodeScanRes;
+*
+* **/
+
 
   }
 

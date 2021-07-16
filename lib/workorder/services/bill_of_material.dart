@@ -25,9 +25,15 @@ class BillOfMaterialService {
 
     print("response from findMatchedBillOfMaterial: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
+    if (responseString["data"] != null) {
+      return BillOfMaterial.fromJson(responseString["data"] as Map<String, dynamic>);
+
+    }
+    else {
+      return null;
+    }
 
 
-    return BillOfMaterial.fromJson(responseString["data"] as Map<String, dynamic>);
 
 
   }

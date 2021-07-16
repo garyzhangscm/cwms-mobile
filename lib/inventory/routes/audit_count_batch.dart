@@ -12,7 +12,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class AuditCountBatchPage extends StatefulWidget{
@@ -180,11 +180,13 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
   }
 
   _startBarcodeScanner() async {
-
+/**
+ *
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
+    "#ff6666", "Cancel", true, ScanMode.BARCODE);
     printLongLogMessage("barcode scanned: $barcodeScanRes");
     _batchIdController.text = barcodeScanRes;
+ * */
 
   }
 

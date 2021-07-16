@@ -9,7 +9,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class InventoryQueryPage extends StatefulWidget{
@@ -197,10 +197,13 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
 
   }
   Future<String> _startBarcodeScanner() async {
+    /*
+    *
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
     print("barcode scanned: $barcodeScanRes");
     return barcodeScanRes;
+    * */
 
   }
   _onInventoryQuery() async {

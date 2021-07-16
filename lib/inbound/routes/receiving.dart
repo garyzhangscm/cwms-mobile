@@ -14,7 +14,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class ReceivingPage extends StatefulWidget{
@@ -517,11 +517,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
 
   _startItemBarcodeScanner()  async {
+    /*
+    *
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
     print("barcode scanned: $barcodeScanRes");
     _receiptNumberController.text = barcodeScanRes;
     _loadReceipt(_receiptNumberController.text);
+    * */
 
   }
   _loadReceipt(String receiptNumber) {
@@ -536,11 +539,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
     });
   }
   _startReceiptBarcodeScanner() async {
+    /*
+    *
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
     print("barcode scanned: $barcodeScanRes");
     _itemController.text = barcodeScanRes;
     _loadReceiptLine(_itemController.text);
+    * */
   }
 
   _loadReceiptLine(String itemNumber) {

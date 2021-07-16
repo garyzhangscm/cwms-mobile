@@ -1,6 +1,7 @@
 
 
 import 'package:cwms_mobile/common/services/system_controlled_number.dart';
+import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -27,7 +28,10 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
   _generateNextAvailableNumber() {
     SystemControlledNumberService
         .getNextAvailableId(widget.type)
-        .then((value) => widget.controller.text = value);
+        .then((value)  {
+          printLongLogMessage("Get the next number for ${widget.type}, value is ${value}");
+          widget.controller.text = value;
+    });
   }
 
   @override

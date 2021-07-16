@@ -271,21 +271,31 @@ class InventoryService {
   }
 
 
-  static Future<void> printLPNLabel(String lpn) async {
+  static Future<void> printLPNLabel(String lpn, String findPrinterByValue) async {
     printLongLogMessage("Start calling printLPNLabel with lpn $lpn");
-    final doc = pw.Document();
 
-    doc.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Center(
-            child: pw.Text('Hello World'),
-          ); // Center
-        })); //
-     
+    Dio httpClient = CWMSHttpClient.getDio();
 
-    await Printing.directPrintPdf(
-        onLayout: (PdfPageFormat format) async => doc.save());
+    Response response = await httpClient.post(
+        "/inventory/inventories/${Global.lastLoginCompanyId}/$lpn/lpn-label/ecotech"
+    );
+
+    printLongLogMessage("get response from printLPNLabel ${response.toString()}");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    Map<String, dynamic> reportHistory = responseString["data"] as Map<String, dynamic>;
+    String fileName = reportHistory["fileName"];
+    printLongLogMessage("start sending printing request with file: $fileName, findPrinterBy: $findPrinterByValue");
+
+    response = await httpClient.post(
+        "/resource/report-histories/print/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/LPN_REPORT/$fileName",
+        queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+           'findPrinterBy': findPrinterByValue}
+    );
+
+    printLongLogMessage("get response from LPN Printing request ${response.toString()}");
+
   }
 
 }

@@ -33,7 +33,7 @@ import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:cwms_mobile/workorder/widgets/work_order_list_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart';
 import 'package:intl/intl.dart';
 
@@ -451,6 +451,8 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
 
   Future<String> _startBarcodeScanner() async {
+    /*
+    *
     String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
         "#ff6666", "Cancel", true, ScanMode.BARCODE);
     print("barcode scanned: $barcodeScanRes");
@@ -461,6 +463,8 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
     else {
       return "";
     }
+    *
+    * */
   }
 
 
