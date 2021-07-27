@@ -51,7 +51,7 @@ class _LaunchPageState extends State<LaunchPage> {
       _onAutoConnect(server);
     }
     else {
-      _serverURLController =  TextEditingController(text: '');
+      _serverURLController =  TextEditingController(text: 'http://10.0.10.37:30130/api/');
       _autoConnect = true;
     }
 

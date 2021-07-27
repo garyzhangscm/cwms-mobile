@@ -190,10 +190,17 @@ class _CountResultListItemState extends State<CountResultListItem> {
                             Text(CWMSLocalizations.of(context).expectedQuantity),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 50.0),
+                        padding: const EdgeInsets.only(right: 20.0),
                         child:
                             Text(widget.cycleCountResult.quantity.toString()),
-                      ),
+                      ),]
+                  ),
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child:
+                  Row(
+                    children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 15.0),
                         child:

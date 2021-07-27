@@ -10,6 +10,7 @@ import 'package:cwms_mobile/inventory/models/item_package_type.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/item.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -192,23 +193,16 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                     // it means the locaiton doesn't any inventory
                     widget.auditCountResult.unexpectedItem == true ?
                     new Expanded(
-                        child: TextFormField(
-                          textAlign: TextAlign.end,
-                          controller: _lpnController,
-                          onChanged: (value) => _onLPNValueChange(value),
-                          decoration: InputDecoration(
-                            suffixIcon:
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                              mainAxisSize: MainAxisSize.min, // added line
-                              children: <Widget>[
-                                IconButton(
-                                  onPressed: _startItemBarcodeScanner,
-                                  icon: Icon(Icons.scanner),
-                                )
-                              ],
-                            ),
-                          ),
+                        child:
+                        Focus(
+
+                          child:
+                            SystemControllerNumberTextBox(
+                            type: "lpn",
+                            controller: _lpnController,
+                            validator: (v) {
+                              return null;
+                            }),
                         )
                     )
                         :
@@ -296,7 +290,6 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       Expanded(
                           child:
                           DropdownButtonFormField<ItemPackageType>(
-                              hint: Text("请选择"),
                               items: _getItemPackageTypeItems(),
                               value: _selectedItemPackageType,
                               elevation: 1,

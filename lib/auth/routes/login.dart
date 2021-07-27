@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
+          // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
           child: Column(
             children: <Widget>[
               Focus(
@@ -180,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
       padding: const EdgeInsets.only(left: 40, right: 40 , bottom: 24,top:12),
       child: Container(
         height: 55,  //gives the height of the dropdown button
-        width: MediaQuery.of(context).size.width - 200, //gives the width of the dropdown button
+        width: MediaQuery.of(context).size.width - 175, //gives the width of the dropdown button
         decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(3)),
             color: Color(0xFFF2F2F2)

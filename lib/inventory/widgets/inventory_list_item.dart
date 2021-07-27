@@ -85,7 +85,7 @@ class _InventoryListItemState extends State<InventoryListItem> {
 
   }
   void _printLPNLabel() {
-      InventoryService.printLPNLabel(widget.inventory.lpn);
+      InventoryService.printLPNLabel(widget.inventory.lpn, widget.inventory.location.locationGroup.name);
   }
 
   Widget _buildInventoryDetail() {
