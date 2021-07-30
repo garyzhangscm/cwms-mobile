@@ -348,6 +348,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                               type: "lpn",
                               controller: _lpnController,
                               validator: (v) {
+                                if (v.trim().isEmpty) {
+                                  return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                                }
+
                                 return null;
                               }),
                         ),

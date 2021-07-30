@@ -138,8 +138,18 @@ class InventoryService {
       return;
     }
     // make sure the inventory goes to the same destination
-    if (inventoryDepositRequest.nextLocationId !=
-           inventory.getNextDepositLocaiton().id) {
+    if (inventoryDepositRequest.nextLocationId == null &&
+        inventory.getNextDepositLocaiton() != null) {
+      return ;
+    }
+    else if (inventoryDepositRequest.nextLocationId != null &&
+        inventory.getNextDepositLocaiton() == null) {
+      return ;
+    }
+    else if (inventoryDepositRequest.nextLocationId != null &&
+              inventory.getNextDepositLocaiton() != null &&
+              inventoryDepositRequest.nextLocationId !=
+                  inventory.getNextDepositLocaiton().id) {
       return;
     }
 
@@ -197,7 +207,7 @@ class InventoryService {
 
 
   static Future<List<Inventory>> findInventory(
-      {String locationName = "", String itemName = "", String lpn = ""}
+      {String locationName = "", String itemName = "", String lpn = "", bool includeDetails = true}
       )  async {
     List<Inventory> resultInventories = new List<Inventory>();
 
@@ -209,7 +219,8 @@ class InventoryService {
       response = await httpClient.get(
           "/inventory/inventories",
           queryParameters: {'warehouseId': Global.lastLoginCompanyId,
-            'location': locationName}
+            'location': locationName,
+          'includeDetails': includeDetails}
       );
 
       printLongLogMessage("response from inventory by location: ${locationName}");

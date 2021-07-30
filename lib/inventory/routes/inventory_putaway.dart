@@ -169,28 +169,36 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
     showLoading(context);
     // move the inventory being scanned onto RF
-    List<Inventory> inventories = await InventoryService.findInventory(lpn :_lpnController.text);
+    printLongLogMessage("==>> Start to adding LPN for deposit");
+    List<Inventory> inventories = await InventoryService.findInventory(lpn :_lpnController.text, includeDetails: false);
+    printLongLogMessage("==>> LPN ${_lpnController.text} is found");
     if(inventories.isNotEmpty) {
 
       // move each inventory on to the RF
+      printLongLogMessage("==>> Start to get the RF's location");
       WarehouseLocation rfLocation =
                   await WarehouseLocationService.getWarehouseLocationByName(
                       Global.lastLoginRFCode
                   );
+      printLongLogMessage("==>> GOT RF location ");
 
       for(Inventory inventory in inventories) {
+        printLongLogMessage("==>> start to move invenotry with id ${inventory.id} lpn ${inventory.lpn}");
         await InventoryService.moveInventory(
 
           inventoryId: inventory.id,
           destinationLocation: rfLocation
         );
+        printLongLogMessage("==>> finish moving invenotry with id ${inventory.id} lpn ${inventory.lpn}");
       }
 
       Navigator.of(context).pop();
       _lpnController.clear();
 
       showToast(CWMSLocalizations.of(context).actionComplete);
+      printLongLogMessage("==>> start to reload inventory after adding the lpn ${_lpnController.text}");
       _reloadInventoryOnRF();
+      printLongLogMessage("==>> inventory loaded");
     }
     else {
       // show error message

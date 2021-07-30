@@ -51,6 +51,7 @@ class _MenusState extends State<Menus> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
+                      // Icon(IconData(int.parse(_menuGroup.menuSubGroups[index].icon), fontFamily: 'MaterialIcons')),
                       Icon(IconData(int.parse(_menuGroup.menuSubGroups[index].icon), fontFamily: 'MaterialIcons')),
                       RaisedButton(
                         child: Text(
