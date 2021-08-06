@@ -23,6 +23,7 @@ class Pick{
   bool confirmItemFlag;
   bool confirmLocationFlag;
   bool confirmLocationCodeFlag;
+  bool confirmLpnFlag;
 
 
 

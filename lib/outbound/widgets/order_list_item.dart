@@ -104,8 +104,9 @@ class _OrderListItemState extends State<OrderListItem> {
 
                   ),
                   trailing: Text(
-                    widget.order.shipToContactorFirstname + " , "
-                        + widget.order.shipToContactorLastname,
+                    (widget.order.shipToContactorFirstname == null ? ""  : widget.order.shipToContactorFirstname) +
+                        " , " +
+                        (widget.order.shipToContactorLastname == null ? ""  : widget.order.shipToContactorLastname),
                     style: TextStyle(
                       color: Colors.blueGrey[700],
                       fontSize: 12,

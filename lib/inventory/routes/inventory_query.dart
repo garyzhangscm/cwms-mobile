@@ -87,7 +87,6 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
              children: <Widget>[
                  TextFormField(
                     controller: _lpnController,
-                    readOnly: true,
                     decoration: InputDecoration(
                       labelText: CWMSLocalizations
                           .of(context)

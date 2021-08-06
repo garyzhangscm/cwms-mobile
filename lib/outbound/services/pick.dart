@@ -142,7 +142,7 @@ class PickService {
 
   }
   // Confirm pick, with picking quantity
-  static Future<void> confirmPick(Pick pick, int confirmQuantity) async{
+  static Future<void> confirmPick(Pick pick, int confirmQuantity, [String lpn]) async{
 
     print("start to confirm pick ${pick.number}");
 
@@ -152,6 +152,7 @@ class PickService {
     }
     if (confirmQuantity >  (pick.quantity - pick.pickedQuantity)) {
       // throw error as we can't over pick
+
     }
 
     Dio httpClient = CWMSHttpClient.getDio();

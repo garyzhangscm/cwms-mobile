@@ -26,6 +26,7 @@ class _PickPageState extends State<PickPage> {
   TextEditingController _itemController = new TextEditingController();
   TextEditingController _sourceLocationController = new TextEditingController();
   TextEditingController _quantityController = new TextEditingController();
+  TextEditingController _lpnController = new TextEditingController();
 
   final  _formKey = GlobalKey<FormState>();
 
@@ -36,6 +37,7 @@ class _PickPageState extends State<PickPage> {
     _itemController.clear();
     _sourceLocationController.clear();
     _quantityController.clear();
+    _lpnController.clear();
   }
   @override
   Widget build(BuildContext context) {
@@ -119,6 +121,38 @@ class _PickPageState extends State<PickPage> {
                         ]
                     ),
               ),
+
+              // LPN number
+              Padding(
+                padding: EdgeInsets.only(top: 10, bottom: 10),
+                child:
+                // confirm the location
+                Row(
+                    children: <Widget>[
+                      Text(CWMSLocalizations.of(context).lpn,
+                        textAlign: TextAlign.left,
+                      ),
+                      currentPick.confirmLpnFlag ?
+                        Expanded(
+                        child:
+                        Focus(
+                          child: TextFormField(
+                              controller: _lpnController,
+                              // 校验LPN（不能为空）
+                              validator: (v) {
+                                if (v.trim().isEmpty) {
+                                  return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                                }
+                                return null;
+                              }),
+                        ),
+                        )
+                            :
+                        Container()
+                    ]
+                ),
+              ),
+
               Padding(
                   padding: EdgeInsets.only(top: 10, bottom: 10),
                   child:
@@ -143,32 +177,35 @@ class _PickPageState extends State<PickPage> {
                           Text("Item Number:",
                             textAlign: TextAlign.left,
                           ),
-                          Expanded(
-                            child:
-                            Focus(
-                              child: TextFormField(
 
-                                  controller: _itemController,
-                                  decoration: InputDecoration(
-                                    suffixIcon: IconButton(
-                                      onPressed: () => _startItemBarcodeScanner(),
-                                      icon: Icon(Icons.scanner),
+                          currentPick.confirmItemFlag ?
+                            Expanded(
+                              child:
+                              Focus(
+                                child: TextFormField(
+                                    controller: _itemController,
+                                    decoration: InputDecoration(
+                                      suffixIcon: IconButton(
+                                        onPressed: () => _startItemBarcodeScanner(),
+                                        icon: Icon(Icons.scanner),
+                                      ),
                                     ),
-                                  ),
-                                  // 校验ITEM NUMBER（不能为空）
-                                  validator: (v) {
+                                    // 校验ITEM NUMBER（不能为空）
+                                    validator: (v) {
 
-                                    if (v.trim().isEmpty) {
-                                      return "please scan in item";
-                                    }
-                                    if (v.trim() != currentPick.item.name) {
+                                      if (v.trim().isEmpty) {
+                                        return "please scan in item";
+                                      }
+                                      if (v.trim() != currentPick.item.name) {
 
-                                      return "wrong item";
-                                    }
-                                    return null;
-                                  }),
-                            ),
-                          )
+                                        return "wrong item";
+                                      }
+                                      return null;
+                                    }),
+                              ),
+                            )
+                                :
+                            Container()
                         ]
                     ),
               ),
@@ -267,8 +304,17 @@ class _PickPageState extends State<PickPage> {
 
 
     showLoading(context);
-    await PickService.confirmPick(
-        pick, confirmedQuantity);
+    if (pick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
+      printLongLogMessage("We will confirm the pick with LPN ${_lpnController.text}");
+      await PickService.confirmPick(
+          pick, confirmedQuantity, _lpnController.text);
+    }
+    else {
+
+      printLongLogMessage("We will confirm the pick with specify the LPN");
+      await PickService.confirmPick(
+          pick, confirmedQuantity);
+    }
     print("pick confirmed");
 
     Navigator.of(context).pop();
