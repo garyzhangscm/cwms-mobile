@@ -209,23 +209,17 @@ class InventoryService {
   static Future<List<Inventory>> findInventory(
       {String locationName = "", String itemName = "", String lpn = "", bool includeDetails = true}
       )  async {
-    List<Inventory> resultInventories = new List<Inventory>();
 
     Dio httpClient = CWMSHttpClient.getDio();
 
-    Response response;
-
-    if (locationName.isNotEmpty) {
-      response = await httpClient.get(
+    Response response = await httpClient.get(
           "/inventory/inventories",
           queryParameters: {'warehouseId': Global.lastLoginCompanyId,
             'location': locationName,
+            'lpn': lpn,
+            'itemName': itemName,
           'includeDetails': includeDetails}
       );
-
-      printLongLogMessage("response from inventory by location: ${locationName}");
-
-      printLongLogMessage(response.toString());
 
       Map<String, dynamic> responseString = json.decode(response.toString());
 
@@ -233,52 +227,9 @@ class InventoryService {
         = (responseString["data"] as List)?.map((e) =>
         e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
             ?.toList();
-      resultInventories.addAll(inventories);
-    }
 
 
-    if (itemName.isNotEmpty) {
-      response = await httpClient.get(
-          "/inventory/inventories",
-          queryParameters: {'warehouseId': Global.lastLoginCompanyId,
-            'itemName': itemName}
-      );
-
-      printLongLogMessage("response from inventory by item: ${itemName}");
-
-      printLongLogMessage(response.toString());
-
-      Map<String, dynamic> responseString = json.decode(response.toString());
-
-      List<Inventory> inventories
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-          ?.toList();
-      resultInventories.addAll(inventories);
-    }
-
-    if (lpn.isNotEmpty) {
-      response = await httpClient.get(
-          "/inventory/inventories",
-          queryParameters: {'warehouseId': Global.lastLoginCompanyId,
-            'lpn': lpn}
-      );
-
-      printLongLogMessage("response from inventory by lpn: ${lpn}");
-
-      printLongLogMessage(response.toString());
-
-      Map<String, dynamic> responseString = json.decode(response.toString());
-
-      List<Inventory> inventories
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-          ?.toList();
-      resultInventories.addAll(inventories);
-    }
-
-
-    return resultInventories;
+      return inventories;
   }
 
 

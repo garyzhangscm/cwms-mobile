@@ -531,8 +531,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     print("inventory produced!");
     // refresh the work order to reflect the produced quantity
     _refreshWorkOrderInformation();
-    printLongLogMessage("start to print lpn label: $lpn, findPrinterBy: ${workOrderProduceTransaction.productionLine.name}");
-    InventoryService.printLPNLabel(lpn, workOrderProduceTransaction.productionLine.name);
+   //  printLongLogMessage("start to print lpn label: $lpn, findPrinterBy: ${workOrderProduceTransaction.productionLine.name}");
+    // InventoryService.printLPNLabel(lpn, workOrderProduceTransaction.productionLine.name);
 
     Navigator.of(context).pop();
     showToast("inventory produced");

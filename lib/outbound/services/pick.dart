@@ -144,7 +144,7 @@ class PickService {
   // Confirm pick, with picking quantity
   static Future<void> confirmPick(Pick pick, int confirmQuantity, [String lpn]) async{
 
-    print("start to confirm pick ${pick.number}");
+    print("start to confirm pick ${pick.number}, confirmQuantity: ${confirmQuantity}, lpn: ${lpn}");
 
     // only continue when the confirmed quantity is bigger than 0
     if (confirmQuantity <= 0) {
@@ -161,7 +161,8 @@ class PickService {
     Response response = await httpClient.post(
         "outbound/picks/${pick.id}/confirm",
         queryParameters: {"quantity": confirmQuantity,
-          "nextLocationName": Global.getLastLoginRFCode()}
+          "nextLocationName": Global.getLastLoginRFCode(),
+        "lpn": lpn}
     );
 
     print("response from confirm pick: $response");

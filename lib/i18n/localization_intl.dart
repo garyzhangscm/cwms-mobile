@@ -167,6 +167,9 @@ class CWMSLocalizations {
   String get transactionTime => Intl.message('Transaction Time', name: 'transactionTime');
   String get  noWorkOrderFoundOnProductionLine => Intl.message('No Work Order Found on This Production Line', name: 'noWorkOrderFoundOnProductionLine');
 
+
+  String get  pickWrongLPN => Intl.message('lpn is not correct for picking', name: 'pickWrongLPN');
+
   String get  error => Intl.message('Error', name: 'error');
 
 

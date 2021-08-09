@@ -164,6 +164,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "productionLineCheckOut": MessageLookupByLibrary.simpleMessage("下工"),
     "transactionTime": MessageLookupByLibrary.simpleMessage("事务发生时间"),
     "noWorkOrderFoundOnProductionLine": MessageLookupByLibrary.simpleMessage("该产线上未发现任何工单"),
+
+
+    "pickWrongLPN": MessageLookupByLibrary.simpleMessage("错误的LPN"),
+
     "error": MessageLookupByLibrary.simpleMessage("错误"),
 
     'greetingMessage':greetingMessage,

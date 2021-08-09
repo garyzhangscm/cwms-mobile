@@ -167,6 +167,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "productionLineCheckOut": MessageLookupByLibrary.simpleMessage("Production Line Check Out"),
     "transactionTime": MessageLookupByLibrary.simpleMessage("Transaction Time"),
     "noWorkOrderFoundOnProductionLine": MessageLookupByLibrary.simpleMessage("No Work Order Found on This Production Line"),
+
+
+    "pickWrongLPN": MessageLookupByLibrary.simpleMessage("lpn is not correct for picking"),
+
+
     "error": MessageLookupByLibrary.simpleMessage("Error"),
 
 
