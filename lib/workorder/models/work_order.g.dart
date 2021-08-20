@@ -30,7 +30,7 @@ WorkOrder _$WorkOrderFromJson(Map<String, dynamic> json) {
     ..totalLineInprocessQuantity = json['totalLineInprocessQuantity'] as int
     ..totalLineDeliveredQuantity = json['totalLineDeliveredQuantity'] as int
     ..totalLineConsumedQuantity = json['totalLineConsumedQuantity'] as int
-    ..materialConsumeTiming = materialConsumeTimingFromString(json['materialConsumeTiming'] as String)
+    ..materialConsumeTiming = json['materialConsumeTiming'] == null ? null : materialConsumeTimingFromString(json['materialConsumeTiming'] as String)
     ..consumeByBomOnly = json['consumeByBomOnly'] as bool
     ..consumeByBom = json['consumeByBom'] == null
         ? null

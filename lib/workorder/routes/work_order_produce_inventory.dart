@@ -27,6 +27,7 @@ import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -344,11 +345,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                       Expanded(
                         child:
                         Focus(
-
                           child: SystemControllerNumberTextBox(
                               type: "lpn",
                               controller: _lpnController,
                               readOnly: false,
+                              showKeyboard: false,
                               validator: (v) {
                                 if (v.trim().isEmpty) {
                                   return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);

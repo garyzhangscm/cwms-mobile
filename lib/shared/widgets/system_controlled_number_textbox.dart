@@ -6,7 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class SystemControllerNumberTextBox extends StatefulWidget {
-  SystemControllerNumberTextBox({this.type, this.controller, this.validator, this.readOnly}
+  SystemControllerNumberTextBox({this.type, this.controller, this.validator, this.readOnly,
+  this.showKeyboard = true}
        ) : super(key: ValueKey(type));
 
 
@@ -14,6 +15,7 @@ class SystemControllerNumberTextBox extends StatefulWidget {
   final TextEditingController controller;
   final FormFieldValidator<String> validator;
   final bool readOnly;
+  final bool showKeyboard;
 
 
 
@@ -41,11 +43,13 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
 
   @override
   Widget build(BuildContext context) {
+    // print("system_controlled_number_textbox: widget.showKeyboard: ${widget.showKeyboard}");
     return TextFormField(
               controller: widget.controller,
               validator: widget.validator,
               showCursor: true,
               readOnly: widget.readOnly,
+              showKeyboard: widget.showKeyboard,
               decoration: InputDecoration(
                 suffixIcon:
                   Row(
