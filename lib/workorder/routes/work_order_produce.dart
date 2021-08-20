@@ -2,6 +2,7 @@
 import 'dart:collection';
 import 'dart:core';
 
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
@@ -15,6 +16,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
+import 'package:cwms_mobile/workorder/models/material-consume-timing.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
 import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
@@ -163,17 +165,41 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
       // TO-DO: Now we assume there's only one open work order that assign
       // to the production line at a time
       printLongLogMessage("start to get production line by ${_productionLineNameController.text}");
-      ProductionLine productionLine =
-          await ProductionLineService.getProductionLineByNumber(_productionLineNameController.text);
-      printLongLogMessage("get production line: ${productionLine.name}");
+      ProductionLine productionLine;
+      try {
+        productionLine =
+            await ProductionLineService.getProductionLineByNumber(_productionLineNameController.text);
 
-      WorkOrder assignedWorkOrder = await _getAssignedWorkOrder(productionLine);
-      if (assignedWorkOrder == null) {
+      }
+      on WebAPICallException catch(ex) {
+        Navigator.of(context).pop();
+        showErrorDialog(context, "can't find production line by name ${_productionLineNameController.text}");
         return;
       }
 
-      BillOfMaterial billOfMaterial =
-          await BillOfMaterialService.findMatchedBillOfMaterial(assignedWorkOrder);
+      printLongLogMessage("get production line: ${productionLine.name}");
+      WorkOrder assignedWorkOrder;
+      try {
+        assignedWorkOrder = await _getAssignedWorkOrder(productionLine);
+
+      }
+      on WebAPICallException catch(ex) {
+        Navigator.of(context).pop();
+        showErrorDialog(context, ex.errMsg());
+        return;
+      }
+
+
+      BillOfMaterial billOfMaterial;
+      if (assignedWorkOrder.consumeByBom != null) {
+        billOfMaterial = assignedWorkOrder.consumeByBom;
+      }
+      else {
+
+          billOfMaterial =
+              await BillOfMaterialService.findMatchedBillOfMaterial(assignedWorkOrder);
+
+      }
 
 
       // hide the loading indicator
@@ -200,10 +226,14 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     List<WorkOrder> workOrders =
         await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
 
+    printLongLogMessage("workOrders.length: ${workOrders.length}");
     if (workOrders.length == 0) {
       // we should only have one work order that assigned to the specific production line
       // at a time
-      showErrorDialog(context, "Can't find any work order that assigned to the production line ${productionLine.name}");
+      throw new WebAPICallException(
+          "Can't find any work order that assigned to the production line ${productionLine.name}"
+      );
+
     }
     else if (workOrders.length == 1 ){
       assignedWorkOrder = workOrders[0];
@@ -211,13 +241,27 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     // we found multiple work order that assigned to the production line, make sure
     // the user specify the work order number as well
     else if (_workOrderNumberController.text.isEmpty) {
-      showErrorDialog(context, "multiple work orders found. please specify the work order number as well");
+      throw new WebAPICallException(
+          "multiple work orders found. please specify the work order number as well"
+      );
     }
     else {
       // see if the work order number specified by the user matches any of the work order that
       // assigned to the production
       assignedWorkOrder = workOrders.firstWhere((workOrder) => _workOrderNumberController.text == workOrder.number);
     }
+    // make sure the assigned work has BOM assigned.
+    // right now we are only allow the user to consume the material by BOM
+
+    /*
+    if (assignedWorkOrder.materialConsumeTime != null &&
+        assignedWorkOrder.materialConsumeTime == MaterialConsumeTiming..assignedWorkOrder.consumeByBomOnly == false || assignedWorkOrder.consumeByBom == null) {
+
+      throw new WebAPICallException(
+          "There's no BOM setup for the work order ${assignedWorkOrder.number} on this production line ${productionLine.name}"
+      );
+    }
+    */
     return assignedWorkOrder;
   }
 

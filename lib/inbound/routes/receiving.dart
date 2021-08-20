@@ -230,7 +230,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         Expanded(
                           child:
                             DropdownButton(
-                              hint: Text("请选择"),
+                              hint: Text(""),
                               items: _getItemPackageTypeItems(),
                               value: _selectedItemPackageType,
                               elevation: 1,
@@ -262,7 +262,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                       Expanded(
                           child:
                           DropdownButton(
-                            hint: Text("请选择"),
+                            hint: Text(""),
                             items: _getInventoryStatusItems(),
                             value: _selectedInventoryStatus,
                             elevation: 1,

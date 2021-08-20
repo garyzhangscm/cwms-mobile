@@ -29,7 +29,6 @@ class _LaunchPageState extends State<LaunchPage> {
   bool _autoConnect;
 
   TextEditingController _serverURLController;
-  TextEditingController _rfCodeController;
 
   final _formKey= new GlobalKey<FormState>();
 
@@ -38,8 +37,6 @@ class _LaunchPageState extends State<LaunchPage> {
   void initState(){
     super.initState();
     CWMSSiteInformation server = Global.getAutoConnectServer();
-    _rfCodeController = TextEditingController(
-        text: Global.getLastLoginRFCode());
     print("get auto connect server? ${server == null? '' : server.url}");
 
     if (server != null) {
@@ -86,20 +83,6 @@ class _LaunchPageState extends State<LaunchPage> {
                     return v
                         .trim()
                         .length > 0 ? null : "Please input a valid server";
-                  }
-              ),
-              TextFormField(
-                  controller: _rfCodeController, //设置controller
-                  decoration: InputDecoration(
-                      labelText: "RF code",
-                      hintText: "RF code",
-                      prefixIcon: Icon(Icons.web)
-                  ),
-                  //
-                  validator: (v) {
-                    return v
-                        .trim()
-                        .length > 0 ? null : "Please input a valid RF";
                   }
               ),
               Row(
@@ -171,12 +154,10 @@ class _LaunchPageState extends State<LaunchPage> {
 
       // showLoading(context);
       CWMSSiteInformation server;
-      String rfCode = _rfCodeController.text;
       try {
         print("start to connect to $serverUrl");
         Response response = await Dio().get(
-            serverUrl + "/resource/mobile",
-            queryParameters: {"rfCode": rfCode});
+            serverUrl + "/resource/mobile");
 
         print("get response: $response");
 
@@ -213,7 +194,6 @@ class _LaunchPageState extends State<LaunchPage> {
         // 返回
         Global.addServer(server);
         Global.setCurrentServer(server);
-        Global.setLastLoginRFCode(rfCode);
 
         Navigator.pushNamed(context, "login_page");
       }

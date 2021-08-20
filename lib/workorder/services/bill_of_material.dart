@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -25,6 +26,12 @@ class BillOfMaterialService {
 
     print("response from findMatchedBillOfMaterial: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
     if (responseString["data"] != null) {
       return BillOfMaterial.fromJson(responseString["data"] as Map<String, dynamic>);
 

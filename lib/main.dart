@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cwms_mobile/inventory/routes/audit_count_batch.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_request.dart';
+import 'package:cwms_mobile/inventory/routes/inventory_lost_and_found.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_detail.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
 import 'package:cwms_mobile/shared/global.dart';
@@ -110,6 +111,8 @@ class MyApp extends StatelessWidget {
               "pick_by_order": (context) => PickByOrderPage(),
               "pick": (context) => PickPage(),
               "inventory_deposit": (context) => InventoryDepositPage(),
+              // "inventory_adjust": (context) => InventoryAdjustmentPage(),
+              "inventory_lost_and_found": (context) => InventoryLostFoundPage(),
               "receive": (context) => ReceivingPage(),
               "inventory": (context) => InventoryQueryPage(),
               "inventory_display": (context) => InventoryDetailPage(),

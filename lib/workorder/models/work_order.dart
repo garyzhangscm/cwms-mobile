@@ -5,10 +5,13 @@ import 'package:cwms_mobile/common/models/carrier_service_level.dart';
 import 'package:cwms_mobile/common/models/customer.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
+import 'package:cwms_mobile/workorder/models/material-consume-timing.dart';
 import 'package:cwms_mobile/workorder/models/work_order_line.dart';
 import 'package:cwms_mobile/workorder/models/work_order_status.dart';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'bill_of_material.dart';
 
 
 part 'work_order.g.dart';
@@ -44,6 +47,10 @@ class WorkOrder{
   int totalLineConsumedQuantity;
 
 
+  bool consumeByBomOnly;
+
+  BillOfMaterial consumeByBom;
+  MaterialConsumeTiming materialConsumeTiming;
 
 
 

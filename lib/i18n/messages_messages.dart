@@ -170,6 +170,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
 
     "pickWrongLPN": MessageLookupByLibrary.simpleMessage("lpn is not correct for picking"),
+    "inventoryAdjust": MessageLookupByLibrary.simpleMessage("Inventory Adjust"),
 
 
     "error": MessageLookupByLibrary.simpleMessage("Error"),

@@ -169,6 +169,7 @@ class CWMSLocalizations {
 
 
   String get  pickWrongLPN => Intl.message('lpn is not correct for picking', name: 'pickWrongLPN');
+  String get  inventoryAdjust => Intl.message('Inventory Adjust', name: 'inventoryAdjust');
 
   String get  error => Intl.message('Error', name: 'error');
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/auth/services/login.dart';
+import 'package:cwms_mobile/common/services/rf.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
@@ -29,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController _companyCodeController = new TextEditingController();
   TextEditingController _unameController = new TextEditingController();
   TextEditingController _pwdController = new TextEditingController();
+  TextEditingController _rfCodeController = new TextEditingController();
   List<Warehouse> _validWarehouses = [];
   Warehouse selectedWarehouse;
   bool pwdShow = false;
@@ -56,6 +58,8 @@ class _LoginPageState extends State<LoginPage> {
       _processAutoLogin(Global.autoLoginUser);
     }
     _validWarehouses = [];
+    _rfCodeController = TextEditingController(
+        text: Global.getLastLoginRFCode());
 
   }
 
@@ -131,6 +135,20 @@ class _LoginPageState extends State<LoginPage> {
                 validator: (v) {
                   return v.trim().isNotEmpty ? null : "password is required";
                 },
+              ),
+              TextFormField(
+                  controller: _rfCodeController, //设置controller
+                  decoration: InputDecoration(
+                      labelText: "RF code",
+                      hintText: "RF code",
+                      prefixIcon: Icon(Icons.web)
+                  ),
+                  //
+                  validator: (v) {
+                    return v
+                        .trim()
+                        .length > 0 ? null : "Please input a valid RF";
+                  }
               ),
               Row(
                 children: <Widget>[
@@ -220,15 +238,31 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _processAutoLogin(User user) async{
-    print("start to process auto login with warehouse: ${Global.getAutoLoginWarehouse()}");
+    print("start to process auto login with warehouse: ${Global.getAutoLoginWarehouse().id}");
     if (Global.getAutoLoginWarehouse() == null) {
       print("auto login fail as warehouse is not setup");
 
       showToast("warehouse is not setup for auto login");
 
     }
+    else if (Global.getLastLoginRFCode() == null) {
+      print("auto login fail as rf code is not setup");
+
+      showToast("rf code is not setup for auto login");
+
+    }
     else {
 
+      // make sure the rf is still valid
+      bool isRFCodeValid = await
+          RFService.valdiateRFCode(Global.getAutoLoginWarehouse().id, Global.getLastLoginRFCode());
+      if (!isRFCodeValid) {
+
+        print("auto login fail as rf code ${Global.getLastLoginRFCode()} is not valid");
+
+        showToast("rf code  ${Global.getLastLoginRFCode()} is not valid for auto login");
+        return;
+      }
       try {
         User autoLoginUser =
         await LoginService
@@ -273,6 +307,18 @@ class _LoginPageState extends State<LoginPage> {
       User user;
       int companyId;
       try {
+
+        // make sure the rf code is still valid
+        bool isRFCodeValid = await
+            RFService.valdiateRFCode(selectedWarehouse.id, _rfCodeController.text);
+        if (!isRFCodeValid) {
+
+          print("auto login fail as rf code ${_rfCodeController.text} is not valid");
+
+          showToast("rf code ${_rfCodeController.text} is not valid ");
+          return;
+        }
+
         print("will need to get company by code: " + _companyCodeController.text);
         companyId =
             await CompanyService.validateCompanyByCode(_companyCodeController.text);
@@ -319,6 +365,7 @@ class _LoginPageState extends State<LoginPage> {
         // setup current company
         Global.lastLoginCompanyId = companyId;
         Global.lastLoginCompanyCode = _companyCodeController.text;
+        Global.setLastLoginRFCode(_rfCodeController.text);
 
         // TO-DO: as a temporary solution, we will init the
         // start location as the RF. It will be changed when

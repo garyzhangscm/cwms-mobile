@@ -167,6 +167,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
 
     "pickWrongLPN": MessageLookupByLibrary.simpleMessage("错误的LPN"),
+    "inventoryAdjust": MessageLookupByLibrary.simpleMessage("库存调整"),
 
     "error": MessageLookupByLibrary.simpleMessage("错误"),
 

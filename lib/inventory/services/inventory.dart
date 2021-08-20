@@ -1,7 +1,9 @@
 
+import 'dart:collection';
 import 'dart:convert';
 
 
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -259,5 +261,40 @@ class InventoryService {
     printLongLogMessage("get response from LPN Printing request ${response.toString()}");
 
   }
+
+  static Future<Inventory> addInventory(Inventory inventory,
+      {String documentNumber, String comment}) async {
+    printLongLogMessage("Start calling add inventory");
+
+    Dio httpClient = CWMSHttpClient.getDio();
+    Map<String, dynamic> params = new HashMap();
+    if (documentNumber != null) {
+      params["documentNumber"] = documentNumber;
+    }
+    if (comment != null) {
+      params["comment"] = comment;
+    }
+
+    Response response = await httpClient.put(
+        "inventory/inventory-adj?warehouseId=${Global.currentWarehouse.id}",
+        queryParameters:params,
+        data: inventory
+    );
+
+    printLongLogMessage("get response from addInventory ${response.toString()}");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+    return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
+
+
+
+
+  }
+
 
 }

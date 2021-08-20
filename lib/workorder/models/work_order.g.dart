@@ -29,7 +29,12 @@ WorkOrder _$WorkOrderFromJson(Map<String, dynamic> json) {
     ..totalLineOpenQuantity = json['totalLineOpenQuantity'] as int
     ..totalLineInprocessQuantity = json['totalLineInprocessQuantity'] as int
     ..totalLineDeliveredQuantity = json['totalLineDeliveredQuantity'] as int
-    ..totalLineConsumedQuantity = json['totalLineConsumedQuantity'] as int;
+    ..totalLineConsumedQuantity = json['totalLineConsumedQuantity'] as int
+    ..materialConsumeTiming = materialConsumeTimingFromString(json['materialConsumeTiming'] as String)
+    ..consumeByBomOnly = json['consumeByBomOnly'] as bool
+    ..consumeByBom = json['consumeByBom'] == null
+        ? null
+        : BillOfMaterial.fromJson(json['consumeByBom'] as Map<String, dynamic>);
 }
 
 Map<String, dynamic> _$WorkOrderToJson(WorkOrder instance) => <String, dynamic>{
@@ -48,4 +53,7 @@ Map<String, dynamic> _$WorkOrderToJson(WorkOrder instance) => <String, dynamic>{
   'totalLineInprocessQuantity': instance.totalLineInprocessQuantity,
   'totalLineDeliveredQuantity': instance.totalLineDeliveredQuantity,
   'totalLineConsumedQuantity': instance.totalLineConsumedQuantity,
+  'materialConsumeTiming': instance.materialConsumeTiming,
+  'consumeByBomOnly': instance.consumeByBomOnly,
+  'consumeByBom': instance.consumeByBom,
 };

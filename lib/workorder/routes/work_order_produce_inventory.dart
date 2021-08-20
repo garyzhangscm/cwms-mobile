@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart';
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inbound/models/receipt.dart';
 import 'package:cwms_mobile/inbound/models/receipt_line.dart';
@@ -347,6 +348,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                           child: SystemControllerNumberTextBox(
                               type: "lpn",
                               controller: _lpnController,
+                              readOnly: false,
                               validator: (v) {
                                 if (v.trim().isEmpty) {
                                   return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
@@ -519,15 +521,26 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     showLoading(context);
 
+
     WorkOrderProduceTransaction workOrderProduceTransaction =
         await generateWorkOrderProduceTransaction(
             _lpnController.text, _selectedInventoryStatus,
             _selectedItemPackageType, int.parse(_quantityController.text)
         );
 
-    await WorkOrderService.saveWorkOrderProduceTransaction(
-        workOrderProduceTransaction
-    );
+    try {
+      await WorkOrderService.saveWorkOrderProduceTransaction(
+          workOrderProduceTransaction
+      );
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+
     print("inventory produced!");
     // refresh the work order to reflect the produced quantity
     _refreshWorkOrderInformation();
@@ -581,36 +594,45 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     workOrderProduceTransaction.consumeByBomQuantity = true;
     workOrderProduceTransaction.matchedBillOfMaterial = _matchedBillOfMaterial;
 
+    // We are now only allow consume by BOM when producing from mobile
+    // in case of consuming by BOM, we won't have to setup the
+    // WorkOrderLineConsumeTransaction
     // setup the work order line consume transaction based on teh 
     // matched bom
-    _currentWorkOrder.workOrderLines.forEach((workOrderLine) {
-      
-      WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction
-          = new WorkOrderLineConsumeTransaction();
-      workOrderLineConsumeTransaction.workOrderLine = workOrderLine;
-      if (_matchedBillOfMaterial != null) {
+    /**
+     *
+        _currentWorkOrder.workOrderLines.forEach((workOrderLine) {
+
+        WorkOrderLineConsumeTransaction workOrderLineConsumeTransaction
+        = new WorkOrderLineConsumeTransaction();
+        workOrderLineConsumeTransaction.workOrderLine = workOrderLine;
+        if (_matchedBillOfMaterial != null) {
 
         printLongLogMessage("matchedBillOfMaterial: ${_matchedBillOfMaterial.toJson()}");
         printLongLogMessage("matchedBillOfMaterial.billOfMaterialLines: ${_matchedBillOfMaterial.billOfMaterialLines.length}");
 
 
         BillOfMaterialLine matchedBillOfMaterialLine =
-            _matchedBillOfMaterial.billOfMaterialLines.firstWhere((billOfMaterialLine) =>
-              billOfMaterialLine.itemId == workOrderLine.itemId
-            );
+        _matchedBillOfMaterial.billOfMaterialLines.firstWhere((billOfMaterialLine)  {
+        printLongLogMessage("billOfMaterialLine.itemId: ${billOfMaterialLine.itemId}");
+        printLongLogMessage("workOrderLine.itemId: ${workOrderLine.itemId}");
+        return billOfMaterialLine.itemId == workOrderLine.itemId;
+        }
+        );
 
         workOrderLineConsumeTransaction.consumedQuantity =
-            ((matchedBillOfMaterialLine.expectedQuantity * quantity) /
-                _matchedBillOfMaterial.expectedQuantity).round();
+        ((matchedBillOfMaterialLine.expectedQuantity * quantity) /
+        _matchedBillOfMaterial.expectedQuantity).round();
         workOrderLineConsumeTransactions.add(workOrderLineConsumeTransaction);
-      }
-      else {
+        }
+        else {
 
         workOrderLineConsumeTransaction.consumedQuantity = 0;
         workOrderLineConsumeTransactions.add(workOrderLineConsumeTransaction);
-      }
+        }
 
-    });
+        });
+     */
     printLongLogMessage("workOrderLineConsumeTransactions.length: ${workOrderLineConsumeTransactions.length}");
     workOrderProduceTransaction.workOrderLineConsumeTransactions =
         workOrderLineConsumeTransactions;

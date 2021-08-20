@@ -6,13 +6,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class SystemControllerNumberTextBox extends StatefulWidget {
-  SystemControllerNumberTextBox({this.type, this.controller, this.validator}
+  SystemControllerNumberTextBox({this.type, this.controller, this.validator, this.readOnly}
        ) : super(key: ValueKey(type));
 
 
   final String type;
   final TextEditingController controller;
   final FormFieldValidator<String> validator;
+  final bool readOnly;
 
 
 
@@ -33,19 +34,37 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
           widget.controller.text = value;
     });
   }
+  _clearField() {
+
+    widget.controller.clear();
+  }
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
               controller: widget.controller,
-              validator: widget.validator,decoration: InputDecoration(
-              suffixIcon: IconButton(
-                onPressed: () => _generateNextAvailableNumber(),
-                icon:  Icon(
-                    Icons.double_arrow,
+              validator: widget.validator,
+              showCursor: true,
+              readOnly: widget.readOnly,
+              decoration: InputDecoration(
+                suffixIcon:
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                    mainAxisSize: MainAxisSize.min, // added line
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: () => _generateNextAvailableNumber(),
+                        icon:  Icon(
+                          Icons.double_arrow,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _clearField(),
+                        icon: Icon(Icons.close),
+                      ),
+                    ],
                   ),
-              ),
-            ),
+              )
 
     );
   }
