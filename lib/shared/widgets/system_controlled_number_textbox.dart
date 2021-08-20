@@ -4,6 +4,7 @@ import 'package:cwms_mobile/common/services/system_controlled_number.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SystemControllerNumberTextBox extends StatefulWidget {
   SystemControllerNumberTextBox({this.type, this.controller, this.validator, this.readOnly,
@@ -15,7 +16,7 @@ class SystemControllerNumberTextBox extends StatefulWidget {
   final TextEditingController controller;
   final FormFieldValidator<String> validator;
   final bool readOnly;
-  final bool showKeyboard;
+  bool showKeyboard;
 
 
 
@@ -39,6 +40,11 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
   _clearField() {
 
     widget.controller.clear();
+  }
+  _showKeyBoard() {
+    printLongLogMessage("Start to show keyboard");
+      widget.showKeyboard = true;
+    //SystemChannels.textInput.invokeMethod<void>('TextInput.show');
   }
 
   @override
@@ -66,6 +72,14 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
                         onPressed: () => _clearField(),
                         icon: Icon(Icons.close),
                       ),
+                      widget.showKeyboard ?
+                          Container() :
+                          IconButton(
+                            onPressed: () => _showKeyBoard(),
+                            icon: Icon(
+                              Icons.keyboard_alt,
+                            ),
+                          ),
                     ],
                   ),
               )
