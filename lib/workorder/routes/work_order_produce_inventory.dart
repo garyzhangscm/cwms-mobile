@@ -522,6 +522,22 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     showLoading(context);
 
+    // make sure the user input a valid LPN
+    try {
+      bool validLpn = await InventoryService.validateNewLpn(lpn);
+      if (!validLpn) {
+        Navigator.of(context).pop();
+        showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+        return;
+      }
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
 
     WorkOrderProduceTransaction workOrderProduceTransaction =
         await generateWorkOrderProduceTransaction(

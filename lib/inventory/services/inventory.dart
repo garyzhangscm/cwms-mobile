@@ -297,4 +297,28 @@ class InventoryService {
   }
 
 
+  static Future<bool> validateNewLpn(String lpn) async {
+    printLongLogMessage("start to validate new lpn ${lpn}");
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse.id}",
+        queryParameters: {"lpn": lpn}
+    );
+
+    printLongLogMessage("get response from validateNewLpn ${response.toString()}");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+    return true;
+
+
+
+  }
+
 }

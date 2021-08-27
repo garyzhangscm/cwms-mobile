@@ -43,8 +43,10 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
   }
   _showKeyBoard() {
     printLongLogMessage("Start to show keyboard");
+    setState(() {
       widget.showKeyboard = true;
-    //SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+    });
+    // SystemChannels.textInput.invokeMethod<void>('TextInput.show');
   }
 
   @override
