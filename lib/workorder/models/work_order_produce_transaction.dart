@@ -28,7 +28,7 @@ class WorkOrderProduceTransaction{
   List<WorkOrderProducedInventory> workOrderProducedInventories;
   List<WorkOrderKPITransaction> workOrderKPITransactions;
   bool consumeByBomQuantity;
-  BillOfMaterial matchedBillOfMaterial;
+  BillOfMaterial consumeByBom;
   ProductionLine productionLine;
 
 

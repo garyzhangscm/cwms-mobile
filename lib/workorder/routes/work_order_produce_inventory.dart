@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:badges/badges.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -57,6 +59,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   ItemPackageType _selectedItemPackageType;
 
   BillOfMaterial _matchedBillOfMaterial;
+  FocusNode lpnFocusNode = FocusNode();
 
 
 
@@ -345,18 +348,31 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                       Expanded(
                         child:
                         Focus(
-                          child: SystemControllerNumberTextBox(
-                              type: "lpn",
-                              controller: _lpnController,
-                              readOnly: false,
-                              showKeyboard: false,
-                              validator: (v) {
-                                if (v.trim().isEmpty) {
-                                  return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
-                                }
+                          child:
+                          RawKeyboardListener(
+                              focusNode: lpnFocusNode,
+                              onKey: (event) {
 
-                                return null;
-                              }),
+                                printLongLogMessage("user pressed : ${event.logicalKey}");
+                                if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                                  // Do something
+                                  printLongLogMessage("user pressed enter");
+                                }
+                              },
+                              child:
+                                SystemControllerNumberTextBox(
+                                  type: "lpn",
+                                  controller: _lpnController,
+                                  readOnly: false,
+                                  showKeyboard: false,
+                                  validator: (v) {
+                                    if (v.trim().isEmpty) {
+                                      return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                                    }
+
+                                    return null;
+                                  }),
+                          )
                         ),
                       )
                     ]
@@ -530,6 +546,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
         return;
       }
+      printLongLogMessage("LPN ${lpn} passed the validation");
     }
     on WebAPICallException catch(ex) {
 
@@ -538,6 +555,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       return;
 
     }
+
+    printLongLogMessage("Start to prepare the work order produce transaction");
 
     WorkOrderProduceTransaction workOrderProduceTransaction =
         await generateWorkOrderProduceTransaction(
@@ -609,7 +628,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     List<WorkOrderLineConsumeTransaction> workOrderLineConsumeTransactions =
        [];
     workOrderProduceTransaction.consumeByBomQuantity = true;
-    workOrderProduceTransaction.matchedBillOfMaterial = _matchedBillOfMaterial;
+    workOrderProduceTransaction.consumeByBom = _matchedBillOfMaterial;
 
     // We are now only allow consume by BOM when producing from mobile
     // in case of consuming by BOM, we won't have to setup the

@@ -35,6 +35,6 @@ Map<String, dynamic> _$WorkOrderProduceTransactionToJson(WorkOrderProduceTransac
   'workOrderProducedInventories': instance.workOrderProducedInventories,
   'workOrderKPITransactions': instance.workOrderKPITransactions,
   'consumeByBomQuantity': instance.consumeByBomQuantity,
-  'matchedBillOfMaterial': instance.matchedBillOfMaterial,
+  'consumeByBom': instance.consumeByBom,
   'productionLine': instance.productionLine,
 };
