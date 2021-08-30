@@ -286,6 +286,19 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
     int index = assignedWorkOrders.indexWhere(
             (element) => element.number == workOrder.number);
     if (index < 0) {
+      // setup the quantites before assigning the work order
+      workOrder.totalLineExpectedQuantity = 0;
+      workOrder.totalLineOpenQuantity = 0;
+      workOrder.totalLineInprocessQuantity = 0;
+      workOrder.totalLineDeliveredQuantity = 0;
+      workOrder.totalLineConsumedQuantity = 0;
+      workOrder.workOrderLines.forEach((workOrderLine) {
+        workOrder.totalLineExpectedQuantity += workOrderLine.expectedQuantity;
+        workOrder.totalLineOpenQuantity += workOrderLine.openQuantity;
+        workOrder.totalLineInprocessQuantity += workOrderLine.inprocessQuantity;
+        workOrder.totalLineDeliveredQuantity += workOrderLine.deliveredQuantity;
+        workOrder.totalLineConsumedQuantity += workOrderLine.consumedQuantity;
+      });
 
       setState(() {
         workOrderPriorityMap[workOrder.number] = false;
@@ -389,6 +402,10 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
         _startPickingForWorkOrder();
       }
 
+    }
+    else {
+      // we don't have any picks
+      showErrorDialog(context, "No More Picks");
     }
   }
 

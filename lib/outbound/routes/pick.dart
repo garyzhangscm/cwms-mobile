@@ -457,7 +457,8 @@ class _PickPageState extends State<PickPage> {
         {'result': true, 'confirmedQuantity': confirmedQuantity});
 
     // refresh the pick on the RF
-    _reloadInventoryOnRF();
+    // _reloadInventoryOnRF();
+
 
     Navigator.pop(context, pickResult);
   }
