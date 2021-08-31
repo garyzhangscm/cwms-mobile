@@ -486,6 +486,8 @@ class _PickPageState extends State<PickPage> {
     if(pick.confirmItemFlag == false) {
       _itemController.text = pick.item.name;
     }
+    printLongLogMessage("pick.confirmLocationFlag: ${pick.confirmLocationFlag}");
+    printLongLogMessage("pick.confirmLocationCodeFlag: ${pick.confirmLocationCodeFlag}");
     if (pick.confirmLocationFlag == false &&
         pick.confirmLocationCodeFlag == false) {
       _sourceLocationController.text = pick.sourceLocation.name;

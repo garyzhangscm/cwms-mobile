@@ -60,6 +60,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   BillOfMaterial _matchedBillOfMaterial;
   FocusNode lpnFocusNode = FocusNode();
+  bool _readyToConfirm = true; // whether we can confirm the produced inventory
 
 
 
@@ -353,10 +354,17 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                               focusNode: lpnFocusNode,
                               onKey: (event) {
 
-                                printLongLogMessage("user pressed : ${event.logicalKey}");
+                                // printLongLogMessage("user pressed : ${event.logicalKey}");
                                 if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
                                   // Do something
-                                  printLongLogMessage("user pressed enter");
+
+                                  setState(() {
+                                    // disable the confirm button
+                                    _readyToConfirm = false;
+                                  });
+
+                                  printLongLogMessage("user pressed enter, lpn is: ${_lpnController.text}");
+                                  _enterOnLPNController(10);
                                 }
                               },
                               child:
@@ -401,8 +409,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             padding: const EdgeInsets.only(left: 10.0, right: 10.0),
                             child:
                               RaisedButton(
-                                color: Theme.of(context).primaryColor,
-                                onPressed: () {
+                                color: _readyToConfirm? Theme.of(context).primaryColor
+                                             : Theme.of(context).disabledColor,
+                                onPressed: _readyToConfirm?  () {
                                   if (_formKey.currentState.validate()) {
                                     print("form validation passed");
                                     _onWorkOrderProduceConfirm(_currentWorkOrder,
@@ -410,7 +419,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                                         _lpnController.text);
                                   }
 
-                                },
+                                } : null,
                                 textColor: Colors.white,
                                 child: Text(CWMSLocalizations
                                     .of(context)
@@ -531,10 +540,50 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
 
 
+  void _enterOnLPNController(int tryTime) async {
+    // we may come here when the user scan / press
+    // enter in the LPN controller. In either case, we will need to make sure
+    // the lpn doesn't have focus before we start confirm
+
+    printLongLogMessage("Start to confirm work order produced inventory, tryTime = $tryTime}");
+    if (tryTime <= 0) {
+      // do nothing as we run out of try time
+
+      setState(() {
+        // enable the confirm button
+        _readyToConfirm = true;
+      });
+      return;
+    }
+    if (lpnFocusNode.hasFocus) {
+      printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
+      Future.delayed(const Duration(milliseconds: 100),
+              () => _enterOnLPNController(tryTime - 1));
+
+      return;
+
+    }
+    // if we are here, then it means we already have the full LPN
+    // due to how  flutter handle the input, we will get the enter
+    // action listner handler fired before the input characters are
+    // full assigned to the lpnController.
+
+    printLongLogMessage("lpn controller lost focus, its value is ${_lpnController.text}");
+    if (_formKey.currentState.validate()) {
+      print("form validation passed");
+      _onWorkOrderProduceConfirm(_currentWorkOrder,
+          int.parse(_quantityController.text),
+          _lpnController.text);
+    }
+
+    setState(() {
+      // enable the confirm button
+      _readyToConfirm = true;
+    });
+
+  }
   void _onWorkOrderProduceConfirm(WorkOrder workOrder, int confirmedQuantity,
-      String lpn) async {
-
-
+      String lpn ) async {
 
     showLoading(context);
 
