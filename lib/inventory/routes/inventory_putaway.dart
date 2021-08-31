@@ -42,11 +42,24 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
   List<Inventory>  inventoryOnRF;
 
+  FocusNode lpnFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
 
     inventoryOnRF = new List<Inventory>();
+
+
+
+    lpnFocusNode.addListener(() {
+      print("lpnFocusNode.hasFocus: ${lpnFocusNode.hasFocus}");
+      if (!lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _onAddingLPN();
+
+      }
+    });
 
     _reloadInventoryOnRF();
   }
@@ -78,6 +91,8 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   Widget _buildLPNScanner(BuildContext context) {
     return TextFormField(
         controller: _lpnController,
+        focusNode: lpnFocusNode,
+        autofocus: true,
         decoration: InputDecoration(
           labelText: CWMSLocalizations.of(context).lpn,
           hintText: "please input batch id",

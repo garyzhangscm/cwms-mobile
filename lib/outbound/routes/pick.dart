@@ -52,8 +52,35 @@ class _PickPageState extends State<PickPage> {
 
     _reloadInventoryOnRF();
 
-    _lpnFocusNode.addListener(() { 
+    _lpnFocusNode.addListener(() async {
       printLongLogMessage("_lpnFocusNode hasFocus?: ${_lpnFocusNode.hasFocus}");
+      if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
+        // if we tab out, then confirm the pick
+        int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
+
+        if (pickableQuantity > 0) {
+
+          // lpn is valid, go to next control
+          _quantityController.text = pickableQuantity.toString();
+          if(_currentPick.confirmLpnFlag) {
+            _lpnValidateResult = await validateLPN(_lpnController.text);
+          }
+          if (_formKey.currentState.validate()) {
+            _onPickConfirm(_currentPick, int.parse(_quantityController.text));
+          }
+        }
+        else {
+          if (_currentPick.quantity > _currentPick.pickedQuantity) {
+            _quantityController.text = (_currentPick.quantity - _currentPick.pickedQuantity).toString();
+          }
+          else {
+            _quantityController.text = "0";
+          }
+          showToast(CWMSLocalizations.of(context).pickWrongLPN);
+        }
+
+
+      }
     });
 
   }
@@ -193,7 +220,8 @@ class _PickPageState extends State<PickPage> {
                                 }
                               },
                               controller: _lpnController,
-                              focusNode: _lpnFocusNode,
+                              // focusNode: _lpnFocusNode,
+                              autofocus: true,
                               validator: (v) {
                                 if (v.trim().isEmpty) {
                                   return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
@@ -335,6 +363,9 @@ class _PickPageState extends State<PickPage> {
                                     }
                                     if (int.parse(v.trim()) >
                                           (_currentPick.quantity - _currentPick.pickedQuantity)) {
+                                      printLongLogMessage("v.trim(): ${v.trim()} ");
+                                      printLongLogMessage("_currentPick.quantity: ${_currentPick.quantity} ");
+                                      printLongLogMessage("_currentPick.pickedQuantity: ${_currentPick.pickedQuantity} ");
 
                                       return "over pick is not allowed";
                                     }
@@ -353,6 +384,7 @@ class _PickPageState extends State<PickPage> {
       endDrawer: MyDrawer(),
     );
   }
+
 
 
   Widget _buildButtons(BuildContext context) {

@@ -40,6 +40,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
   // a map of relationship beteen order and pick id
   HashMap orderPicks = new HashMap<String, Set<int>>();
+  FocusNode _orderNumberFocusNode = FocusNode();
 
 
   // map to store order's priority
@@ -77,6 +78,15 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     selectedOrders = [];
     inventoryOnRF = new List<Inventory>();
 
+    _orderNumberFocusNode.addListener(() {
+      print("_orderNumberFocusNode.hasFocus: ${_orderNumberFocusNode.hasFocus}");
+      if (!_orderNumberFocusNode.hasFocus && _orderNumberController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _onAddingOrder();
+
+      }
+    });
+
     _reloadInventoryOnRF();
 
   }
@@ -111,6 +121,8 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
                   children: <Widget>[
                     TextFormField(
                       controller: _orderNumberController,
+                      autofocus: true,
+                      focusNode: _orderNumberFocusNode,
                       decoration: InputDecoration(
                         labelText: CWMSLocalizations
                             .of(context)

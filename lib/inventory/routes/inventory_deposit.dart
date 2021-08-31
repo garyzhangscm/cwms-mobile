@@ -33,6 +33,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   InventoryDepositRequest inventoryDepositRequest;
 
   final  _formKey = GlobalKey<FormState>();
+  FocusNode _locationFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -40,6 +41,16 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     print("Start to get inventory on RF");
     inventoryDepositRequest = new InventoryDepositRequest();
     inventoryOnRF = new List<Inventory>();
+
+    _locationFocusNode.addListener(() {
+      print("_locationFocusNode.hasFocus: ${_locationFocusNode.hasFocus}");
+      if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _onDepositConfirm(inventoryDepositRequest);
+
+      }
+    });
+
     _refreshInventoryOnRF();
   }
 
@@ -259,6 +270,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
               children: <Widget>[
                 TextFormField(
                   controller: _locationController,
+                  autofocus: true,
+                  focusNode: _locationFocusNode,
                   decoration: InputDecoration(
                     labelText: CWMSLocalizations
                         .of(context)
@@ -421,6 +434,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     Navigator.of(context).pop();
 
     showToast("inventory deposit");
+    // _locationFocusNode.requestFocus();
 
     // let's get next inventory to be deposit
     _refreshInventoryOnRF();
