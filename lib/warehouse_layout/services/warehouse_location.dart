@@ -3,6 +3,7 @@ import 'dart:convert';
 
 
 
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
@@ -29,6 +30,11 @@ class WarehouseLocationService {
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
     List<WarehouseLocation> locations
     = (responseString["data"] as List)?.map((e) =>
     e == null ? null : WarehouseLocation.fromJson(e as Map<String, dynamic>))
@@ -37,7 +43,7 @@ class WarehouseLocationService {
     // we should only have one location returned since we qualify by
     // name and warehouse id
     if (locations.length != 1) {
-      return null;
+      throw new WebAPICallException("can't find location by name ${locationName}");
     }
     else {
       return locations[0];

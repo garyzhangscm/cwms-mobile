@@ -170,6 +170,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "inventoryAdjust": MessageLookupByLibrary.simpleMessage("库存调整"),
 
     "error": MessageLookupByLibrary.simpleMessage("错误"),
+    "skip" : MessageLookupByLibrary.simpleMessage("跳过"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

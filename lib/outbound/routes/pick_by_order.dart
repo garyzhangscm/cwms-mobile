@@ -2,6 +2,7 @@
 import 'dart:collection';
 import 'dart:core';
 
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
@@ -143,67 +144,47 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   }
   Widget _buildButtons(BuildContext context) {
 
-    return
-      Row(
-
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.max,
-        //交叉轴的布局方式，对于column来说就是水平方向的布局方式
-        crossAxisAlignment: CrossAxisAlignment.center,
-        //就是字child的垂直布局方向，向上还是向下
-        verticalDirection: VerticalDirection.down,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
+    return Column(
+      children: [
+        buildTowButtonRow(context,
+          ElevatedButton(
               onPressed: _onAddingOrder,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).addOrder),
-            ),
-
+              child: Text(CWMSLocalizations.of(context).addOrder)
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
+          ElevatedButton(
               onPressed: _onChooseOrder,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).chooseOrder),
-            ),
-
+              child: Text(CWMSLocalizations.of(context).chooseOrder)
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: RaisedButton(
-              color: Theme.of(context).primaryColor,
+        ),
+        buildTowButtonRow(context,
+          ElevatedButton(
               onPressed: _onStartingPicking,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).start),
-            ),
+              child: Text(CWMSLocalizations.of(context).start)
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child:
-              Badge(
-                showBadge: true,
-                padding: EdgeInsets.all(8),
-                badgeColor: Colors.deepPurple,
-                badgeContent: Text(
-                  inventoryOnRF.length.toString(),
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          Badge(
+              showBadge: true,
+              padding: EdgeInsets.all(8),
+              badgeColor: Colors.deepPurple,
+              badgeContent: Text(
+                inventoryOnRF.length.toString(),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              child:
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: ElevatedButton(
+                    onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+                    child: Text(CWMSLocalizations.of(context).depositInventory),
+                  ),
                 ),
-                child: RaisedButton(
-                  onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
-                ),
-              )
-          ),
-        ],
+          )
+        )
+      ],
     );
+
+
   }
+
 
 
   Widget _buildOrderList(BuildContext context) {
@@ -263,15 +244,35 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     if (_orderNumberController.text.isNotEmpty &&
         !_orderAlreadyInList(_orderNumberController.text)) {
 
-      Order order =
-        await OrderService.getOrderByNumber(_orderNumberController.text);
+      showLoading(context);
+      try {
 
+        Order order =
+            await OrderService.getOrderByNumber(_orderNumberController.text);
 
-      if (order != null) {
-        _assignOrderToUser(order);
-        print("Will add order ${order.number} to the list");
-        _orderNumberController.clear();
+        if (order != null) {
+          _assignOrderToUser(order);
+          print("Will add order ${order.number} to the list");
+          _orderNumberController.clear();
+          _orderNumberFocusNode.requestFocus();
+        }
+
+        Navigator.of(context).pop();
       }
+      on WebAPICallException catch(ex) {
+
+
+        Navigator.of(context).pop();
+        showErrorDialog(context, ex.errMsg());
+        //_orderNumberFocusNode.requestFocus();
+        return;
+
+      }
+    }
+    else {
+
+      _orderNumberController.clear();
+      _orderNumberFocusNode.requestFocus();
     }
 
   }
@@ -443,12 +444,19 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   Pick _getNextValidPick() {
     print(" =====   _getNextValidPick      =====");
     assignedPicks.forEach((pick) {
-      print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity}");
+      print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity} / ${pick.skipCount}");
     });
     if (assignedPicks.isEmpty) {
        return null;
     }
     else {
+      // sort the pick first so skipped pick will come last
+      assignedPicks.sort((a, b) => a.skipCount.compareTo(b.skipCount));
+
+      print(" =====   after sort, we have picks      =====");
+      assignedPicks.forEach((pick) {
+        print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity} / ${pick.skipCount}");
+      });
       return assignedPicks.firstWhere((pick) => pick.quantity > pick.pickedQuantity, orElse: () => null);
     }
   }

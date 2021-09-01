@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
@@ -27,8 +28,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   // show LPN and Item
   // allow the user to choose LPN or Item if there're
   // multiple LPN to deposit, or multiple Item on the same LPN to deposit
-  TextEditingController _lpnController = new TextEditingController();
   TextEditingController _locationController = new TextEditingController();
+  TextEditingController _lpnController = new TextEditingController();
   List<Inventory> inventoryOnRF;
   InventoryDepositRequest inventoryDepositRequest;
 
@@ -44,12 +45,16 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
     _locationFocusNode.addListener(() {
       print("_locationFocusNode.hasFocus: ${_locationFocusNode.hasFocus}");
+      print("_locationFocusNode.text: ${_locationController.text}");
       if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
         _onDepositConfirm(inventoryDepositRequest);
 
       }
     });
+
+    _locationController.clear();
+    _locationFocusNode.requestFocus();
 
     _refreshInventoryOnRF();
   }
@@ -89,8 +94,9 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
           inventoryDepositRequest = _getNextInventoryToDeposit();
           _lpnController.text = inventoryDepositRequest.lpn;
-          _locationController.text = "";
+          // _locationController.text = "";
         });
+
       }
     });
 
@@ -100,98 +106,35 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(title: Text("CWMS - Deposit")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          autovalidateMode: AutovalidateMode.always, //开启自动校验
+          // autovalidateMode: AutovalidateMode.always, //开启自动校验
           child: Column(
             children: <Widget>[
               _buildLPNScanner(context),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                Row(
-                    children: <Widget>[
-                      Text("Item:",
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(inventoryDepositRequest.itemName,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
+              buildTwoSectionInformationRow(
+                  "Item:",
+                inventoryDepositRequest.itemName,
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                Row(
-                    children: <Widget>[
-                      Text("Item:",
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(inventoryDepositRequest.itemDescription,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
+              buildTwoSectionInformationRow(
+                "Item:",
+                inventoryDepositRequest.itemDescription,
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                Row(
-                    children: <Widget>[
-                      Text("Inventory Status:",
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(inventoryDepositRequest.inventoryStatusName,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
+              buildTwoSectionInformationRow(
+                "Inventory Status:",
+                inventoryDepositRequest.inventoryStatusDescription,
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                Row(
-                    children: <Widget>[
-                      Text("Inventory Status:",
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(inventoryDepositRequest.inventoryStatusDescription,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
+              buildTwoSectionInformationRow(
+                "Quantity:",
+                  inventoryDepositRequest.quantity.toString()
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                Row(
-                    children: <Widget>[
-                      Text("Quantity:",
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(inventoryDepositRequest.quantity.toString(),
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                Row(
-                    children: <Widget>[
-                      Text("Location:",
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(inventoryDepositRequest.nextLocation == null? "" : inventoryDepositRequest.nextLocation.name,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
+              buildTwoSectionInformationRow(
+                "Location:",
+                inventoryDepositRequest.nextLocation == null? "" : inventoryDepositRequest.nextLocation.name,
               ),
               _buildLocationScanner(context),
               Padding(
@@ -265,7 +208,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   Widget _buildLocationScanner(BuildContext context) {
     return
       Padding(
-          padding: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.only(top: 1),
           child: Column(
               children: <Widget>[
                 TextFormField(
@@ -413,10 +356,25 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
     showLoading(context);
     // Let's get the location first
-    WarehouseLocation destinationLocation =
-        await WarehouseLocationService.getWarehouseLocationByName(
-            _locationController.text
-        );
+
+    WarehouseLocation destinationLocation;
+    try {
+      destinationLocation =
+          await WarehouseLocationService.getWarehouseLocationByName(
+              _locationController.text
+          );
+
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      _locationController.selection = TextSelection(baseOffset: 0,
+          extentOffset: _locationController.text.length);
+      return;
+
+    }
+
 
 
     printLongLogMessage("location ${destinationLocation.name} verified!");
@@ -434,7 +392,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     Navigator.of(context).pop();
 
     showToast("inventory deposit");
-    // _locationFocusNode.requestFocus();
+    _locationController.clear();
+    _locationFocusNode.requestFocus();
 
     // let's get next inventory to be deposit
     _refreshInventoryOnRF();

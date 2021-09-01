@@ -25,6 +25,8 @@ class Pick{
   bool confirmLocationCodeFlag;
   bool confirmLpnFlag;
 
+  int skipCount = 0;
+
 
 
 

@@ -174,6 +174,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
 
     "error": MessageLookupByLibrary.simpleMessage("Error"),
+    "skip" : MessageLookupByLibrary.simpleMessage("Skip"),
 
 
 

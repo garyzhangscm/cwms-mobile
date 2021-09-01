@@ -172,6 +172,7 @@ class CWMSLocalizations {
   String get  inventoryAdjust => Intl.message('Inventory Adjust', name: 'inventoryAdjust');
 
   String get  error => Intl.message('Error', name: 'error');
+  String get skip => Intl.message('Skip', name: 'skip');
 
 
   String missingField(Object name) {

@@ -129,3 +129,85 @@ showErrorDialog(BuildContext context, String message) {
     },
   );
 }
+
+
+Widget buildTowButtonRow(BuildContext context, Widget button1, Widget button2) {
+  return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.max,
+      //交叉轴的布局方式，对于column来说就是水平方向的布局方式
+      crossAxisAlignment: CrossAxisAlignment.center,
+      //就是字child的垂直布局方向，向上还是向下
+      verticalDirection: VerticalDirection.down,
+      children: [
+        SizedBox(
+            width: MediaQuery.of(context).size.width * 0.45,
+            child: button1
+        ),
+        SizedBox(
+            width: MediaQuery.of(context).size.width * 0.45,
+            child: button2
+        ),
+      ]
+  );
+}
+
+
+Widget buildThreeButtonRow(BuildContext context, Widget button1, Widget button2, Widget button3) {
+  return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.max,
+      //交叉轴的布局方式，对于column来说就是水平方向的布局方式
+      crossAxisAlignment: CrossAxisAlignment.center,
+      //就是字child的垂直布局方向，向上还是向下
+      verticalDirection: VerticalDirection.down,
+      children: [
+        SizedBox(
+            width: MediaQuery.of(context).size.width * 0.3,
+            child: button1
+        ),
+        SizedBox(
+            width: MediaQuery.of(context).size.width * 0.3,
+            child: button2
+        ),
+        SizedBox(
+            width: MediaQuery.of(context).size.width * 0.3,
+            child: button3
+        ),
+      ]
+  );
+}
+
+
+Widget buildTwoSectionInformationRow(String name, String value) {
+  return Padding(
+    padding: EdgeInsets.only(top: 10, bottom: 10),
+    child:
+    Row(
+        children: <Widget>[
+          Padding(padding: EdgeInsets.only(right: 10),
+            child: Text(name, textAlign: TextAlign.left),
+          ),
+          Text(value, textAlign: TextAlign.left),
+        ]
+    ),
+  );
+}
+Widget buildTowSectionInputRow(String name, Widget inputController) {
+  return Padding(
+    padding: EdgeInsets.only(top: 10, bottom: 10),
+    child:
+    // confirm the location
+    Row(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Text(name, textAlign: TextAlign.left ),
+          ),
+          Expanded(
+              child: inputController
+          )
+        ]
+    ),
+  );
+}

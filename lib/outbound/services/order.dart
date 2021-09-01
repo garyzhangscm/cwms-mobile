@@ -1,8 +1,10 @@
 
 import 'dart:convert';
 
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
+import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
@@ -21,7 +23,12 @@ class OrderService {
 
     print("response from Order: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
-    List<dynamic> responseData = responseString["data"];
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
 
     List<Order> orders
     = (responseString["data"] as List)?.map((e) =>
@@ -34,7 +41,7 @@ class OrderService {
       return orders.first;
     }
     else {
-      return null;
+      throw new WebAPICallException("can't find order by number ${orderNumber}");
     }
 
   }

@@ -54,6 +54,7 @@ class _PickPageState extends State<PickPage> {
 
     _lpnFocusNode.addListener(() async {
       printLongLogMessage("_lpnFocusNode hasFocus?: ${_lpnFocusNode.hasFocus}");
+      printLongLogMessage("_lpnFocusNode text?: ${_lpnController.text}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
         // if we tab out, then confirm the pick
         int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
@@ -102,279 +103,127 @@ class _PickPageState extends State<PickPage> {
           //autovalidateMode: AutovalidateMode.always, //开启自动校验
           child: Column(
             children: <Widget>[
-
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                  Row(
-                      children: <Widget>[
-                        Padding(padding: EdgeInsets.only(right: 10), child:
-                          Text("Work Number:",
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-
-                        Text(_currentPick.number,
-                          textAlign: TextAlign.left,
-                        ),
-                      ]
-                  ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                  // display the location
-                  Row(
-                      children: <Widget>[
-                        Padding(padding: EdgeInsets.only(right: 10), child:
-                          Text("Location:",
-                            textAlign: TextAlign.left,
-                          ),
-                        ),
-
-                        Text(_currentPick.sourceLocation.name,
-                          textAlign: TextAlign.left,
-                        ),
-                      ]
-                  ),
-              ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    // confirm the location
-                    Row(
-                        children: <Widget>[
-                          Padding(padding: EdgeInsets.only(right: 10), child:
-                            Text("Location:",
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-
-                          Expanded(
-                            child:
-                              Focus(
-                                child: TextFormField(
-                                    textInputAction: TextInputAction.next,
-                                    controller: _sourceLocationController,
-                                    decoration: InputDecoration(
-                                      suffixIcon: IconButton(
-                                        onPressed: () => _startLocationBarcodeScanner(),
-                                        icon: Icon(Icons.scanner),
-                                      ),
-                                    ),
-                                    // 校验company code（不能为空）
-                                    validator: (v) {
-                                      if (v.trim().isEmpty) {
-                                        return "please scan in location";
-                                      }
-                                      if (v.trim() != _currentPick.sourceLocation.name) {
-
-                                        return "wrong location";
-                                      }
-                                      return null;
-
-                                    }),
-                              ),
-                          )
-                        ]
-                    ),
-              ),
-
-              // LPN number
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                // confirm the lpn
-                Row(
-                    children: <Widget>[
-
-                      Padding(padding: EdgeInsets.only(right: 10), child:
-                        Text(CWMSLocalizations.of(context).lpn,
-                          textAlign: TextAlign.left,
+              buildTwoSectionInformationRow("Work Number:", _currentPick.number),
+              buildTwoSectionInformationRow("Location:", _currentPick.sourceLocation.name),
+              buildTowSectionInputRow("Location:",
+                Focus(
+                  child: TextFormField(
+                      textInputAction: TextInputAction.next,
+                      controller: _sourceLocationController,
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          onPressed: () => _startLocationBarcodeScanner(),
+                          icon: Icon(Icons.scanner),
                         ),
                       ),
+                      // 校验company code（不能为空）
+                      validator: (v) {
+                        if (v.trim().isEmpty) {
+                          return "please scan in location";
+                        }
+                        if (v.trim() != _currentPick.sourceLocation.name) {
 
-                      _currentPick.confirmLpnFlag ?
-                        Expanded(
-                          child: TextFormField(
-                              textInputAction: TextInputAction.next,
-                              onEditingComplete: () async {
-                                int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
+                          return "wrong location";
+                        }
+                        return null;
 
-                                if (pickableQuantity > 0) {
+                      }),
+                )
+              ),
 
-                                  // lpn is valid, go to next control
-                                  _quantityController.text = pickableQuantity.toString();
-                                  FocusScope.of(context).nextFocus();
-                                }
-                                else {
+              buildTowSectionInputRow(CWMSLocalizations.of(context).lpn,
+                  _currentPick.confirmLpnFlag ?
+                  TextFormField(
+                    textInputAction: TextInputAction.next,
+                    onEditingComplete: () async {
+                      int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
+                      if (pickableQuantity > 0) {
+                        // lpn is valid, go to next control
+                        _quantityController.text = pickableQuantity.toString();
+                        FocusScope.of(context).nextFocus();
+                      }
+                      else {
+                        if (_currentPick.quantity > _currentPick.pickedQuantity) {
+                          _quantityController.text = (_currentPick.quantity - _currentPick.pickedQuantity).toString();
+                        }
+                        else {
+                          _quantityController.text = "0";
+                        }
+                        showToast(CWMSLocalizations.of(context).pickWrongLPN);
+                      }
+                    },
+                    controller: _lpnController,
+                    focusNode: _lpnFocusNode,
+                    autofocus: true,
+                    validator: (v) {
+                      if (v.trim().isEmpty) {
+                        return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                      }
+                      if (!_lpnValidateResult) {
+                       return CWMSLocalizations.of(context).pickWrongLPN;
+                      }
+                      return null;
+                  })
+                  :
+                  Container()
+              ),
+              buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
+              buildTowSectionInputRow(CWMSLocalizations.of(context).lpn,
+                  _currentPick.confirmItemFlag ?
+                  Expanded(
+                    child:
+                    Focus(
+                      child: TextFormField(
+                          textInputAction: TextInputAction.next,
+                          controller: _itemController,
+                          decoration: InputDecoration(
+                            suffixIcon: IconButton(
+                              onPressed: () => _startItemBarcodeScanner(),
+                              icon: Icon(Icons.scanner),
+                            ),
+                          ),
+                          // 校验ITEM NUMBER（不能为空）
+                          validator: (v) {
 
-                                  if (_currentPick.quantity > _currentPick.pickedQuantity) {
+                            if (v.trim().isEmpty) {
+                              return "please scan in item";
+                            }
+                            if (v.trim() != _currentPick.item.name) {
 
-                                    _quantityController.text = (_currentPick.quantity - _currentPick.pickedQuantity).toString();
-                                  }
-                                  else {
-                                    _quantityController.text = "0";
-                                  }
-                                  showToast(CWMSLocalizations.of(context).pickWrongLPN);
-                                }
-                              },
-                              controller: _lpnController,
-                              // focusNode: _lpnFocusNode,
-                              autofocus: true,
-                              validator: (v) {
-                                if (v.trim().isEmpty) {
-                                  return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
-                                }
-                                if (!_lpnValidateResult) {
-                                  return CWMSLocalizations.of(context).pickWrongLPN;
-                                }
-                                return null;
-                              }),
-                        )
+                              return "wrong item";
+                            }
+                            return null;
+                          }),
+                    ),
+                  )
+                      :
+                  Container()
+              ),
+              buildTwoSectionInformationRow("Pick Quantity:", _currentPick.quantity.toString()),
+              buildTwoSectionInformationRow("Picked Quantity:", _currentPick.pickedQuantity.toString()),
+              buildTowSectionInputRow("Picking Quantity:",
+                Focus(
+                  child: TextFormField(
+                      textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.number,
+                      controller: _quantityController,
+                      // 校验ITEM NUMBER（不能为空）
+                      validator: (v) {
 
-                            :
-                        Container()
-                    ]
+                        if (v.trim().isEmpty) {
+                          return "please type in quantity";
+                        }
+                        if (int.parse(v.trim()) >
+                            (_currentPick.quantity - _currentPick.pickedQuantity)) {
+                          printLongLogMessage("v.trim(): ${v.trim()} ");
+                          printLongLogMessage("_currentPick.quantity: ${_currentPick.quantity} ");
+                          printLongLogMessage("_currentPick.pickedQuantity: ${_currentPick.pickedQuantity} ");
+
+                          return "over pick is not allowed";
+                        }
+                        return null;
+                      }),
                 ),
-              ),
-
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    // display the item
-                    Row(
-                        children: <Widget>[
-                          Padding(padding: EdgeInsets.only(right: 10), child:
-                            Text("Item Number:",
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-
-                          Text(_currentPick.item.name,
-                            textAlign: TextAlign.left,
-                          ),
-                        ]
-                    ),
-              ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    // confirm the item
-                    Row(
-                        children: <Widget>[
-                          Padding(padding: EdgeInsets.only(right: 10), child:
-                            Text("Item Number:",
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-
-
-                          _currentPick.confirmItemFlag ?
-                            Expanded(
-                              child:
-                              Focus(
-                                child: TextFormField(
-                                    textInputAction: TextInputAction.next,
-                                    controller: _itemController,
-                                    decoration: InputDecoration(
-                                      suffixIcon: IconButton(
-                                        onPressed: () => _startItemBarcodeScanner(),
-                                        icon: Icon(Icons.scanner),
-                                      ),
-                                    ),
-                                    // 校验ITEM NUMBER（不能为空）
-                                    validator: (v) {
-
-                                      if (v.trim().isEmpty) {
-                                        return "please scan in item";
-                                      }
-                                      if (v.trim() != _currentPick.item.name) {
-
-                                        return "wrong item";
-                                      }
-                                      return null;
-                                    }),
-                              ),
-                            )
-                                :
-                            Container()
-                        ]
-                    ),
-              ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    Row(
-                        children: <Widget>[
-                          Padding(padding: EdgeInsets.only(right: 10), child:
-                            Text("Pick Quantity:",
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-
-                          Text(_currentPick.quantity.toString(),
-                            textAlign: TextAlign.left,
-                          ),
-                        ]
-                    ),
-              ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    Row(
-                        children: <Widget>[
-                          Padding(padding: EdgeInsets.only(right: 10), child:
-                            Text("Picked Quantity:",
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-
-                          Text(_currentPick.pickedQuantity.toString(),
-                            textAlign: TextAlign.left,
-                          ),
-                        ]
-                    ),
-              ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    // always force the user to input / confirm the quantity
-                    // picked this time
-                    Row(
-                        children: <Widget>[
-                          Padding(padding: EdgeInsets.only(right: 10), child:
-                            Text("Picking Quantity:",
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-                          Expanded(
-                            child:
-                            Focus(
-                              child: TextFormField(
-                                  textInputAction: TextInputAction.next,
-                                  keyboardType: TextInputType.number,
-                                  controller: _quantityController,
-                                  // 校验ITEM NUMBER（不能为空）
-                                  validator: (v) {
-
-                                    if (v.trim().isEmpty) {
-                                      return "please type in quantity";
-                                    }
-                                    if (int.parse(v.trim()) >
-                                          (_currentPick.quantity - _currentPick.pickedQuantity)) {
-                                      printLongLogMessage("v.trim(): ${v.trim()} ");
-                                      printLongLogMessage("_currentPick.quantity: ${_currentPick.quantity} ");
-                                      printLongLogMessage("_currentPick.pickedQuantity: ${_currentPick.pickedQuantity} ");
-
-                                      return "over pick is not allowed";
-                                    }
-                                    return null;
-                                  }),
-                            ),
-                          )
-                        ]
-                    ),
               ),
               _buildButtons(context),
             ],
@@ -389,56 +238,46 @@ class _PickPageState extends State<PickPage> {
 
   Widget _buildButtons(BuildContext context) {
 
-    return
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.max,
-        //交叉轴的布局方式，对于column来说就是水平方向的布局方式
-        crossAxisAlignment: CrossAxisAlignment.center,
-        //就是字child的垂直布局方向，向上还是向下
-        verticalDirection: VerticalDirection.down,
-        children: [
-
-               ElevatedButton(
-                 onPressed: () async {
-                  //  Let's make sure the user input the right LPN
-                  if(_currentPick.confirmLpnFlag) {
-                    _lpnValidateResult = await validateLPN(_lpnController.text);
-                  }
-                  if (_formKey.currentState.validate()) {
-                    _onPickConfirm(_currentPick, int.parse(_quantityController.text));
-                  }
-                 },
-                 child: SizedBox(
-                   width: MediaQuery.of(context).size.width * 0.4,
-                   child: Text(CWMSLocalizations.of(context).confirm),
-                 ),
-              ),
-          SizedBox(
-              width: MediaQuery.of(context).size.width * 0.4,
-              child:
-              Badge(
-                showBadge: true,
-                padding: EdgeInsets.all(8),
-                badgeColor: Colors.deepPurple,
-                badgeContent: Text(
-                  inventoryOnRF.length.toString(),
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                child:
-                    ElevatedButton(
-                      onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.4,
-                        child: Text(CWMSLocalizations.of(context).depositInventory),
-                      ),
-                    ),
+    return buildThreeButtonRow(context,
+        ElevatedButton(
+            onPressed: () async {
+              //  Let's make sure the user input the right LPN
+              if(_currentPick.confirmLpnFlag) {
+                _lpnValidateResult = await validateLPN(_lpnController.text);
+              }
+              if (_formKey.currentState.validate()) {
+                _onPickConfirm(_currentPick, int.parse(_quantityController.text));
+              }
+            },
+            child: Text(CWMSLocalizations.of(context).confirm)
+        ),
+        ElevatedButton(
+            onPressed: _skipCurrentPick,
+            child: Text(CWMSLocalizations.of(context).skip)
+        ),
+        Badge(
+            showBadge: true,
+            padding: EdgeInsets.all(8),
+            badgeColor: Colors.deepPurple,
+            badgeContent: Text(
+              inventoryOnRF.length.toString(),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            child:
+            SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: ElevatedButton(
+                  onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+                  child: Text(CWMSLocalizations.of(context).depositInventory),
                 )
-          ),
-        ],
+            ),
+
+        )
       );
+
+
   }
+
 
   Future<bool> validateLPN(String lpn) async{
     List<Inventory> inventories = await InventoryService.findInventory(
@@ -463,10 +302,8 @@ class _PickPageState extends State<PickPage> {
 
   void _onPickConfirm(Pick pick, int confirmedQuantity) async {
 
-
     // TO-DO:Current we don't support the location code. Will add
     //      it later
-
 
     showLoading(context);
     if (pick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
@@ -503,6 +340,15 @@ class _PickPageState extends State<PickPage> {
         inventoryOnRF = value;
       });
     });
+
+  }
+
+  void _skipCurrentPick() {
+    _currentPick.skipCount++;
+    var pickResult = PickResult.fromJson(
+        {'result': true, 'confirmedQuantity': 0});
+
+    Navigator.pop(context, pickResult);
 
   }
 
