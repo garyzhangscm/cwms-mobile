@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart';
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inbound/models/receipt.dart';
 import 'package:cwms_mobile/inbound/models/receipt_line.dart';
@@ -12,8 +13,10 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -43,6 +46,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
   ItemPackageType _selectedItemPackageType;
 
   List<Inventory>  inventoryOnRF;
+  FocusNode _receiptNumberFocusNode = FocusNode();
+  FocusNode _itemFocusNode = FocusNode();
+  FocusNode _quantityFocusNode = FocusNode();
+  FocusNode _lpnFocusNode = FocusNode();
+  bool _readyToConfirm = true; // whether we can confirm the received inventory
 
 
   @override
@@ -66,6 +74,36 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     inventoryOnRF = new List<Inventory>();
 
+    _receiptNumberFocusNode.addListener(() {
+      print("_receiptFocusNode.hasFocus: ${_receiptNumberFocusNode.hasFocus}");
+      if (!_receiptNumberFocusNode.hasFocus && _receiptNumberController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _loadReceipt(_receiptNumberController.text);
+        _itemFocusNode.requestFocus();
+
+      }
+    });
+    _receiptNumberFocusNode.requestFocus();
+
+    _itemFocusNode.addListener(() {
+      print("_itemFocusNode.hasFocus: ${_itemFocusNode.hasFocus}");
+      if (!_itemFocusNode.hasFocus && _itemController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _loadReceiptLine(_itemController.text);
+        _quantityFocusNode.requestFocus();
+
+      }
+    });
+
+    _lpnFocusNode.addListener(() {
+      print("_lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
+      if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _enterOnLPNController();
+      }
+    });
+
+
     _reloadInventoryOnRF();
   }
   final  _formKey = GlobalKey<FormState>();
@@ -80,291 +118,180 @@ class _ReceivingPageState extends State<ReceivingPage> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
+          // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
           child: Column(
             children: <Widget>[
 
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                  Row(
-                      children: <Widget>[
-                        Text(CWMSLocalizations.of(context).receiptNumber,
-                          textAlign: TextAlign.left,
-                        ),
-                        Expanded(
-                          child:
-                          Focus(
-                            child: TextFormField(
-
-                                controller: _receiptNumberController,
-
-                                decoration: InputDecoration(
-                                  suffixIcon:
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                                      mainAxisSize: MainAxisSize.min, // added line
-                                      children: <Widget>[
-                                        IconButton(
-                                          onPressed: _startReceiptBarcodeScanner,
-                                          icon: Icon(Icons.scanner),
-                                        ),
-                                        IconButton(
-                                          onPressed: _showChoosingReceiptDialog,
-                                          icon: Icon(Icons.list),
-                                        ),
-                                      ],
-                                    ),
-                                ),
-                                // 校验ITEM NUMBER（不能为空）
-                                validator: (v) {
-
-                                  if (v.trim().isEmpty) {
-                                    return "please scan in receipt";
-                                  }
-                                  return null;
-                                }),
-                          ),
-                        )
-                      ]
-                  ),
-              ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    // confirm the location
-                    Row(
+              buildTowSectionInputRow(
+                CWMSLocalizations.of(context).receiptNumber,
+                TextFormField(
+                    controller: _receiptNumberController,
+                    autofocus: true,
+                    focusNode: _receiptNumberFocusNode,
+                    decoration: InputDecoration(
+                      suffixIcon:
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                        mainAxisSize: MainAxisSize.min, // added line
                         children: <Widget>[
-                          Text(CWMSLocalizations.of(context).item,
-                            textAlign: TextAlign.left,
+                          IconButton(
+                            onPressed: _startReceiptBarcodeScanner,
+                            icon: Icon(Icons.scanner),
                           ),
-                          Expanded(
-                            child:
-                            Focus(
-                              child: TextFormField(
-
-                                  controller: _itemController,
-                                  decoration: InputDecoration(
-                                    suffixIcon:
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                                        mainAxisSize: MainAxisSize.min, // added line
-                                        children: <Widget>[
-                                          IconButton(
-                                            onPressed: _startItemBarcodeScanner,
-                                            icon: Icon(Icons.scanner),
-                                          ),
-                                          IconButton(
-                                            onPressed: _showChoosingItemsDialog,
-                                            icon: Icon(Icons.list),
-                                          ),
-                                        ],
-                                      ),
-                                  ),
-                                  // 校验ITEM NUMBER（不能为空）
-                                  validator: (v) {
-
-                                    if (v.trim().isEmpty) {
-                                      return "please scan in item";
-                                    }
-                                    return null;
-                                  }),
-                            ),
-                          )
-                        ]
+                          IconButton(
+                            onPressed: _showChoosingReceiptDialog,
+                            icon: Icon(Icons.list),
+                          ),
+                        ],
+                      ),
                     ),
+                    // 校验ITEM NUMBER（不能为空）
+                    validator: (v) {
+                      if (v.trim().isEmpty) {
+                        return "please scan in receipt";
+                      }
+                      return null;
+                    }),
+              ),
+
+              buildTowSectionInputRow(
+                CWMSLocalizations.of(context).item,
+                TextFormField(
+                    controller: _itemController,
+                    autofocus: true,
+                    focusNode: _itemFocusNode,
+                    decoration: InputDecoration(
+                      suffixIcon:
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                        mainAxisSize: MainAxisSize.min, // added line
+                        children: <Widget>[
+                          IconButton(
+                            onPressed: _startItemBarcodeScanner,
+                            icon: Icon(Icons.scanner),
+                          ),
+                          IconButton(
+                            onPressed: _showChoosingItemsDialog,
+                            icon: Icon(Icons.list),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 校验ITEM NUMBER（不能为空）
+                    validator: (v) {
+
+                      if (v.trim().isEmpty) {
+                        return "please scan in item";
+                      }
+                      return null;
+                    }),
               ),
               // display the item
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    Row(
-                        children: <Widget>[
-                          Text(CWMSLocalizations.of(context).item,
-                            textAlign: TextAlign.left,
-                          ),
-                          Text(_currentReceiptLine.item == null ?
-                              "" : _currentReceiptLine.item.description,
-                            textAlign: TextAlign.left,
-                          ),
-                        ]
-                    ),
+              buildTwoSectionInformationRow(
+                CWMSLocalizations.of(context).item,
+                _currentReceiptLine.item == null ?
+                    "" : _currentReceiptLine.item.description,
               ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    Row(
-                        children: <Widget>[
-                          Text(CWMSLocalizations.of(context).expectedQuantity,
-                            textAlign: TextAlign.left,
-                          ),
-                          Text(_currentReceiptLine.expectedQuantity.toString(),
-                            textAlign: TextAlign.left,
-                          ),
-                        ]
-                    ),
+              buildTwoSectionInformationRow(
+                CWMSLocalizations.of(context).expectedQuantity,
+                _currentReceiptLine.expectedQuantity.toString(),
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                  Row(
-                      children: <Widget>[
-                        Text(CWMSLocalizations.of(context).receivedQuantity,
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(_currentReceiptLine.receivedQuantity.toString(),
-                          textAlign: TextAlign.left,
-                        ),
-                      ]
-                  ),
+              buildTwoSectionInformationRow(
+                CWMSLocalizations.of(context).receivedQuantity,
+                _currentReceiptLine.receivedQuantity.toString(),
               ),
               // Allow the user to choose item package type
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                  Row(
-                      children: <Widget>[
-                        Text(CWMSLocalizations.of(context).itemPackageType,
-                          textAlign: TextAlign.left,
-                        ),
-                        Expanded(
-                          child:
-                            DropdownButton(
-                              hint: Text(""),
-                              items: _getItemPackageTypeItems(),
-                              value: _selectedItemPackageType,
-                              elevation: 1,
-                              isExpanded: true,
-                              icon: Icon(
-                                Icons.list,
-                                size: 20,
-                              ),
-                              onChanged: (T) {
-                                //下拉菜单item点击之后的回调
-                                setState(() {
-                                  _selectedItemPackageType = T;
-                                });
-                              },
-                            )
-                        )
-                      ]
-                  ),
+
+              buildTowSectionInputRow(
+                CWMSLocalizations.of(context).itemPackageType,
+                DropdownButton(
+                    hint: Text(""),
+                    items: _getItemPackageTypeItems(),
+                    value: _selectedItemPackageType,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
+                    ),
+                    onChanged: (T) {
+                      //下拉菜单item点击之后的回调
+                      setState(() {
+                        _selectedItemPackageType = T;
+                      });
+                    },
+                  )
               ),
               // Allow the user to choose inventory status
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                Row(
-                    children: <Widget>[
-                      Text(CWMSLocalizations.of(context).inventoryStatus,
-                        textAlign: TextAlign.left,
-                      ),
-                      Expanded(
-                          child:
-                          DropdownButton(
-                            hint: Text(""),
-                            items: _getInventoryStatusItems(),
-                            value: _selectedInventoryStatus,
-                            elevation: 1,
-                            isExpanded: true,
-                            icon: Icon(
-                              Icons.list,
-                              size: 20,
-                            ),
-                            onChanged: (T) {
-                              //下拉菜单item点击之后的回调
-                              setState(() {
-                                _selectedInventoryStatus = T;
-                              });
-                            },
-                          )
-                      )
-                    ]
-                ),
-              ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child:
-                    // always force the user to input / confirm the quantity
-                    // picked this time
-                    Row(
-                        children: <Widget>[
-                          Text("Receiving Quantity:",
-                            textAlign: TextAlign.left,
-                          ),
-                          Expanded(
-                            child:
-                            Focus(
-                              child: TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  controller: _quantityController,
-                                  // 校验ITEM NUMBER（不能为空）
-                                  validator: (v) {
-                                    if (v.trim().isEmpty) {
-                                      return "please type in quantity";
-                                    }
-                                    if (!_validateOverReceiving(
-                                        _currentReceiptLine, int.parse(_quantityController.text))) {
 
-                                      return "over pick is not allowed";
-                                    }
-                                    return null;
-                                  }),
-                            ),
-                          )
-                        ]
+              buildTowSectionInputRow(
+                  CWMSLocalizations.of(context).inventoryStatus,
+                  DropdownButton(
+                    hint: Text(""),
+                    items: _getInventoryStatusItems(),
+                    value: _selectedInventoryStatus,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
                     ),
+                    onChanged: (T) {
+                      //下拉菜单item点击之后的回调
+                      setState(() {
+                        _selectedInventoryStatus = T;
+                      });
+                    },
+                  )
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child:
-                // always force the user to input / confirm the quantity
-                // picked this time
-                Row(
-                    children: <Widget>[
-                      Text(CWMSLocalizations
-                          .of(context)
-                          .lpn+ ": ",
-                        textAlign: TextAlign.left,
-                      ),
-                      Expanded(
-                        child:
-                          Focus(
-                            child: TextFormField(
-                                controller: _lpnController,
-                                validator: (v) {
-                                  return null;
-                                }),
-                          ),
-                      )
-                    ]
-                ),
+
+              buildTowSectionInputRow(
+                  "Receiving Quantity:",
+                  TextFormField(
+                      keyboardType: TextInputType.number,
+                      controller: _quantityController,
+                      autofocus: true,
+                      focusNode: _quantityFocusNode,
+                      onFieldSubmitted: (v){
+                        printLongLogMessage("start to focus on lpn node");
+                        _lpnFocusNode.requestFocus();
+
+                      },
+                      // 校验ITEM NUMBER（不能为空）
+                      validator: (v) {
+                        if (v.trim().isEmpty) {
+                          return "please type in quantity";
+                        }
+                        if (!_validateOverReceiving(
+                            _currentReceiptLine, int.parse(_quantityController.text))) {
+
+                          return "over pick is not allowed";
+                        }
+                        return null;
+                      })
+              ),
+
+              buildTowSectionInputRow(
+                  CWMSLocalizations.of(context).lpn+ ": ",
+                  Focus(
+                    child:
+                        SystemControllerNumberTextBox(
+                        type: "lpn",
+                        controller: _lpnController,
+                        readOnly: false,
+                        showKeyboard: false,
+                        focusNode: _lpnFocusNode,
+                        autofocus: true,
+                        validator: (v) {
+                          if (v.trim().isEmpty) {
+                            return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                          }
+
+                          return null;
+                        }),
+                  ),
               ),
               _buildButtons(context)
-              /***
-              Padding(
-                padding: const EdgeInsets.only(top: 25),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints.expand(height: 55.0),
-                  child: RaisedButton(
-                    color: Theme.of(context).primaryColor,
-                    onPressed: () {
-                       if (_formKey.currentState.validate()) {
-                         print("form validation passed");
-                         _onRecevingConfirm(_currentReceiptLine,
-                             int.parse(_quantityController.text),
-                             _lpnController.text);
-                       }
-
-                    },
-                    textColor: Colors.white,
-                    child: Text(CWMSLocalizations
-                        .of(context)
-                        .confirm),
-                  ),
-                ),
-              ),
-               */
             ],
           ),
         ),
@@ -373,58 +300,41 @@ class _ReceivingPageState extends State<ReceivingPage> {
     );
   }
   Widget _buildButtons(BuildContext context) {
-    return
-      Row(
+    return buildTowButtonRow(
+      context,
+      ElevatedButton(
+        onPressed: () {
+          if (_formKey.currentState.validate()) {
+            print("form validation passed");
+            _onRecevingConfirm(_currentReceiptLine,
+                int.parse(_quantityController.text),
+                _lpnController.text);
+          }
 
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.max,
-        //交叉轴的布局方式，对于column来说就是水平方向的布局方式
-        crossAxisAlignment: CrossAxisAlignment.center,
-        //就是字child的垂直布局方向，向上还是向下
-        verticalDirection: VerticalDirection.down,
-        children: [
-          // button to confirm receiving
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: () {
-                if (_formKey.currentState.validate()) {
-                  print("form validation passed");
-                  _onRecevingConfirm(_currentReceiptLine,
-                      int.parse(_quantityController.text),
-                      _lpnController.text);
-                }
-
-              },
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations
-                  .of(context)
-                  .confirm),
+        },
+        child: Text(CWMSLocalizations
+            .of(context)
+            .confirm),
+      ),
+      Badge(
+        showBadge: true,
+        padding: EdgeInsets.all(8),
+        badgeColor: Colors.deepPurple,
+        badgeContent: Text(
+          inventoryOnRF.length.toString(),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        child:
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: ElevatedButton(
+              onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+              child: Text(CWMSLocalizations.of(context).depositInventory),
             ),
+          ),
+      )
+    );
 
-          ),
-          // button to deposit inventory
-          Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child:
-                Badge(
-                  showBadge: true,
-                  padding: EdgeInsets.all(8),
-                  badgeColor: Colors.deepPurple,
-                  badgeContent: Text(
-                    inventoryOnRF.length.toString(),
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  child: RaisedButton(
-                    onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context).depositInventory),
-                  ),
-                )
-          ),
-        ],
-      );
   }
 
   // call the deposit form to deposit the inventory on the RF
@@ -464,7 +374,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
 
   List<DropdownMenuItem> _getItemPackageTypeItems() {
-    List<DropdownMenuItem> items = new List();
+    List<DropdownMenuItem> items = [];
 
     print("_currentReceiptLine.item.itemPackageTypes.length: ${_currentReceiptLine.item.itemPackageTypes.length}");
     if (_currentReceiptLine.item.itemPackageTypes.length > 0) {
@@ -481,10 +391,6 @@ class _ReceivingPageState extends State<ReceivingPage> {
     return items;
   }
 
-
-
-
-
   void _onRecevingConfirm(ReceiptLine receiptLine, int confirmedQuantity,
                 String lpn) async {
 
@@ -494,11 +400,39 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
 
     showLoading(context);
-    await ReceiptService.receiveInventory(
-      _currentReceipt, _currentReceiptLine,
-        _lpnController.text, _selectedInventoryStatus,
-        _selectedItemPackageType, int.parse(_quantityController.text)
-    );
+    // make sure the user input a valid LPN
+    try {
+      bool validLpn = await InventoryService.validateNewLpn(lpn);
+      if (!validLpn) {
+        Navigator.of(context).pop();
+        showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+        return;
+      }
+      printLongLogMessage("LPN ${lpn} passed the validation");
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+    try {
+      await ReceiptService.receiveInventory(
+          _currentReceipt, _currentReceiptLine,
+          _lpnController.text, _selectedInventoryStatus,
+          _selectedItemPackageType, int.parse(_quantityController.text)
+      );
+
+    }
+    on WebAPICallException catch(ex) {
+
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
     print("inventory received!");
 
     Navigator.of(context).pop();
@@ -507,6 +441,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // receipt and line
     _lpnController.clear();
     _quantityController.clear();
+    _quantityFocusNode.requestFocus();
 
 
     // refresh the inventory on the RF
@@ -739,6 +674,49 @@ class _ReceivingPageState extends State<ReceivingPage> {
       setState(() {
         inventoryOnRF = value;
       });
+    });
+
+  }
+
+  void _enterOnLPNController({int tryTime = 10}) async {
+    // we may come here when the user scan / press
+    // enter in the LPN controller. In either case, we will need to make sure
+    // the lpn doesn't have focus before we start confirm
+
+    printLongLogMessage("Start to confirm receiving inventory, tryTime = $tryTime}");
+    if (tryTime <= 0) {
+      // do nothing as we run out of try time
+
+      setState(() {
+        // enable the confirm button
+        _readyToConfirm = true;
+      });
+      return;
+    }
+    if (_lpnFocusNode.hasFocus) {
+      printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
+      Future.delayed(const Duration(milliseconds: 100),
+              () => _enterOnLPNController(tryTime: tryTime - 1));
+
+      return;
+
+    }
+    // if we are here, then it means we already have the full LPN
+    // due to how  flutter handle the input, we will get the enter
+    // action listner handler fired before the input characters are
+    // full assigned to the lpnController.
+
+    printLongLogMessage("lpn controller lost focus, its value is ${_lpnController.text}");
+    if (_formKey.currentState.validate()) {
+      print("form validation passed");
+      _onRecevingConfirm(_currentReceiptLine,
+          int.parse(_quantityController.text),
+          _lpnController.text);
+    }
+
+    setState(() {
+      // enable the confirm button
+      _readyToConfirm = true;
     });
 
   }

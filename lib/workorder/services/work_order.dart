@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -83,8 +84,12 @@ class WorkOrderService {
     );
 
     printLongLogMessage("response from saveWorkOrderProduceTransaction: $response");
-    //Map<String, dynamic> responseString = json.decode(response.toString());
+    Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
 
 
   }

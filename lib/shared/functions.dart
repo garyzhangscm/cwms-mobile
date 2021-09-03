@@ -181,7 +181,7 @@ Widget buildThreeButtonRow(BuildContext context, Widget button1, Widget button2,
 
 Widget buildTwoSectionInformationRow(String name, String value) {
   return Padding(
-    padding: EdgeInsets.only(top: 10, bottom: 10),
+    padding: EdgeInsets.only(top: 5, bottom: 5),
     child:
     Row(
         children: <Widget>[
@@ -195,7 +195,7 @@ Widget buildTwoSectionInformationRow(String name, String value) {
 }
 Widget buildTowSectionInputRow(String name, Widget inputController) {
   return Padding(
-    padding: EdgeInsets.only(top: 10, bottom: 10),
+    padding: EdgeInsets.only(top: 5, bottom: 5),
     child:
     // confirm the location
     Row(

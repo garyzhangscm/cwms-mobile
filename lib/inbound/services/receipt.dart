@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:cwms_mobile/common/services/system_controlled_number.dart';
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/inbound/models/receipt.dart';
 import 'package:cwms_mobile/inbound/models/receipt_line.dart';
 import 'package:cwms_mobile/inbound/models/receipt_status.dart';
@@ -98,8 +99,7 @@ class ReceiptService {
 
     // send the receiving request to the server
     Dio httpClient = CWMSHttpClient.getDio();
-    printLongLogMessage("inventory: ${inventory.toJson()}");
-    printLongLogMessage("inventory: ${inventory.itemPackageType.toJson()}");
+
     Response response = await httpClient.post(
         "/inbound/receipts/${receipt.id}/lines/${receiptLine.id}/receive",
         data: inventory
@@ -107,6 +107,11 @@ class ReceiptService {
 
     print("response from receiving: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
 
     return Inventory.fromJson(responseString);
 
@@ -133,6 +138,7 @@ class ReceiptService {
     inventory.locationId = inventory.location.id;
     inventory.receiptId = receipt.id;
     inventory.receiptLineId = receiptLine.id;
+    inventory.inventoryMovements = [];
     return inventory;
   }
 

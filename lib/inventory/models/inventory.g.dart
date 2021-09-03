@@ -50,7 +50,6 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'pickId': instance.pickId,
       'pick': instance.pick,
       'receiptId': instance.receiptId,
-      'receiptId': instance.receiptId,
       'receiptLineId': instance.receiptLineId,
       'workOrderId': instance.workOrderId,
       'workOrderLineId': instance.workOrderLineId,
@@ -61,4 +60,5 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'quantity': instance.quantity,
       'warehouse': instance.warehouse,
       'warehouseId': instance.warehouseId,
+      'inventoryMovements': instance.inventoryMovements
     };
