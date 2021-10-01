@@ -40,7 +40,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Deposit")),
+      appBar: AppBar(title: Text("CWMS - Inventory")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

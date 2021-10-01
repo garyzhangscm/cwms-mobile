@@ -19,20 +19,8 @@ import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
-import 'package:cwms_mobile/workorder/models/bill_of_material_line.dart';
-import 'package:cwms_mobile/workorder/models/production_line.dart';
-import 'package:cwms_mobile/workorder/models/work_order.dart';
-import 'package:cwms_mobile/workorder/models/work_order_kpi_transaction_action.dart';
-import 'package:cwms_mobile/workorder/models/work_order_line_consume_transaction.dart';
-import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
-import 'package:cwms_mobile/workorder/models/work_order_produced_inventory.dart';
-import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
-import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
-import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class InventoryLostFoundPage extends StatefulWidget{

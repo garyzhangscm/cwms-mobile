@@ -36,8 +36,9 @@ class CWMSHttpClient {
       _dioWithAuth = new Dio(BaseOptions(
           baseUrl: Global.currentServer.url,
           headers: {
-          HttpHeaders.acceptHeader: "application/json",
-          HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+            HttpHeaders.acceptHeader: "application/json",
+            HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+            "rfCode": Global.lastLoginRFCode
           },
 
       ));
