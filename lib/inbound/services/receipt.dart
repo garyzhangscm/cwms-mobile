@@ -105,7 +105,7 @@ class ReceiptService {
         data: inventory
     );
 
-    print("response from receiving: $response");
+    printLongLogMessage("response from receiving: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -113,7 +113,7 @@ class ReceiptService {
       throw new WebAPICallException(responseString["message"]);
     }
 
-    return Inventory.fromJson(responseString);
+    return Inventory.fromJson(responseString["data"]);
 
 
 

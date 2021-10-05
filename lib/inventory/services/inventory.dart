@@ -321,4 +321,31 @@ class InventoryService {
 
   }
 
+
+  static Future<Inventory> allocateLocation(Inventory inventory) async {
+    printLongLogMessage("start to allocate location for lpn ${inventory.lpn}");
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "/inbound/putaway-configuration/allocate-location",
+
+        data: inventory
+    );
+
+    printLongLogMessage("get response from allocateLocation ${response.toString()}");
+
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+    return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
+
+
+
+  }
+
 }

@@ -398,6 +398,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // TO-DO:Current we don't support the location code. Will add
     //      it later
 
+    bool qcRequired = false;
 
     showLoading(context);
     // make sure the user input a valid LPN
@@ -418,11 +419,20 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     }
     try {
-      await ReceiptService.receiveInventory(
+      Inventory inventory = await ReceiptService.receiveInventory(
           _currentReceipt, _currentReceiptLine,
           _lpnController.text, _selectedInventoryStatus,
           _selectedItemPackageType, int.parse(_quantityController.text)
       );
+      qcRequired = inventory.qcRequired;
+      printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.qcRequired}");
+      if (qcRequired) {
+        // for any inventory that needs qc, let's allocate the location automatically
+        // for the inventory
+
+        printLongLogMessage("allocate location for the QC needed inventory ${inventory.lpn}");
+        InventoryService.allocateLocation(inventory);
+      }
 
     }
     on WebAPICallException catch(ex) {
@@ -436,6 +446,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
     print("inventory received!");
 
     Navigator.of(context).pop();
+
+    if (qcRequired == true) {
+        showWarningDialog(context, CWMSLocalizations.of(context).inventoryNeedQC);
+    }
     showToast("inventory received");
     // we will allow the user to continue receiving with the same
     // receipt and line

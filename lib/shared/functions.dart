@@ -131,6 +131,35 @@ showErrorDialog(BuildContext context, String message) {
 }
 
 
+showWarningDialog(BuildContext context, String message) {
+
+  // set up the button
+  Widget okButton = TextButton(
+    child: Text("OK"),
+    onPressed: () {
+      Navigator.of(context).pop();
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text(CWMSLocalizations.of(context).warning),
+    content: Text(message),
+    actions: [
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
+
 Widget buildTowButtonRow(BuildContext context, Widget button1, Widget button2) {
   return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

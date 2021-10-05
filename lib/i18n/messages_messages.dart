@@ -174,7 +174,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
 
     "error": MessageLookupByLibrary.simpleMessage("Error"),
+    "warning": MessageLookupByLibrary.simpleMessage("Warning"),
     "skip" : MessageLookupByLibrary.simpleMessage("Skip"),
+    "inventoryNeedQC" : MessageLookupByLibrary.simpleMessage("The Inventory Needs QC"),
 
 
 

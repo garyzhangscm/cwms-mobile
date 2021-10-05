@@ -49,6 +49,8 @@ class Inventory{
 
   List<InventoryMovement> inventoryMovements;
 
+  bool qcRequired;
+
 
   WarehouseLocation getNextDepositLocaiton() {
     if (inventoryMovements == null || inventoryMovements.isEmpty) {

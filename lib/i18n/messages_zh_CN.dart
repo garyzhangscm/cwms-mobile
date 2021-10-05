@@ -170,7 +170,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inventoryAdjust": MessageLookupByLibrary.simpleMessage("库存调整"),
 
     "error": MessageLookupByLibrary.simpleMessage("错误"),
+    "warning": MessageLookupByLibrary.simpleMessage("提示"),
     "skip" : MessageLookupByLibrary.simpleMessage("跳过"),
+    "inventoryNeedQC" : MessageLookupByLibrary.simpleMessage("该库存需要质检"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,
