@@ -39,8 +39,8 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
             (e) => e == null ? null : InventoryMovement.fromJson(e as Map<String, dynamic>))
         ?.toList()
     ..warehouseId = json['warehouseId'] as int
-    ..qcRequired = json['qcRequired'] == null
-        ? false : json['qcRequired'] as bool;
+    ..inboundQCRequired = json['inboundQCRequired'] == null
+        ? false : json['inboundQCRequired'] as bool;
 }
 
 Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
@@ -63,5 +63,5 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'warehouse': instance.warehouse,
       'warehouseId': instance.warehouseId,
       'inventoryMovements': instance.inventoryMovements,
-      'qcRequired': instance.qcRequired
+      'inboundQCRequired': instance.inboundQCRequired
     };

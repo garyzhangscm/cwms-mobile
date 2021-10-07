@@ -364,6 +364,19 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
               _locationController.text
           );
 
+
+      // make sure the location is a valid location for deposit
+      // it should be either the same location as indicated,
+      // or a pickup and deposit location
+      printLongLogMessage("inventoryDepositRequest.nextLocation: ${inventoryDepositRequest.nextLocation.id} / ${inventoryDepositRequest.nextLocation.name}");
+      printLongLogMessage("destinationLocation: ${destinationLocation.id} / ${destinationLocation.name}, P&D? ${destinationLocation.locationGroup.locationGroupType.pickupAndDeposit}");
+      if (inventoryDepositRequest.nextLocation != null &&
+          destinationLocation.id != inventoryDepositRequest.nextLocation.id &&
+          destinationLocation.locationGroup.locationGroupType.pickupAndDeposit == false) {
+
+          throw new WebAPICallException("should only deposit to  ${inventoryDepositRequest.nextLocation.name} or a Pickup and Deposit location");
+      }
+
     }
     on WebAPICallException catch(ex) {
 

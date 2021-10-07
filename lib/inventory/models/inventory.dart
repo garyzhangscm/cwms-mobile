@@ -49,7 +49,7 @@ class Inventory{
 
   List<InventoryMovement> inventoryMovements;
 
-  bool qcRequired;
+  bool inboundQCRequired;
 
 
   WarehouseLocation getNextDepositLocaiton() {

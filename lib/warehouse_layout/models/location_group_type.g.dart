@@ -22,7 +22,8 @@ LocationGroupType _$LocationGroupTypeFromJson(Map<String, dynamic> json) {
     ..yard = json['yard'] as bool
     ..storage = json['storage'] as bool
     ..pickupAndDeposit = json['pickupAndDeposit'] as bool
-    ..trailer = json['trailer'] as bool;
+    ..trailer = json['trailer'] as bool
+    ..qcArea = json['qcArea'] as bool;
 }
 
 Map<String, dynamic> _$LocationGroupTypeToJson(LocationGroupType instance) =>
@@ -42,4 +43,5 @@ Map<String, dynamic> _$LocationGroupTypeToJson(LocationGroupType instance) =>
       'storage': instance.storage,
       'pickupAndDeposit': instance.pickupAndDeposit,
       'trailer': instance.trailer,
+      'qcArea': instance.qcArea,
     };

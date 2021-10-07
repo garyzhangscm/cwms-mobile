@@ -424,8 +424,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
           _lpnController.text, _selectedInventoryStatus,
           _selectedItemPackageType, int.parse(_quantityController.text)
       );
-      qcRequired = inventory.qcRequired;
-      printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.qcRequired}");
+      qcRequired = inventory.inboundQCRequired;
+      printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
       if (qcRequired) {
         // for any inventory that needs qc, let's allocate the location automatically
         // for the inventory
