@@ -159,6 +159,22 @@ showWarningDialog(BuildContext context, String message) {
   );
 }
 
+Widget buildSingleButtonRow(BuildContext context, Widget button) {
+  return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+      //交叉轴的布局方式，对于column来说就是水平方向的布局方式
+      crossAxisAlignment: CrossAxisAlignment.center,
+      //就是字child的垂直布局方向，向上还是向下
+      verticalDirection: VerticalDirection.down,
+      children: [
+        SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: button
+        ),
+      ]
+  );
+}
 
 Widget buildTowButtonRow(BuildContext context, Widget button1, Widget button2) {
   return Row(

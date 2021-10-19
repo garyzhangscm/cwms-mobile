@@ -67,6 +67,11 @@ dependencies:
   # print PDF files from local printer
   printing: ^5.0.0
 
+  # setup the launcher icon
+  flutter_launcher_icons: ^0.9.2
+
+  carousel_slider: ^4.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -120,3 +125,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+# seutp the launcher icon
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/claytechs.jpg"

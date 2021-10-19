@@ -15,6 +15,7 @@ import 'package:cwms_mobile/workorder/routes/production_line_check_out.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_inventory.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_kpi.dart';
+import 'package:cwms_mobile/workorder/routes/work_order_qc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:provider/provider.dart';
@@ -31,7 +32,9 @@ import 'inventory/routes/cycle_count_batch.dart';
 import 'inventory/routes/cycle_count_request.dart';
 import 'inventory/routes/inventory_deposit.dart';
 import 'inventory/routes/inventory_putaway.dart';
+import 'inventory/routes/inventory_qc.dart';
 import 'inventory/routes/inventory_query.dart';
+import 'inventory/routes/qc_inspection.dart';
 import 'launch_page.dart';
 import 'menus.dart';
 import 'outbound/routes/pick.dart';
@@ -119,10 +122,13 @@ class MyApp extends StatelessWidget {
               "inventory_putaway": (context) => InventoryPutawayPage(),
               "pick_by_work_order": (context) => PickByWorkOrderPage(),
               "work_order_produce": (context) => WorkOrderProducePage(),
+              "work_order_qc": (context) => WorkOrderQCPage(),
               "work_order_produce_inventory": (context) => WorkOrderProduceInventoryPage(),
               "work_order_produce_kpi":(context) => WorkOrderKPIPage(),
               "production_line_check_in":(context) => ProductionLineCheckInPage(),
               "production_line_check_out":(context) => ProductionLineCheckOutPage(),
+              "qc_inspection":(context) => QCInspectionPage(),
+              "inventory_qc":(context) => InventoryQCPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

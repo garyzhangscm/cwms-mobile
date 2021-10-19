@@ -136,6 +136,45 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
   }
   Widget _buildButtons(BuildContext context) {
 
+    return Column(
+      children: [
+        buildTowButtonRow(context,
+          ElevatedButton(
+              onPressed: _onAddingWorkOrder,
+              child: Text(CWMSLocalizations.of(context).addWorkOrder)
+          ),
+          ElevatedButton(
+              onPressed: _onChooseWorkOrder,
+              child: Text(CWMSLocalizations.of(context).chooseWorkOrder),
+          ),
+        ),
+        buildTowButtonRow(context,
+            ElevatedButton(
+                onPressed: _onStartingPicking,
+                child: Text(CWMSLocalizations.of(context).start),
+            ),
+            Badge(
+              showBadge: true,
+              padding: EdgeInsets.all(8),
+              badgeColor: Colors.deepPurple,
+              badgeContent: Text(
+                inventoryOnRF.length.toString(),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              child:
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: ElevatedButton(
+                  onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                ),
+              ),
+            )
+        )
+      ],
+    );
+
+    /***
     return
       Row(
 
@@ -198,6 +237,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
           ),
         ],
     );
+        **/
   }
 
 

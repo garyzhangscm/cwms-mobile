@@ -6,14 +6,13 @@ import 'dart:convert';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
+import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+
 
 class InventoryService {
   // Get inventory that on the current RF
@@ -212,6 +211,7 @@ class InventoryService {
       {String locationName = "", String itemName = "", String lpn = "", bool includeDetails = true}
       )  async {
 
+    printLongLogMessage("will find inventory by lpn $lpn");
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -224,6 +224,7 @@ class InventoryService {
       );
 
       Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage("get response from findInventory ${response.toString()}");
 
       List<Inventory> inventories
         = (responseString["data"] as List)?.map((e) =>
@@ -344,8 +345,36 @@ class InventoryService {
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
 
+  }
+
+  static Future<List<QCInspectionRequest>> getPendingQCInspectionRequest(Inventory inventory) async {
+
+    printLongLogMessage("start to get qc inspection request for lpn ${inventory.lpn}");
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "/inventory/qc-inspection-requests/pending",
+      queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+        'inventoryId': inventory.id},
+    );
+
+    printLongLogMessage("get response from getPendingQCInspectionRequest ${response.toString()}");
 
 
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+    List<QCInspectionRequest> qcInspectionRequests
+      = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : QCInspectionRequest.fromJson(e as Map<String, dynamic>))
+          ?.toList();
+
+
+    return qcInspectionRequests;
   }
 
 }

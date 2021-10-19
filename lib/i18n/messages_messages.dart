@@ -177,6 +177,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "warning": MessageLookupByLibrary.simpleMessage("Warning"),
     "skip" : MessageLookupByLibrary.simpleMessage("Skip"),
     "inventoryNeedQC" : MessageLookupByLibrary.simpleMessage("The Inventory Needs QC"),
+    "workOrderQCNumber" : MessageLookupByLibrary.simpleMessage("QC Number"),
+    "workOrderQCSampleNumber" : MessageLookupByLibrary.simpleMessage("QC Sample Number"),
+    "workOrderQC" : MessageLookupByLibrary.simpleMessage("Work Order QC"),
+    "clear" : MessageLookupByLibrary.simpleMessage("Clear"),
+    "qcPass" : MessageLookupByLibrary.simpleMessage("Pass"),
+    "qcFail" : MessageLookupByLibrary.simpleMessage("Fail"),
+    "qcCompleted" : MessageLookupByLibrary.simpleMessage("QC Completed"),
+    "startQC" : MessageLookupByLibrary.simpleMessage("Start QC"),
+    "workOrderNoQCConfig" : MessageLookupByLibrary.simpleMessage("Cannot find any qc rule setup for this work order & production line"),
+    "nextQCRule" : MessageLookupByLibrary.simpleMessage("Next QC Rule"),
+    "inventoryNotQCRequired" : MessageLookupByLibrary.simpleMessage("The inventory does not need QC"),
 
 
 

@@ -43,6 +43,21 @@ class WorkOrderService {
 
   }
 
+  static Future<WorkOrder> getWorkOrderById(int workOrderId) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    printLongLogMessage("Start to get work order by id ${workOrderId}");
+    Response response = await httpClient.get(
+        "workorder/work-orders/${workOrderId}",
+    );
+
+    printLongLogMessage("response from getWorkOrderById: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    return WorkOrder.fromJson(responseString["data"] as Map<String, dynamic>) ;
+
+  }
+
 
   // Get available Work Orders
   // 1. with open picks

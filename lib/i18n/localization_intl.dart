@@ -176,6 +176,21 @@ class CWMSLocalizations {
   String get skip => Intl.message('Skip', name: 'skip');
   String get inventoryNeedQC => Intl.message('The Inventory Needs QC', name: 'inventoryNeedQC');
 
+  String get workOrderQCNumber => Intl.message('QC Number', name: 'workOrderQCNumber');
+  String get workOrderQCSampleNumber => Intl.message('QC Sample Number', name: 'workOrderQCSampleNumber');
+  String get workOrderQC => Intl.message('Work Order QC', name: 'workOrderQC');
+  String get clear => Intl.message('Clear', name: 'clear');
+  String get qcPass => Intl.message('Pass', name: 'qcPass');
+  String get qcFail => Intl.message('Fail', name: 'qcFail');
+  String get qcCompleted => Intl.message('QC Completed', name: 'qcCompleted');
+  String get startQC => Intl.message('Start QC', name: 'startQC');
+  String get workOrderNoQCConfig => Intl.message('Cannot find any qc rule setup for this work order & production line', name: 'workOrderNoQCConfig');
+  String get inventoryNotQCRequired => Intl.message('The inventory does not need QC', name: 'inventoryNotQCRequired');
+  String get nextQCRule => Intl.message('Next QC Rule', name: 'nextQCRule');
+
+
+
+
 
   String missingField(Object name) {
     return Intl.message(

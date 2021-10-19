@@ -14,11 +14,13 @@ ProductionLineAssignment _$ProductionLineAssignmentFromJson(Map<String, dynamic>
         : ProductionLine.fromJson(json['productionLine'] as Map<String, dynamic>)
     ..workOrder = json['workOrder'] == null
         ? null
-        : WorkOrder.fromJson(json['workOrder'] as Map<String, dynamic>);
+        : WorkOrder.fromJson(json['workOrder'] as Map<String, dynamic>)
+    ..workOrderId = json['workOrderId'] as int;
 }
 
 Map<String, dynamic> _$ProductionLineAssignmentToJson(ProductionLineAssignment instance) => <String, dynamic>{
   'id': instance.id,
   'productionLine': instance.productionLine,
   'workOrder': instance.workOrder,
+  'workOrderId': instance.workOrderId,
 };
