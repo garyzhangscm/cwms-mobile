@@ -24,6 +24,7 @@ import 'package:cwms_mobile/workorder/models/production_line_activity.dart';
 import 'package:cwms_mobile/workorder/models/production_line_activity_type.dart';
 import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
+import 'package:cwms_mobile/workorder/models/work_order_labor.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/services/production_line.dart';
@@ -55,23 +56,20 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
   FocusNode _usernameFocusNode;
   bool _incorrectUsername;
 
-  TextEditingController _workingTeamMemberCountController = new TextEditingController();
-  FocusNode _workingTeamMemberFocusNode;
 
   TextEditingController _productionLineNameController = new TextEditingController();
   FocusNode _productionLineNameNode;
   bool _incorrectProductionLinename;
 
-  ProductionLineActivity _lastProductionLineActivity;
+  WorkOrderLabor _workOrderLabor;
 
   final  _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    _lastProductionLineActivity = null;
+    _workOrderLabor = null;
     _usernameFocusNode = FocusNode();
-    _workingTeamMemberFocusNode = FocusNode();
     _productionLineNameNode = FocusNode();
     _incorrectUsername = false;
     _incorrectProductionLinename = false;
@@ -124,13 +122,8 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                                 child:
                                   TextFormField(
                                     focusNode: _productionLineNameNode,
+                                    textInputAction: TextInputAction.next,
                                     controller: _productionLineNameController,
-                                    decoration: InputDecoration(
-                                      suffixIcon: IconButton(
-                                        onPressed: () => _startProductionLineBarcodeScanner(),
-                                        icon: Icon(Icons.scanner),
-                                      ),
-                                    ),
                                     validator: (v) {
 
                                       if (_incorrectProductionLinename) {
@@ -164,12 +157,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                                   TextFormField(
                                     focusNode: _usernameFocusNode,
                                     controller: _usernameController,
-                                    decoration: InputDecoration(
-                                      suffixIcon: IconButton(
-                                        onPressed: () => _startUsernameBarcodeScanner(),
-                                        icon: Icon(Icons.scanner),
-                                      ),
-                                    ),
+                                    textInputAction: TextInputAction.next,
                                     validator: (v) {
                                       if (_incorrectUsername) {
                                         return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).userName);
@@ -177,37 +165,6 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                                       return v.trim().isNotEmpty ? null :
                                           CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).userName);
                                     },
-                                ),
-                            ),
-                          ]
-                      ),
-                    ),
-
-                    // input member count
-                    Padding(
-                      padding: EdgeInsets.only(top: 10, bottom: 10),
-                      child:
-                      Row(
-                          children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(right: 20),
-                              child:
-                              Text(CWMSLocalizations.of(context).workingTeamMemberCount,
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-
-                            Expanded(
-                                child:
-                                  TextFormField(
-                                    focusNode: _workingTeamMemberFocusNode,
-                                    controller: _workingTeamMemberCountController,
-                                    keyboardType: TextInputType.number,
-
-                                    validator: (v) {
-                                      return v.trim().isNotEmpty ? null :
-                                        CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).workingTeamMemberCount);
-                                  },
                                 ),
                             ),
                           ]
@@ -269,87 +226,19 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
         child:
         new Column(
             children: [
-              // Work Order
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).workOrderNumber),
-                    ),
-                    Text(_lastProductionLineActivity == null ? "" : _lastProductionLineActivity.workOrder.number)
-                  ],
-                ),
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).productionLine,
+                  _workOrderLabor == null ? "" : _workOrderLabor.productionLine.name
               ),
-              // Production Line
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).productionLine),
-                    ),
-                    Text(_lastProductionLineActivity == null ? "" : _lastProductionLineActivity.productionLine.name)
-                  ],
-                ),
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).userName,
+                  _workOrderLabor == null ? "" : _workOrderLabor.username
               ),
-              // Username
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).userName),
-                    ),
-                    Text(_lastProductionLineActivity == null ? "" : _lastProductionLineActivity.username)
-                  ],
-                ),
-              ),
-              // Working team member count
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).workingTeamMemberCount),
-                    ),
-                    Text(_lastProductionLineActivity == null ? "" : _lastProductionLineActivity.workingTeamMemberCount.toString())
-                  ],
-                ),
-              ),
-              // Transaction date
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).transactionTime),
-                    ),
-                    Text(_lastProductionLineActivity == null ?
-                        "" :
-                        DateFormat("MM/dd/yyyy HH:mm:ss").format(_lastProductionLineActivity.transactionTime))
-                  ],
-                ),
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).transactionTime,
+                  _workOrderLabor == null ?
+                    "" :
+                    DateFormat("MM/dd/yyyy HH:mm:ss").format(_workOrderLabor.lastCheckInTime)
               ),
 
             ]
@@ -374,6 +263,8 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
       return;
     }
     // make sure the user name is valid
+    // the user can be a temporary user without any system login
+    /**
     User user = await UserService.findUser(Global.lastLoginCompanyId, _usernameController.text);
     if (user == null) {
 
@@ -384,6 +275,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
       _formKey.currentState.validate();
       return;
     }
+        **/
     printLongLogMessage("get production line: ${productionLine.name}");
 
     // let's get the work order that current is active on this production line
@@ -399,21 +291,11 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
     }
 
-    // by now 6/22/2021, we will only expect one assigned work order per production line
-    WorkOrder workOrder = workOrders[0];
-
-    ProductionLineActivity productionLineActivity = new ProductionLineActivity();
-    productionLineActivity.workOrder = workOrder;
-    productionLineActivity.productionLine = productionLine;
-    productionLineActivity.username = _usernameController.text;
-    productionLineActivity.warehouseId = Global.currentWarehouse.id;
-    productionLineActivity.type = ProductionLineActivityType.USER_CHECK_IN;
-    productionLineActivity.workingTeamMemberCount = int.parse(_workingTeamMemberCountController.text);
 
 
     try {
-      _lastProductionLineActivity =
-          await ProductionLineActivityService.saveCheckInProductionLineActivity(productionLineActivity);
+      _workOrderLabor =
+          await ProductionLineService.checkInUser(productionLine.id, _usernameController.text);
 
     }
     on WebAPICallException catch(ex) {
@@ -425,47 +307,19 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
     }
     setState(() {
-      _lastProductionLineActivity;
+      _workOrderLabor;
     });
     Navigator.of(context).pop();
 
     print("production line check in transaction saved!");
 
     showToast(CWMSLocalizations.of(context).actionComplete);
-    // clear the field so the user can continue;
-    _workingTeamMemberCountController.clear();
     _usernameController.clear();
     _productionLineNameController.clear();
   }
 
-  _startProductionLineBarcodeScanner() async {
-    String productionLineName = await _startBarcodeScanner();
-    _productionLineNameController.text = productionLineName;
-  }
-
-  _startUsernameBarcodeScanner() async {
-    String username = await _startBarcodeScanner();
-    _usernameController.text = username;
-  }
 
 
-
-  Future<String> _startBarcodeScanner() async {
-    /*
-    *
-    String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
-    print("barcode scanned: $barcodeScanRes");
-
-    if (barcodeScanRes != "-1") {
-      return barcodeScanRes;
-    }
-    else {
-      return "";
-    }
-    *
-    * */
-  }
 
 
 

@@ -10,6 +10,7 @@ import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
+import 'package:cwms_mobile/workorder/models/work_order_labor.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:dio/dio.dart';
 
@@ -48,6 +49,57 @@ class ProductionLineService {
   }
 
 
+
+  static Future<WorkOrderLabor> checkInUser(int productionLineId,
+      String username) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "workorder/labor/check_in_user",
+        queryParameters: {
+          "productionLineId": productionLineId,
+          "username": username,
+          "currentUsername": Global.currentUsername,
+          "warehouseId": Global.currentWarehouse.id}
+    );
+
+    printLongLogMessage("response from checkInUser: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+    return WorkOrderLabor.fromJson(responseString["data"] as Map<String, dynamic>);
+
+  }
+
+
+  static Future<WorkOrderLabor> checkOutUser(int productionLineId,
+      String username) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "workorder/labor/check_out_user",
+        queryParameters: {
+          "productionLineId": productionLineId,
+          "username": username,
+          "currentUsername": Global.currentUsername,
+          "warehouseId": Global.currentWarehouse.id}
+    );
+
+    printLongLogMessage("response from checkOutUser: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+    return WorkOrderLabor.fromJson(responseString["data"] as Map<String, dynamic>);
+
+  }
 }
 
 

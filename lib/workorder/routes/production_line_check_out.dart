@@ -24,6 +24,7 @@ import 'package:cwms_mobile/workorder/models/production_line_activity.dart';
 import 'package:cwms_mobile/workorder/models/production_line_activity_type.dart';
 import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
+import 'package:cwms_mobile/workorder/models/work_order_labor.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/services/production_line.dart';
@@ -59,14 +60,14 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
   FocusNode _productionLineNameNode;
   bool _incorrectProductionLinename;
 
-  ProductionLineActivity _lastProductionLineActivity;
+  WorkOrderLabor _workOrderLabor;
 
   final  _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    _lastProductionLineActivity = null;
+    _workOrderLabor = null;
     _usernameFocusNode = FocusNode();
 
     _productionLineNameNode = FocusNode();
@@ -78,7 +79,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).productionLineCheckIn)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).productionLineCheckOut)),
       body:
           Column(
             children: [
@@ -122,6 +123,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
                                   TextFormField(
                                     focusNode: _productionLineNameNode,
                                     controller: _productionLineNameController,
+                                    textInputAction: TextInputAction.next,
                                     decoration: InputDecoration(
                                       suffixIcon: IconButton(
                                         onPressed: () => _startProductionLineBarcodeScanner(),
@@ -161,6 +163,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
                                   TextFormField(
                                     focusNode: _usernameFocusNode,
                                     controller: _usernameController,
+                                    textInputAction: TextInputAction.next,
                                     decoration: InputDecoration(
                                       suffixIcon: IconButton(
                                         onPressed: () => _startUsernameBarcodeScanner(),
@@ -204,7 +207,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
               _incorrectUsername = false;
               if (_formKey.currentState.validate()) {
                 print("form validation passed");
-                _onStartCheckIn();
+                _onStartCheckOut();
               }
 
             },
@@ -235,72 +238,19 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
         child:
         new Column(
             children: [
-              // Work Order
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).workOrderNumber),
-                    ),
-                    Text(_lastProductionLineActivity == null ? "" : _lastProductionLineActivity.workOrder.number)
-                  ],
-                ),
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).productionLine,
+                  _workOrderLabor == null ? "" : _workOrderLabor.productionLine.name
               ),
-              // Production Line
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).productionLine),
-                    ),
-                    Text(_lastProductionLineActivity == null ? "" : _lastProductionLineActivity.productionLine.name)
-                  ],
-                ),
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).userName,
+                  _workOrderLabor == null ? "" : _workOrderLabor.username
               ),
-              // Username
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).userName),
-                    ),
-                    Text(_lastProductionLineActivity == null ? "" : _lastProductionLineActivity.username)
-                  ],
-                ),
-              ),
-
-              // Transaction date
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child:
-                Row(
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.only(right: 25.0),
-                      child:
-                      Text(CWMSLocalizations.of(context).transactionTime),
-                    ),
-                    Text(_lastProductionLineActivity == null ?
-                        "" :
-                        DateFormat("MM/dd/yyyy HH:mm:ss").format(_lastProductionLineActivity.transactionTime))
-                  ],
-                ),
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).transactionTime,
+                  _workOrderLabor == null ?
+                  "" :
+                  DateFormat("MM/dd/yyyy HH:mm:ss").format(_workOrderLabor.lastCheckInTime)
               ),
 
             ]
@@ -308,7 +258,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
       );
   }
 
-  Future<void> _onStartCheckIn() async {
+  Future<void> _onStartCheckOut() async {
 
     showLoading(context);
     printLongLogMessage("start to get production line by ${_productionLineNameController.text}");
@@ -324,37 +274,14 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
       _formKey.currentState.validate();
       return;
     }
-    // make sure the user name is valid
-    User user = await UserService.findUser(Global.lastLoginCompanyId, _usernameController.text);
-    if (user == null) {
-
-      Navigator.of(context).pop();
-      _usernameFocusNode.requestFocus();
-      _incorrectUsername = true;
-      _incorrectProductionLinename = false;
-      _formKey.currentState.validate();
-      return;
-    }
     printLongLogMessage("get production line: ${productionLine.name}");
 
-    // let's get the work order that current is active on this production line
-    List<WorkOrder> workOrders =
-        await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
 
-    // by now 6/22/2021, we will only expect one assigned work order per production line
-    WorkOrder workOrder = workOrders[0];
-
-    ProductionLineActivity productionLineActivity = new ProductionLineActivity();
-    productionLineActivity.workOrder = workOrder;
-    productionLineActivity.productionLine = productionLine;
-    productionLineActivity.username = _usernameController.text;
-    productionLineActivity.warehouseId = Global.currentWarehouse.id;
-    productionLineActivity.type = ProductionLineActivityType.USER_CHECK_OUT;
 
 
     try {
-      _lastProductionLineActivity =
-        await ProductionLineActivityService.saveCheckOutProductionLineActivity(productionLineActivity);
+      _workOrderLabor =
+          await ProductionLineService.checkOutUser(productionLine.id, _usernameController.text);
 
     }
     on WebAPICallException catch(ex) {
@@ -367,11 +294,11 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
     }
 
     setState(() {
-      _lastProductionLineActivity;
+      _workOrderLabor;
     });
     Navigator.of(context).pop();
 
-    print("production line check in transaction saved!");
+    print("production line check out transaction saved!");
 
     showToast(CWMSLocalizations.of(context).actionComplete);
 
