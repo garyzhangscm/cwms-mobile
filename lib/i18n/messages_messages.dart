@@ -188,6 +188,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "workOrderNoQCConfig" : MessageLookupByLibrary.simpleMessage("Cannot find any qc rule setup for this work order & production line"),
     "nextQCRule" : MessageLookupByLibrary.simpleMessage("Next QC Rule"),
     "inventoryNotQCRequired" : MessageLookupByLibrary.simpleMessage("The inventory does not need QC"),
+    "pleaseSelect" : MessageLookupByLibrary.simpleMessage("Please select"),
+    "noCheckInProductionLineFoundForUser" : MessageLookupByLibrary.simpleMessage("The user has not checked in any production line"),
+    "noCheckInUsersFoundForProductionLine" : MessageLookupByLibrary.simpleMessage("There's no user checked in this production line"),
+
+
+    "productionLineCheckOutByUser" : MessageLookupByLibrary.simpleMessage("By User"),
+    "productionLineCheckOutByProductionLine" : MessageLookupByLibrary.simpleMessage("By Production Line"),
+
+    "pleaseSelectAUser" : MessageLookupByLibrary.simpleMessage("Please Select A User"),
+    "pleaseSelectAProductionLine" : MessageLookupByLibrary.simpleMessage("Please Select A Production Line"),
 
 
 

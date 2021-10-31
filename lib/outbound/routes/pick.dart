@@ -105,7 +105,7 @@ class _PickPageState extends State<PickPage> {
             children: <Widget>[
               buildTwoSectionInformationRow("Work Number:", _currentPick.number),
               buildTwoSectionInformationRow("Location:", _currentPick.sourceLocation.name),
-              buildTowSectionInputRow("Location:",
+              buildTwoSectionInputRow("Location:",
                 Focus(
                   child: TextFormField(
                       textInputAction: TextInputAction.next,
@@ -131,7 +131,7 @@ class _PickPageState extends State<PickPage> {
                 )
               ),
 
-              buildTowSectionInputRow(CWMSLocalizations.of(context).lpn,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
                   _currentPick.confirmLpnFlag ?
                   TextFormField(
                     textInputAction: TextInputAction.next,
@@ -168,7 +168,7 @@ class _PickPageState extends State<PickPage> {
                   Container()
               ),
               buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
-              buildTowSectionInputRow(CWMSLocalizations.of(context).lpn,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
                   _currentPick.confirmItemFlag ?
                   Expanded(
                     child:
@@ -201,7 +201,7 @@ class _PickPageState extends State<PickPage> {
               ),
               buildTwoSectionInformationRow("Pick Quantity:", _currentPick.quantity.toString()),
               buildTwoSectionInformationRow("Picked Quantity:", _currentPick.pickedQuantity.toString()),
-              buildTowSectionInputRow("Picking Quantity:",
+              buildTwoSectionInputRow("Picking Quantity:",
                 Focus(
                   child: TextFormField(
                       textInputAction: TextInputAction.next,

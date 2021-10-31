@@ -184,6 +184,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "workOrderNoQCConfig" : MessageLookupByLibrary.simpleMessage("没有找到该工单/产线对应的质检配置"),
     "nextQCRule" : MessageLookupByLibrary.simpleMessage("下一质检项"),
     "inventoryNotQCRequired" : MessageLookupByLibrary.simpleMessage("该库存不需要质检"),
+    "pleaseSelect" : MessageLookupByLibrary.simpleMessage("请选择"),
+    "noCheckInProductionLineFoundForUser" : MessageLookupByLibrary.simpleMessage("该用户还没有开始在任何产线作业"),
+    "noCheckInUsersFoundForProductionLine" : MessageLookupByLibrary.simpleMessage("该产线当前没有任何用户"),
+
+
+    "pleaseSelectAUser" : MessageLookupByLibrary.simpleMessage("请选择一个用户"),
+    "pleaseSelectAProductionLine" : MessageLookupByLibrary.simpleMessage("请选择一条产线"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

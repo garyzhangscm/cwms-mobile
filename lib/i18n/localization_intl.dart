@@ -187,7 +187,15 @@ class CWMSLocalizations {
   String get workOrderNoQCConfig => Intl.message('Cannot find any qc rule setup for this work order & production line', name: 'workOrderNoQCConfig');
   String get inventoryNotQCRequired => Intl.message('The inventory does not need QC', name: 'inventoryNotQCRequired');
   String get nextQCRule => Intl.message('Next QC Rule', name: 'nextQCRule');
+  String get pleaseSelect => Intl.message('Please Select', name: 'pleaseSelect');
+  String get noCheckInProductionLineFoundForUser => Intl.message('The user has not checked in any production line', name: 'noCheckInProductionLineFoundForUser');
+  String get noCheckInUsersFoundForProductionLine => Intl.message("There's no user checked in this production line", name: 'noCheckInUsersFoundForProductionLine');
 
+
+  String get productionLineCheckOutByUser => Intl.message('By User', name: 'productionLineCheckOutByUser');
+  String get productionLineCheckOutByProductionLine => Intl.message('By Production Line', name: 'productionLineCheckOutByProductionLine');
+  String get pleaseSelectAUser => Intl.message('Please Select A User', name: 'pleaseSelectAUser');
+  String get pleaseSelectAProductionLine => Intl.message('Please Select A Production Line', name: 'pleaseSelectAProductionLine');
 
 
 

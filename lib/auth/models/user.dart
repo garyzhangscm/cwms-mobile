@@ -13,6 +13,9 @@ class User{
   String username;
   String password;
 
+  String firstname;
+  String lastname;
+
   // current login token
   String token;
 

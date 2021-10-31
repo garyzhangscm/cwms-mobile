@@ -238,7 +238,7 @@ Widget buildTwoSectionInformationRow(String name, String value) {
     ),
   );
 }
-Widget buildTowSectionInputRow(String name, Widget inputController) {
+Widget buildTwoSectionInputRow(String name, Widget inputController) {
   return Padding(
     padding: EdgeInsets.only(top: 5, bottom: 5),
     child:

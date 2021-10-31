@@ -49,139 +49,195 @@ class ProductionLineCheckOutPage extends StatefulWidget{
 
 }
 
-class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage> {
+class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage> with SingleTickerProviderStateMixin{
 
-  // input batch id
+  // when check out by username
+
   TextEditingController _usernameController = new TextEditingController();
   FocusNode _usernameFocusNode;
-  bool _incorrectUsername;
+  bool _incorrectUsername = false;
+  String _currentUsername = "";
+  Map<ProductionLine, bool> _assignedProductionLine = {  };
+  final  _userFormKey = GlobalKey<FormState>();
 
-  TextEditingController _productionLineNameController = new TextEditingController();
-  FocusNode _productionLineNameNode;
-  bool _incorrectProductionLinename;
+  // when check out by productoin line
+  List<ProductionLine> _validProductionLines;
+  ProductionLine _selectedProductionLine;
+  FocusNode _productionLineNode;
+  Map<User, bool> _assignedUsers = {  };
+  final  _productionLineFormKey = GlobalKey<FormState>();
 
-  WorkOrderLabor _workOrderLabor;
+  TabController _tabController;
 
-  final  _formKey = GlobalKey<FormState>();
+  List<WorkOrderLabor> _workOrderLaborResults = [];
+
+
 
   @override
   void initState() {
     super.initState();
-    _workOrderLabor = null;
-    _usernameFocusNode = FocusNode();
 
-    _productionLineNameNode = FocusNode();
+    _usernameFocusNode = FocusNode();
     _incorrectUsername = false;
-    _incorrectProductionLinename = false;
+
+
+    _tabController = TabController(vsync: this, length: 2);
+    _tabController.addListener(_handleTabSelection);
+
+    // loading the production line that the user checked in
+    // after we scan in the username
+    _usernameFocusNode.addListener(() {
+      print("_usernameFocusNode.hasFocus: ${_usernameFocusNode.hasFocus}");
+      if (!_usernameFocusNode.hasFocus && _usernameController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _loadCheckInProductionLinesByUsername(_usernameController.text);
+
+
+      }
+    });
+    _usernameFocusNode.requestFocus();
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) {
+      switch (_tabController.index) {
+        case 0:
+          // clear the input
+          _refreshCheckoutByUserPage();
+          break;
+        case 1:
+          _refreshCheckoutByProductionLinePage();
+
+          break;
+      }
+    }
+  }
+
+  void _refreshCheckoutByUserPage() {
+
+    setState(() {
+
+      _usernameController.clear();
+      _currentUsername = "";
+      _assignedProductionLine.clear();
+    });
+  }
+
+  void _refreshCheckoutByProductionLinePage() {
+
+    showLoading(context);
+    // loading the production line
+    ProductionLineService.getAllAssignedProductionLines()
+        .then((value) {
+      setState(() {
+        _validProductionLines = value;
+        _selectedProductionLine = null;
+
+        Navigator.of(context).pop();
+      });
+    });
+    _assignedUsers.clear();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).productionLineCheckOut)),
-      body:
-          Column(
-            children: [
-              _buildForm(context),
-              _buildButtons(context),
-              _buildLastCheckInTransactionDisplay(context)
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(CWMSLocalizations.of(context).productionLineCheckOut),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: [
+              // check out by user
+              Tab(text: CWMSLocalizations.of(context).productionLineCheckOutByUser),
+              // check out by production line
+              Tab(text: CWMSLocalizations.of(context).productionLineCheckOutByProductionLine),
             ],
           ),
-      // bottomNavigationBar: buildBottomNavigationBar(context)
-      endDrawer: MyDrawer(),
+        ),
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildCheckoutByUserPage(context),
+            _buildCheckoutByProductionLinePage(context)
+          ],
+        ),
+      ),
     );
   }
 
-  // scan in barcode to add a order into current batch
-  Widget _buildForm(BuildContext context) {
+
+  Widget _buildCheckoutByUserPage(BuildContext context) {
+
+    return
+      Column(
+          children: [
+            _buildUserForm(context),
+            _buildCheckOutByUsernameButtons(context),
+          ]
+    );
+  }
+
+  Widget _buildCheckoutByProductionLinePage(BuildContext context) {
+
+    return
+      Column(
+          children: [
+            _buildProductionLineForm(context),
+            _buildCheckOutByProductionLineButtons(context),
+          ]
+      );
+  }
+
+  Widget _buildUserForm(BuildContext context) {
     return
       Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
-              key: _formKey,
-              // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
+              key: _userFormKey,
+
               child: Column(
                   children: <Widget>[
-
-                    // scan in production line
-                    Padding(
-                      padding: EdgeInsets.only(top: 10, bottom: 10),
-                      child:
-                      Row(
-                          children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(right: 20),
-                              child:
-                              Text(CWMSLocalizations.of(context).productionLine,
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-
-                            Expanded(
-                                child:
-                                  TextFormField(
-                                    focusNode: _productionLineNameNode,
-                                    controller: _productionLineNameController,
-                                    textInputAction: TextInputAction.next,
-                                    decoration: InputDecoration(
-                                      suffixIcon: IconButton(
-                                        onPressed: () => _startProductionLineBarcodeScanner(),
-                                        icon: Icon(Icons.scanner),
-                                      ),
-                                    ),
-                                    validator: (v) {
-
-                                      if (_incorrectProductionLinename) {
-                                        return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).productionLine);
-                                      }
-                                      return v.trim().isNotEmpty ? null :
-                                          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).productionLine);
-                                    },
-                                ),
-                            ),
-                          ]
+                    buildTwoSectionInputRow(
+                      CWMSLocalizations.of(context).userName,
+                      TextFormField(
+                        focusNode: _usernameFocusNode,
+                        controller: _usernameController,
+                        autofocus: true,
+                        textInputAction: TextInputAction.next,
+                        validator: (v) {
+                          if (_incorrectUsername) {
+                            return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).userName);
+                          }
+                          return _currentUsername.isNotEmpty ? null :
+                             CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).userName);
+                        },
                       ),
                     ),
-
-                    // scan in username
-                    Padding(
-                      padding: EdgeInsets.only(top: 10, bottom: 10),
+                    _currentUsername.isEmpty ?
+                        new Container() :
+                        buildTwoSectionInformationRow(CWMSLocalizations.of(context).userName, _currentUsername),
+                    // choose the production line that the user already checked in
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height - 400 > _assignedProductionLine.length * 50.0 ?
+                          _assignedProductionLine.length * 50.0 : MediaQuery.of(context).size.height - 400,
                       child:
-                      Row(
-                          children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(right: 20),
-                              child:
-                              Text(CWMSLocalizations.of(context).userName,
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-
-                            Expanded(
-                                child:
-                                  TextFormField(
-                                    focusNode: _usernameFocusNode,
-                                    controller: _usernameController,
-                                    textInputAction: TextInputAction.next,
-                                    decoration: InputDecoration(
-                                      suffixIcon: IconButton(
-                                        onPressed: () => _startUsernameBarcodeScanner(),
-                                        icon: Icon(Icons.scanner),
-                                      ),
-                                    ),
-                                    validator: (v) {
-                                      if (_incorrectUsername) {
-                                        return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).userName);
-                                      }
-                                      return v.trim().isNotEmpty ? null :
-                                          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).userName);
-                                    },
-                                ),
-                            ),
-                          ]
-                      ),
-                    ),
+                        new ListView(
+                          children: _assignedProductionLine.keys.map((ProductionLine productionLine) {
+                            return new CheckboxListTile(
+                              title: new Text(productionLine.name),
+                              value: _assignedProductionLine[productionLine],
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _assignedProductionLine[productionLine] = value;
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                    )
                   ]
               )
           )
@@ -189,99 +245,273 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
   }
 
 
-  Widget _buildButtons(BuildContext context) {
+  Widget _buildProductionLineForm(BuildContext context) {
+    return
+      Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+              key: _productionLineFormKey,
+
+              child: Column(
+                  children: <Widget>[
+                    buildTwoSectionInputRow(
+                        CWMSLocalizations.of(context).productionLine,
+                        DropdownButton(
+                          focusNode: _productionLineNode,
+                          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                          items: _getValidProductionLines(),
+                          value: _selectedProductionLine == null ?  null : _selectedProductionLine,
+                          elevation: 1,
+                          isExpanded: true,
+                          icon: Icon(
+                            Icons.list,
+                            size: 20,
+                          ),
+                          onChanged: (T) {
+                            //下拉菜单item点击之后的回调
+                            setState(() {
+                              _selectedProductionLine = T;
+
+                              _loadCheckInUsernamesByProductionLine(_selectedProductionLine);
+                            });
+                          },
+                        )
+                    ),
+                    // choose the user that already check in to this production line
+
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height - 400 > _assignedUsers.length * 50.0 ?
+                          _assignedUsers.length * 50.0 : MediaQuery.of(context).size.height - 400,
+                      child:
+                        new ListView(
+                          children: _assignedUsers.keys.map((User user) {
+                            return new CheckboxListTile(
+                              title: new Text(user.username + " (" + user.firstname + ", " + user.lastname + ")"),
+                              value: _assignedUsers[user],
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _assignedUsers[user] = value;
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                    )
+                  ]
+              )
+          )
+      );
+  }
+
+
+  List<DropdownMenuItem> _getValidProductionLines() {
+    List<DropdownMenuItem> items = [];
+    if (_validProductionLines == null || _validProductionLines.length == 0) {
+      return items;
+    }
+
+    for (int i = 0; i < _validProductionLines.length; i++) {
+      items.add(DropdownMenuItem(
+        value: _validProductionLines[i],
+        child: Text(_validProductionLines[i].name),
+      ));
+    }
+    return items;
+  }
+
+  Widget _buildCheckOutByUsernameButtons(BuildContext context) {
 
     return
       SizedBox(
         width: double.infinity,
           height: 50,
         child:
-          RaisedButton(
-            color: Theme.of(context).primaryColor,
+          ElevatedButton(
 
-            onPressed: () {
-              // clear the data we use to manually show the
-              // error and start validate the form from a
-              // clear start
-              _incorrectProductionLinename = false;
-              _incorrectUsername = false;
-              if (_formKey.currentState.validate()) {
-                print("form validation passed");
-                _onStartCheckOut();
-              }
+            onPressed: _assignedProductionLine.length == 0 ?  null :
+                () {
+                  // clear the data we use to manually show the
+                  // error and start validate the form from a
+                  // clear start
+                  _incorrectUsername = false;
+                  if (_userFormKey.currentState.validate()) {
+                    print("form validation passed");
+                    _onStartCheckOutByUser();
+                  }
 
-            },
-            textColor: Colors.white,
+                },
             child: Text(CWMSLocalizations.of(context).productionLineCheckOut),
           )
         );
 
 
   }
-  Widget _buildLastCheckInTransactionDisplay(BuildContext context) {
+
+
+  Widget _buildCheckOutByProductionLineButtons(BuildContext context) {
 
     return
-      ListTile(
-          dense: true,
+      SizedBox(
+          width: double.infinity,
+          height: 50,
+          child:
+          ElevatedButton(
 
+            onPressed: _assignedUsers.length == 0 ?  null :
+                () {
+              // clear the data we use to manually show the
+              // error and start validate the form from a
+              // clear start
+              if (_productionLineFormKey.currentState.validate()) {
+                print("form validation passed");
+                _onStartCheckOutByProductionLine();
+              }
 
-          title: _buildTransactionDetails(),
-
+            },
+            child: Text(CWMSLocalizations.of(context).productionLineCheckOut),
+          )
       );
+
 
   }
 
-  Widget _buildTransactionDetails() {
-    return
-      new Container(
-
-        child:
-        new Column(
-            children: [
-              buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context).productionLine,
-                  _workOrderLabor == null ? "" : _workOrderLabor.productionLine.name
-              ),
-              buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context).userName,
-                  _workOrderLabor == null ? "" : _workOrderLabor.username
-              ),
-              buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context).transactionTime,
-                  _workOrderLabor == null ?
-                  "" :
-                  DateFormat("MM/dd/yyyy HH:mm:ss").format(_workOrderLabor.lastCheckInTime)
-              ),
-
-            ]
-        ),
-      );
-  }
-
-  Future<void> _onStartCheckOut() async {
+  _loadCheckInProductionLinesByUsername(String username) async {
 
     showLoading(context);
-    printLongLogMessage("start to get production line by ${_productionLineNameController.text}");
-    ProductionLine productionLine =
-          await ProductionLineService.getProductionLineByNumber(_productionLineNameController.text);
+    setState(() {
 
-    // make sure the production line is valid
-    if (productionLine == null) {
+      _assignedProductionLine.clear();
+    });
+    // make sure the user is a valid user
+    User user = await UserService.findUser(Global.lastLoginCompanyId, username);
+    if (user == null) {
+      setState(() {
+
+        _currentUsername = "";
+      });
+
       Navigator.of(context).pop();
-      _productionLineNameNode.requestFocus();
-      _incorrectUsername = false;
-      _incorrectProductionLinename = true;
-      _formKey.currentState.validate();
+      _usernameFocusNode.requestFocus();
+      _incorrectUsername = true;
+      _userFormKey.currentState.validate();
       return;
     }
-    printLongLogMessage("get production line: ${productionLine.name}");
 
 
+    try{
 
+      List<ProductionLine> productionLines =
+          await ProductionLineService.findAllCheckedInProductionLines(
+              username
+          );
+      if (productionLines.isEmpty) {
+
+        Navigator.of(context).pop();
+
+        showToast(CWMSLocalizations.of(context).noCheckInProductionLineFoundForUser);
+        return;
+      }
+
+      _assignedProductionLine.clear();
+      productionLines.forEach((element) {
+
+        setState(() {
+          _assignedProductionLine.putIfAbsent(element, () => true);
+        });
+      });
+    }
+    on WebAPICallException catch(ex) {
+
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+
+    Navigator.of(context).pop();
+
+
+    setState(() {
+
+      _incorrectUsername = false;
+      _currentUsername = user.username;
+      _usernameController.clear();
+    });
+
+
+    // check all production lines that the user is checked in
+  }
+
+  _loadCheckInUsernamesByProductionLine(ProductionLine productionLine) async {
+
+    showLoading(context);
+
+    setState(() {
+
+      _assignedUsers.clear();
+    });
+    try{
+
+      List<User> users =
+        await ProductionLineService.findAllCheckedInUsers(
+            productionLine
+        );
+      if (users.isEmpty) {
+
+        Navigator.of(context).pop();
+
+        showToast(CWMSLocalizations.of(context).noCheckInUsersFoundForProductionLine);
+        return;
+      }
+      users.forEach((element) {
+
+        setState(() {
+          _assignedUsers.putIfAbsent(element, () => true);
+        });
+      });
+    }
+    on WebAPICallException catch(ex) {
+
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _onStartCheckOutByUser() async {
+
+    if (_currentUsername.isEmpty) {
+
+      showErrorDialog(context, CWMSLocalizations.of(context).pleaseSelectAUser);
+      return;
+    }
+    showLoading(context);
 
     try {
-      _workOrderLabor =
-          await ProductionLineService.checkOutUser(productionLine.id, _usernameController.text);
+      Iterable<MapEntry<ProductionLine, bool>> iterable = _assignedProductionLine.entries.where((element) => element.value == true);
+      if (iterable.isEmpty) {
+
+        Navigator.of(context).pop();
+        showErrorDialog(context, CWMSLocalizations.of(context).pleaseSelectAProductionLine);
+        return;
+      }
+      Iterator<MapEntry<ProductionLine, bool>> iterator = iterable.iterator;
+
+      while(iterator.moveNext()) {
+
+        ProductionLine productionLine = iterator.current.key;
+        WorkOrderLabor _workOrderLabor =
+            await ProductionLineService.checkOutUser(productionLine.id, _currentUsername);
+        setState(() {
+          _workOrderLaborResults.add(_workOrderLabor);
+        });
+      }
+
 
     }
     on WebAPICallException catch(ex) {
@@ -293,48 +523,66 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
     }
 
-    setState(() {
-      _workOrderLabor;
-    });
     Navigator.of(context).pop();
 
     print("production line check out transaction saved!");
 
     showToast(CWMSLocalizations.of(context).actionComplete);
 
-    _usernameController.clear();
-    _productionLineNameController.clear();
+
+    _refreshCheckoutByUserPage();
   }
 
-  _startProductionLineBarcodeScanner() async {
-    String productionLineName = await _startBarcodeScanner();
-    _productionLineNameController.text = productionLineName;
+  Future<void> _onStartCheckOutByProductionLine() async {
+
+    if (_selectedProductionLine == null) {
+
+      showErrorDialog(context, CWMSLocalizations.of(context).pleaseSelectAProductionLine);
+      return;
+    }
+    showLoading(context);
+
+    try {
+
+      Iterable<MapEntry<User, bool>> iterable = _assignedUsers.entries.where((element) => element.value == true);
+      if (iterable.isEmpty) {
+
+        Navigator.of(context).pop();
+        showErrorDialog(context, CWMSLocalizations.of(context).pleaseSelectAProductionLine);
+        return;
+      }
+      Iterator<MapEntry<User, bool>> iterator = iterable.iterator;
+
+      while(iterator.moveNext()) {
+
+        User user = iterator.current.key;
+        WorkOrderLabor _workOrderLabor =
+            await ProductionLineService.checkOutUser(_selectedProductionLine.id, user.username);
+        setState(() {
+          _workOrderLaborResults.add(_workOrderLabor);
+        });
+      }
+
+
+    }
+    on WebAPICallException catch(ex) {
+
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+
+    Navigator.of(context).pop();
+
+    print("production line check out transaction saved!");
+
+    showToast(CWMSLocalizations.of(context).actionComplete);
+
+
+    _refreshCheckoutByProductionLinePage();
   }
-
-  _startUsernameBarcodeScanner() async {
-    String username = await _startBarcodeScanner();
-    _usernameController.text = username;
-  }
-
-
-
-  Future<String> _startBarcodeScanner() async {
-    /**
-     *
-        String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
-        print("barcode scanned: $barcodeScanRes");
-
-        if (barcodeScanRes != "-1") {
-        return barcodeScanRes;
-        }
-        else {
-        return "";
-        }
-      */
-  }
-
-
 
 
 

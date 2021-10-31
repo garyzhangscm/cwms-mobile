@@ -122,7 +122,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           child: Column(
             children: <Widget>[
 
-              buildTowSectionInputRow(
+              buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).receiptNumber,
                 TextFormField(
                     controller: _receiptNumberController,
@@ -154,7 +154,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                     }),
               ),
 
-              buildTowSectionInputRow(
+              buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).item,
                 TextFormField(
                     controller: _itemController,
@@ -202,7 +202,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
               ),
               // Allow the user to choose item package type
 
-              buildTowSectionInputRow(
+              buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).itemPackageType,
                 DropdownButton(
                     hint: Text(""),
@@ -224,7 +224,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
               ),
               // Allow the user to choose inventory status
 
-              buildTowSectionInputRow(
+              buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).inventoryStatus,
                   DropdownButton(
                     hint: Text(""),
@@ -245,7 +245,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                   )
               ),
 
-              buildTowSectionInputRow(
+              buildTwoSectionInputRow(
                   "Receiving Quantity:",
                   TextFormField(
                       keyboardType: TextInputType.number,
@@ -271,7 +271,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                       })
               ),
 
-              buildTowSectionInputRow(
+              buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).lpn+ ": ",
                   Focus(
                     child:

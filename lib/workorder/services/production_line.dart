@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 
+import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
@@ -49,6 +50,32 @@ class ProductionLineService {
   }
 
 
+  static Future<List<ProductionLine>> getAllAssignedProductionLines({loadDetails=false}) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "workorder/production-line/assigned",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id,
+        "loadDetails": loadDetails}
+    );
+
+    printLongLogMessage("response from getAllAssignedProductionLines: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+    List<ProductionLine> productionLines
+      = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : ProductionLine.fromJson(e as Map<String, dynamic>))
+          ?.toList();
+    printLongLogMessage("We get ${productionLines.length} assigned production lines");
+
+    return productionLines;
+
+  }
 
   static Future<WorkOrderLabor> checkInUser(int productionLineId,
       String username) async {
@@ -98,6 +125,67 @@ class ProductionLineService {
     }
 
     return WorkOrderLabor.fromJson(responseString["data"] as Map<String, dynamic>);
+
+  }
+
+
+  static Future<List<ProductionLine>> findAllCheckedInProductionLines(String username) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "workorder/labor/checked_in_production_lines",
+        queryParameters: {
+          "username": username,
+          "warehouseId": Global.currentWarehouse.id}
+    );
+
+    printLongLogMessage("response from findAllCheckedInProductionLines: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+
+    List<ProductionLine> productionLines
+      = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : ProductionLine.fromJson(e as Map<String, dynamic>))
+          ?.toList();
+    printLongLogMessage("We get ${productionLines.length}  production lines that the user check in");
+
+    return productionLines;
+
+
+  }
+
+  static Future<List<User>> findAllCheckedInUsers(ProductionLine productionLine) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "workorder/labor/checked_in_users",
+        queryParameters: {
+          "productionLineId": productionLine.id,
+          "warehouseId": Global.currentWarehouse.id}
+    );
+
+    printLongLogMessage("response from findAllCheckedInUsers: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+
+    List<User> users
+        = (responseString["data"] as List)?.map((e) =>
+        e == null ? null : User.fromJson(e as Map<String, dynamic>))
+            ?.toList();
+    printLongLogMessage("We get ${users.length}  users that checked in ${productionLine.name}");
+
+    return users;
+
 
   }
 }

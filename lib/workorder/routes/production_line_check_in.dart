@@ -55,13 +55,19 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
   TextEditingController _usernameController = new TextEditingController();
   FocusNode _usernameFocusNode;
   bool _incorrectUsername;
+  User _currentUser;
 
 
-  TextEditingController _productionLineNameController = new TextEditingController();
-  FocusNode _productionLineNameNode;
-  bool _incorrectProductionLinename;
+  // TextEditingController _productionLineNameController = new TextEditingController();
+  // FocusNode _productionLineNameNode;
+  bool _incorrectProductionLine;
 
   WorkOrderLabor _workOrderLabor;
+
+
+  List<ProductionLine> _validProductionLines;
+  ProductionLine _selectedProductionLine;
+  FocusNode _productionLineNode;
 
   final  _formKey = GlobalKey<FormState>();
 
@@ -70,11 +76,54 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
     super.initState();
     _workOrderLabor = null;
     _usernameFocusNode = FocusNode();
-    _productionLineNameNode = FocusNode();
     _incorrectUsername = false;
-    _incorrectProductionLinename = false;
+    // _productionLineNameNode = FocusNode();
+    _incorrectProductionLine = false;
+    _currentUser = null;
+
+    // get all assigned production line for check in
+    ProductionLineService.getAllAssignedProductionLines()
+        .then((value) {
+      setState(() {
+        _validProductionLines = value;
+        _selectedProductionLine = null;
+
+        // if (_validProductionLines.length > 0) {
+        //   _selectedProductionLine = _validProductionLines[0];
+        // }
+      });
+    });
+
+    _usernameFocusNode.addListener(() {
+      print("_usernameFocusNode.hasFocus: ${_usernameFocusNode.hasFocus}");
+      if (!_usernameFocusNode.hasFocus && _usernameController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _loadUserInformation(_usernameController.text);
+
+
+      }
+    });
   }
 
+  _loadUserInformation(String username) {
+
+    try {
+
+      UserService.findUser(Global.lastLoginCompanyId, username).then((value)
+      {
+        setState(() {
+
+          _currentUser = value;
+        });
+      });
+    }
+    on WebAPICallException catch(ex) {
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -103,13 +152,58 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
               // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
               child: Column(
                   children: <Widget>[
+                    // Allow the user to choose production line
+                    buildTwoSectionInputRow(
+                        CWMSLocalizations.of(context).productionLine,
+                        DropdownButton(
+                          focusNode: _productionLineNode,
+                          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                          items: _getValidProductionLines(),
+                          value: _selectedProductionLine == null ?  null : _selectedProductionLine,
+                          elevation: 1,
+                          isExpanded: true,
+                          icon: Icon(
+                            Icons.list,
+                            size: 20,
+                          ),
+                          onChanged: (T) {
+                            printLongLogMessage("user selected ${T}");
+                            //下拉菜单item点击之后的回调
+                            setState(() {
+                              _selectedProductionLine = T;
+                              printLongLogMessage("_selectedProductionLine ${_selectedProductionLine.name}");
+                            });
+                          },
+                        )
+                    ),
+                    buildTwoSectionInputRow(
+                        CWMSLocalizations.of(context).userName,
+                        TextFormField(
+                        focusNode: _usernameFocusNode,
+                        controller: _usernameController,
+                        textInputAction: TextInputAction.next,
+                        validator: (v) {
+                          if (_incorrectUsername) {
+                            return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).userName);
+                          }
+                          return v.trim().isNotEmpty ? null :
+                          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).userName);
+                        },
+                      ),
+                    ),
+                    _currentUser == null? new Container() :
+                      buildTwoSectionInformationRow(
 
-                    // scan in production line
+                        CWMSLocalizations.of(context).userName,
+                          _currentUser.username + " (" + _currentUser.firstname + ", " + _currentUser.lastname + ")"
+                      )
+                    /**
                     Padding(
-                      padding: EdgeInsets.only(top: 10, bottom: 10),
+                      padding: EdgeInsets.only(top: 5, bottom: 5),
                       child:
                       Row(
                           children: <Widget>[
+
                             Padding(
                               padding: EdgeInsets.only(right: 20),
                               child:
@@ -117,27 +211,32 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                                 textAlign: TextAlign.left,
                               ),
                             ),
-
                             Expanded(
                                 child:
-                                  TextFormField(
-                                    focusNode: _productionLineNameNode,
-                                    textInputAction: TextInputAction.next,
-                                    controller: _productionLineNameController,
-                                    validator: (v) {
-
-                                      if (_incorrectProductionLinename) {
-                                        return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).productionLine);
-                                      }
-                                      return v.trim().isNotEmpty ? null :
-                                          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).productionLine);
-                                    },
-                                ),
-                            ),
+                                DropdownButton(
+                                  focusNode: _productionLineNode,
+                                  hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                                  items: _getValidProductionLines(),
+                                  value: _selectedProductionLine == null ?  null : _selectedProductionLine,
+                                  elevation: 1,
+                                  isExpanded: true,
+                                  icon: Icon(
+                                    Icons.list,
+                                    size: 20,
+                                  ),
+                                  onChanged: (T) {
+                                    printLongLogMessage("user selected ${T}");
+                                    //下拉菜单item点击之后的回调
+                                    setState(() {
+                                      _selectedProductionLine = T;
+                                      printLongLogMessage("_selectedProductionLine ${_selectedProductionLine.name}");
+                                    });
+                                  },
+                                )
+                            )
                           ]
                       ),
                     ),
-
                     // scan in username
                     Padding(
                       padding: EdgeInsets.only(top: 10, bottom: 10),
@@ -170,12 +269,29 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                           ]
                       ),
                     ),
+                     */
                   ]
               )
           )
       );
   }
 
+
+
+  List<DropdownMenuItem> _getValidProductionLines() {
+    List<DropdownMenuItem> items = [];
+    if (_validProductionLines == null || _validProductionLines.length == 0) {
+      return items;
+    }
+    for (int i = 0; i < _validProductionLines.length; i++) {
+      // printLongLogMessage("#${i}: add production line with id: ${ _validProductionLines[i].id}");
+      items.add(DropdownMenuItem(
+        value: _validProductionLines[i],
+        child: Text(_validProductionLines[i].name),
+      ));
+    }
+    return items;
+  }
 
   Widget _buildButtons(BuildContext context) {
 
@@ -184,22 +300,22 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
         width: double.infinity,
           height: 50,
         child:
-          RaisedButton(
-            color: Theme.of(context).primaryColor,
+          ElevatedButton(
+            onPressed:
+                _selectedProductionLine == null  ?
+                null :
+                    () {
+                      // clear the data we use to manually show the
+                      // error and start validate the form from a
+                      // clear start
+                      _incorrectProductionLine = false;
+                      _incorrectUsername = false;
+                      if (_formKey.currentState.validate()) {
+                        print("form validation passed");
+                        _onStartCheckIn();
+                      }
 
-            onPressed: () {
-              // clear the data we use to manually show the
-              // error and start validate the form from a
-              // clear start
-              _incorrectProductionLinename = false;
-              _incorrectUsername = false;
-              if (_formKey.currentState.validate()) {
-                print("form validation passed");
-                _onStartCheckIn();
-              }
-
-            },
-            textColor: Colors.white,
+                    },
             child: Text(CWMSLocalizations.of(context).productionLineCheckIn),
           )
         );
@@ -232,7 +348,8 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
               ),
               buildTwoSectionInformationRow(
                   CWMSLocalizations.of(context).userName,
-                  _workOrderLabor == null ? "" : _workOrderLabor.username
+                      _workOrderLabor == null ? ""
+                          : _workOrderLabor.username
               ),
               buildTwoSectionInformationRow(
                   CWMSLocalizations.of(context).transactionTime,
@@ -249,38 +366,36 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
   Future<void> _onStartCheckIn() async {
 
     showLoading(context);
-    printLongLogMessage("start to get production line by ${_productionLineNameController.text}");
-    ProductionLine productionLine =
-          await ProductionLineService.getProductionLineByNumber(_productionLineNameController.text);
+    printLongLogMessage("start to get production line by ${_selectedProductionLine != null? _selectedProductionLine.name : "" }");
+    // ProductionLine productionLine =
+    //       await ProductionLineService.getProductionLineByNumber(_productionLineNameController.text);
 
     // make sure the production line is valid
-    if (productionLine == null) {
+    if (_selectedProductionLine == null) {
       Navigator.of(context).pop();
-      _productionLineNameNode.requestFocus();
+      _productionLineNode.requestFocus();
       _incorrectUsername = false;
-      _incorrectProductionLinename = true;
+      _incorrectProductionLine = true;
+      _currentUser = null;
       _formKey.currentState.validate();
       return;
     }
     // make sure the user name is valid
-    // the user can be a temporary user without any system login
-    /**
     User user = await UserService.findUser(Global.lastLoginCompanyId, _usernameController.text);
     if (user == null) {
 
       Navigator.of(context).pop();
       _usernameFocusNode.requestFocus();
       _incorrectUsername = true;
-      _incorrectProductionLinename = false;
+      _currentUser = null;
       _formKey.currentState.validate();
       return;
     }
-        **/
-    printLongLogMessage("get production line: ${productionLine.name}");
+    printLongLogMessage("get production line: ${_selectedProductionLine.name}");
 
     // let's get the work order that current is active on this production line
     List<WorkOrder> workOrders =
-        await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
+        await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(_selectedProductionLine);
 
     if (workOrders.isEmpty) {
       // no work order is assigned yet, there's no need to check in
@@ -295,7 +410,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
     try {
       _workOrderLabor =
-          await ProductionLineService.checkInUser(productionLine.id, _usernameController.text);
+          await ProductionLineService.checkInUser(_selectedProductionLine.id, _usernameController.text);
 
     }
     on WebAPICallException catch(ex) {
@@ -315,7 +430,9 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
     showToast(CWMSLocalizations.of(context).actionComplete);
     _usernameController.clear();
-    _productionLineNameController.clear();
+    _usernameFocusNode.requestFocus();
+    _currentUser = null;
+    // _selectedProductionLine.clear();
   }
 
 
