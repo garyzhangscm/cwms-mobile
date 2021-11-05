@@ -35,7 +35,7 @@ void showToast(String text, {
     msg: text,
     toastLength: toastLength,
     gravity: gravity,
-    timeInSecForIos: 1,
+    timeInSecForIosWeb: 1,
     backgroundColor: Colors.grey[600],
     fontSize: 16.0,
   );
@@ -176,7 +176,7 @@ Widget buildSingleButtonRow(BuildContext context, Widget button) {
   );
 }
 
-Widget buildTowButtonRow(BuildContext context, Widget button1, Widget button2) {
+Widget buildTwoButtonRow(BuildContext context, Widget button1, Widget button2) {
   return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       mainAxisSize: MainAxisSize.max,

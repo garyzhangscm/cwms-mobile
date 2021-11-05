@@ -32,53 +32,80 @@ dependencies:
   # intl: ^0.16.1
   intl: 0.17.0
 
-  provider: ^4.3.2+1
+  #provider: ^4.3.2+1
+  provider: ^6.0.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.0
+  # cupertino_icons: ^1.0.0
+  cupertino_icons: ^1.0.3
 
   # save server URL
-  shared_preferences: "^0.4.2"
+  # shared_preferences: "^0.4.2"
+  shared_preferences: ^2.0.8
 
   # http client
-  dio: ^3.0.10
+  # dio: ^3.0.10
+  dio: ^4.0.1
 
   # Parse JSON
-  json_annotation: ^3.1.0
+  # json_annotation: ^3.1.0
+  json_annotation: ^4.3.0
 
 
-  cached_network_image: ^2.0.0
-  fluttertoast: ^3.0.3
-  webview_flutter: ^1.0.6
+  # cached_network_image: ^2.0.0
+  cached_network_image: ^3.1.0+1
+
+  fluttertoast: ^8.0.8
+
+  # webview_flutter: ^1.0.6
+  webview_flutter: ^2.3.0
 
   # barcode scanner
   # flutter_barcode_scanner: ^1.0.2
 
-  infinite_listview: 1.0.0
+  # infinite_listview: 1.0.0
+  infinite_listview: ^1.1.0
 
   # badges
   # https://pub.dev/packages/badges
-  badges: ^1.2.0
+  # badges: ^1.2.0
+  badges: ^2.0.1
 
   # cast between enum and string
-  enum_to_string: ^1.0.14
+  # enum_to_string: ^1.0.14
+  enum_to_string: ^2.0.1
 
   # print PDF files from local printer
-  printing: ^5.0.0
+  # printing: ^5.0.0
 
   # setup the launcher icon
   flutter_launcher_icons: ^0.9.2
 
   carousel_slider: ^4.0.0
 
+  # Auto upgrade
+  # 1. get package information from the server
+  package_info: ^2.0.2
+  # 2. get the local path to download and store the app file
+  path_provider: ^2.0.4
+  # 3. download the latest app file from the server
+  flutter_downloader: ^1.7.1
+  # 3.1 Show the download progress
+  progress_dialog: ^1.2.4
+  # 4. open the downloaded file and install the apk
+  open_file: ^3.2.1
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   # process JSON
-  build_runner: ^1.10.4
-  json_serializable: ^3.5.0
+  # build_runner: ^1.10.4
+  build_runner: ^2.1.4
+  # json_serializable: ^3.5.0
+  json_serializable: ^6.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

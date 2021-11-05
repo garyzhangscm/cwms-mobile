@@ -175,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                   ]
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 25),
+                padding: const EdgeInsets.only(top: 5),
                 child: ConstrainedBox(
                   constraints: BoxConstraints.expand(height: 55.0),
                   child: RaisedButton(
@@ -195,9 +195,9 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget getDropDownButtonsColumnForWarehouse(){
     return Padding(
-      padding: const EdgeInsets.only(left: 40, right: 40 , bottom: 24,top:12),
+      padding: const EdgeInsets.only(left: 40, right: 40 , bottom: 5,top:5),
       child: Container(
-        height: 55,  //gives the height of the dropdown button
+        height: 35,  //gives the height of the dropdown button
         width: MediaQuery.of(context).size.width - 175, //gives the width of the dropdown button
         decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(3)),

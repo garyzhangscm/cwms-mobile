@@ -109,7 +109,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
 
     return
       // confirm input and clear input
-      buildTowButtonRow(context,
+      buildTwoButtonRow(context,
         ElevatedButton(
             onPressed: _onLPNScanned,
             child: Text(CWMSLocalizations.of(context).confirm)

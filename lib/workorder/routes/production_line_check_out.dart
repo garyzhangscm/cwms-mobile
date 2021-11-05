@@ -316,6 +316,16 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
         child: Text(_validProductionLines[i].name),
       ));
     }
+
+
+    if (_validProductionLines.length == 1 ||
+        _selectedProductionLine == null) {
+      // if we only have one valid production line, then
+      // default the selection to it
+      // if the user has not select any production line yet, then
+      // default the value to the first option as well
+      _selectedProductionLine = _validProductionLines[0];
+    }
     return items;
   }
 

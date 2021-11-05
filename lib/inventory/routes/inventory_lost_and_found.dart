@@ -86,6 +86,9 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
           child: Column(
             children: <Widget>[
               // show RF as the destination location of the adjust LPN
+              buildTwoSectionInformationRow(CWMSLocalizations.of(context).location,
+                  Global.lastLoginRFCode),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -104,7 +107,40 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     ]
                 ),
               ),
+              **/
               // ask the user to input item number
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).item,
+                Focus(
+                    child: TextFormField(
+                        controller: _itemController,
+                        // 校验ITEM NUMBER（不能为空）
+                        validator: (v) {
+                          if (v.trim().isEmpty) {
+                            return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).item);
+                          }
+
+                          return null;
+                        }),
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus && _itemController.text
+                          .trim()
+                          .isNotEmpty) {
+                        ItemService.getItemByName(
+                            _itemController.text.trim()).then(
+                                (itemRes) {
+                              if (itemRes != null) {
+                                // we find the item by name, let's save it
+                                setState(() {
+                                  item = itemRes;
+                                });
+                              }
+
+                            });
+                      }
+                    }
+                ),
+              ),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -154,7 +190,29 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     ]
                 ),
               ),
+              **/
               // Allow the user to choose item package type
+
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).itemPackageType,
+                  DropdownButton(
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                    items: _getItemPackageTypeItems(),
+                    value: _selectedItemPackageType,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
+                    ),
+                    onChanged: (T) {
+                      //下拉菜单item点击之后的回调
+                      setState(() {
+                        _selectedItemPackageType = T;
+                      });
+                    },
+                  )
+              ),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -170,7 +228,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                       Expanded(
                           child:
                           DropdownButton(
-                            hint: Text(""),
+                            hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                             items: _getItemPackageTypeItems(),
                             value: _selectedItemPackageType,
                             elevation: 1,
@@ -190,7 +248,28 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     ]
                 ),
               ),
+              **/
               // Allow the user to choose inventory status
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).inventoryStatus,
+                  DropdownButton(
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                    items: _getInventoryStatusItems(),
+                    value: _selectedInventoryStatus,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
+                    ),
+                    onChanged: (T) {
+                      //下拉菜单item点击之后的回调
+                      setState(() {
+                        _selectedInventoryStatus = T;
+                      });
+                    },
+                  )
+              ),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -207,7 +286,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                       Expanded(
                           child:
                           DropdownButton(
-                            hint: Text("请选择"),
+                            hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                             items: _getInventoryStatusItems(),
                             value: _selectedInventoryStatus,
                             elevation: 1,
@@ -227,6 +306,24 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     ]
                 ),
               ),
+              **/
+
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).quantity,
+                Focus(
+                  child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      controller: _quantityController,
+                      // 校验ITEM NUMBER（不能为空）
+                      validator: (v) {
+                        if (v.trim().isEmpty) {
+                          return "please type in quantity";
+                        }
+
+                        return null;
+                      }),
+                ),
+              ),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -263,6 +360,24 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     ]
                 ),
               ),
+              **/
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
+                Focus(
+
+                  child: SystemControllerNumberTextBox(
+                      type: "lpn",
+                      controller: _lpnController,
+                      readOnly: false,
+                      validator: (v) {
+                        if (v.trim().isEmpty) {
+                          return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                        }
+
+                        return null;
+                      }),
+                ),
+              ),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -300,6 +415,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     ]
                 ),
               ),
+              **/
               _buildButtons(context)
 
             ],
@@ -311,6 +427,37 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   }
 
   Widget _buildButtons(BuildContext context) {
+    return buildTwoButtonRow(context,
+
+        ElevatedButton(
+          onPressed: item == null ? null :
+              () {
+            if (_formKey.currentState.validate()) {
+              print("form validation passed");
+              _onInventoryAdjustConfirm();
+            }
+
+          },
+          child: Text(CWMSLocalizations
+              .of(context)
+              .confirm),
+        ),
+        Badge(
+          showBadge: true,
+          padding: EdgeInsets.all(8),
+          badgeColor: Colors.deepPurple,
+          badgeContent: Text(
+            inventoryOnRF.length.toString(),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          child: ElevatedButton(
+            onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+            child: Text(CWMSLocalizations.of(context).depositInventory),
+          ),
+        )
+    );
+
+    /**
     return
       Row(
 
@@ -363,6 +510,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
           ),
         ],
       );
+        **/
   }
 
   // call the deposit form to deposit the inventory on the RF
@@ -373,67 +521,37 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     _reloadInventoryOnRF();
   }
 
-  /***
-   *
-      Widget _buildButtons(BuildContext context) {
-      return
-      SizedBox(
-      width: double.infinity,
-      height: 50,
-      child:
-      Row(
-      children: <Widget> [
-      Expanded(
-      child:
-      Padding(
-      padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-      child:
-      ElevatedButton(
-      onPressed: () {
-      if (_formKey.currentState.validate()) {
-      print("form validation passed");
-      _onInventoryAdjustConfirm();
-      }
-
-      },
-      child: Text(CWMSLocalizations
-      .of(context)
-      .confirm),
-      ),
-      ),
-      ),
-      ]
-      )
-
-      );
-      }
-   */
-
-
-
 
   List<DropdownMenuItem> _getInventoryStatusItems() {
-    List<DropdownMenuItem> items = new List();
+    List<DropdownMenuItem> items = [];
     if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
       return items;
     }
 
-    _selectedInventoryStatus = _validInventoryStatus[0];
+    // _selectedInventoryStatus = _validInventoryStatus[0];
     for (int i = 0; i < _validInventoryStatus.length; i++) {
-      print("start to create download list for _getInventoryStatusItems: ");
       items.add(DropdownMenuItem(
         value: _validInventoryStatus[i],
         child: Text(_validInventoryStatus[i].description),
       ));
     }
+
+    if (_validInventoryStatus.length == 1 ||
+        _selectedInventoryStatus == null) {
+      // if we only have one valid inventory status, then
+      // default the selection to it
+      // if the user has not select any inventdry status yet, then
+      // default the value to the first option as well
+      _selectedInventoryStatus = _validInventoryStatus[0];
+    }
     return items;
   }
 
   List<DropdownMenuItem> _getItemPackageTypeItems() {
-    List<DropdownMenuItem> items = new List();
+    List<DropdownMenuItem> items = [];
 
     if (item != null && item.itemPackageTypes.length > 0) {
-      _selectedItemPackageType = item.itemPackageTypes[0];
+      // _selectedItemPackageType = item.itemPackageTypes[0];
 
       for (int i = 0; i < item.itemPackageTypes.length; i++) {
 
@@ -441,6 +559,15 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
           value: item.itemPackageTypes[i],
           child: Text(item.itemPackageTypes[i].description),
         ));
+      }
+
+      if (item.itemPackageTypes.length == 1 ||
+          _selectedItemPackageType == null) {
+        // if we only have one item package type for this item, then
+        // default the selection to it
+        // if the user has not select any item package type yet, then
+        // default the value to the first option as well
+        _selectedItemPackageType = item.itemPackageTypes[0];
       }
     }
     return items;

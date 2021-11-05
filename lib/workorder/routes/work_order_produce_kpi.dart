@@ -273,7 +273,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                         Expanded(
                             child:
                             DropdownButton<KPIMeasurement>(
-                              hint: Text("请选择"),
+                              hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                               // items: _getValidKPIMeasurements(),
                               items: KPIMeasurement.values.map((KPIMeasurement kpiMeasurement) {
                                 return DropdownMenuItem<KPIMeasurement>(

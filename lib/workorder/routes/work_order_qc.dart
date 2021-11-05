@@ -149,7 +149,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
 
     return
     // confirm input and clear input
-      buildTowButtonRow(context,
+      buildTwoButtonRow(context,
         ElevatedButton(
             onPressed: _onWorkOrderQCSampleNumberScanned,
             child: Text(CWMSLocalizations.of(context).confirm)

@@ -94,7 +94,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   Widget _buildQCResultButtons(BuildContext context) {
     return
       // confirm input and clear input
-      buildTowButtonRow(context,
+      buildTwoButtonRow(context,
         _qcInspectionRequestItemIndex < _qcInspectionRequest.qcInspectionRequestItems.length - 1 ?
             _buildNextQCInspectionRequestItemButton(context) :
             _buildComfirmButton(context),

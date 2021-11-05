@@ -1,14 +1,6 @@
-import 'dart:convert';
 
-import 'package:badges/badges.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inbound/models/receipt.dart';
-import 'package:cwms_mobile/inbound/models/receipt_line.dart';
-import 'package:cwms_mobile/inbound/services/receipt.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_line_list_item.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_list_item.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
@@ -17,20 +9,16 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
-import 'package:cwms_mobile/workorder/models/bill_of_material_line.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/models/work_order_kpi_transaction_action.dart';
 import 'package:cwms_mobile/workorder/models/work_order_line_consume_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produced_inventory.dart';
-import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
-import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class WorkOrderProduceInventoryPage extends StatefulWidget{
@@ -47,7 +35,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   // input batch id
 
-  TextEditingController _itemController = new TextEditingController();
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
 
@@ -60,6 +47,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   BillOfMaterial _matchedBillOfMaterial;
   FocusNode lpnFocusNode = FocusNode();
+  FocusNode quantityFocusNode = FocusNode();
   bool _readyToConfirm = true; // whether we can confirm the produced inventory
 
 
@@ -68,8 +56,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   void initState() {
     super.initState();
     _currentWorkOrder = new WorkOrder();
-    _selectedInventoryStatus = new InventoryStatus();
-    _selectedItemPackageType = new ItemPackageType();
+    _selectedInventoryStatus = null;
+    _selectedItemPackageType = null;
 
     // get all inventory status to display
     InventoryStatusService.getAllInventoryStatus()
@@ -81,6 +69,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
             }
           });
     });
+
+    quantityFocusNode.requestFocus();
   }
   final  _formKey = GlobalKey<FormState>();
 
@@ -106,6 +96,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
           child: Column(
             children: <Widget>[
 
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).workOrderNumber,
+                  _currentWorkOrder.number),
+              /***
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -124,6 +118,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
+              **/
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).item,
+                  _currentWorkOrder.item.name),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -143,6 +142,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
+              **/
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).item,
+                  _currentWorkOrder.item.description),
+              /***
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -163,7 +167,12 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
-              // display the item
+              **/
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).expectedQuantity,
+                _currentWorkOrder.expectedQuantity.toString()),
+              /**
+               *
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -182,7 +191,12 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
-             // show the matched BOM
+              **/
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).billOfMaterial,
+                  _matchedBillOfMaterial == null ? "" : _matchedBillOfMaterial.number),
+              // show the matched BOM
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -201,6 +215,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
+              **/
+              buildTwoSectionInformationRow(
+                  CWMSLocalizations.of(context).producedQuantity,
+                  _currentWorkOrder.producedQuantity.toString()),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -220,7 +239,30 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
+              **/
               // Allow the user to choose item package type
+              buildTwoSectionInputRow(
+                  CWMSLocalizations.of(context).itemPackageType,
+
+                  DropdownButton(
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                    items: _getItemPackageTypeItems(),
+                    value: _selectedItemPackageType,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
+                    ),
+                    onChanged: (T) {
+                      //下拉菜单item点击之后的回调
+                      setState(() {
+                        _selectedItemPackageType = T;
+                      });
+                    },
+                  )
+              ),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -256,7 +298,30 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
+                  **/
               // Allow the user to choose inventory status
+
+              buildTwoSectionInputRow(
+                  CWMSLocalizations.of(context).inventoryStatus,
+                  DropdownButton(
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                    items: _getInventoryStatusItems(),
+                    value: _selectedInventoryStatus,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
+                    ),
+                    onChanged: (T) {
+                      //下拉菜单item点击之后的回调
+                      setState(() {
+                        _selectedInventoryStatus = T;
+                      });
+                    },
+                  )
+              ),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -293,6 +358,63 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
+              **/
+
+              buildTwoSectionInputRow(
+                CWMSLocalizations.of(context).producingQuantity,
+                Focus(
+                  child:
+                    TextFormField(
+                        keyboardType: TextInputType.number,
+                        controller: _quantityController,
+                        focusNode: quantityFocusNode,
+                        // 校验ITEM NUMBER（不能为空）
+                        validator: (v) {
+                          if (v.trim().isEmpty) {
+                            return "please type in quantity";
+                          }
+                          return null;
+                        }),
+                )
+              ),
+              buildTwoSectionInputRow(
+                CWMSLocalizations.of(context).lpn,
+                Focus(
+                    child:
+                    RawKeyboardListener(
+                      focusNode: lpnFocusNode,
+                      onKey: (event) {
+
+                        // printLongLogMessage("user pressed : ${event.logicalKey}");
+                        if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                          // Do something
+
+                          setState(() {
+                            // disable the confirm button
+                            _readyToConfirm = false;
+                          });
+
+                          printLongLogMessage("user pressed enter, lpn is: ${_lpnController.text}");
+                          _enterOnLPNController(10);
+                        }
+                      },
+                      child:
+                        SystemControllerNumberTextBox(
+                            type: "lpn",
+                            controller: _lpnController,
+                            readOnly: false,
+                            showKeyboard: false,
+                            validator: (v) {
+                              if (v.trim().isEmpty) {
+                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                              }
+
+                              return null;
+                            }),
+                    )
+                ),
+              ),
+              /**
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -329,6 +451,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
+              **/
+              /***
               Padding(
                 padding: EdgeInsets.only(top: 5, bottom: 5),
                 child:
@@ -386,6 +510,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     ]
                 ),
               ),
+              **/
               _buildButtons(context)
 
             ],
@@ -396,7 +521,23 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     );
   }
   Widget _buildButtons(BuildContext context) {
-    return
+    return buildSingleButtonRow(context,
+      ElevatedButton(
+        onPressed: _readyToConfirm?  () {
+          if (_formKey.currentState.validate()) {
+            print("form validation passed");
+            _onWorkOrderProduceConfirm(_currentWorkOrder,
+                int.parse(_quantityController.text),
+                _lpnController.text);
+          }
+
+        } : null,
+        child: Text(CWMSLocalizations
+            .of(context)
+            .confirm),
+      )
+    );
+    /**
       SizedBox(
         width: double.infinity,
         height: 50,
@@ -427,65 +568,49 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                               ),
                         ),
                     ),
-                    /***
-                     * Remove the KPI button as of 06/22/2021
-                    Expanded(
-                      child:
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                          child:
-                            RaisedButton(
-                              color: Theme.of(context).primaryColor,
-                              onPressed: () {
-                                if (_formKey.currentState.validate()) {
-                                  print("form validation passed");
-                                  _onWorkOrderProduceWithKPI(_currentWorkOrder,
-                                      int.parse(_quantityController.text),
-                                      _lpnController.text);
-                                }
 
-                              },
-                              textColor: Colors.white,
-                              child: Text(CWMSLocalizations
-                                  .of(context)
-                                  .kpi),
-                            ),
-                        ),
-                    ),
-                    **/
 
                   ]
                 )
 
       );
+        **/
   }
 
 
 
 
   List<DropdownMenuItem> _getInventoryStatusItems() {
-    List<DropdownMenuItem> items = new List();
+    List<DropdownMenuItem> items = [];
     if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
       return items;
     }
 
-    _selectedInventoryStatus = _validInventoryStatus[0];
+    // _selectedInventoryStatus = _validInventoryStatus[0];
     for (int i = 0; i < _validInventoryStatus.length; i++) {
-      print("start to create download list for _getInventoryStatusItems: ");
       items.add(DropdownMenuItem(
         value: _validInventoryStatus[i],
         child: Text(_validInventoryStatus[i].description),
       ));
     }
+
+    if (_validInventoryStatus.length == 1 ||
+        _selectedInventoryStatus == null) {
+      // if we only have one valid inventory status, then
+      // default the selection to it
+      // if the user has not select any inventdry status yet, then
+      // default the value to the first option as well
+      _selectedInventoryStatus = _validInventoryStatus[0];
+    }
     return items;
   }
 
   List<DropdownMenuItem> _getItemPackageTypeItems() {
-    List<DropdownMenuItem> items = new List();
+    List<DropdownMenuItem> items = [];
 
-    print("_currentReceiptLine.item.itemPackageTypes.length: ${_currentWorkOrder.item.itemPackageTypes.length}");
+
     if (_currentWorkOrder.item.itemPackageTypes.length > 0) {
-      _selectedItemPackageType = _currentWorkOrder.item.itemPackageTypes[0];
+      // _selectedItemPackageType = _currentWorkOrder.item.itemPackageTypes[0];
 
       for (int i = 0; i < _currentWorkOrder.item.itemPackageTypes.length; i++) {
 
@@ -493,6 +618,14 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
           value: _currentWorkOrder.item.itemPackageTypes[i],
           child: Text(_currentWorkOrder.item.itemPackageTypes[i].description),
         ));
+      }
+      if (_currentWorkOrder.item.itemPackageTypes.length == 1 ||
+          _selectedItemPackageType == null) {
+        // if we only have one item package type for this item, then
+        // default the selection to it
+        // if the user has not select any item package type yet, then
+        // default the value to the first option as well
+        _selectedItemPackageType = _currentWorkOrder.item.itemPackageTypes[0];
       }
     }
     return items;

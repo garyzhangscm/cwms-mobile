@@ -205,7 +205,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).itemPackageType,
                 DropdownButton(
-                    hint: Text(""),
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getItemPackageTypeItems(),
                     value: _selectedItemPackageType,
                     elevation: 1,
@@ -227,7 +227,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
               buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).inventoryStatus,
                   DropdownButton(
-                    hint: Text(""),
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getInventoryStatusItems(),
                     value: _selectedInventoryStatus,
                     elevation: 1,
@@ -300,7 +300,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     );
   }
   Widget _buildButtons(BuildContext context) {
-    return buildTowButtonRow(
+    return buildTwoButtonRow(
       context,
       ElevatedButton(
         onPressed: () {
@@ -359,16 +359,25 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
 
   List<DropdownMenuItem> _getInventoryStatusItems() {
-    List<DropdownMenuItem> items = new List();
-    if (_validInventoryStatus == null) {
+    List<DropdownMenuItem> items = [];
+    if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
       return items;
     }
     for (int i = 0; i < _validInventoryStatus.length; i++) {
-      print("start to create download list for _getInventoryStatusItems: ");
+
       items.add(DropdownMenuItem(
         value: _validInventoryStatus[i],
         child: Text(_validInventoryStatus[i].description),
       ));
+    }
+
+    if (_validInventoryStatus.length == 1 ||
+        _selectedInventoryStatus == null) {
+      // if we only have one valid inventory status, then
+      // default the selection to it
+      // if the user has not select any inventdry status yet, then
+      // default the value to the first option as well
+      _selectedInventoryStatus = _validInventoryStatus[0];
     }
     return items;
   }
@@ -376,9 +385,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
   List<DropdownMenuItem> _getItemPackageTypeItems() {
     List<DropdownMenuItem> items = [];
 
-    print("_currentReceiptLine.item.itemPackageTypes.length: ${_currentReceiptLine.item.itemPackageTypes.length}");
     if (_currentReceiptLine.item.itemPackageTypes.length > 0) {
-      _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
+      // _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
 
       for (int i = 0; i < _currentReceiptLine.item.itemPackageTypes.length; i++) {
 
@@ -386,6 +394,15 @@ class _ReceivingPageState extends State<ReceivingPage> {
           value: _currentReceiptLine.item.itemPackageTypes[i],
           child: Text(_currentReceiptLine.item.itemPackageTypes[i].description),
         ));
+      }
+
+      if (_currentReceiptLine.item.itemPackageTypes.length == 1 ||
+          _selectedItemPackageType == null) {
+        // if we only have one item package type for this item, then
+        // default the selection to it
+        // if the user has not select any item package type yet, then
+        // default the value to the first option as well
+        _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
       }
     }
     return items;

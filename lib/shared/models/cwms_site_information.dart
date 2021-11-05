@@ -25,6 +25,8 @@ class CWMSSiteInformation {
 
   bool singleCompanySite;
   String defaultCompanyCode;
+  String rfAppVersion;
+  String rfAppName;
 
   CWMSApplicationInformation cwmsApplicationInformation;
 

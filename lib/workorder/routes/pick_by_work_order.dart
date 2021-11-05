@@ -138,7 +138,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
 
     return Column(
       children: [
-        buildTowButtonRow(context,
+        buildTwoButtonRow(context,
           ElevatedButton(
               onPressed: _onAddingWorkOrder,
               child: Text(CWMSLocalizations.of(context).addWorkOrder)
@@ -148,7 +148,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
               child: Text(CWMSLocalizations.of(context).chooseWorkOrder),
           ),
         ),
-        buildTowButtonRow(context,
+        buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _onStartingPicking,
                 child: Text(CWMSLocalizations.of(context).start),

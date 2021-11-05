@@ -12,6 +12,8 @@ CWMSSiteInformation _$CWMSSiteInformationFromJson(Map<String, dynamic> json) {
     ..autoConnectFlag = json['autoConnectFlag'] as bool
     ..singleCompanySite = json['singleCompanySite'] as bool
     ..defaultCompanyCode = json['defaultCompanyCode'] as String
+    ..rfAppVersion = json['rfAppVersion'] as String
+    ..rfAppName = json['rfAppName'] as String
     ..cwmsApplicationInformation = json['app'] == null
         ? null
         : CWMSApplicationInformation.fromJson(json['app'] as Map<String, dynamic>);
@@ -23,5 +25,7 @@ Map<String, dynamic> _$CWMSSiteInformationToJson(CWMSSiteInformation instance) =
       'autoConnectFlag': instance.autoConnectFlag,
       'singleCompanySite': instance.singleCompanySite,
       'defaultCompanyCode': instance.defaultCompanyCode,
+      'rfAppVersion': instance.rfAppVersion,
+      'rfAppName': instance.rfAppName,
       'cwmsApplicationInformation': instance.cwmsApplicationInformation
     };
