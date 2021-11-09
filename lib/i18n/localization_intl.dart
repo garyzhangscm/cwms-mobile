@@ -196,6 +196,9 @@ class CWMSLocalizations {
   String get productionLineCheckOutByProductionLine => Intl.message('By Production Line', name: 'productionLineCheckOutByProductionLine');
   String get pleaseSelectAUser => Intl.message('Please Select A User', name: 'pleaseSelectAUser');
   String get pleaseSelectAProductionLine => Intl.message('Please Select A Production Line', name: 'pleaseSelectAProductionLine');
+  String get appUpgrade => Intl.message('App Upgrade', name: 'appUpgrade');
+  String get startDownloadingAppNewVersion => Intl.message('Start Downloading new version', name: 'startDownloadingAppNewVersion');
+  String get newReleaseFound => Intl.message('New Release Found', name: 'newReleaseFound');
 
 
 

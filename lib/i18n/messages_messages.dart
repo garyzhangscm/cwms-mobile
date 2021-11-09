@@ -198,6 +198,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
     "pleaseSelectAUser" : MessageLookupByLibrary.simpleMessage("Please Select A User"),
     "pleaseSelectAProductionLine" : MessageLookupByLibrary.simpleMessage("Please Select A Production Line"),
+    "appUpgrade" : MessageLookupByLibrary.simpleMessage("App Upgrade"),
+    "startDownloadingAppNewVersion" : MessageLookupByLibrary.simpleMessage("Start Downloading new version"),
+    "newReleaseFound" : MessageLookupByLibrary.simpleMessage("New Release Found"),
 
 
 

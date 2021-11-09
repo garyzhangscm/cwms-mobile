@@ -80,8 +80,7 @@ void showLoading(context, [String text]) {
                     text,
                     style: Theme
                         .of(context)
-                        .textTheme
-                        .body2,
+                        .textTheme.bodyText2,
                   ),
                 ),
               ],

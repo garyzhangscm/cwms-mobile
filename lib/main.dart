@@ -7,6 +7,7 @@ import 'package:cwms_mobile/inventory/routes/inventory_detail.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/language.dart';
+import 'package:cwms_mobile/shared/routes/app_upgrade.dart';
 import 'package:cwms_mobile/shared/work_profile_information.dart';
 import 'package:cwms_mobile/states/profile_change_notifier.dart';
 import 'package:cwms_mobile/workorder/routes/pick_by_work_order.dart';
@@ -129,6 +130,7 @@ class MyApp extends StatelessWidget {
               "production_line_check_out":(context) => ProductionLineCheckOutPage(),
               "qc_inspection":(context) => QCInspectionPage(),
               "inventory_qc":(context) => InventoryQCPage(),
+              "app_upgrade":(context) => AppUpgradePage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

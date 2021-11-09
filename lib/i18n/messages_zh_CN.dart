@@ -191,6 +191,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
     "pleaseSelectAUser" : MessageLookupByLibrary.simpleMessage("请选择一个用户"),
     "pleaseSelectAProductionLine" : MessageLookupByLibrary.simpleMessage("请选择一条产线"),
+    "appUpgrade" : MessageLookupByLibrary.simpleMessage("系统升级"),
+    "startDownloadingAppNewVersion" : MessageLookupByLibrary.simpleMessage("开始下载最新版本"),
+    "newReleaseFound" : MessageLookupByLibrary.simpleMessage("新版本发布了"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

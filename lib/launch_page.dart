@@ -8,17 +8,22 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
 import 'package:cwms_mobile/shared/models/http_response_wrapper.dart';
+import 'package:cwms_mobile/shared/models/rf_app_version.dart';
+import 'package:cwms_mobile/shared/services/rf_app_version.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
+import 'package:device_info/device_info.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:open_file/open_file.dart';
 // import 'package:open_file/open_file.dart';
 import 'dart:convert';
 
 import 'package:package_info/package_info.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 
@@ -42,13 +47,6 @@ class _LaunchPageState extends State<LaunchPage> {
 
   final _formKey= new GlobalKey<FormState>();
 
-  ProgressDialog pr;
-  ReceivePort _port = ReceivePort();
-
-
-  // app name and path
-  String _appName ='';
-  String _appPath = '';
 
 
   @override
@@ -66,14 +64,10 @@ class _LaunchPageState extends State<LaunchPage> {
       _onAutoConnect(server);
     }
     else {
-      _serverURLController =  TextEditingController(text: 'http://10.0.10.37:30130/api/');
+      _serverURLController =  TextEditingController(text: 'http://gateway.claytechsuite.com/api/');
       _autoConnect = true;
     }
 
-    // init tools for the upgrade current app
-    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
-    _port.listen(_updateDownLoadInfo);
-    FlutterDownloader.registerCallback(_downLoadCallback);
 
   }
 
@@ -202,135 +196,16 @@ class _LaunchPageState extends State<LaunchPage> {
         // 返回
         Global.addServer(server);
         Global.setCurrentServer(server);
-        // let's check if we will need to update the
-        bool _appNeedUpdate = await _needUpdate(server.rfAppVersion);
-        if (_appNeedUpdate) {
-          // install the latest version of the app from server
 
-          _updateApp(context, serverUrl, server.rfAppVersion, server.rfAppName);
 
-        }
-        else {
-
-          Navigator.pushNamed(context, "login_page");
-        }
+        Navigator.pushNamed(context, "login_page");
 
 
       }
 
   }
 
-  Future<String> _getCurrentVersion() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    printLongLogMessage("package info / appName: ${packageInfo.appName}");
-    printLongLogMessage("package info / buildNumber: ${packageInfo.buildNumber}");
-    printLongLogMessage("package info / packageName: ${packageInfo.packageName}");
-    printLongLogMessage("package info / version: ${packageInfo.version}");
-    return packageInfo.version;
 
-  }
-
-  Future<bool> _needUpdate(String serverVersion) async {
-
-    String currentVersion = await _getCurrentVersion();
-    printLongLogMessage("start to check if we will need to update");
-    printLongLogMessage("current version: ${currentVersion} vs server version: ${serverVersion}");
-
-    List<int> currentVersions = currentVersion.split(".").map((e) => int.parse(e));
-    List<int> serverVersions = serverVersion.split(".").map((e) => int.parse(e));
-    if (currentVersions.length != serverVersions.length) {
-      printLongLogMessage("ERROR! current version's length doesn't match with server's version");
-      return false;
-    }
-    for (int i = 0; i < currentVersions.length; i++) {
-      if (serverVersions[i] > currentVersions[i]) {
-        printLongLogMessage("we will need to upgrade current app");
-        return true;
-      }
-    }
-    printLongLogMessage("we don't need to upgrade current app");
-    return false;
-  }
-
-  _updateApp(BuildContext context, String serverUrl,
-      String serverVersion, String fileName){
-    _appName = fileName;
-    _downloadLatestApp(context, serverUrl, serverVersion, fileName);
-
-  }
-  _downloadLatestApp(BuildContext context, String serverUrl,
-      String serverVersion, String fileName) async {
-
-    // show progress dialog
-    pr = new ProgressDialog(
-      context,
-      type: ProgressDialogType.Download,
-      isDismissible: true,
-      showLogs: true,
-    );
-
-    pr.style(message: '准备下载...');
-    if (!pr.isShowing()) {
-      pr.show();
-    }
-
-    final path = await _getAppDownloadLocalPath();
-    await FlutterDownloader.enqueue(
-        url: serverUrl + "/resource/mobile/app/download?version=" + serverVersion,
-        savedDir: path,
-        fileName: fileName,
-        showNotification: true,
-        openFileFromNotification: true
-    );
-  }
-  /// 下载进度回调函数
-  static void _downLoadCallback(String id, DownloadTaskStatus status, int progress) {
-    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
-    send.send([id, status, progress]);
-  }
-
-  /// 更新下载进度框
-  _updateDownLoadInfo(dynamic data) {
-    DownloadTaskStatus status = data[1];
-    int progress = data[2];
-    printLongLogMessage("DownloadTaskStatus: ${status.value}");
-    printLongLogMessage("progress: ${progress}");
-
-    if (status == DownloadTaskStatus.running) {
-      pr.update(progress: double.parse(progress.toString()), message: "下载中，请稍后…");
-    }
-    if (status == DownloadTaskStatus.failed) {
-      if (pr.isShowing()) {
-        pr.hide();
-      }
-    }
-
-    if (status == DownloadTaskStatus.complete) {
-      if (pr.isShowing()) {
-        pr.hide();
-      }
-      _installApk();
-    }
-  }
-  /// 安装apk
-  Future<Null> _installApk() async {
-    printLongLogMessage("start to install apk from " + _appPath + '/' + _appName);
-    // await OpenFile.open(_appPath + '/' + _appName);
-  }
-
-  Future<String> _getAppDownloadLocalPath()  async {
-    final directory = await getExternalStorageDirectory();
-    String path = directory.path  + Platform.pathSeparator + 'Download';
-    final savedDir = Directory(path);
-    bool hasExisted = await savedDir.exists();
-    if (!hasExisted) {
-      await savedDir.create();
-    }
-    this.setState((){
-      _appPath = path;
-    });
-    return path;
-  }
 
 
 }

@@ -6,6 +6,8 @@ import 'package:cwms_mobile/common/services/rf.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/shared/models/rf_app_version.dart';
+import 'package:cwms_mobile/shared/services/rf_app_version.dart';
 
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
@@ -14,6 +16,7 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info/package_info.dart';
 
 class LoginPage extends StatefulWidget{
 
@@ -265,8 +268,8 @@ class _LoginPageState extends State<LoginPage> {
       }
       try {
         User autoLoginUser =
-        await LoginService
-            .login(user.companyId, user.username, user.password);
+          await LoginService
+              .login(user.companyId, user.username, user.password);
 
         print("auto login success");
         Global.setCurrentUser(autoLoginUser);
@@ -291,7 +294,23 @@ class _LoginPageState extends State<LoginPage> {
           Global.setLastActivityLocation(rfLocation);
         });
 
-        Navigator.pushNamed(context, "menus_page");
+        // get the latest app version and see if we will
+        // need to upgrade the app
+        RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion();
+
+        // let's check if we will need to update the
+        bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
+        if (_appNeedUpdate) {
+          // ok, we will need to update the APP, we will flow into a new form to finish the
+          // download and upgrade
+          Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
+
+
+        }
+        else {
+
+          Navigator.pushNamed(context, "menus_page");
+        }
       } catch (e) {
         //登录失败则提示
         showToast(e.toString());
@@ -378,7 +397,24 @@ class _LoginPageState extends State<LoginPage> {
         });
 
         print("login with user: ${user.username}, token: ${user.token}. companyCode: ${Global.lastLoginCompanyId}, company Id: ${Global.lastLoginCompanyCode}");
-        Navigator.pushNamed(context, "menus_page");
+
+        // get the latest app version and see if we will
+        // need to upgrade the app
+        RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion();
+
+        // let's check if we will need to update the
+        bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
+        if (_appNeedUpdate) {
+          // ok, we will need to update the APP, we will flow into a new form to finish the
+          // download and upgrade
+          Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
+
+
+        }
+        else {
+
+          Navigator.pushNamed(context, "menus_page");
+        }
         // Navigator.of(context).pop();
       }
     }
@@ -411,5 +447,36 @@ class _LoginPageState extends State<LoginPage> {
         }
       });
     }
+  }
+
+
+  Future<String> _getCurrentVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+
+  }
+
+  Future<bool> _needUpdate(RFAppVersion latestAppVersion) async {
+
+    String currentVersion = await _getCurrentVersion();
+    String serverVersion = latestAppVersion.versionNumber;
+
+    printLongLogMessage("current version: ${currentVersion}");
+    printLongLogMessage("server version: ${serverVersion}");
+
+    List<String> currentVersions = currentVersion.split(".");
+    List<String> serverVersions = serverVersion.split(".");
+    if (currentVersions.length != serverVersions.length) {
+      printLongLogMessage("ERROR! current version's length doesn't match with server's version");
+      return false;
+    }
+    for (int i = 0; i < currentVersions.length; i++) {
+      if (int.parse(serverVersions[i]) > int.parse(currentVersions[i])) {
+        printLongLogMessage("we will need to upgrade current app");
+        return true;
+      }
+    }
+    printLongLogMessage("we don't need to upgrade current app");
+    return false;
   }
 }

@@ -4,6 +4,7 @@ import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'http_client.dart';
@@ -89,6 +90,11 @@ class Global {
     // hard code company id to -1
     lastLoginCompanyId = _prefs.getInt("lastLoginCompanyId");
     lastLoginCompanyCode = _prefs.getString("lastLoginCompanyCode");
+
+    // initial download flugin
+    await FlutterDownloader.initialize(
+        debug: true // optional: set false to disable printing logs to console
+    );
   }
   static _initServers() {
     var _servers = _prefs.getString("servers");

@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.garyzhangscm.cwms.cwms_mobile">
+    package="com.garyzhangscm.cwms.cwms_mobile"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
 
 
@@ -19,6 +20,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -51,5 +53,43 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- 处理Andriod 上打开下载文件的通知上的点击操作-->
+        <provider
+            android:name="vn.hunghd.flutterdownloader.DownloadedFileProvider"
+            android:authorities="${applicationId}.flutter_downloader.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+        <!--
+        <provider
+            android:authorities="${applicationId}.flutter_downloader.provider"
+            android:name="vn.hunghd.flutterdownloader.DownloadedFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+
+        </provider>
+        -->
+        <!--  配置最大并发任务书： 插件依赖于WorkManager库 -->
+        <!--
+        <provider
+            android:authorities="${applicationId}.workmanager-init"
+            android:name="androidx.work.impl.WorkManagerInitializer"
+            tools:node="remove" />
+        <provider
+            android:authorities="${applicationId}.flutter-downloader-init"
+            android:name="vn.hunghd.flutterdownloader.FlutterDownloaderInitializer"
+            android:exported="false">
+            <meta-data
+                android:name="vn.hunghd.flutterdownloader.MAX_CONCURRENT_TASKS"
+                android:value="5"></meta-data>
+
+        </provider>
+        -->
     </application>
 </manifest>
