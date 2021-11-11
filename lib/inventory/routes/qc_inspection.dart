@@ -31,11 +31,15 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
 
   int _qcInspectionRequestItemIndex;
   QCInspectionRequest _qcInspectionRequest;
+  TextEditingController _qcQuantityController = new TextEditingController();
+  final  _formKey = GlobalKey<FormState>();
+
 
   @override
   void initState() {
     super.initState();
     _qcInspectionRequestItemIndex = 0;
+    _qcQuantityController.clear();
   }
 
 
@@ -44,6 +48,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   Widget build(BuildContext context) {
 
     _qcInspectionRequest  = ModalRoute.of(context).settings.arguments;
+    _qcQuantityController.text = _qcInspectionRequest.qcQuantity.toString();
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -51,6 +56,10 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       body:
         Column(
             children: [
+              // for work order qc, we will show the input to let the user input the qc quantity
+              _qcInspectionRequest.workOrderQCSampleId == null ?
+                  Container() :
+                  _buildQCQuantity(context),
               _buildQCItemName(context),
               _buildQCItemOptionList(context),
               _buildQCResultButtons(context),
@@ -58,6 +67,20 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       endDrawer: MyDrawer(),
     );
   }
+
+  Widget _buildQCQuantity(BuildContext context) {
+    return
+          buildTwoSectionInputRow(CWMSLocalizations.of(context).qcQuantity,
+          TextFormField(
+              controller: _qcQuantityController,
+              keyboardType: TextInputType.number,
+              onChanged: (text) {
+                _qcInspectionRequest.qcQuantity = int.parse(text);
+              },
+
+          ));
+  }
+
   Widget _buildQCItemName(BuildContext context) {
     return
       Row(

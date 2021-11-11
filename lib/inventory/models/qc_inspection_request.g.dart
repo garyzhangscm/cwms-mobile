@@ -10,6 +10,7 @@ QCInspectionRequest _$QCInspectionRequestFromJson(Map<String, dynamic> json) {
   return QCInspectionRequest()
     ..id = json['id'] as int
     ..warehouseId = json['warehouseId'] as int
+    ..qcQuantity = json['qcQuantity'] as int
     ..number = json['number'] as String
     ..inventory = json['inventory'] == null
         ? null
@@ -32,6 +33,7 @@ Map<String, dynamic> _$QCInspectionRequestToJson(QCInspectionRequest instance) =
       'warehouseId': instance.warehouseId,
       'number': instance.number,
       'inventory': instance.inventory,
+  'qcQuantity': instance.qcQuantity,
       'workOrderQCSampleId': instance.workOrderQCSampleId,
       'qcInspectionResult': EnumToString.convertToString(instance.qcInspectionResult),
       'qcUsername': instance.qcUsername,

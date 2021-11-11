@@ -28,6 +28,7 @@ class QCInspectionRequest{
   String number;
   Inventory inventory;
   int workOrderQCSampleId;
+  int qcQuantity;
   QCInspectionResult qcInspectionResult;
   String qcUsername;
   DateTime qcTime;

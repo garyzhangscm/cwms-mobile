@@ -5,25 +5,13 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
-import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
-import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/outbound/models/pick_result.dart';
-import 'package:cwms_mobile/outbound/services/order.dart';
-import 'package:cwms_mobile/outbound/services/pick.dart';
-import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/rf_app_version.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:badges/badges.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -52,6 +40,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
 
   String _appLocalPath;
 
+
   @override
   void initState() {
     super.initState();
@@ -73,6 +62,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
   Widget build(BuildContext context) {
 
     _latestRFAppVersion  = ModalRoute.of(context).settings.arguments;
+    // downloadingFileSize = _latestRFAppVersion.fileSize;
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).appUpgrade)),
@@ -84,7 +74,6 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
               _buildButtons(context)
             ],
           ),
-      // bottomNavigationBar: buildBottomNavigationBar(context)
       endDrawer: MyDrawer(),
     );
   }
@@ -96,7 +85,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
         Row(
             children: <Widget>[
               Padding(padding: EdgeInsets.only(left: 10),
-                child: Text(CWMSLocalizations.of(context).newReleaseFound,
+                child: Text(CWMSLocalizations.of(context).newReleaseFound + ": ",
                     textAlign: TextAlign.left,
                     style: Theme.of(context).textTheme.headline6),
               ),
@@ -174,7 +163,9 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     if (!pr.isShowing()) {
       pr.show();
     }
-    // final path = await AndroidPathProvider.downloadsPath;
+    // remove the file with the same name from the downloading directory
+    await _removeExistingDownloadedFile(_appLocalPath + "/" + _latestRFAppVersion.fileName);
+
     await FlutterDownloader.enqueue(
       url: serverUrl,
       // url: 'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf',
@@ -185,23 +176,36 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
       saveInPublicStorage: true,
     );
   }
+
+  _removeExistingDownloadedFile(String fileAbsolutePath) async {
+    File file = File(fileAbsolutePath);
+    bool fileExists = await file.exists();
+    if (fileExists) {
+      await file.delete();
+    }
+  }
   /// 下载进度回调函数
   static void _downLoadCallback(String id, DownloadTaskStatus status, int progress) {
     printLongLogMessage("_downLoadCallback: id: ${id}, status: ${status.value}, progress: ${progress}");
+
     final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
     send.send([id, status, progress]);
   }
 
   /// 更新下载进度框
   _updateDownLoadInfo(dynamic data) {
-    printLongLogMessage("_updateDownLoadInfo");
     DownloadTaskStatus status = data[1];
     int progress = data[2];
 
-
-    printLongLogMessage("DownloadTaskStatus: ${status.value}");
-    printLongLogMessage("progress: ${progress}");
     if (status == DownloadTaskStatus.running) {
+
+      // NOTE: Since our spring boot server use "Transfer-Encoding: chunked" to compress
+      // the response, we won't have the Content-Length in the header, hance the progress
+      // is actually the actual size being downloaded, not the percentage of the downloading
+      // before I can figure out a better way to handle this, we will have the file size saved
+      // in the rfAppVersion object so that we can calcuate the percentage of the files that is
+      // already downloaded
+      progress = progress * 100 ~/ _latestRFAppVersion.fileSize;
       pr.update(progress: double.parse(progress.toString()), message: "下载中，请稍后…");
     }
     if (status == DownloadTaskStatus.failed) {
@@ -235,11 +239,13 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
 
     return hasGranted;
   }
+
   Future<bool> _checkPermission() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     if (androidInfo.version.sdkInt <= 28) {
       final status = await Permission.storage.status;
+
       if (status != PermissionStatus.granted) {
         final result = await Permission.storage.request();
         if (result == PermissionStatus.granted) {
@@ -253,6 +259,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     }
     return false;
   }
+
 
   Future<void> _prepareSaveDir() async {
     _appLocalPath = (await _findLocalPath());

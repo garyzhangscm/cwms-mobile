@@ -1,6 +1,7 @@
 
 import 'dart:collection';
 import 'dart:core';
+import 'dart:math';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -372,16 +373,25 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
           // no matched work order qc rule configuration
           Navigator.of(context).pop();
           showToast(CWMSLocalizations.of(context).workOrderNoQCConfig);
+          return;
       }
       // ok, we get qc rules defined for this qc samples. let's generate the
       // inspection request and flow to the qc inspection form
       String ruleIds =
           matchedWorkOrderQCRuleConfiguration.expand((e) => e.workOrderQCRuleConfigurationRules)
               .map((e) => e.qcRuleId).join(",");
+
+      // get the quantity we needs to QC for the work order, based on the configuration.
+      // if we have multiple matched configuration, then get the max number
+      int qcQuantity = matchedWorkOrderQCRuleConfiguration.map((e) => e.qcQuantity).reduce(max);
+      printLongLogMessage("1. we will start  qc request with quantity ${qcQuantity}");
+
       QCInspectionRequest qcInspectionRequest =
-          await WorkOrderQCService.getWorkOrderQCInspectionRequest(_workOrderQCSample.id, ruleIds);
+          await WorkOrderQCService.getWorkOrderQCInspectionRequest(_workOrderQCSample.id, ruleIds, qcQuantity);
+      printLongLogMessage("we will qc quantity ${qcInspectionRequest.qcQuantity}");
 
       Navigator.of(context).pop();
+
       Navigator.of(context).pushNamed("qc_inspection", arguments: qcInspectionRequest);
 
     }

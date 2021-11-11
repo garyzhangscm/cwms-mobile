@@ -69,6 +69,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
 
+    _companyCodeController.text = Global.lastLoginCompanyCode;
+
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).login)),
       body: Padding(
@@ -305,10 +307,8 @@ class _LoginPageState extends State<LoginPage> {
           // download and upgrade
           Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
 
-
         }
         else {
-
           Navigator.pushNamed(context, "menus_page");
         }
       } catch (e) {
@@ -396,24 +396,17 @@ class _LoginPageState extends State<LoginPage> {
           Global.setLastActivityLocation(rfLocation);
         });
 
+
         print("login with user: ${user.username}, token: ${user.token}. companyCode: ${Global.lastLoginCompanyId}, company Id: ${Global.lastLoginCompanyCode}");
 
-        // get the latest app version and see if we will
-        // need to upgrade the app
         RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion();
-
-        // let's check if we will need to update the
         bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
         if (_appNeedUpdate) {
-          // ok, we will need to update the APP, we will flow into a new form to finish the
-          // download and upgrade
           Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
-
-
         }
         else {
-
           Navigator.pushNamed(context, "menus_page");
+ 
         }
         // Navigator.of(context).pop();
       }

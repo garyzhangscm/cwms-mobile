@@ -11,7 +11,8 @@ RFAppVersion _$RFAppVersionFromJson(Map<String, dynamic> json) {
     ..id = json['id'] as int
     ..versionNumber = json['versionNumber'] as String
     ..fileName = json['fileName'] as String
-    ..isLatestVersion = json['isLatestVersion'] as bool
+    ..fileSize = json['fileSize'] as int
+    ..isLatestVersion = json['latestVersion'] as bool
     ..companyId = json['companyId'] as int
     ..releaseNote = json['releaseNote'] as String
     ..releaseDate = json['releaseDate'] == null ? null:
@@ -23,6 +24,7 @@ Map<String, dynamic> _$RFAppVersionToJson(RFAppVersion instance) =>
       'id': instance.id,
       'versionNumber': instance.versionNumber,
       'fileName': instance.fileName,
+      'fileSize': instance.fileSize,
       'isLatestVersion': instance.isLatestVersion,
       'companyId': instance.companyId,
       'releaseNote': instance.releaseNote,

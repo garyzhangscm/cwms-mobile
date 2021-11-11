@@ -201,6 +201,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "appUpgrade" : MessageLookupByLibrary.simpleMessage("App Upgrade"),
     "startDownloadingAppNewVersion" : MessageLookupByLibrary.simpleMessage("Start Downloading new version"),
     "newReleaseFound" : MessageLookupByLibrary.simpleMessage("New Release Found"),
+    "qcQuantity" : MessageLookupByLibrary.simpleMessage("QC Quantity"),
 
 
 

@@ -82,7 +82,7 @@ class WorkOrderQCService {
   }
 
 
-  static Future<QCInspectionRequest> getWorkOrderQCInspectionRequest(int workOrderQCSampleId, String ruleIds) async {
+  static Future<QCInspectionRequest> getWorkOrderQCInspectionRequest(int workOrderQCSampleId, String ruleIds, int qcQuantity) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("Start to get work order inspection request by sampel id ${workOrderQCSampleId}, rule ids: ${ruleIds}");
@@ -90,6 +90,7 @@ class WorkOrderQCService {
         "inventory/qc-inspection-requests/work-order",
         queryParameters: {"workOrderQCSampleId": workOrderQCSampleId,
           "ruleIds": ruleIds,
+          "qcQuantity": qcQuantity,
           "warehouseId": Global.currentWarehouse.id}
     );
 

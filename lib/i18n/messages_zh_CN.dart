@@ -194,6 +194,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "appUpgrade" : MessageLookupByLibrary.simpleMessage("系统升级"),
     "startDownloadingAppNewVersion" : MessageLookupByLibrary.simpleMessage("开始下载最新版本"),
     "newReleaseFound" : MessageLookupByLibrary.simpleMessage("新版本发布了"),
+    "qcQuantity" : MessageLookupByLibrary.simpleMessage("QC 数量"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

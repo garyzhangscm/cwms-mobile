@@ -17,6 +17,7 @@ class RFAppVersion {
   int  id;
   String versionNumber;
   String fileName;
+  int fileSize;
   bool isLatestVersion;
   int companyId;
 

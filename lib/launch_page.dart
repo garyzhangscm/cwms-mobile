@@ -1,6 +1,4 @@
 
-import 'dart:io';
-import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -8,23 +6,11 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
 import 'package:cwms_mobile/shared/models/http_response_wrapper.dart';
-import 'package:cwms_mobile/shared/models/rf_app_version.dart';
-import 'package:cwms_mobile/shared/services/rf_app_version.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
-import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:device_info/device_info.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:open_file/open_file.dart';
-// import 'package:open_file/open_file.dart';
 import 'dart:convert';
 
-import 'package:package_info/package_info.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:progress_dialog/progress_dialog.dart';
 
 
 

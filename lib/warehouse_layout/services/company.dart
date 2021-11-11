@@ -16,10 +16,10 @@ class CompanyService {
 
 
     Response response = await httpClient.get(
-        "/layout/companies/{id}"
+        "/layout/companies/${id}"
     );
 
-    print("reponse from company: $response");
+    print("reponse from getCompanyById: $response");
 
     Company company =
         Company.fromJson(json.decode(response.toString()));
@@ -55,7 +55,7 @@ class CompanyService {
         queryParameters:{"code": code}
     );
 
-    print("reponse from company: $response");
+    print("reponse from getCompanyByCode: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     List<dynamic> responseData = responseString["data"];
 

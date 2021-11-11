@@ -33,6 +33,7 @@ class WorkOrderQCRuleConfiguration{
   ProductionLine productionLine;
   WorkOrder workOrder;
   List<WorkOrderQCRuleConfigurationRule> workOrderQCRuleConfigurationRules;
+  int qcQuantity;
 
 
 

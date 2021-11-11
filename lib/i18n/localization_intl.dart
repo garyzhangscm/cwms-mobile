@@ -199,6 +199,8 @@ class CWMSLocalizations {
   String get appUpgrade => Intl.message('App Upgrade', name: 'appUpgrade');
   String get startDownloadingAppNewVersion => Intl.message('Start Downloading new version', name: 'startDownloadingAppNewVersion');
   String get newReleaseFound => Intl.message('New Release Found', name: 'newReleaseFound');
+  String get qcQuantity => Intl.message('QC Quantity', name: 'qcQuantity');
+
 
 
 
