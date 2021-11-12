@@ -400,6 +400,7 @@ class _LoginPageState extends State<LoginPage> {
         print("login with user: ${user.username}, token: ${user.token}. companyCode: ${Global.lastLoginCompanyId}, company Id: ${Global.lastLoginCompanyCode}");
 
         RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion();
+
         bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
         if (_appNeedUpdate) {
           Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
@@ -412,7 +413,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
   }
-
 
   void _loadWarehouses() async {
 
@@ -450,6 +450,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<bool> _needUpdate(RFAppVersion latestAppVersion) async {
+    if (latestAppVersion == null) {
+      // we are not able to get the latest version,
+      // suppose we are not need to upgrade
+      return false;
+    }
 
     String currentVersion = await _getCurrentVersion();
     String serverVersion = latestAppVersion.versionNumber;

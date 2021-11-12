@@ -60,8 +60,7 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
               validator: widget.validator,
               showCursor: true,
               readOnly: widget.readOnly,
-              // showKeyboard: widget.showKeyboard,
-              keyboardType:  null,
+              showKeyboard: widget.showKeyboard,
               autofocus: widget.autofocus,
               focusNode: widget.focusNode,
               decoration: InputDecoration(

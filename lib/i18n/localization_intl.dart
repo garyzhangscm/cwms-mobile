@@ -200,6 +200,14 @@ class CWMSLocalizations {
   String get startDownloadingAppNewVersion => Intl.message('Start Downloading new version', name: 'startDownloadingAppNewVersion');
   String get newReleaseFound => Intl.message('New Release Found', name: 'newReleaseFound');
   String get qcQuantity => Intl.message('QC Quantity', name: 'qcQuantity');
+  String get lpnUnitOfMeasure => Intl.message('LPN UOM', name: 'lpnUnitOfMeasure');
+  String get enoughLPNCaptured => Intl.message('We already captured enough LPN', name: 'enoughLPNCaptured');
+  String get requestedLPNQuantity => Intl.message('Requested LPN Quantity', name: 'requestedLPNQuantity');
+  String get capturedLPNQuantity => Intl.message('Captured LPN Quantity', name: 'capturedLPNQuantity');
+  String get captureLPN => Intl.message('Captured LPN', name: 'captureLPN');
+  String get receivingMultipleLpns => Intl.message('Receive Multiple LPNs', name: 'receivingMultipleLpns');
+  String get receivingCurrentLpn => Intl.message('Receiving Current LPN', name: 'receivingCurrentLpn');
+
 
 
 

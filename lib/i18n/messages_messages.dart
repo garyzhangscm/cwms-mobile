@@ -202,6 +202,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "startDownloadingAppNewVersion" : MessageLookupByLibrary.simpleMessage("Start Downloading new version"),
     "newReleaseFound" : MessageLookupByLibrary.simpleMessage("New Release Found"),
     "qcQuantity" : MessageLookupByLibrary.simpleMessage("QC Quantity"),
+    "lpnUnitOfMeasure" : MessageLookupByLibrary.simpleMessage("LPN UOM"),
+    "enoughLPNCaptured" : MessageLookupByLibrary.simpleMessage("We already captured enough LPN"),
+    "requestedLPNQuantity" : MessageLookupByLibrary.simpleMessage("Requested LPN Quantity"),
+    "capturedLPNQuantity" : MessageLookupByLibrary.simpleMessage("Captured LPN Quantity"),
+    "captureLPN" : MessageLookupByLibrary.simpleMessage("Captured LPN"),
+    "receivingMultipleLpns" : MessageLookupByLibrary.simpleMessage("Receive Multiple LPNs"),
+    "receivingCurrentLpn" : MessageLookupByLibrary.simpleMessage("Receiving Current LPN"),
 
 
 

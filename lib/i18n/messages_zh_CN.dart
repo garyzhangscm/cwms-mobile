@@ -195,6 +195,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "startDownloadingAppNewVersion" : MessageLookupByLibrary.simpleMessage("开始下载最新版本"),
     "newReleaseFound" : MessageLookupByLibrary.simpleMessage("新版本发布了"),
     "qcQuantity" : MessageLookupByLibrary.simpleMessage("QC 数量"),
+    "lpnUnitOfMeasure" : MessageLookupByLibrary.simpleMessage("LPN UOM"),
+    "enoughLPNCaptured" : MessageLookupByLibrary.simpleMessage("已经采集了足够的LPN"),
+    "requestedLPNQuantity" : MessageLookupByLibrary.simpleMessage("需采集数量"),
+    "capturedLPNQuantity" : MessageLookupByLibrary.simpleMessage("已采集数量"),
+    "captureLPN" : MessageLookupByLibrary.simpleMessage("采集 LPN"),
+    "receivingMultipleLpns" : MessageLookupByLibrary.simpleMessage("同时入库多个LPN"),
+    "receivingCurrentLpn" : MessageLookupByLibrary.simpleMessage("当前入库LPN"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

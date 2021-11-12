@@ -17,7 +17,7 @@ class ItemPackageType{
     id = null;
     name = "";
     description = "";
-    itemUnitOfMeasures = new List<ItemUnitOfMeasure>();
+    itemUnitOfMeasures = [];
 
   }
 
@@ -31,6 +31,9 @@ class ItemPackageType{
 
   ItemUnitOfMeasure stockItemUnitOfMeasure;
   List<ItemUnitOfMeasure> itemUnitOfMeasures;
+  ItemUnitOfMeasure defaultInboundReceivingUOM;
+  ItemUnitOfMeasure defaultWorkOrderReceivingUOM;
+  ItemUnitOfMeasure trackingLpnUOM;
 
   int warehouseId;
   Warehouse warehouse;

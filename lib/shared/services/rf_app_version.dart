@@ -35,8 +35,11 @@ class RFAppVersionService {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["message"]);
     }
-
-    return RFAppVersion.fromJson(responseString["data"] as Map<String, dynamic>);
+    Map<String, dynamic> responseData = responseString["data"] as Map<String, dynamic>;
+    if (responseData == null || responseData.isEmpty) {
+      return null;
+    }
+    return RFAppVersion.fromJson(responseData);
 
   }
 

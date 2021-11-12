@@ -9,6 +9,8 @@ import 'package:cwms_mobile/inbound/widgets/receipt_list_item.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
+import 'package:cwms_mobile/inventory/models/item_unit_of_measure.dart';
+import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
@@ -17,6 +19,7 @@ import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -44,6 +47,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
   List<InventoryStatus> _validInventoryStatus;
   InventoryStatus _selectedInventoryStatus;
   ItemPackageType _selectedItemPackageType;
+  ItemUnitOfMeasure _selectedItemUnitOfMeasure;
 
   List<Inventory>  inventoryOnRF;
   FocusNode _receiptNumberFocusNode = FocusNode();
@@ -52,6 +56,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
   FocusNode _lpnFocusNode = FocusNode();
   bool _readyToConfirm = true; // whether we can confirm the received inventory
 
+  ProgressDialog pr;
 
   @override
   void initState() {
@@ -79,7 +84,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       if (!_receiptNumberFocusNode.hasFocus && _receiptNumberController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
         _loadReceipt(_receiptNumberController.text);
-        _itemFocusNode.requestFocus();
+        // _itemFocusNode.requestFocus();
 
       }
     });
@@ -90,7 +95,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       if (!_itemFocusNode.hasFocus && _itemController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
         _loadReceiptLine(_itemController.text);
-        _quantityFocusNode.requestFocus();
+        // _quantityFocusNode.requestFocus();
 
       }
     });
@@ -128,6 +133,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
                     controller: _receiptNumberController,
                     autofocus: true,
                     focusNode: _receiptNumberFocusNode,
+                    textInputAction: TextInputAction.next,
+                    onEditingComplete: () => _itemFocusNode.requestFocus(),
                     decoration: InputDecoration(
                       suffixIcon:
                       Row(
@@ -158,8 +165,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
                 CWMSLocalizations.of(context).item,
                 TextFormField(
                     controller: _itemController,
-                    autofocus: true,
+                    textInputAction: TextInputAction.next,
                     focusNode: _itemFocusNode,
+                    autofocus: true,
+                    onEditingComplete: () => _quantityFocusNode.requestFocus(),
                     decoration: InputDecoration(
                       suffixIcon:
                       Row(
@@ -244,12 +253,12 @@ class _ReceivingPageState extends State<ReceivingPage> {
                     },
                   )
               ),
-
-              buildTwoSectionInputRow(
+              buildThreeSectionInputRow(
                   "Receiving Quantity:",
                   TextFormField(
                       keyboardType: TextInputType.number,
                       controller: _quantityController,
+                      textInputAction: TextInputAction.next,
                       autofocus: true,
                       focusNode: _quantityFocusNode,
                       onFieldSubmitted: (v){
@@ -268,9 +277,25 @@ class _ReceivingPageState extends State<ReceivingPage> {
                           return "over pick is not allowed";
                         }
                         return null;
-                      })
+                      }),
+                      DropdownButton(
+                        hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                        items: _getItemUnitOfMeasures(),
+                        value: _selectedItemUnitOfMeasure,
+                        elevation: 1,
+                        isExpanded: true,
+                        icon: Icon(
+                          Icons.list,
+                          size: 20,
+                        ),
+                        onChanged: (T) {
+                          //下拉菜单item点击之后的回调
+                          setState(() {
+                            _selectedItemUnitOfMeasure = T;
+                          });
+                        },
+                      )
               ),
-
               buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).lpn+ ": ",
                   Focus(
@@ -283,7 +308,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         focusNode: _lpnFocusNode,
                         autofocus: true,
                         validator: (v) {
-                          if (v.trim().isEmpty) {
+                          // if we only need one LPN, then make sure the user input the LPN in this form.
+                          // otherwise, we will flow to next LPN Capture form to let the user capture
+                          // more LPNs
+                          if (v.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
                             return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
                           }
 
@@ -385,6 +413,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
   List<DropdownMenuItem> _getItemPackageTypeItems() {
     List<DropdownMenuItem> items = [];
 
+
     if (_currentReceiptLine.item.itemPackageTypes.length > 0) {
       // _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
 
@@ -396,22 +425,79 @@ class _ReceivingPageState extends State<ReceivingPage> {
         ));
       }
 
+
       if (_currentReceiptLine.item.itemPackageTypes.length == 1 ||
           _selectedItemPackageType == null) {
         // if we only have one item package type for this item, then
         // default the selection to it
         // if the user has not select any item package type yet, then
         // default the value to the first option as well
-        _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
+        setState(() {
+          _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
+
+        });
       }
     }
+
+    return items;
+  }
+
+  List<DropdownMenuItem> _getItemUnitOfMeasures() {
+    List<DropdownMenuItem> items = [];
+
+    if ( _selectedItemPackageType == null || _selectedItemPackageType.itemUnitOfMeasures == null ||
+        _selectedItemPackageType.itemUnitOfMeasures.length == 0) {
+      // if the user has not selected any item package type yet
+      // return nothing
+      return items;
+    }
+
+    for (int i = 0; i < _selectedItemPackageType.itemUnitOfMeasures.length; i++) {
+
+        items.add(DropdownMenuItem(
+          value:  _selectedItemPackageType.itemUnitOfMeasures[i],
+          child: Text( _selectedItemPackageType.itemUnitOfMeasures[i].unitOfMeasure.name),
+        ));
+      }
+
+    // we may have _selectedItemUnitOfMeasure setup by previous item package type.
+    // or manually by user. If it is setup by the user, then we won't refresh it
+    // otherwise, we will reload the default receiving uom
+    // if _selectedItemPackageType.itemUnitOfMeasures doesn't containers the _selectedItemUnitOfMeasure
+    // then we know that we just changed the item package type or item, so we will need
+    // to refresh the _selectedItemUnitOfMeasure to the default inbound receiving uom as well
+    if (_selectedItemUnitOfMeasure == null ||
+            !_selectedItemPackageType.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
+        // if the user has not select any item unit of measure yet, then
+        // default the value to the one marked as 'default for inbound receiving'
+
+        _selectedItemUnitOfMeasure = _selectedItemPackageType.itemUnitOfMeasures
+            .firstWhere((element) => element.id == _selectedItemPackageType.defaultInboundReceivingUOM.id);
+    }
+
     return items;
   }
 
   void _onRecevingConfirm(ReceiptLine receiptLine, int confirmedQuantity,
                 String lpn) async {
+    int lpnCount = _getRequiredLPNCount(confirmedQuantity);
 
+    // see if we are receiving single lpn or multiple lpn
+    if (lpnCount == 1) {
+      // if we haven't specify the UOM that we will need to track the LPN
+      // or we are receiving at less than LPN uom level,
+      // or we are receiving at LPN uom level but we only receive 1 LPN, then proceed with single LPN
+      _onRecevingSingleLpnConfirm(receiptLine, confirmedQuantity, lpn);
+    }
+    else {
+      printLongLogMessage("start to receive multiple LPNs in one transaction");
+      _onRecevingMultiLpnConfirm(receiptLine, confirmedQuantity, lpn);
+    }
 
+  }
+
+  void _onRecevingSingleLpnConfirm(ReceiptLine receiptLine, int confirmedQuantity,
+        String lpn) async {
     // TO-DO:Current we don't support the location code. Will add
     //      it later
 
@@ -439,7 +525,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       Inventory inventory = await ReceiptService.receiveInventory(
           _currentReceipt, _currentReceiptLine,
           _lpnController.text, _selectedInventoryStatus,
-          _selectedItemPackageType, int.parse(_quantityController.text)
+          _selectedItemPackageType, int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity
       );
       qcRequired = inventory.inboundQCRequired;
       printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
@@ -460,12 +546,183 @@ class _ReceivingPageState extends State<ReceivingPage> {
       return;
 
     }
+
+    _refreshScreenAfterReceive(qcRequired);
+
+  }
+
+  // check how many LPNs we will need to receive
+  // based on the quantity that the user input,
+  // the UOM that the user select
+  int _getRequiredLPNCount(int totalQuantity) {
+
+    int lpnCount = 0;
+    if (_selectedItemPackageType.trackingLpnUOM == null) {
+       // the tracking LPN UOM is not defined for this item package type, so we don't know
+      // how to calculate how many LPNs we may need based on the UOM and quantity
+      lpnCount = 1;
+    }
+    else if (_selectedItemUnitOfMeasure.quantity == _selectedItemPackageType.trackingLpnUOM.quantity) {
+      // we are receiving at LPN uom level, then see what's the quantity the user specify
+      lpnCount = totalQuantity;
+    }
+    else if (_selectedItemUnitOfMeasure.quantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
+      // we are receiving at some higher level, see how many LPN uom we will need
+      lpnCount = (totalQuantity * _selectedItemUnitOfMeasure.quantity / _selectedItemPackageType.trackingLpnUOM.quantity) as int;
+    }
+    else {
+      // we are receiving at some lower level than the tracking LPN UOM,
+      // no matter how many we are receiving, we will only need one lpn, we will rely on
+      // the user to input the right quantity that can be done in one single lpn
+      lpnCount = 1;
+    }
+    return lpnCount;
+
+  }
+
+  void _onRecevingMultiLpnConfirm(ReceiptLine receiptLine, int confirmedQuantity,
+      String lpn) async {
+
+    // let's see how many LPNs we will need
+    int lpnCount = _getRequiredLPNCount(confirmedQuantity);
+
+    printLongLogMessage("we will need to receive $lpnCount LPNs");
+    if (lpnCount == 1) {
+      // we will only need one LPN, let's just proceed with the current LPN
+      _onRecevingSingleLpnConfirm(receiptLine, confirmedQuantity, lpn);
+
+    }
+    else if (lpnCount > 1) {
+      // we will need multiple LPNs, let's prompt a dialog to capture the lpns
+
+      Set<String> capturedLpn = new Set();
+      // if the user already scna in a lpn, then add it
+      if (lpn.isNotEmpty) {
+        capturedLpn.add(lpn);
+        printLongLogMessage("add current LPN $lpn first so that the user don't have to scan in again");
+      }
+      LpnCaptureRequest lpnCaptureRequest = new LpnCaptureRequest.withData(
+          receiptLine.item,
+          _selectedItemPackageType,
+          _selectedItemPackageType.trackingLpnUOM,
+          lpnCount, capturedLpn
+      );
+
+      printLongLogMessage("flow to lpn_capture screen");
+      final result = await Navigator.of(context)
+          .pushNamed("lpn_capture", arguments: lpnCaptureRequest);
+
+      printLongLogMessage("returned from the capture lpn form");
+      if (result == null) {
+        // the user press Return, let's do nothing
+
+        return null;
+      }
+
+      lpnCaptureRequest = result as LpnCaptureRequest;
+      printLongLogMessage("start to receive lpns with request");
+      printLongLogMessage(lpnCaptureRequest.toJson().toString());
+
+      // receive with multiple LPNs
+      _receiveMultipleLpns(receiptLine, lpnCaptureRequest);
+    }
+
+  }
+
+  void _receiveMultipleLpns(ReceiptLine receiptLine, LpnCaptureRequest lpnCaptureRequest) async {
+
+    bool qcRequired = false;
+
+    showLoading(context);
+    // make sure the user input a valid LPN
+    try {
+      Iterator<String> lpnIterator = lpnCaptureRequest.capturedLpn.iterator;
+      while(lpnIterator.moveNext()) {
+
+        bool validLpn = await InventoryService.validateNewLpn(lpnIterator.current);
+        if (!validLpn) {
+          Navigator.of(context).pop();
+          showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+          return;
+        }
+        printLongLogMessage("LPN ${lpnIterator.current} passed the validation");
+      }
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+    try {
+      // start receive LPNs one by one and show the progress bar
+      _setupProgressBar();
+      Iterator<String> lpnIterator = lpnCaptureRequest.capturedLpn.iterator;
+      int totalLPNCount = lpnCaptureRequest.capturedLpn.length;
+      int currentLPNIndex = 1;
+
+      while(lpnIterator.moveNext()) {
+        String lpn = lpnIterator.current;
+        double progress = currentLPNIndex * 100 / totalLPNCount;
+        String message = CWMSLocalizations.of(context).receivingCurrentLpn + ": " +
+            lpn + ", " + currentLPNIndex.toString() + " / " + totalLPNCount.toString();
+
+        pr.update(progress: progress, message: message);
+        Inventory inventory = await ReceiptService.receiveInventory(
+            _currentReceipt, _currentReceiptLine,
+            lpn, _selectedInventoryStatus,
+            _selectedItemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity
+        );
+        if (inventory.inboundQCRequired == true) {
+          // for any inventory that needs qc, let's allocate the location automatically
+          // for the inventory
+
+          printLongLogMessage("allocate location for the QC needed inventory ${inventory.lpn}");
+          InventoryService.allocateLocation(inventory);
+          qcRequired = true;
+        }
+
+
+        currentLPNIndex++;
+      }
+
+    }
+    on WebAPICallException catch(ex) {
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+
+    if (pr.isShowing()) {
+      pr.hide();
+    }
+    _refreshScreenAfterReceive(qcRequired);
+
+  }
+
+  _setupProgressBar() {
+
+    pr = new ProgressDialog(
+      context,
+      type: ProgressDialogType.Normal,
+      isDismissible: false,
+      showLogs: true,
+    );
+
+    pr.style(message: CWMSLocalizations.of(context).receivingMultipleLpns);
+    if (!pr.isShowing()) {
+      pr.show();
+    }
+  }
+  _refreshScreenAfterReceive(bool qcRequired) {
     print("inventory received!");
 
     Navigator.of(context).pop();
 
     if (qcRequired == true) {
-        showWarningDialog(context, CWMSLocalizations.of(context).inventoryNeedQC);
+      showWarningDialog(context, CWMSLocalizations.of(context).inventoryNeedQC);
     }
     showToast("inventory received");
     // we will allow the user to continue receiving with the same
@@ -479,7 +736,6 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _reloadInventoryOnRF();
 
   }
-
 
 
   _startItemBarcodeScanner()  async {

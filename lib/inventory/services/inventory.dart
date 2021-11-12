@@ -22,7 +22,8 @@ class InventoryService {
     printLongLogMessage("will get inventory on ${Global.getLastLoginRFCode()}");
     Response response = await httpClient.get(
         "/inventory/inventories",
-      queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+      queryParameters: {
+          "warehouseId": Global.currentWarehouse.id,
           'location': Global.getLastLoginRFCode()}
     );
 
@@ -33,9 +34,9 @@ class InventoryService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<Inventory> inventories
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+      = (responseString["data"] as List)?.map((e) =>
+        e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+          ?.toList();
 
 
     printLongLogMessage("we have ${inventories.length} on the RF");

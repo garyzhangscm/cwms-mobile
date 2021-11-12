@@ -237,6 +237,29 @@ Widget buildTwoSectionInformationRow(String name, String value) {
     ),
   );
 }
+
+Widget buildFourSectionInformationRow(String name1, String value1, String name2, String value2) {
+  return Padding(
+    padding: EdgeInsets.only(top: 5, bottom: 5),
+    child:
+    Row(
+        children: <Widget>[
+          Padding(padding: EdgeInsets.only(right: 10),
+            child: Text(name1, textAlign: TextAlign.left),
+          ),
+          Padding(padding: EdgeInsets.only(right: 30),
+            child:
+                Text(value1, textAlign: TextAlign.left),
+          ),
+          Padding(padding: EdgeInsets.only(right: 10),
+            child: Text(name2, textAlign: TextAlign.left),
+          ),
+          Text(value2, textAlign: TextAlign.left),
+        ]
+    ),
+  );
+}
+
 Widget buildTwoSectionInputRow(String name, Widget inputController) {
   return Padding(
     padding: EdgeInsets.only(top: 5, bottom: 5),
@@ -250,6 +273,28 @@ Widget buildTwoSectionInputRow(String name, Widget inputController) {
           ),
           Expanded(
               child: inputController
+          )
+        ]
+    ),
+  );
+}
+
+Widget buildThreeSectionInputRow(String name, Widget inputController1, Widget inputController2) {
+  return Padding(
+    padding: EdgeInsets.only(top: 5, bottom: 5),
+    child:
+    // confirm the location
+    Row(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Text(name, textAlign: TextAlign.left ),
+          ),
+          Expanded(
+              child: inputController1
+          ),
+          Expanded(
+              child: inputController2
           )
         ]
     ),

@@ -9,6 +9,7 @@ import 'package:cwms_mobile/inbound/models/receipt_status.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
+import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -29,7 +30,7 @@ class ReceiptService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    print("response from receipt: $response");
+    printLongLogMessage("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 
@@ -87,7 +88,7 @@ class ReceiptService {
       String lpn, InventoryStatus inventoryStatus,
       ItemPackageType itemPackageType, int quantity) async {
 
-    printLongLogMessage("start to receiving invenotry from receiptLine: ${receiptLine.item.toJson()}");
+    printLongLogMessage("start to receiving inventory from receiptLine: ${receiptLine.item.toJson()}");
     if (lpn.isEmpty) {
       lpn = await SystemControlledNumberService.getNextAvailableId("lpn");
     }
@@ -140,6 +141,54 @@ class ReceiptService {
     inventory.receiptLineId = receiptLine.id;
     inventory.inventoryMovements = [];
     return inventory;
+  }
+
+
+  static Future<List<Inventory>> receiveInventoryWithMultipleLpn(Receipt receipt, ReceiptLine receiptLine,
+       InventoryStatus inventoryStatus,
+      ItemPackageType itemPackageType, LpnCaptureRequest lpnCaptureRequest) async {
+
+    List<Inventory> inventoryList = await _generateReceivedInventoryList(receipt, receiptLine, inventoryStatus, itemPackageType, lpnCaptureRequest);
+
+    // send the receiving request to the server
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "/inbound/receipts/${receipt.id}/lines/${receiptLine.id}/receive-multiple-lpns",
+        data: inventoryList
+    );
+
+    printLongLogMessage("response from receiving: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+
+    inventoryList
+        = (responseString["data"] as List)?.map((e) =>
+        e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+            ?.toList();
+
+    print("get ${inventoryList.length} Inventory");
+
+    return inventoryList;
+  }
+
+  static Future<List<Inventory>> _generateReceivedInventoryList(Receipt receipt, ReceiptLine receiptLine,
+       InventoryStatus inventoryStatus,
+      ItemPackageType itemPackageType, LpnCaptureRequest lpnCaptureRequest) async {
+
+    List<Inventory> inventoryList = [];
+    await lpnCaptureRequest.capturedLpn.forEach((element) async {
+      Inventory inventory = await _generateReceivedInventory(receipt, receiptLine,
+          element, inventoryStatus, itemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity);
+    });
+
+    return inventoryList;
+
   }
 
 }
