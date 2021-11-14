@@ -254,40 +254,61 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
 
   }
 
-  _onWorkOrderQCSampleNumberScanned() {
+  _onWorkOrderQCSampleNumberScanned() async {
 
     String workOrderQCSampleNumber = _workOrderQCSampleNumberController.text;
     if (workOrderQCSampleNumber.isNotEmpty) {
       showLoading(context);
-      WorkOrderQCService.getWorkOrderQCSampleByNumber(workOrderQCSampleNumber).then(
-              (workOrderQCSample)
-      {
-        _workOrderQCSample = workOrderQCSample;
-        if (workOrderQCSample.productionLineAssignment.workOrder == null &&
-                workOrderQCSample.productionLineAssignment.workOrderId != null) {
-          WorkOrderService.getWorkOrderById(workOrderQCSample.productionLineAssignment.workOrderId)
+      _workOrderQCSample = await WorkOrderQCService.getWorkOrderQCSampleByNumber(workOrderQCSampleNumber);
+
+
+      if (_workOrderQCSample == null) {
+          clearDisplay();
+          Navigator.of(context).pop();
+          showErrorDialog(context, CWMSLocalizations.of(context).noQCSampleExists);
+          return;
+      }
+
+      if (_workOrderQCSample.productionLineAssignment.workOrder == null &&
+          _workOrderQCSample.productionLineAssignment.workOrderId != null) {
+          WorkOrderService.getWorkOrderById(_workOrderQCSample.productionLineAssignment.workOrderId)
               .then((workOrder) {
-                workOrderQCSample.productionLineAssignment.workOrder = workOrder;
-                _workOrderQCSample = workOrderQCSample;
-                setupDisplay(workOrderQCSample);
+            _workOrderQCSample.productionLineAssignment.workOrder = workOrder;
+                _workOrderQCSample = _workOrderQCSample;
+                setupDisplay(_workOrderQCSample);
                 // 隐藏loading框
                 Navigator.of(context).pop();
 
           });
-        }
-        else {
-          setupDisplay(workOrderQCSample);
+      }
+      else {
+          setupDisplay(_workOrderQCSample);
           // 隐藏loading框
           Navigator.of(context).pop();
         }
         // once we get the sample information, move the cursor to the start qc button
-        _startQCButtonFocusNode.requestFocus();
+      _startQCButtonFocusNode.requestFocus();
 
-      });
     }
 
   }
 
+  clearDisplay() {
+
+
+    setState(() {
+
+      _workOrderQCSampleNumber = "";
+      _workOrderNumber = "";
+      _productionLineName = "";
+      _itemName = "";
+      _itemDescription ="";
+      _readyForQCResult = false;
+
+      _workOrderQCSampleNumberController.clear();
+      // _workOrderQCSampleNumberFocusNode.requestFocus();
+    });
+  }
   setupDisplay(WorkOrderQCSample workOrderQCSample) {
 
 

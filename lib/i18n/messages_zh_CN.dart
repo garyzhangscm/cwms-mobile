@@ -206,6 +206,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "noAssignmentByProductionLine" : MessageLookupByLibrary.simpleMessage("该产线未找到任何分配的加工工单:"),
     "addImage" : MessageLookupByLibrary.simpleMessage("选择图片"),
     "takePhoto" : MessageLookupByLibrary.simpleMessage("拍照"),
+    "qcSampleAdded" : MessageLookupByLibrary.simpleMessage("QC样品添加成功"),
+    "qcSampleNumberAlreadyExists" : MessageLookupByLibrary.simpleMessage("该QC样品号已经存在"),
+    "noQCSampleExists" : MessageLookupByLibrary.simpleMessage("无法找到该QC样品"),
+
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

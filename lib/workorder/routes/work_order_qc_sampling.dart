@@ -1,19 +1,10 @@
-import 'package:badges/badges.dart';
+
+
+import 'dart:io';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inbound/models/receipt.dart';
-import 'package:cwms_mobile/inbound/models/receipt_line.dart';
-import 'package:cwms_mobile/inbound/services/receipt.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_line_list_item.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_list_item.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
-import 'package:cwms_mobile/inventory/models/inventory_status.dart';
-import 'package:cwms_mobile/inventory/models/item_package_type.dart';
-import 'package:cwms_mobile/inventory/models/item_unit_of_measure.dart';
-import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
-import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
@@ -26,8 +17,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:progress_dialog/progress_dialog.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class WorkOrderQCSamplingPage extends StatefulWidget{
@@ -60,9 +49,9 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
   // choose image
   final ImagePicker _picker = ImagePicker();
 
-
-  Set<XFile> _imageFileList;
-  dynamic _pickImageError;
+  // map to save the local file to increase the loading speed
+  Map<String, String> _localFile = new Map();
+  bool _newWorkOrderQCSample = false;
 
 
 
@@ -126,7 +115,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
                   SystemControllerNumberTextBox(
                     type: "work-order-qc-sample-number",
                     controller: _qcSampleNumberController,
-                    readOnly: false,
+                    readOnly: _newWorkOrderQCSample? false : true,
                     showKeyboard: false,
                     focusNode: _qcSampleNumberFocusNode,
                     autofocus: true,
@@ -192,11 +181,19 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
       _workOrderQCSample = await WorkOrderQCService.getWorkOrderQCSampleByProductionLineAssignment(productionLineAssignment.id);
       if (_workOrderQCSample == null) {
 
-        printLongLogMessage("we cna't get qc samples from production line id: ${productionLineAssignment.id}, we will create one");
+        printLongLogMessage("we can't get qc samples from production line id: ${productionLineAssignment.id}, we will create one");
         _workOrderQCSample = new WorkOrderQCSample.fromProductionLineAssignment(_productionLineAssignment);
+        _newWorkOrderQCSample = true;
+      }
+      else {
+
+        printLongLogMessage("we get qc samples from production line id: ${productionLineAssignment.id}, we will create one");
+        _newWorkOrderQCSample = false;
       }
       setState(() {
         _workOrderQCSample;
+        _newWorkOrderQCSample;
+        _qcSampleNumberController.text = _workOrderQCSample.number;
       });
     }
     on WebAPICallException catch(ex) {
@@ -204,6 +201,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
       setState(() {
 
         _workOrderQCSample = new WorkOrderQCSample();
+        _newWorkOrderQCSample = true;
       });
       showErrorDialog(context, ex.errMsg());
       return;
@@ -220,32 +218,38 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
     return CarouselSlider(
       options: CarouselOptions(enableInfiniteScroll: false),
       items: _getQCSampleImageUrls()
-          .map((imageUrl) => Container(
-            child: Center(
-                child:
-                  Stack(
-                  children: <Widget>[
-                    Image.network(
-                    Global.currentServer.url + "workorder/qc-samples/images/${Global.currentWarehouse.id}/${_workOrderQCSample.productionLineAssignment.id}/$imageUrl",
-                        fit: BoxFit.cover, width: 1000),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: (){
-                            _removeImage(imageUrl);
-                        },
-                        child: Icon(
-                          Icons.delete,
-                          color: Colors.red,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-
-          )))
+          .map((imageUrl)  {
+              return Container(
+                  child: Center(
+                      child:
+                      Stack(
+                        children: <Widget>[
+                          // check if we will need to load from local storage or network
+                          // _localFile map stores the file name as the key and the file path as the value
+                          _localFile.containsKey(imageUrl) ?
+                          Image.file(File(_localFile[imageUrl]))
+                              :
+                          Image.network(
+                              Global.currentServer.url + "workorder/qc-samples/images/${Global.currentWarehouse.id}/${_workOrderQCSample.productionLineAssignment.id}/$imageUrl",
+                              fit: BoxFit.cover, width: 1000),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: (){
+                                _removeImage(imageUrl);
+                              },
+                              child: Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 30,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                  ));
+           })
           .toList(),
     );
 
@@ -254,9 +258,10 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
   _removeImage(String imageFileName) {
 
 
-      printLongLogMessage("will remove images ${imageFileName}, current imagesUrls: ${_workOrderQCSample.imageUrls}");
-      printLongLogMessage("_workOrderQCSample.imageUrls.contains(imageFileName): ${_workOrderQCSample.imageUrls.contains(imageFileName)}");
       setState(() {
+        // if the file is from local , then remove it from the map
+        _localFile.remove(imageFileName);
+
         // remove the file from the list and fix the comma
         _workOrderQCSample.imageUrls = _workOrderQCSample.imageUrls.replaceAll(imageFileName, "");
         if (_workOrderQCSample.imageUrls.startsWith(",")) {
@@ -267,17 +272,24 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
         }
       });
 
-      printLongLogMessage("after removed images, current imagesUrls: ${_workOrderQCSample.imageUrls}");
   }
 
 
   List<String> _getQCSampleImageUrls() {
 
-    if (_workOrderQCSample == null ||
-        _workOrderQCSample.imageUrls.isEmpty) {
-      return [];
+    List<String>  qcSampleImageUrls = [];
+
+    if (_workOrderQCSample != null &&
+        _workOrderQCSample.imageUrls.isNotEmpty) {
+      // we have files from the server, let's add it to the list
+      qcSampleImageUrls.addAll(_workOrderQCSample.imageUrls.split(","));
     }
-    return _workOrderQCSample.imageUrls.split(",");
+    // add the local uploaded file
+    if (_localFile.isNotEmpty) {
+
+      qcSampleImageUrls.addAll(_localFile.keys);
+    }
+    return qcSampleImageUrls;
 
   }
   Widget _buildAddQCSamplingButtons(BuildContext context) {
@@ -318,9 +330,6 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
       await _uploadImageFile(pickedFile);
 
     } catch (e) {
-      setState(() {
-        _pickImageError = e;
-      });
       printLongLogMessage("error while uploading files: $e");
 
     }
@@ -338,9 +347,6 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
       await _uploadImageFile(pickedFile);
 
     } catch (e) {
-      setState(() {
-        _pickImageError = e;
-      });
     }
   }
 
@@ -351,20 +357,91 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
     setState(() {
       printLongLogMessage("we get picked file: ${imageFile.path}, server file name is ${filename}");
+
+      // save it to map so we can load the file from local file
+      _localFile.putIfAbsent(filename, () => imageFile.path);
+      /**
+       * for files uploaded from the local, we will add to the _workOrderQCSample when the user click
+       * confirm button
       if (_workOrderQCSample.imageUrls.isEmpty) {
         _workOrderQCSample.imageUrls = filename;
       }
       else {
         _workOrderQCSample.imageUrls = _workOrderQCSample.imageUrls + "," + filename;
       }
+          **/
     });
     Navigator.of(context).pop();
   }
 
-  _onConfirm() {}
+  _onConfirm() async {
+    // setup the image list for the _workOrderQCSample object
+    if (_localFile.isNotEmpty) {
+      if (_workOrderQCSample.imageUrls.isEmpty) {
+        _workOrderQCSample.imageUrls = _localFile.keys.join(",");
+      }
+      else {
+        _workOrderQCSample.imageUrls += _localFile.keys.join(",");
+      }
+    }
+
+    if (_qcSampleNumberController.text.isEmpty) {
+      return;
+    }
+
+    // make sure the number doesn't exists yet
+    showLoading(context);
+    _workOrderQCSample.number = _qcSampleNumberController.text;
+
+    if (_newWorkOrderQCSample == true) {
+      // we are adding a new work order qc sample, make sure the number doesn't exists yet
+      try {
+        WorkOrderQCSample workOrderQCSample =
+            await WorkOrderQCService.getWorkOrderQCSampleByNumber(_workOrderQCSample.number);
+        if (workOrderQCSample != null) {
+          // ok we are supposed to create a new work order sample but it already exists, let's
+          // raise an error
+          Navigator.of(context).pop();
+          showErrorDialog(context, CWMSLocalizations.of(context).qcSampleNumberAlreadyExists);
+          return;
+        }
+
+      }
+      on WebAPICallException catch(ex) {
+
+        Navigator.of(context).pop();
+        showErrorDialog(context, ex.errMsg());
+        return;
+
+      }
+
+    }
+
+    try {
+        await WorkOrderQCService.addWorkOrderQCSample(_workOrderQCSample);
+
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+
+    Navigator.of(context).pop();
+    showToast( CWMSLocalizations.of(context).qcSampleAdded);
+    // we will allow the user to continue receiving with the same
+    // receipt and line
+    setState(() {
+      _workOrderQCSample = null;
+      _localFile.clear();
+      _productionLineAssignment = null;
+      _qcSampleNumberController.clear();
+      _productionLineController.clear();
+      _newWorkOrderQCSample = false;
+    });
+  }
 
 
 }
-
-typedef void OnPickImageCallback(
-    double maxWidth, double maxHeight, int quality);

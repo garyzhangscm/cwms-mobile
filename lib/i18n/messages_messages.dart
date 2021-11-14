@@ -213,6 +213,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "noAssignmentByProductionLine" : MessageLookupByLibrary.simpleMessage("No Assignment Found by Production Line:"),
     "addImage" : MessageLookupByLibrary.simpleMessage("Add Image"),
     "takePhoto" : MessageLookupByLibrary.simpleMessage("Take Photo"),
+    "qcSampleAdded" : MessageLookupByLibrary.simpleMessage("QC Sample Added"),
+    "qcSampleNumberAlreadyExists" : MessageLookupByLibrary.simpleMessage("QC Sample With The Same Name Already Exists"),
+    "noQCSampleExists" : MessageLookupByLibrary.simpleMessage("Cannot find the qc samples"),
 
 
 

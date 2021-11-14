@@ -212,6 +212,10 @@ class CWMSLocalizations {
   String get noAssignmentByProductionLine => Intl.message('No Assignment Found by Production Line: ', name: 'noAssignmentByProductionLine');
   String get addImage => Intl.message('Add Image', name: 'addImage');
   String get takePhoto => Intl.message('Take Photo', name: 'takePhoto');
+  String get qcSampleAdded => Intl.message('QC Sample Added', name: 'qcSampleAdded');
+  String get qcSampleNumberAlreadyExists => Intl.message('QC Sample With The Same Name Already Exists', name: 'qcSampleNumberAlreadyExists');
+  String get noQCSampleExists => Intl.message('Cannot find the qc samples', name: 'noQCSampleExists');
+
 
 
 

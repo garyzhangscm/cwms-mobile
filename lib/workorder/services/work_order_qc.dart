@@ -169,6 +169,30 @@ class WorkOrderQCService {
 
 
   }
+
+
+  static Future<WorkOrderQCSample> addWorkOrderQCSample(WorkOrderQCSample workOrderQCSample) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    printLongLogMessage("Start to add work order sample by number ${workOrderQCSample.number}");
+    Response response = await httpClient.put(
+        "workorder/qc-samples",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id},
+        data:  workOrderQCSample
+    );
+
+    printLongLogMessage("response from addWorkOrderQCSample: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+    return WorkOrderQCSample.fromJson(responseString["data"] as Map<String, dynamic>);
+  }
+
 }
 
 
