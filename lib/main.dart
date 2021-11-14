@@ -18,6 +18,7 @@ import 'package:cwms_mobile/workorder/routes/work_order_produce.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_inventory.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_kpi.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_qc.dart';
+import 'package:cwms_mobile/workorder/routes/work_order_qc_sampling.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:provider/provider.dart';
@@ -133,6 +134,7 @@ class MyApp extends StatelessWidget {
               "inventory_qc":(context) => InventoryQCPage(),
               "app_upgrade":(context) => AppUpgradePage(),
               "lpn_capture":(context) => LpnCapturePage(),
+              "work_order_qc_sampling":(context) => WorkOrderQCSamplingPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

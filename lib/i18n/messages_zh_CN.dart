@@ -202,6 +202,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "captureLPN" : MessageLookupByLibrary.simpleMessage("采集 LPN"),
     "receivingMultipleLpns" : MessageLookupByLibrary.simpleMessage("同时入库多个LPN"),
     "receivingCurrentLpn" : MessageLookupByLibrary.simpleMessage("当前入库LPN"),
+    "addSample" : MessageLookupByLibrary.simpleMessage("增加样品"),
+    "noAssignmentByProductionLine" : MessageLookupByLibrary.simpleMessage("该产线未找到任何分配的加工工单:"),
+    "addImage" : MessageLookupByLibrary.simpleMessage("选择图片"),
+    "takePhoto" : MessageLookupByLibrary.simpleMessage("拍照"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

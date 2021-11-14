@@ -8,13 +8,14 @@ import 'package:flutter/services.dart';
 
 class SystemControllerNumberTextBox extends StatefulWidget {
   SystemControllerNumberTextBox({this.type, this.controller, this.validator, this.readOnly,
-  this.showKeyboard = true, this.focusNode, this.autofocus = true}
+  this.showKeyboard = true, this.focusNode, this.autofocus = true, this.onValueChanged}
        ) : super(key: ValueKey(type));
 
 
   final String type;
   final TextEditingController controller;
   final FormFieldValidator<String> validator;
+  FormFieldValidator<String> onValueChanged;
   final bool readOnly;
 
   final FocusNode focusNode;
@@ -38,6 +39,7 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
         .then((value)  {
           printLongLogMessage("Get the next number for ${widget.type}, value is ${value}");
           widget.controller.text = value;
+          widget.onValueChanged(value);
     });
   }
   _clearField() {

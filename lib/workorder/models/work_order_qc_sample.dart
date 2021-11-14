@@ -4,6 +4,7 @@ import 'package:cwms_mobile/common/models/carrier.dart';
 import 'package:cwms_mobile/common/models/carrier_service_level.dart';
 import 'package:cwms_mobile/common/models/customer.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
+import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/workorder/models/material-consume-timing.dart';
 import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
@@ -22,6 +23,12 @@ part 'work_order_qc_sample.g.dart';
 
 class WorkOrderQCSample{
   WorkOrderQCSample();
+  WorkOrderQCSample.fromProductionLineAssignment(ProductionLineAssignment productionLineAssignment) {
+    this.productionLineAssignment = productionLineAssignment;
+    this.warehouseId = Global.currentWarehouse.id;
+    this.number = "";
+    this.imageUrls = "";
+  }
 
   int id;
   String number;

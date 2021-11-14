@@ -207,7 +207,11 @@ class CWMSLocalizations {
   String get captureLPN => Intl.message('Captured LPN', name: 'captureLPN');
   String get receivingMultipleLpns => Intl.message('Receive Multiple LPNs', name: 'receivingMultipleLpns');
   String get receivingCurrentLpn => Intl.message('Receiving Current LPN', name: 'receivingCurrentLpn');
+  String get addSample => Intl.message('Add Sample', name: 'addSample');
 
+  String get noAssignmentByProductionLine => Intl.message('No Assignment Found by Production Line: ', name: 'noAssignmentByProductionLine');
+  String get addImage => Intl.message('Add Image', name: 'addImage');
+  String get takePhoto => Intl.message('Take Photo', name: 'takePhoto');
 
 
 

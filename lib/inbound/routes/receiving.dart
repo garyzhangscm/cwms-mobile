@@ -301,21 +301,21 @@ class _ReceivingPageState extends State<ReceivingPage> {
                   Focus(
                     child:
                         SystemControllerNumberTextBox(
-                        type: "lpn",
-                        controller: _lpnController,
-                        readOnly: false,
-                        showKeyboard: false,
-                        focusNode: _lpnFocusNode,
-                        autofocus: true,
-                        validator: (v) {
-                          // if we only need one LPN, then make sure the user input the LPN in this form.
-                          // otherwise, we will flow to next LPN Capture form to let the user capture
-                          // more LPNs
-                          if (v.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
-                            return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
-                          }
+                          type: "lpn",
+                          controller: _lpnController,
+                          readOnly: false,
+                          showKeyboard: false,
+                          focusNode: _lpnFocusNode,
+                          autofocus: true,
+                          validator: (v) {
+                            // if we only need one LPN, then make sure the user input the LPN in this form.
+                            // otherwise, we will flow to next LPN Capture form to let the user capture
+                            // more LPNs
+                            if (v.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
+                              return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                            }
 
-                          return null;
+                            return null;
                         }),
                   ),
               ),

@@ -209,6 +209,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "captureLPN" : MessageLookupByLibrary.simpleMessage("Captured LPN"),
     "receivingMultipleLpns" : MessageLookupByLibrary.simpleMessage("Receive Multiple LPNs"),
     "receivingCurrentLpn" : MessageLookupByLibrary.simpleMessage("Receiving Current LPN"),
+    "addSample" : MessageLookupByLibrary.simpleMessage("Add Sample"),
+    "noAssignmentByProductionLine" : MessageLookupByLibrary.simpleMessage("No Assignment Found by Production Line:"),
+    "addImage" : MessageLookupByLibrary.simpleMessage("Add Image"),
+    "takePhoto" : MessageLookupByLibrary.simpleMessage("Take Photo"),
+
 
 
 

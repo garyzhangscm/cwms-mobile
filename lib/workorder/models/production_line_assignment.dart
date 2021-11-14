@@ -23,6 +23,7 @@ class ProductionLineAssignment{
   ProductionLine productionLine;
   WorkOrder workOrder;
   int workOrderId;
+  String workOrderNumber;
 
 
 

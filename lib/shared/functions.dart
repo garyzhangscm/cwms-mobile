@@ -1,7 +1,14 @@
+import 'dart:convert';
+
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
+
+import 'http_client.dart';
 
 Widget gmAvatar(String url, {
   double width = 30,
@@ -238,6 +245,20 @@ Widget buildTwoSectionInformationRow(String name, String value) {
   );
 }
 
+Widget buildSingleSectionInformationRow(String name) {
+  return Padding(
+    padding: EdgeInsets.only(top: 5, bottom: 5),
+    child:
+    Row(
+        children: <Widget>[
+          Padding(padding: EdgeInsets.only(right: 10),
+            child: Text(name, textAlign: TextAlign.left),
+          )
+        ]
+    ),
+  );
+}
+
 Widget buildFourSectionInformationRow(String name1, String value1, String name2, String value2) {
   return Padding(
     padding: EdgeInsets.only(top: 5, bottom: 5),
@@ -255,6 +276,21 @@ Widget buildFourSectionInformationRow(String name1, String value1, String name2,
             child: Text(name2, textAlign: TextAlign.left),
           ),
           Text(value2, textAlign: TextAlign.left),
+        ]
+    ),
+  );
+}
+
+Widget buildSingleSectionInputRow(Widget inputController) {
+  return Padding(
+    padding: EdgeInsets.only(top: 5, bottom: 5),
+    child:
+    // confirm the location
+    Row(
+        children: <Widget>[
+          Expanded(
+              child: inputController
+          )
         ]
     ),
   );
@@ -299,4 +335,28 @@ Widget buildThreeSectionInputRow(String name, Widget inputController1, Widget in
         ]
     ),
   );
+}
+
+
+Future<String> uploadFile(XFile file, int productionLineAssignmentId) async {
+  Dio httpClient = CWMSHttpClient.getDio();
+  var fileData = FormData.fromMap({
+    'file':  await MultipartFile.fromFile(file.path,filename: file.name)
+  });
+
+  Response response = await httpClient.post(
+      "workorder/qc-samples/${productionLineAssignmentId}/images",
+      data:fileData);
+
+
+  printLongLogMessage("response from uploadFile: $response");
+  Map<String, dynamic> responseString = json.decode(response.toString());
+
+  if (responseString["result"] as int != 0) {
+    printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+    throw new WebAPICallException(responseString["message"]);
+  }
+
+  printLongLogMessage("File ${file.path} uploaded! filepath: ${responseString["data"]}");
+  return responseString["data"];
 }

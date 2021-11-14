@@ -55,8 +55,40 @@ class WorkOrderQCService {
 
   }
 
+  static Future<WorkOrderQCSample> getWorkOrderQCSampleByProductionLineAssignment(int productionLineAssignmentId) async {
+    Dio httpClient = CWMSHttpClient.getDio();
 
+    printLongLogMessage("Start to get work order sample by production line assignment id: ${productionLineAssignmentId}");
+    Response response = await httpClient.get(
+        "workorder/qc-samples",
+        queryParameters: {"productionLineAssignmentId": productionLineAssignmentId,
+          "warehouseId": Global.currentWarehouse.id}
+    );
 
+    printLongLogMessage("response from getWorkOrderQCSampleByProductionLineAssignment: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["message"]);
+    }
+
+    List<WorkOrderQCSample> workOrderQCSamples
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : WorkOrderQCSample.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+    printLongLogMessage("get QC samples: ${workOrderQCSamples.length}");
+    // Sort the picks according to the current location. We
+    // will assign the closed pick to the user
+    if (workOrderQCSamples.length > 0) {
+      return workOrderQCSamples.first;
+    }
+    else {
+      return null;
+    }
+
+  }
 
   static Future<WorkOrderQCResult> recordWorkOrderQCResult(WorkOrderQCResult workOrderQCResult) async {
     Dio httpClient = CWMSHttpClient.getDio();
