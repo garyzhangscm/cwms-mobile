@@ -159,6 +159,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
   Future<void> _onStartProduce() async {
 
     showLoading(context);
+    printLongLogMessage("start produce inventory from work order");
     if (_productionLineNameController.text.isNotEmpty) {
 
       // Let's get the work order that assigned to the production line
@@ -189,17 +190,9 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
         return;
       }
 
+      printLongLogMessage("get assigned work order: ${assignedWorkOrder.number}");
 
-      BillOfMaterial billOfMaterial;
-      if (assignedWorkOrder.consumeByBom != null) {
-        billOfMaterial = assignedWorkOrder.consumeByBom;
-      }
-      else {
 
-          billOfMaterial =
-              await BillOfMaterialService.findMatchedBillOfMaterial(assignedWorkOrder);
-
-      }
 
 
       // hide the loading indicator
@@ -211,10 +204,11 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
       argumentMap['workOrder'] = assignedWorkOrder;
       argumentMap['productionLine'] = productionLine;
 
-      argumentMap['billOfMaterial'] = billOfMaterial;
+      // argumentMap['billOfMaterial'] = billOfMaterial;
 
 
 
+      printLongLogMessage("flow to produce inventory page");
       await Navigator.of(context).pushNamed("work_order_produce_inventory", arguments: argumentMap);
 
     }

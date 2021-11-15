@@ -15,6 +15,7 @@ import 'package:cwms_mobile/workorder/models/work_order_kpi_transaction_action.d
 import 'package:cwms_mobile/workorder/models/work_order_line_consume_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produced_inventory.dart';
+import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   @override
   void initState() {
     super.initState();
+
+
     _currentWorkOrder = new WorkOrder();
     _selectedInventoryStatus = null;
     _selectedItemPackageType = null;
@@ -74,16 +77,34 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
   final  _formKey = GlobalKey<FormState>();
 
+  @override
+  void didChangeDependencies() {
+
+    Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
+    _currentWorkOrder = arguments['workOrder'];
+
+    _currentProductionLine = arguments['productionLine'];
+
+    _loadMatchedBillOfMaterial();
+  }
+  _loadMatchedBillOfMaterial() {
+    if (_matchedBillOfMaterial != null) {
+      return;
+    }
+    else if (_currentWorkOrder.consumeByBom != null) {
+      _matchedBillOfMaterial = _currentWorkOrder.consumeByBom;
+    }
+    else {
+
+      BillOfMaterialService.findMatchedBillOfMaterial(_currentWorkOrder).then((value) => _matchedBillOfMaterial = value);
+
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
 
-    Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
-    _currentWorkOrder = arguments['workOrder'];
-    
-    _currentProductionLine = arguments['productionLine'];
-
-    _matchedBillOfMaterial = arguments['billOfMaterial'];
 
 
     return Scaffold(
