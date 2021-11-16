@@ -53,7 +53,7 @@ Map<String, dynamic> _$WorkOrderToJson(WorkOrder instance) => <String, dynamic>{
   'totalLineInprocessQuantity': instance.totalLineInprocessQuantity,
   'totalLineDeliveredQuantity': instance.totalLineDeliveredQuantity,
   'totalLineConsumedQuantity': instance.totalLineConsumedQuantity,
-  'materialConsumeTiming': EnumToString.convertToString(instance.materialConsumeTiming),
+  'materialConsumeTiming': instance.materialConsumeTiming == null ? null : EnumToString.convertToString(instance.materialConsumeTiming),
   'consumeByBomOnly': instance.consumeByBomOnly,
   'consumeByBom': instance.consumeByBom,
 };

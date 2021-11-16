@@ -215,6 +215,9 @@ class CWMSLocalizations {
   String get qcSampleAdded => Intl.message('QC Sample Added', name: 'qcSampleAdded');
   String get qcSampleNumberAlreadyExists => Intl.message('QC Sample With The Same Name Already Exists', name: 'qcSampleNumberAlreadyExists');
   String get noQCSampleExists => Intl.message('Cannot find the qc samples', name: 'noQCSampleExists');
+  String get qcSampling => Intl.message('QC Sampling', name: 'qcSampling');
+
+
 
 
 

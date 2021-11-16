@@ -80,7 +80,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).receiving)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).qcSampling)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
