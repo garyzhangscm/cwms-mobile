@@ -17,7 +17,8 @@ class LpnCaptureRequest{
       ItemPackageType itemPackageType,
       ItemUnitOfMeasure lpnUnitOfMeasure,
       int requestedLPNQuantity,
-      Set<String> capturedLpn) {
+      Set<String> capturedLpn,
+      bool newLPNOnly) {
 
     this.item = item;
     this.itemPackageType = itemPackageType;
@@ -25,6 +26,7 @@ class LpnCaptureRequest{
     this.requestedLPNQuantity = requestedLPNQuantity;
     this.capturedLpn = capturedLpn;
     this.result = false;
+    this.newLPNOnly = newLPNOnly;
   }
 
   Item item;
@@ -35,6 +37,7 @@ class LpnCaptureRequest{
   Set<String> capturedLpn;
 
   bool result;
+  bool newLPNOnly;
 
   factory LpnCaptureRequest.fromJson(Map<String, dynamic> json) => _$LpnCaptureRequestFromJson(json);
   Map<String, dynamic> toJson() => _$LpnCaptureRequestToJson(this);

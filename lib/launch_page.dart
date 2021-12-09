@@ -50,7 +50,7 @@ class _LaunchPageState extends State<LaunchPage> {
       _onAutoConnect(server);
     }
     else {
-      _serverURLController =  TextEditingController(text: 'http://gateway.claytechsuite.com/api/');
+      _serverURLController =  TextEditingController(text: 'http://10.0.10.37:32262/api/');
       _autoConnect = true;
     }
 

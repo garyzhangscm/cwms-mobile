@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
@@ -159,6 +160,28 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
     }
     printLongLogMessage("_lpnController.text: ${_lpnController.text}");
     printLongLogMessage("_lpnCaptureRequest.capturedLpn.contains(_lpnController.text): ${_lpnCaptureRequest.capturedLpn.contains(_lpnController.text)}");
+    printLongLogMessage("_lpnCaptureRequest.newLPNOnly: ${_lpnCaptureRequest.newLPNOnly}");
+
+    // if we only allow new LPN, then make sure the LPN entered in is
+    // a new LPN
+    if (_lpnCaptureRequest.newLPNOnly) {
+      showLoading(context);
+      try {
+        bool validLpn = await InventoryService.validateNewLpn(_lpnController.text);
+        if (!validLpn) {
+          Navigator.of(context).pop();
+          showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+          return;
+        }
+      }
+      on WebAPICallException catch(ex) {
+
+        Navigator.of(context).pop();
+        showErrorDialog(context, ex.errMsg());
+        return;
+      }
+      Navigator.of(context).pop();
+    }
 
     setState(() {
       _lpnCaptureRequest.capturedLpn.add(_lpnController.text);
@@ -167,6 +190,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
     _lpnFocusNode.requestFocus();
 
   }
+
 
   void _onConfirm() {
 

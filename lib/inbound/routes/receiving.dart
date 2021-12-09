@@ -605,7 +605,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
           receiptLine.item,
           _selectedItemPackageType,
           _selectedItemPackageType.trackingLpnUOM,
-          lpnCount, capturedLpn
+          lpnCount, capturedLpn,
+        true
       );
 
       printLongLogMessage("flow to lpn_capture screen");
