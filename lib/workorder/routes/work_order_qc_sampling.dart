@@ -353,7 +353,8 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
   _uploadImageFile(XFile imageFile) async {
 
     showLoading(context);
-    String filename = await uploadFile(imageFile, _productionLineAssignment.id);
+    String filename = await uploadFile(imageFile,
+        "workorder/qc-samples/${_productionLineAssignment.id}/images");
 
     setState(() {
       printLongLogMessage("we get picked file: ${imageFile.path}, server file name is ${filename}");
@@ -381,7 +382,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
         _workOrderQCSample.imageUrls = _localFile.keys.join(",");
       }
       else {
-        _workOrderQCSample.imageUrls += _localFile.keys.join(",");
+        _workOrderQCSample.imageUrls += "," + _localFile.keys.join(",");
       }
     }
 

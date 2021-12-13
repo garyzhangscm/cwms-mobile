@@ -217,6 +217,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "qcSampleNumberAlreadyExists" : MessageLookupByLibrary.simpleMessage("QC Sample With The Same Name Already Exists"),
     "noQCSampleExists" : MessageLookupByLibrary.simpleMessage("Cannot find the qc samples"),
     "qcSampling" : MessageLookupByLibrary.simpleMessage("QC Sampling"),
+    "itemSamplingNumber" : MessageLookupByLibrary.simpleMessage("Item Sampling Number"),
 
 
 

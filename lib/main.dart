@@ -4,6 +4,7 @@ import 'package:cwms_mobile/inventory/routes/audit_count_batch.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_request.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_lost_and_found.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_detail.dart';
+import 'package:cwms_mobile/inventory/routes/item_sampling.dart';
 import 'package:cwms_mobile/inventory/routes/lpn_capture.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
 import 'package:cwms_mobile/shared/global.dart';
@@ -135,6 +136,7 @@ class MyApp extends StatelessWidget {
               "app_upgrade":(context) => AppUpgradePage(),
               "lpn_capture":(context) => LpnCapturePage(),
               "work_order_qc_sampling":(context) => WorkOrderQCSamplingPage(),
+              "item_sampling":(context) => ItemSamplingPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

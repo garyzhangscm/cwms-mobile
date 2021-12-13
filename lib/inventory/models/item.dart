@@ -18,7 +18,7 @@ class Item{
     warehouseId = null;
     clientId = null;
     client = null;
-    itemPackageTypes = new List<ItemPackageType>();
+    itemPackageTypes = [];
 
   }
 

@@ -210,6 +210,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "qcSampleNumberAlreadyExists" : MessageLookupByLibrary.simpleMessage("该QC样品号已经存在"),
     "noQCSampleExists" : MessageLookupByLibrary.simpleMessage("无法找到该QC样品"),
     "qcSampling" : MessageLookupByLibrary.simpleMessage("质检取样"),
+    "itemSamplingNumber" : MessageLookupByLibrary.simpleMessage("商品取样号"),
 
 
     'greetingMessage':greetingMessage,

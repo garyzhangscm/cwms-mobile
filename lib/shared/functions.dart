@@ -338,14 +338,14 @@ Widget buildThreeSectionInputRow(String name, Widget inputController1, Widget in
 }
 
 
-Future<String> uploadFile(XFile file, int productionLineAssignmentId) async {
+Future<String> uploadFile(XFile file, String url) async {
   Dio httpClient = CWMSHttpClient.getDio();
   var fileData = FormData.fromMap({
     'file':  await MultipartFile.fromFile(file.path,filename: file.name)
   });
 
   Response response = await httpClient.post(
-      "workorder/qc-samples/${productionLineAssignmentId}/images",
+      url,
       data:fileData);
 
 

@@ -218,6 +218,7 @@ class CWMSLocalizations {
   String get qcSampling => Intl.message('QC Sampling', name: 'qcSampling');
 
 
+  String get itemSamplingNumber => Intl.message('Item Sampling Number', name: 'itemSamplingNumber');
 
 
 
