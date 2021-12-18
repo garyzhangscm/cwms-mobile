@@ -35,7 +35,7 @@ class WorkOrderQCService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     List<WorkOrderQCSample> workOrderQCSamples
@@ -70,7 +70,7 @@ class WorkOrderQCService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     List<WorkOrderQCSample> workOrderQCSamples
@@ -106,7 +106,7 @@ class WorkOrderQCService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     return WorkOrderQCResult.fromJson(responseString["data"] as Map<String, dynamic>);
@@ -131,7 +131,7 @@ class WorkOrderQCService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     return QCInspectionRequest.fromJson(responseString["data"] as Map<String, dynamic>);
@@ -153,7 +153,7 @@ class WorkOrderQCService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     List<WorkOrderQCRuleConfiguration> workOrderQCRuleConfigurationList =
@@ -187,7 +187,7 @@ class WorkOrderQCService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     return WorkOrderQCSample.fromJson(responseString["data"] as Map<String, dynamic>);

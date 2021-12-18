@@ -354,7 +354,7 @@ Future<String> uploadFile(XFile file, String url) async {
 
   if (responseString["result"] as int != 0) {
     printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-    throw new WebAPICallException(responseString["message"]);
+    throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
   }
 
   printLongLogMessage("File ${file.path} uploaded! filepath: ${responseString["data"]}");

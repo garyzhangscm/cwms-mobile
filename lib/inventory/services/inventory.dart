@@ -288,7 +288,7 @@ class InventoryService {
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
@@ -315,7 +315,7 @@ class InventoryService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
     return true;
 
@@ -341,7 +341,7 @@ class InventoryService {
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
@@ -366,7 +366,7 @@ class InventoryService {
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     List<QCInspectionRequest> qcInspectionRequests

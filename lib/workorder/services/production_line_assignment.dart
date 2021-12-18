@@ -29,7 +29,7 @@ class ProductionLineAssignmentService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
     List<ProductionLineAssignment> productionLineAssignments
     = (responseString["data"] as List)?.map((e) =>
@@ -61,7 +61,7 @@ class ProductionLineAssignmentService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
     List<ProductionLineAssignment> productionLineAssignments
     = (responseString["data"] as List)?.map((e) =>
@@ -96,7 +96,7 @@ class ProductionLineAssignmentService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
     List<WorkOrder> workOrders
       = (responseString["data"] as List)?.map((e) =>

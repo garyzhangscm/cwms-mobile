@@ -31,7 +31,7 @@ class ProductionLineService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
     List<ProductionLine> productionLines
     = (responseString["data"] as List)?.map((e) =>
@@ -65,7 +65,7 @@ class ProductionLineService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
     List<ProductionLine> productionLines
       = (responseString["data"] as List)?.map((e) =>
@@ -95,7 +95,7 @@ class ProductionLineService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     return WorkOrderLabor.fromJson(responseString["data"] as Map<String, dynamic>);
@@ -121,7 +121,7 @@ class ProductionLineService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
     return WorkOrderLabor.fromJson(responseString["data"] as Map<String, dynamic>);
@@ -144,7 +144,7 @@ class ProductionLineService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
 
@@ -174,7 +174,7 @@ class ProductionLineService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["message"]);
+      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
     }
 
 
