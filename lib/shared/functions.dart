@@ -165,6 +165,44 @@ showWarningDialog(BuildContext context, String message) {
   );
 }
 
+
+showInformationDialog(BuildContext context, String name, Widget content,
+    {
+        double verticalPadding = 0.0,
+        double horizontalPadding = 0.0,
+    }) {
+
+  // set up the button
+  Widget okButton = TextButton(
+    child: Text("OK"),
+    onPressed: () {
+      Navigator.of(context).pop();
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    insetPadding: EdgeInsets.symmetric(
+      horizontal: horizontalPadding,
+      vertical: verticalPadding,
+    ),
+    title: Text(name),
+    content: content,
+    actions: [
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+
+    },
+  );
+}
+
 Widget buildSingleButtonRow(BuildContext context, Widget button) {
   return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -240,6 +278,21 @@ Widget buildTwoSectionInformationRow(String name, String value) {
             child: Text(name, textAlign: TextAlign.left),
           ),
           Text(value, textAlign: TextAlign.left),
+        ]
+    ),
+  );
+}
+
+Widget buildTwoSectionInformationRowWithWidget(String name, Widget value) {
+  return Padding(
+    padding: EdgeInsets.only(top: 5, bottom: 5),
+    child:
+    Row(
+        children: <Widget>[
+          Padding(padding: EdgeInsets.only(right: 10),
+            child: Text(name, textAlign: TextAlign.left),
+          ),
+          value
         ]
     ),
   );

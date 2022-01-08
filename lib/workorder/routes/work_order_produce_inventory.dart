@@ -2,6 +2,7 @@
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
+import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
@@ -18,6 +19,7 @@ import 'package:cwms_mobile/workorder/models/work_order_produced_inventory.dart'
 import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -117,150 +119,24 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
           child: Column(
             children: <Widget>[
 
-              buildTwoSectionInformationRow(
+              buildTwoSectionInformationRowWithWidget(
                   CWMSLocalizations.of(context).workOrderNumber,
-                  _currentWorkOrder.number),
-              /***
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                Row(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                          Text(CWMSLocalizations.of(context).workOrderNumber,
-                            textAlign: TextAlign.left,
-                          ),
-                      ),
-                      Text(_currentWorkOrder.number,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
-              ),
-              **/
-              buildTwoSectionInformationRow(
+                  _getWorkOrderDisplayWidget(context, _currentWorkOrder)),
+              buildTwoSectionInformationRowWithWidget(
                   CWMSLocalizations.of(context).item,
-                  _currentWorkOrder.item.name),
-              /**
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                // confirm the location
-                Row(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                            Text(CWMSLocalizations.of(context).item,
-                              textAlign: TextAlign.left,
-                            ),
-                      ),
-                      Text(_currentWorkOrder.item.name,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
-              ),
-              **/
-              buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context).item,
-                  _currentWorkOrder.item.description),
-              /***
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                // confirm the location
-                Row(
-                    children: <Widget>[
-
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                            Text(CWMSLocalizations.of(context).item,
-                              textAlign: TextAlign.left,
-                            ),
-                      ),
-                      Text(_currentWorkOrder.item.description,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
-              ),
-              **/
+                  _getItemDisplayWidget(context, _currentWorkOrder.item)),
+/**
               buildTwoSectionInformationRow(
                   CWMSLocalizations.of(context).expectedQuantity,
                 _currentWorkOrder.expectedQuantity.toString()),
-              /**
-               *
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                Row(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                            Text(CWMSLocalizations.of(context).expectedQuantity,
-                              textAlign: TextAlign.left,
-                            ),
-                      ),
-                      Text(_currentWorkOrder.expectedQuantity.toString(),
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
-              ),
-              **/
               buildTwoSectionInformationRow(
                   CWMSLocalizations.of(context).billOfMaterial,
                   _matchedBillOfMaterial == null ? "" : _matchedBillOfMaterial.number),
               // show the matched BOM
-              /**
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                Row(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                        Text(CWMSLocalizations.of(context).billOfMaterial,
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                      Text(_matchedBillOfMaterial == null ? "" : _matchedBillOfMaterial.number,
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
-              ),
-              **/
               buildTwoSectionInformationRow(
                   CWMSLocalizations.of(context).producedQuantity,
                   _currentWorkOrder.producedQuantity.toString()),
-              /**
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                Row(
-                    children: <Widget>[
-
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                            Text(CWMSLocalizations.of(context).producedQuantity,
-                              textAlign: TextAlign.left,
-                            ),
-                      ),
-                      Text(_currentWorkOrder.producedQuantity.toString(),
-                        textAlign: TextAlign.left,
-                      ),
-                    ]
-                ),
-              ),
-              **/
+    **/
               // Allow the user to choose item package type
               buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).itemPackageType,
@@ -283,45 +159,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     },
                   )
               ),
-              /**
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                Row(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                            Text(CWMSLocalizations.of(context).itemPackageType,
-                              textAlign: TextAlign.left,
-                            ),
-                      ),
-                      Expanded(
-                          child:
-                          DropdownButton(
-                            hint: Text("请选择"),
-                            items: _getItemPackageTypeItems(),
-                            value: _selectedItemPackageType,
-                            elevation: 1,
-                            isExpanded: true,
-                            icon: Icon(
-                              Icons.list,
-                              size: 20,
-                            ),
-                            onChanged: (T) {
-                              //下拉菜单item点击之后的回调
-                              setState(() {
-                                _selectedItemPackageType = T;
-                              });
-                            },
-                          )
-                      )
-                    ]
-                ),
-              ),
-                  **/
               // Allow the user to choose inventory status
-
               buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).inventoryStatus,
                   DropdownButton(
@@ -342,45 +180,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     },
                   )
               ),
-              /**
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                Row(
-                    children: <Widget>[
-
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                            Text(CWMSLocalizations.of(context).inventoryStatus,
-                              textAlign: TextAlign.left,
-                            ),
-                      ),
-                      Expanded(
-                          child:
-                          DropdownButton(
-                            hint: Text("请选择"),
-                            items: _getInventoryStatusItems(),
-                            value: _selectedInventoryStatus,
-                            elevation: 1,
-                            isExpanded: true,
-                            icon: Icon(
-                              Icons.list,
-                              size: 20,
-                            ),
-                            onChanged: (T) {
-                              //下拉菜单item点击之后的回调
-                              setState(() {
-                                _selectedInventoryStatus = T;
-                              });
-                            },
-                          )
-                      )
-                    ]
-                ),
-              ),
-              **/
-
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).producingQuantity,
                 Focus(
@@ -435,103 +234,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     )
                 ),
               ),
-              /**
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                // always force the user to input / confirm the quantity
-                // picked this time
-                Row(
-                    children: <Widget>[
 
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                            Text(CWMSLocalizations
-                                .of(context)
-                                .producingQuantity + ": ",
-                              textAlign: TextAlign.left,
-                            ),
-                      ),
-                      Expanded(
-                        child:
-                        Focus(
-                          child: TextFormField(
-                              keyboardType: TextInputType.number,
-                              controller: _quantityController,
-                              // 校验ITEM NUMBER（不能为空）
-                              validator: (v) {
-                                if (v.trim().isEmpty) {
-                                  return "please type in quantity";
-                                }
-
-                                return null;
-                              }),
-                        ),
-                      )
-                    ]
-                ),
-              ),
-              **/
-              /***
-              Padding(
-                padding: EdgeInsets.only(top: 5, bottom: 5),
-                child:
-                // always force the user to input / confirm the quantity
-                // picked this time
-                Row(
-                    children: <Widget>[
-
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child:
-                            Text(CWMSLocalizations
-                                .of(context)
-                                .lpn+ ": ",
-                              textAlign: TextAlign.left,
-                            ),
-                      ),
-                      Expanded(
-                        child:
-                        Focus(
-                          child:
-                          RawKeyboardListener(
-                              focusNode: lpnFocusNode,
-                              onKey: (event) {
-
-                                // printLongLogMessage("user pressed : ${event.logicalKey}");
-                                if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
-                                  // Do something
-
-                                  setState(() {
-                                    // disable the confirm button
-                                    _readyToConfirm = false;
-                                  });
-
-                                  printLongLogMessage("user pressed enter, lpn is: ${_lpnController.text}");
-                                  _enterOnLPNController(10);
-                                }
-                              },
-                              child:
-                                SystemControllerNumberTextBox(
-                                  type: "lpn",
-                                  controller: _lpnController,
-                                  readOnly: false,
-                                  showKeyboard: false,
-                                  validator: (v) {
-                                    if (v.trim().isEmpty) {
-                                      return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
-                                    }
-
-                                    return null;
-                                  }),
-                          )
-                        ),
-                      )
-                    ]
-                ),
-              ),
-              **/
               _buildButtons(context)
 
             ],
@@ -558,44 +261,64 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
             .confirm),
       )
     );
-    /**
-      SizedBox(
-        width: double.infinity,
-        height: 50,
-            child:
-                Row(
-                  children: <Widget> [
-                    Expanded(
-                      child:
-                        Padding(
-                            padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                            child:
-                              RaisedButton(
-                                color: _readyToConfirm? Theme.of(context).primaryColor
-                                             : Theme.of(context).disabledColor,
-                                onPressed: _readyToConfirm?  () {
-                                  if (_formKey.currentState.validate()) {
-                                    print("form validation passed");
-                                    _onWorkOrderProduceConfirm(_currentWorkOrder,
-                                        int.parse(_quantityController.text),
-                                        _lpnController.text);
-                                  }
 
-                                } : null,
-                                textColor: Colors.white,
-                                child: Text(CWMSLocalizations
-                                    .of(context)
-                                    .confirm),
-                              ),
-                        ),
-                    ),
+  }
+  Widget _getItemDisplayWidget(BuildContext context, Item item) {
+    return new RichText(
+        text: new TextSpan(
+                  text: item.name,
+                  style: new TextStyle(color: Colors.blue),
+                  recognizer: new TapGestureRecognizer()
+                    ..onTap = () {
+                      showInformationDialog(
+                        context, item.name, Column(
+                          children: <Widget>[
+                            buildTwoSectionInformationRow(
+                                CWMSLocalizations.of(context).item,
+                                _currentWorkOrder.item.name),
+                            buildTwoSectionInformationRow(
+                                CWMSLocalizations.of(context).item,
+                                _currentWorkOrder.item.description),
 
+                          ]),
+                          verticalPadding: 175.0,
+                          horizontalPadding: 50.0
 
-                  ]
-                )
+                      );
+                    },
+    ));
 
-      );
-        **/
+  }
+  Widget _getWorkOrderDisplayWidget(BuildContext context, WorkOrder workOrder) {
+    return new RichText(
+        text: new TextSpan(
+          text: workOrder.number,
+          style: new TextStyle(color: Colors.blue),
+          recognizer: new TapGestureRecognizer()
+            ..onTap = () {
+              showInformationDialog(
+                  context, workOrder.number, Column(
+                  children: <Widget>[
+
+                    buildTwoSectionInformationRow(
+                        CWMSLocalizations.of(context).expectedQuantity,
+                        workOrder.expectedQuantity.toString()),
+                    buildTwoSectionInformationRow(
+                        CWMSLocalizations.of(context).billOfMaterial,
+                        _matchedBillOfMaterial == null ? "" : _matchedBillOfMaterial.number),
+                    // show the matched BOM
+                    buildTwoSectionInformationRow(
+                        CWMSLocalizations.of(context).producedQuantity,
+                        workOrder.producedQuantity.toString()),
+
+                  ]),
+
+                  verticalPadding: 175.0,
+                  horizontalPadding: 50.0
+              );
+            },
+        ));
+
   }
 
 
