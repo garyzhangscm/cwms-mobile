@@ -21,11 +21,12 @@ import 'package:dio/dio.dart';
 
 class RFAppVersionService {
 
-  static Future<RFAppVersion> getLatestRFAppVersion() async {
+  static Future<RFAppVersion> getLatestRFAppVersion(String rfCode) async {
 
     Response response = await Dio().get(
         Global.currentServer.url + "/resource/rf-app-version/latest-version",
-        queryParameters: {"companyId": Global.currentWarehouse.id}
+        queryParameters: {"companyId": Global.currentWarehouse.id,
+        "rfCode": rfCode}
     );
 
     print("response from getLatestRFAppVersion: $response");

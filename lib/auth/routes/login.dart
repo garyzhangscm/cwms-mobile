@@ -298,7 +298,7 @@ class _LoginPageState extends State<LoginPage> {
 
         // get the latest app version and see if we will
         // need to upgrade the app
-        RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion();
+        RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
 
         // let's check if we will need to update the
         bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
@@ -399,7 +399,7 @@ class _LoginPageState extends State<LoginPage> {
 
         print("login with user: ${user.username}, token: ${user.token}. companyCode: ${Global.lastLoginCompanyId}, company Id: ${Global.lastLoginCompanyCode}");
 
-        RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion();
+        RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
 
         bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
         if (_appNeedUpdate) {
