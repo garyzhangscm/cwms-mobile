@@ -26,7 +26,7 @@ class OrderService {
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
 

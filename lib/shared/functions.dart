@@ -349,7 +349,7 @@ Widget buildSingleSectionInputRow(Widget inputController) {
   );
 }
 
-Widget buildTwoSectionInputRow(String name, Widget inputController) {
+Widget buildTwoSectionInputRow(String name, Widget inputController, {bool expanded = true}) {
   return Padding(
     padding: EdgeInsets.only(top: 5, bottom: 5),
     child:
@@ -360,9 +360,12 @@ Widget buildTwoSectionInputRow(String name, Widget inputController) {
             padding: EdgeInsets.only(right: 10),
             child: Text(name, textAlign: TextAlign.left ),
           ),
-          Expanded(
-              child: inputController
-          )
+          expanded ?
+            Expanded(
+                child: inputController
+            )
+              :
+              inputController
         ]
     ),
   );
@@ -407,7 +410,7 @@ Future<String> uploadFile(XFile file, String url) async {
 
   if (responseString["result"] as int != 0) {
     printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-    throw new WebAPICallException(responseString["result"] + ":" + responseString["message"]);
+    throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
   }
 
   printLongLogMessage("File ${file.path} uploaded! filepath: ${responseString["data"]}");

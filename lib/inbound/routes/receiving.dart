@@ -120,7 +120,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).receiving)),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Form(
           key: _formKey,
           // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
@@ -130,27 +130,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).receiptNumber,
                 TextFormField(
+
                     controller: _receiptNumberController,
                     autofocus: true,
                     focusNode: _receiptNumberFocusNode,
                     textInputAction: TextInputAction.next,
                     onEditingComplete: () => _itemFocusNode.requestFocus(),
                     decoration: InputDecoration(
-                      suffixIcon:
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                        mainAxisSize: MainAxisSize.min, // added line
-                        children: <Widget>[
-                          IconButton(
-                            onPressed: _startReceiptBarcodeScanner,
-                            icon: Icon(Icons.scanner),
-                          ),
-                          IconButton(
-                            onPressed: _showChoosingReceiptDialog,
-                            icon: Icon(Icons.list),
-                          ),
-                        ],
-                      ),
+                      isDense: true
                     ),
                     // 校验ITEM NUMBER（不能为空）
                     validator: (v) {
@@ -170,22 +157,29 @@ class _ReceivingPageState extends State<ReceivingPage> {
                     autofocus: true,
                     onEditingComplete: () => _quantityFocusNode.requestFocus(),
                     decoration: InputDecoration(
-                      suffixIcon:
-                      Row(
+                        isDense: true
+                    ),
+
+                    /**
+                     *
+                        decoration: InputDecoration(
+                        suffixIcon:
+                        Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
                         mainAxisSize: MainAxisSize.min, // added line
                         children: <Widget>[
-                          IconButton(
-                            onPressed: _startItemBarcodeScanner,
-                            icon: Icon(Icons.scanner),
-                          ),
-                          IconButton(
-                            onPressed: _showChoosingItemsDialog,
-                            icon: Icon(Icons.list),
-                          ),
+                        IconButton(
+                        onPressed: _startItemBarcodeScanner,
+                        icon: Icon(Icons.scanner),
+                        ),
+                        IconButton(
+                        onPressed: _showChoosingItemsDialog,
+                        icon: Icon(Icons.list),
+                        ),
                         ],
-                      ),
-                    ),
+                        ),
+                        ),
+                     */
                     // 校验ITEM NUMBER（不能为空）
                     validator: (v) {
 
@@ -201,49 +195,60 @@ class _ReceivingPageState extends State<ReceivingPage> {
                 _currentReceiptLine.item == null ?
                     "" : _currentReceiptLine.item.description,
               ),
-              buildTwoSectionInformationRow(
-                CWMSLocalizations.of(context).expectedQuantity,
-                _currentReceiptLine.expectedQuantity.toString(),
-              ),
-              buildTwoSectionInformationRow(
-                CWMSLocalizations.of(context).receivedQuantity,
-                _currentReceiptLine.receivedQuantity.toString(),
-              ),
+              buildFourSectionInformationRow(
+                  CWMSLocalizations.of(context).expectedQuantity,
+                  _currentReceiptLine.expectedQuantity.toString(),
+                  CWMSLocalizations.of(context).receivedQuantity,
+                 _currentReceiptLine.receivedQuantity.toString()),
+
               // Allow the user to choose item package type
 
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).itemPackageType,
-                DropdownButton(
-                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
-                    items: _getItemPackageTypeItems(),
-                    value: _selectedItemPackageType,
-                    elevation: 1,
-                    isExpanded: true,
-                    icon: Icon(
-                      Icons.list,
-                      size: 20,
-                    ),
-                    onChanged: (T) {
-                      //下拉菜单item点击之后的回调
-                      setState(() {
-                        _selectedItemPackageType = T;
-                      });
-                    },
-                  )
-              ),
+
+                  _getItemPackageTypeItems().isEmpty ?
+                      Container() :
+                      DropdownButton(
+                          // hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                          items: _getItemPackageTypeItems(),
+                          value: _selectedItemPackageType,
+                          elevation: 16,
+                          icon: const Icon(Icons.arrow_downward),
+                          underline: Container(
+                            height: 2,
+                            color: Colors.deepPurpleAccent,
+                          ),
+                          onChanged: (T) {
+                            //下拉菜单item点击之后的回调
+                            setState(() {
+                              _selectedItemPackageType = T;
+                            });
+                          },
+                        ),
+                    expanded: false
+                ),
               // Allow the user to choose inventory status
 
               buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).inventoryStatus,
                   DropdownButton(
-                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                   //  hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getInventoryStatusItems(),
                     value: _selectedInventoryStatus,
-                    elevation: 1,
-                    isExpanded: true,
-                    icon: Icon(
-                      Icons.list,
-                      size: 20,
+                    /**
+                     *
+                        elevation: 1,
+                        isExpanded: true,
+                        icon: Icon(
+                        Icons.list,
+                        size: 15,
+                        ),
+                     */
+                    elevation: 16,
+                    icon: const Icon(Icons.arrow_downward),
+                    underline: Container(
+                      height: 2,
+                      color: Colors.deepPurpleAccent,
                     ),
                     onChanged: (T) {
                       //下拉菜单item点击之后的回调
@@ -251,10 +256,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         _selectedInventoryStatus = T;
                       });
                     },
-                  )
+                  ),
+                  expanded: false
               ),
               buildThreeSectionInputRow(
-                  "Receiving Quantity:",
+                  "RCV Quantity:",
                   TextFormField(
                       keyboardType: TextInputType.number,
                       controller: _quantityController,
@@ -266,6 +272,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         _lpnFocusNode.requestFocus();
 
                       },
+                      decoration: InputDecoration(
+                          isDense: true
+                      ),
                       // 校验ITEM NUMBER（不能为空）
                       validator: (v) {
                         if (v.trim().isEmpty) {
@@ -278,15 +287,17 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         }
                         return null;
                       }),
+                  _getItemUnitOfMeasures().isEmpty ?
+                      Container() :
                       DropdownButton(
                         hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                         items: _getItemUnitOfMeasures(),
                         value: _selectedItemUnitOfMeasure,
-                        elevation: 1,
-                        isExpanded: true,
-                        icon: Icon(
-                          Icons.list,
-                          size: 20,
+                        elevation: 16,
+                        icon: const Icon(Icons.arrow_downward),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.deepPurpleAccent,
                         ),
                         onChanged: (T) {
                           //下拉菜单item点击之后的回调
