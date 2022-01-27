@@ -8,6 +8,7 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
@@ -474,10 +475,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       }
       printLongLogMessage("LPN ${lpn} passed the validation");
     }
-    on WebAPICallException catch(ex) {
+    on CWMSHttpException catch(ex) {
 
       Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
+      showErrorDialog(context, "${ex.code} - ${ex.message}");
       return;
 
     }

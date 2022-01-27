@@ -15,6 +15,7 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -137,7 +138,13 @@ class _ReceivingPageState extends State<ReceivingPage> {
                     textInputAction: TextInputAction.next,
                     onEditingComplete: () => _itemFocusNode.requestFocus(),
                     decoration: InputDecoration(
-                      isDense: true
+                      isDense: true,
+                      suffixIcon:
+                        IconButton(
+                          onPressed: _showChoosingReceiptDialog,
+                          icon: Icon(Icons.list),
+                        ),
+
                     ),
                     // 校验ITEM NUMBER（不能为空）
                     validator: (v) {
@@ -157,7 +164,12 @@ class _ReceivingPageState extends State<ReceivingPage> {
                     autofocus: true,
                     onEditingComplete: () => _quantityFocusNode.requestFocus(),
                     decoration: InputDecoration(
-                        isDense: true
+                        isDense: true,
+                        suffixIcon:
+                            IconButton(
+                              onPressed: _showChoosingItemsDialog,
+                              icon: Icon(Icons.list),
+                          ),
                     ),
 
                     /**
@@ -525,10 +537,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
       }
       printLongLogMessage("LPN ${lpn} passed the validation");
     }
-    on WebAPICallException catch(ex) {
+    on CWMSHttpException catch(ex) {
 
       Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
+      showErrorDialog(context, "${ex.code} - ${ex.message}");
       return;
 
     }
@@ -660,10 +672,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
         printLongLogMessage("LPN ${lpnIterator.current} passed the validation");
       }
     }
-    on WebAPICallException catch(ex) {
+    on CWMSHttpException catch(ex) {
 
       Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
+      showErrorDialog(context, "${ex.code} - ${ex.message}");
       return;
 
     }
@@ -895,6 +907,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         _receiptNumberController.text = receipt.number;
       });
     }
+    _itemFocusNode.requestFocus();
 
   }
   // Show all items on this receipt
@@ -962,6 +975,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         _itemController.text = receiptLine.item.name;
       });
     }
+    _quantityFocusNode.requestFocus();
 
   }
 

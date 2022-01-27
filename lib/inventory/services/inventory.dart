@@ -345,7 +345,7 @@ class InventoryService {
     printLongLogMessage("start to validate new lpn ${lpn}");
 
 
-    CWMSHttpResponse response = await Global.httpClient.post(
+    await Global.httpClient.post(
         "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse.id}",
         queryParameters: {"lpn": lpn}
     );
