@@ -219,7 +219,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "qcSampling" : MessageLookupByLibrary.simpleMessage("QC Sampling"),
     "itemSamplingNumber" : MessageLookupByLibrary.simpleMessage("Item Sampling Number"),
 
+    "httpError400" : MessageLookupByLibrary.simpleMessage("Request Has Syntax Error"),
+    "httpError401" : MessageLookupByLibrary.simpleMessage("User Not Authorized"),
+    "httpError403" : MessageLookupByLibrary.simpleMessage("Server Deny"),
+    "httpError404" : MessageLookupByLibrary.simpleMessage("Page Not Found"),
+    "httpError405" : MessageLookupByLibrary.simpleMessage("Request Method is Blocked"),
 
+    "httpError500" : MessageLookupByLibrary.simpleMessage("Server Error"),
+    "httpError502" : MessageLookupByLibrary.simpleMessage("Invalid Request"),
+    "httpError503" : MessageLookupByLibrary.simpleMessage("Server is Down"),
+    "httpError505" : MessageLookupByLibrary.simpleMessage("Request Method is not Support"),
 
 
     'greetingMessage':greetingMessage,

@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/shared/models/cwms_http_client_wrapper.dart';
+import 'package:cwms_mobile/shared/models/cwms_http_config.dart';
 import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
 import 'package:cwms_mobile/shared/models/http_response_wrapper.dart';
 import 'package:dio/dio.dart';

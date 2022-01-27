@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:cwms_mobile/auth/models/user.dart';
+import 'package:cwms_mobile/warehouse_layout/models/company.dart';
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
@@ -10,6 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'http_client.dart';
 import 'models/cacheConfig.dart';
 import 'models/cwms_application_information.dart';
+import 'models/cwms_http_client_wrapper.dart';
+import 'models/cwms_http_config.dart';
 import 'models/cwms_site_information.dart';
 import 'models/profile.dart';
 
@@ -35,6 +39,7 @@ class Global {
 
   static Warehouse currentWarehouse;
   static Warehouse autoLoginWarehouse;
+  static Company _autoLoginCompany;
 
   // Server from history, saved in SharedPreferences
   static List<CWMSSiteInformation> servers;
@@ -55,6 +60,8 @@ class Global {
   // whether we need to move forward (1) or backward(-1)
   static int _lastActivityDirection;
 
+  static CWMSHttpClientAdapter httpClient;
+
 
   // 是否为release版
   static bool get isRelease => bool.fromEnvironment("dart.vm.product");
@@ -66,6 +73,7 @@ class Global {
     _initServers();
     _initAutoLoginUser();
     _initAutoLoginWarehouse();
+    _initAutoLoginCompany();
     _initLastLoginRFCode();
 
     // initial profile
@@ -86,6 +94,8 @@ class Global {
 
     //初始化网络请求相关配置
     CWMSHttpClient.init();
+
+
 
     // hard code company id to -1
     lastLoginCompanyId = _prefs.getInt("lastLoginCompanyId");
@@ -150,6 +160,22 @@ class Global {
     _prefs.setString("auto_login_warehouse", "");
   }
 
+  static _initAutoLoginCompany(){
+    var _company = _prefs.getString("auto_login_company");
+    print("_initAutoLingCompany: ${_company}");
+    if (_company != null ) {
+      try {
+        _autoLoginCompany = Company.fromJson(json.decode(_company));
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+
+  static _clearAutoLoginCompany() {
+    _prefs.setString("auto_login_company", "");
+  }
+
   static _initLastLoginRFCode(){
     lastLoginRFCode = _prefs.getString("last_login_rf_code");
   }
@@ -165,6 +191,10 @@ class Global {
   static Warehouse getAutoLoginWarehouse(){
     return autoLoginWarehouse;
   }
+  static Company getAutoLoginCompany(){
+    return _autoLoginCompany;
+  }
+
 
   static setAutoLoginWarehouse(Warehouse warehouse)  async {
 
@@ -173,6 +203,15 @@ class Global {
 
     print("set auto loginc warehouse to ${json.encode(warehouse.toJson())}");
     autoLoginWarehouse = warehouse;
+  }
+
+  static setAutoLoginCompany(Company company)  async {
+
+    _prefs = await SharedPreferences.getInstance();
+    _prefs.setString("auto_login_company", json.encode(company.toJson()));
+
+    print("set auto loginc warehouse to ${json.encode(company.toJson())}");
+    _autoLoginCompany = company;
   }
 
 
@@ -271,6 +310,18 @@ class Global {
 
   static bool isMovingForward() {
     return _lastActivityDirection == 1;
+  }
+
+  static void setupHttpClient() {
+    CWMSHttpConfig dioConfig =
+        CWMSHttpConfig(
+          baseUrl: Global.currentServer.url,
+          headers: {
+            HttpHeaders.acceptHeader: "application/json",
+            HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+            "rfCode": Global.lastLoginRFCode
+          },);
+    httpClient = CWMSHttpClientAdapter(dioConfig: dioConfig);
   }
 
 // 持久化Profile信息

@@ -10,6 +10,7 @@ import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
+import 'package:cwms_mobile/shared/models/cwms_http_response.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
 
@@ -217,7 +218,7 @@ class InventoryService {
 
     Response response = await httpClient.get(
           "/inventory/inventories",
-          queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+          queryParameters: {'warehouseId': Global.currentWarehouse.id,
             'location': locationName,
             'lpn': lpn,
             'itemName': itemName,
@@ -256,7 +257,7 @@ class InventoryService {
 
     response = await httpClient.post(
         "/resource/report-histories/print/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/LPN_REPORT/$fileName",
-        queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+        queryParameters: {'warehouseId': Global.currentWarehouse.id,
            'findPrinterBy': findPrinterByValue}
     );
 
@@ -266,9 +267,39 @@ class InventoryService {
 
   static Future<Inventory> addInventory(Inventory inventory,
       {String documentNumber, String comment}) async {
+    /***
+     *
+     *
+        printLongLogMessage("Start calling add inventory");
+
+        Dio httpClient = CWMSHttpClient.getDio();
+        Map<String, dynamic> params = new HashMap();
+        if (documentNumber != null) {
+        params["documentNumber"] = documentNumber;
+        }
+        if (comment != null) {
+        params["comment"] = comment;
+        }
+
+        Response response = await httpClient.put(
+        "inventory/inventory-adj?warehouseId=${Global.currentWarehouse.id}",
+        queryParameters:params,
+        data: inventory
+        );
+
+        printLongLogMessage("get response from addInventory ${response.toString()}");
+
+        Map<String, dynamic> responseString = json.decode(response.toString());
+        if (responseString["result"] as int != 0) {
+        printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+        throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+        }
+
+        return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
+     */
+
     printLongLogMessage("Start calling add inventory");
 
-    Dio httpClient = CWMSHttpClient.getDio();
     Map<String, dynamic> params = new HashMap();
     if (documentNumber != null) {
       params["documentNumber"] = documentNumber;
@@ -277,46 +308,49 @@ class InventoryService {
       params["comment"] = comment;
     }
 
-    Response response = await httpClient.put(
+    CWMSHttpResponse response = await Global.httpClient.put(
         "inventory/inventory-adj?warehouseId=${Global.currentWarehouse.id}",
         queryParameters:params,
         data: inventory
     );
 
-    printLongLogMessage("get response from addInventory ${response.toString()}");
-
-    Map<String, dynamic> responseString = json.decode(response.toString());
-    if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
-    }
-
-    return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
-
-
-
+    return Inventory.fromJson(response.data);
 
   }
 
 
   static Future<bool> validateNewLpn(String lpn) async {
+    /**
+     *
+        printLongLogMessage("start to validate new lpn ${lpn}");
+
+        Dio httpClient = CWMSHttpClient.getDio();
+
+        Response response = await httpClient.post(
+        "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse.id}",
+        queryParameters: {"lpn": lpn}
+        );
+
+        printLongLogMessage("get response from validateNewLpn ${response.toString()}");
+
+        Map<String, dynamic> responseString = json.decode(response.toString());
+
+        if (responseString["result"] as int != 0) {
+        printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+        throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+        }
+        return true;
+     */
+
     printLongLogMessage("start to validate new lpn ${lpn}");
 
-    Dio httpClient = CWMSHttpClient.getDio();
 
-    Response response = await httpClient.post(
+    CWMSHttpResponse response = await Global.httpClient.post(
         "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse.id}",
         queryParameters: {"lpn": lpn}
     );
 
-    printLongLogMessage("get response from validateNewLpn ${response.toString()}");
 
-    Map<String, dynamic> responseString = json.decode(response.toString());
-
-    if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
-    }
     return true;
 
 
@@ -356,7 +390,7 @@ class InventoryService {
 
     Response response = await httpClient.get(
         "/inventory/qc-inspection-requests/pending",
-      queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+      queryParameters: {'warehouseId': Global.currentWarehouse.id,
         'inventoryId': inventory.id},
     );
 

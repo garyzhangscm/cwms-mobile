@@ -8,6 +8,7 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/rf_app_version.dart';
 import 'package:cwms_mobile/shared/services/rf_app_version.dart';
+import 'package:cwms_mobile/warehouse_layout/models/company.dart';
 
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
@@ -41,7 +42,6 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _rememberMe = false;
   String defaultCompanyCode = "";
-  int companyId = -1;
 
   @override
   void initState() {
@@ -250,6 +250,12 @@ class _LoginPageState extends State<LoginPage> {
       showToast("warehouse is not setup for auto login");
 
     }
+    else if (Global.getAutoLoginCompany() == null) {
+      print("auto login fail as company is not setup");
+
+      showToast("company is not setup for auto login");
+
+    }
     else if (Global.getLastLoginRFCode() == null) {
       print("auto login fail as rf code is not setup");
 
@@ -268,53 +274,62 @@ class _LoginPageState extends State<LoginPage> {
         showToast("rf code  ${Global.getLastLoginRFCode()} is not valid for auto login");
         return;
       }
-      try {
-        User autoLoginUser =
-          await LoginService
-              .login(user.companyId, user.username, user.password);
-
-        print("auto login success");
-        Global.setCurrentUser(autoLoginUser);
-
-        print("login with user: ${autoLoginUser.username}, token: ${autoLoginUser.token}, into warehouse ${Global.getAutoLoginWarehouse().name}");
-        Global.setCurrentWarehouse(Global.getAutoLoginWarehouse());
-
-        // setup current company
-        Global.lastLoginCompanyId = user.companyId;
-        CompanyService.getCompanyById(user.companyId).then(
-                (company) => Global.lastLoginCompanyCode = company.code);
-
-
-
-        // TO-DO: as a temporary solution, we will init the
-        // start location as the RF. It will be changed when
-        // the user start any location based activity like
-        // count, deposit, pick, etc.
-        WarehouseLocationService.getWarehouseLocationByName(Global.lastLoginRFCode)
-            .then((rfLocation) {
-          print("start last activity location to ${rfLocation.name}");
-          Global.setLastActivityLocation(rfLocation);
+      setState(() {
+          selectedWarehouse = Global.getAutoLoginWarehouse();
+          _rfCodeController.text = Global.getLastLoginRFCode();
+          _companyCodeController.text = Global.getAutoLoginCompany().code;
+          _unameController.text = user.username;
+          _pwdController.text = user.password;
+          _rememberMe = true;
         });
 
-        // get the latest app version and see if we will
-        // need to upgrade the app
-        RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
+        _onLogin();
 
-        // let's check if we will need to update the
-        bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
-        if (_appNeedUpdate) {
-          // ok, we will need to update the APP, we will flow into a new form to finish the
-          // download and upgrade
-          Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
+        /**
+         * User autoLoginUser =
+            await LoginService
+            .login(user.companyId, user.username, user.password);
 
-        }
-        else {
-          Navigator.pushNamed(context, "menus_page");
-        }
-      } catch (e) {
-        //登录失败则提示
-        showToast(e.toString());
-      }
+            print("auto login success");
+            Global.setCurrentUser(autoLoginUser);
+
+            print("login with user: ${autoLoginUser.username}, token: ${autoLoginUser.token}, into warehouse ${Global.getAutoLoginWarehouse().name}");
+            Global.setCurrentWarehouse(Global.getAutoLoginWarehouse());
+
+            // setup current company
+            Global.lastLoginCompanyId = user.companyId;
+            CompanyService.getCompanyById(user.companyId).then(
+            (company) => Global.lastLoginCompanyCode = company.code);
+
+
+
+            // TO-DO: as a temporary solution, we will init the
+            // start location as the RF. It will be changed when
+            // the user start any location based activity like
+            // count, deposit, pick, etc.
+            WarehouseLocationService.getWarehouseLocationByName(Global.lastLoginRFCode)
+            .then((rfLocation) {
+            print("start last activity location to ${rfLocation.name}");
+            Global.setLastActivityLocation(rfLocation);
+            });
+
+            // get the latest app version and see if we will
+            // need to upgrade the app
+            RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
+
+            // let's check if we will need to update the
+            bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
+            if (_appNeedUpdate) {
+            // ok, we will need to update the APP, we will flow into a new form to finish the
+            // download and upgrade
+            Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
+
+            }
+            else {
+            Navigator.pushNamed(context, "menus_page");
+            }
+         *
+         */
     }
 
   }
@@ -325,6 +340,7 @@ class _LoginPageState extends State<LoginPage> {
       showLoading(context);
       User user;
       int companyId;
+
       try {
 
         // make sure the rf code is still valid
@@ -341,11 +357,9 @@ class _LoginPageState extends State<LoginPage> {
         print("will need to get company by code: " + _companyCodeController.text);
         companyId =
             await CompanyService.validateCompanyByCode(_companyCodeController.text);
-        print("get by code: " + _companyCodeController.text + ", compnay id: " + companyId.toString());
+        print("get by code: ${_companyCodeController.text}, companyId id: $companyId ");
         if (companyId == null) {
-
           showToast("Can't find company by code: " + _companyCodeController.text);
-
         }
         else {
 
@@ -367,6 +381,17 @@ class _LoginPageState extends State<LoginPage> {
         // 返回
         print("_rememberMe? $_rememberMe");
 
+        // setup current user
+        Global.setCurrentUser(user);
+        Global.setCurrentWarehouse(selectedWarehouse);
+        // setup current company
+        Global.lastLoginCompanyId = companyId;
+        Global.lastLoginCompanyCode = _companyCodeController.text;
+        Global.setLastLoginRFCode(_rfCodeController.text);
+
+        // setup the http client with auth information
+        Global.setupHttpClient();
+
 
         // Setup auto login user
         if (_rememberMe) {
@@ -374,17 +399,14 @@ class _LoginPageState extends State<LoginPage> {
           user.companyId = companyId;
           Global.addAutoLoginUser(user);
           Global.setAutoLoginWarehouse(selectedWarehouse);
+          CompanyService.getCompanyByCode(_companyCodeController.text)
+              .then((company)  {
+                Global.setAutoLoginCompany(company);
+                printLongLogMessage("auto login company is setup to ${Global.getAutoLoginCompany().name}");
+              });
+
         }
 
-        // setup current user
-        Global.setCurrentUser(user);
-
-        Global.setCurrentWarehouse(selectedWarehouse);
-
-        // setup current company
-        Global.lastLoginCompanyId = companyId;
-        Global.lastLoginCompanyCode = _companyCodeController.text;
-        Global.setLastLoginRFCode(_rfCodeController.text);
 
         // TO-DO: as a temporary solution, we will init the
         // start location as the RF. It will be changed when

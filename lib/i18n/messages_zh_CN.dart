@@ -212,6 +212,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "qcSampling" : MessageLookupByLibrary.simpleMessage("质检取样"),
     "itemSamplingNumber" : MessageLookupByLibrary.simpleMessage("商品取样号"),
 
+    "httpError400" : MessageLookupByLibrary.simpleMessage("请求语法错误"),
+    "httpError401" : MessageLookupByLibrary.simpleMessage("没有权限"),
+    "httpError403" : MessageLookupByLibrary.simpleMessage("服务器拒绝执行"),
+    "httpError404" : MessageLookupByLibrary.simpleMessage("无法连接服务器"),
+    "httpError405" : MessageLookupByLibrary.simpleMessage("请求方法被禁止"),
+
+    "httpError500" : MessageLookupByLibrary.simpleMessage("服务器内部错误"),
+    "httpError502" : MessageLookupByLibrary.simpleMessage("无效的请求"),
+    "httpError503" : MessageLookupByLibrary.simpleMessage("服务器挂了"),
+    "httpError505" : MessageLookupByLibrary.simpleMessage("不支持HTTP协议请求"),
+
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

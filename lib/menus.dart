@@ -5,6 +5,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -140,13 +141,18 @@ class _MenusState extends State<Menus> {
 
   //模拟异步获取数据
   void _retrieveIcons() async {
-    MenuService.getAccessibleMenus().then(
-        (e) {
-          setState(() {
-            _menuGroup = e;
-          });
-        }
-    );
+      try {
+        _menuGroup = await MenuService.getAccessibleMenus();
+        setState(() {
+          _menuGroup;
+        });
+      }
+      on CWMSHttpException catch (e) {
+        showToast("${e.code} - ${e.message}");
+        setState(() {
+          _menuGroup = null;
+        });
+      }
   }
   void _onPressed(int index){
 

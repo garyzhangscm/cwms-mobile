@@ -49,7 +49,6 @@ class CompanyService {
   static Future<Company> getCompanyByCode(String code) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
-
     Response response = await httpClient.get(
         "/layout/companies",
         queryParameters:{"code": code}

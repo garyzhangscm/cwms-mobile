@@ -221,6 +221,18 @@ class CWMSLocalizations {
   String get itemSamplingNumber => Intl.message('Item Sampling Number', name: 'itemSamplingNumber');
 
 
+  String get httpError400 => Intl.message('Request Has Syntax Error', name: 'httpError400');
+  String get httpError401 => Intl.message('User Not Authorized', name: 'httpError401');
+  String get httpError403 => Intl.message('Server Deny', name: 'httpError403');
+  String get httpError404 => Intl.message('Page Not Found', name: 'httpError404');
+  String get httpError405 => Intl.message('Request Method is Blocked', name: 'httpError405');
+
+  String get httpError500 => Intl.message('Server Error', name: 'httpError500');
+  String get httpError502 => Intl.message('Invalid Request', name: 'httpError502');
+  String get httpError503 => Intl.message('Server is Down', name: 'httpError503');
+  String get httpError505 => Intl.message('Request Method is not Support', name: 'httpError505');
+
+
 
 
 

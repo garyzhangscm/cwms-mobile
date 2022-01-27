@@ -39,38 +39,6 @@ class _SubMenusState extends State<SubMenus> {
 
     return Scaffold(
         appBar: AppBar(title: Text("CWMS - ${_menuSubGroup.text}")),
-        /**
-        body: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, //每行三列
-                childAspectRatio: 1.0 //显示区域宽高相等
-            ),
-            itemCount: _menuSubGroup.menus.length,
-
-            itemBuilder: (context, index) {
-              return
-                Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(IconData(int.parse(_menuSubGroup.menus[index].icon), fontFamily: 'MaterialIcons')),
-                      RaisedButton(
-                        child: Text(
-                            CWMSLocalizations.of(context)
-                                .getMenuDisplayText(
-                                    _menuSubGroup.menus[index].i18n,
-                                    _menuSubGroup.menus[index].text)),
-                        onPressed: () => _onPressed(_menuSubGroup.menus[index]),
-                      ),
-                    ],
-                );
-
-
-
-            }
-        ),
-**/
         body: Stack(
           children:  [
             Container(
@@ -137,7 +105,6 @@ class _SubMenusState extends State<SubMenus> {
 
   void _onPressed(Menu menu){
 
-    print("will flow to menu: ${menu.link}");
 
     Navigator.of(context).pushNamed(menu.link);
   }

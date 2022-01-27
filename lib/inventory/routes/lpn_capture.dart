@@ -8,6 +8,7 @@ import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dar
 import 'package:cwms_mobile/inventory/widgets/inventory_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
@@ -158,9 +159,8 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
       showToast(CWMSLocalizations.of(context).enoughLPNCaptured);
       return;
     }
-    printLongLogMessage("_lpnController.text: ${_lpnController.text}");
-    printLongLogMessage("_lpnCaptureRequest.capturedLpn.contains(_lpnController.text): ${_lpnCaptureRequest.capturedLpn.contains(_lpnController.text)}");
-    printLongLogMessage("_lpnCaptureRequest.newLPNOnly: ${_lpnCaptureRequest.newLPNOnly}");
+
+
 
     // if we only allow new LPN, then make sure the LPN entered in is
     // a new LPN
@@ -174,10 +174,10 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
           return;
         }
       }
-      on WebAPICallException catch(ex) {
+      on CWMSHttpException catch(ex) {
 
         Navigator.of(context).pop();
-        showErrorDialog(context, ex.errMsg());
+        showErrorDialog(context, ex.message);
         return;
       }
       Navigator.of(context).pop();
