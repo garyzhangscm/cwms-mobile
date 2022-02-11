@@ -494,7 +494,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
     // refresh the work order to reflect the produced quantity
 
-    Inventory inventory = await createInventory(lpn, confirmedQuantity);
+    Inventory inventory = await createInventory(lpn, confirmedQuantity * _selectedItemUnitOfMeasure.quantity);
     try {
       await InventoryService.addInventory(inventory);
     }
