@@ -34,6 +34,11 @@ class InventoryService {
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${(responseString["message"] == null? "" : responseString["message"])}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + (responseString["message"] == null? "" : responseString["message"]));
+    }
+
     List<Inventory> inventories
       = (responseString["data"] as List)?.map((e) =>
         e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
@@ -369,7 +374,7 @@ class InventoryService {
         data: inventory
     );
 
-    printLongLogMessage("get response from allocateLocation ${response.toString()}");
+    // printLongLogMessage("get response from allocateLocation ${response.toString()}");
 
 
     Map<String, dynamic> responseString = json.decode(response.toString());

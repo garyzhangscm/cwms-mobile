@@ -295,7 +295,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         if (!_validateOverReceiving(
                             _currentReceiptLine, int.parse(_quantityController.text))) {
 
-                          return "over pick is not allowed";
+                          return "over receive is not allowed";
                         }
                         return null;
                       }),
@@ -356,10 +356,16 @@ class _ReceivingPageState extends State<ReceivingPage> {
       ElevatedButton(
         onPressed: () {
           if (_formKey.currentState.validate()) {
-            print("form validation passed");
-            _onRecevingConfirm(_currentReceiptLine,
-                int.parse(_quantityController.text),
-                _lpnController.text);
+
+            print("1. _readyToConfirm? $_readyToConfirm");
+            if (_readyToConfirm == true) {
+              _readyToConfirm = false;
+              print("1. form validation passed");
+              print("1. set _readyToConfirm to false");
+              _onRecevingConfirm(_currentReceiptLine,
+                  int.parse(_quantityController.text),
+                  _lpnController.text);
+            }
           }
 
         },
@@ -505,18 +511,59 @@ class _ReceivingPageState extends State<ReceivingPage> {
                 String lpn) async {
     int lpnCount = _getRequiredLPNCount(confirmedQuantity);
 
+    printLongLogMessage("1. lpn count: $lpnCount");
+
     // see if we are receiving single lpn or multiple lpn
     if (lpnCount == 1) {
       // if we haven't specify the UOM that we will need to track the LPN
       // or we are receiving at less than LPN uom level,
       // or we are receiving at LPN uom level but we only receive 1 LPN, then proceed with single LPN
-      _onRecevingSingleLpnConfirm(receiptLine, confirmedQuantity, lpn);
+
+      // before we will receive one LPN, we will verify if the quantity exceed
+      // the LPN's standard quantity. If so, then we will warn the user to make sure
+      // they don't accidentally input a wrong number
+      bool validateLPNQuantity = await _validateQuantityForSingleLPN(confirmedQuantity);
+      if (validateLPNQuantity) {
+        _onRecevingSingleLpnConfirm(receiptLine, confirmedQuantity, lpn);
+      }
+      else {
+        // quantity is not valid(normally it means we only need one LPN but the total
+        // quantity exceed the standard LPN's quantity
+        return;
+      }
     }
     else {
       printLongLogMessage("start to receive multiple LPNs in one transaction");
       _onRecevingMultiLpnConfirm(receiptLine, confirmedQuantity, lpn);
     }
 
+  }
+
+  Future<bool> _validateQuantityForSingleLPN(int confirmedQuantity) async {
+
+    if (_selectedItemPackageType.trackingLpnUOM == null) {
+      // the tracking LPN UOM is not defined for this item package type
+      // so no matter what's the quantity the user input, we will always
+      // take it as PASS
+      return true;
+    }
+    // if the quantity is greater than the lpn uom's quantity, warning
+    // the user to make sure it is not a typo. Since we already define the LPN
+    // uom, normally the quantity of the single LPN won't exceed the standard
+    // lpn UOM's quantity
+    if (confirmedQuantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
+      // bool continueWithExceedQuantity = await showYesNoDialog(context, "lpn validation", "lpn quantity exceed the standard quantity, continue?");
+      bool continueWithExceedQuantity = false;
+      await showYesNoDialog(context, CWMSLocalizations.of(context).lpnQuantityExceedWarningTitle, CWMSLocalizations.of(context).lpnQuantityExceedWarningMessage,
+          () => continueWithExceedQuantity = true,
+            () => continueWithExceedQuantity = false,
+      );
+      printLongLogMessage("continueWithExceedQuantity: $continueWithExceedQuantity");
+
+      return continueWithExceedQuantity;
+    }
+    // current quantity doesn't exceed the standard lpn quantity, good to go
+    return true;
   }
 
   void _onRecevingSingleLpnConfirm(ReceiptLine receiptLine, int confirmedQuantity,
@@ -526,6 +573,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     bool qcRequired = false;
 
+    printLongLogMessage("1. _onRecevingSingleLpnConfirm / showLoading");
     showLoading(context);
     // make sure the user input a valid LPN
     try {
@@ -593,10 +641,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
       // we are receiving at some higher level, see how many LPN uom we will need
       lpnCount = (totalQuantity * _selectedItemUnitOfMeasure.quantity / _selectedItemPackageType.trackingLpnUOM.quantity) as int;
     }
-    else {
+    else{
       // we are receiving at some lower level than the tracking LPN UOM,
       // no matter how many we are receiving, we will only need one lpn, we will rely on
       // the user to input the right quantity that can be done in one single lpn
+
+      // before we will receive one LPN, we will verify if the quantity exceed
+      // the LPN's standard quantity. If so, then we will warn the user to make sure
+      // they don't accidentally input a wrong number
       lpnCount = 1;
     }
     return lpnCount;
@@ -612,7 +664,19 @@ class _ReceivingPageState extends State<ReceivingPage> {
     printLongLogMessage("we will need to receive $lpnCount LPNs");
     if (lpnCount == 1) {
       // we will only need one LPN, let's just proceed with the current LPN
-      _onRecevingSingleLpnConfirm(receiptLine, confirmedQuantity, lpn);
+
+      // before we will receive one LPN, we will verify if the quantity exceed
+      // the LPN's standard quantity. If so, then we will warn the user to make sure
+      // they don't accidentally input a wrong number
+      bool validateLPNQuantity = await _validateQuantityForSingleLPN(confirmedQuantity);
+      if (validateLPNQuantity) {
+        _onRecevingSingleLpnConfirm(receiptLine, confirmedQuantity, lpn);
+      }
+      else {
+        // quantity is not valid(normally it means we only need one LPN but the total
+        // quantity exceed the standard LPN's quantity
+        return;
+      }
 
     }
     else if (lpnCount > 1) {
@@ -657,6 +721,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     bool qcRequired = false;
 
+    printLongLogMessage("2. _receiveMultipleLpns / showLoading");
     showLoading(context);
     // make sure the user input a valid LPN
     try {
@@ -746,7 +811,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     Navigator.of(context).pop();
 
     if (qcRequired == true) {
-      showWarningDialog(context, CWMSLocalizations.of(context).inventoryNeedQC);
+       showWarningDialog(context, CWMSLocalizations.of(context).inventoryNeedQC);
     }
     showToast("inventory received");
     // we will allow the user to continue receiving with the same
@@ -758,6 +823,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     // refresh the inventory on the RF
     _reloadInventoryOnRF();
+
+    _readyToConfirm = true;
 
   }
 
@@ -982,12 +1049,22 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   void _reloadInventoryOnRF() {
 
-    InventoryService.getInventoryOnCurrentRF()
-        .then((value) {
-      setState(() {
-        inventoryOnRF = value;
+    try {
+
+      InventoryService.getInventoryOnCurrentRF()
+          .then((value) {
+        setState(() {
+          inventoryOnRF = value;
+        });
       });
-    });
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
 
   }
 
@@ -1019,12 +1096,24 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // action listner handler fired before the input characters are
     // full assigned to the lpnController.
 
-    printLongLogMessage("lpn controller lost focus, its value is ${_lpnController.text}");
     if (_formKey.currentState.validate()) {
-      print("form validation passed");
-      _onRecevingConfirm(_currentReceiptLine,
-          int.parse(_quantityController.text),
-          _lpnController.text);
+      printLongLogMessage("2. form passed validation");
+      printLongLogMessage("2. _readyToConfirm? $_readyToConfirm");
+      if (_readyToConfirm == true) {
+        // set ready to confirm to fail so other trigger point
+        // won't process the receiving request
+        // the issue happens when we have 2 trigger point to process
+        // the receiving request
+        // 1. LPN blur
+        // 2. confirm button click
+        // so when we blur the LPN controller by clicking the confirm button, the
+        // _onRecevingConfirm function will be fired twice
+        printLongLogMessage("2. set _readyToConfirm to false");
+        _readyToConfirm = false;
+        _onRecevingConfirm(_currentReceiptLine,
+            int.parse(_quantityController.text),
+            _lpnController.text);
+      }
     }
 
     setState(() {

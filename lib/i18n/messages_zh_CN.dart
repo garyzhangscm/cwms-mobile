@@ -223,6 +223,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "httpError503" : MessageLookupByLibrary.simpleMessage("服务器挂了"),
     "httpError505" : MessageLookupByLibrary.simpleMessage("不支持HTTP协议请求"),
 
+    "lpnQuantityExceedWarningTitle" : MessageLookupByLibrary.simpleMessage("数量过多"),
+    "lpnQuantityExceedWarningMessage" : MessageLookupByLibrary.simpleMessage("收货数量超过了该商品标准LPN所能容纳的数量， 是否继续？"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

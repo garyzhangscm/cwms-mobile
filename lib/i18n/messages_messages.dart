@@ -230,6 +230,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "httpError503" : MessageLookupByLibrary.simpleMessage("Server is Down"),
     "httpError505" : MessageLookupByLibrary.simpleMessage("Request Method is not Support"),
 
+    "lpnQuantityExceedWarningTitle" : MessageLookupByLibrary.simpleMessage("Exceed LPN Standard Quantity"),
+    "lpnQuantityExceedWarningMessage" : MessageLookupByLibrary.simpleMessage("The quantity of inventory you are receiving exceeds the LPN standard quantity. Press Yes to continue receiving"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

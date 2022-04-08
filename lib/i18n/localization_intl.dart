@@ -232,7 +232,8 @@ class CWMSLocalizations {
   String get httpError503 => Intl.message('Server is Down', name: 'httpError503');
   String get httpError505 => Intl.message('Request Method is not Support', name: 'httpError505');
 
-
+  String get lpnQuantityExceedWarningTitle => Intl.message('Exceed LPN Standard Quantity', name: 'lpnQuantityExceedWarningTitle');
+  String get lpnQuantityExceedWarningMessage => Intl.message('The quantity of inventory you are receiving exceeds the LPN standard quantity. Press Yes to continue receiving', name: 'lpnQuantityExceedWarningMessage');
 
 
 

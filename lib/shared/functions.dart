@@ -157,7 +157,7 @@ showWarningDialog(BuildContext context, String message) {
   );
 
   // show the dialog
-  showDialog(
+   showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
       return alert;
@@ -165,6 +165,45 @@ showWarningDialog(BuildContext context, String message) {
   );
 }
 
+
+Future<bool>  showYesNoDialog(BuildContext context, String title, String message,
+    Function yesOnPressed, Function noOnPressed) {
+
+  Widget okButton = TextButton(
+    child: Text(CWMSLocalizations.of(context).yes),
+    onPressed: () {
+      yesOnPressed();
+      Navigator.of(context).pop();
+    },
+  );
+
+  Widget cancelButton = TextButton(
+    child: Text(CWMSLocalizations.of(context).cancel),
+    onPressed: () {
+      noOnPressed();
+      Navigator.of(context).pop();
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text(title),
+    content: Text(message),
+    actions: [
+      cancelButton,
+      okButton,
+
+    ],
+  );
+
+  // show the dialog
+  return showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
 
 showInformationDialog(BuildContext context, String name, Widget content,
     {

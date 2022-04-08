@@ -106,7 +106,7 @@ class ReceiptService {
         data: inventory
     );
 
-    printLongLogMessage("response from receiving: $response");
+    // printLongLogMessage("response from receiving: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
