@@ -529,6 +529,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       else {
         // quantity is not valid(normally it means we only need one LPN but the total
         // quantity exceed the standard LPN's quantity
+        _readyToConfirm = true;
         return;
       }
     }
@@ -675,6 +676,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       else {
         // quantity is not valid(normally it means we only need one LPN but the total
         // quantity exceed the standard LPN's quantity
+        _readyToConfirm = true;
         return;
       }
 
