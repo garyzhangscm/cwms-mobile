@@ -432,6 +432,21 @@ Widget buildThreeSectionInputRow(String name, Widget inputController1, Widget in
   );
 }
 
+Widget buildFourSectionRow(Widget inputController1, Widget inputController2, Widget inputController3, Widget inputController4) {
+  return Padding(
+    padding: EdgeInsets.only(top: 5, bottom: 5),
+    child:
+    // confirm the location
+    Row(
+        children: <Widget>[
+          inputController1,
+          inputController2,
+          inputController3,
+          inputController4
+        ]
+    ),
+  );
+}
 
 Future<String> uploadFile(XFile file, String url) async {
   Dio httpClient = CWMSHttpClient.getDio();

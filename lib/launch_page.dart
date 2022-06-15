@@ -10,6 +10,7 @@ import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
 import 'package:cwms_mobile/shared/models/http_response_wrapper.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
@@ -43,7 +44,14 @@ class _LaunchPageState extends State<LaunchPage> {
     CWMSSiteInformation server = Global.getAutoConnectServer();
     print("get auto connect server? ${server == null? '' : server.url}");
 
-    if (server != null) {
+    if (kDebugMode) {
+
+      // in debug mode
+      _serverURLController =  TextEditingController(
+          text: 'http://k8s-staging-zuulserv-707034e5d3-1987547217.us-west-1.elb.amazonaws.com/api/');
+      _autoConnect = true;
+    }
+    else if (server != null) {
 
       // _serverURLController =  TextEditingController(text: server.url);
       _serverURLController =  TextEditingController(text: server.url);
@@ -55,8 +63,6 @@ class _LaunchPageState extends State<LaunchPage> {
       _serverURLController =  TextEditingController(text: 'http://10.0.10.37:32262/api/');
       _autoConnect = true;
     }
-
-
   }
 
 

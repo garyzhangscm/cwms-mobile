@@ -43,7 +43,10 @@ import 'launch_page.dart';
 import 'menus.dart';
 import 'outbound/routes/pick.dart';
 
+import 'package:flutter/rendering.dart';
+
 void main() {
+  // debugPaintSizeEnabled = true;
   Global.init().then((e) => runApp(MyApp()));
 }
 

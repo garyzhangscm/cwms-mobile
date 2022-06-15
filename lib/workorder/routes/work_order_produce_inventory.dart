@@ -1,4 +1,5 @@
 
+import 'package:cwms_mobile/common/models/unit_of_measure.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
@@ -56,10 +57,13 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   BillOfMaterial _matchedBillOfMaterial;
   FocusNode lpnFocusNode = FocusNode();
+  FocusNode _lpnControllerFocusNode = FocusNode();
   FocusNode quantityFocusNode = FocusNode();
   bool _readyToConfirm = true; // whether we can confirm the produced inventory
 
 
+  // we will force the user to receive by LPN quantity
+  bool _forceLPNReceiving = true;
 
   @override
   void initState() {
@@ -208,6 +212,92 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                   )
                   ),
                */
+              Container(
+                color: _forceLPNReceiving ? Colors.black26 : Colors.transparent,
+                child:
+                    buildFourSectionRow(
+                      Checkbox(
+                          value: !_forceLPNReceiving,
+                          onChanged: (bool value) {
+                            setState(() {
+                              _forceLPNReceiving = !value;
+                            });
+                          },
+                      ),
+                      Expanded (
+                        child: Text(CWMSLocalizations.of(context).producingQuantity + ": ", textAlign: TextAlign.left ),
+                      ),
+                      _forceLPNReceiving ?
+                        SizedBox(
+                            width: 20,
+                            child: Text("1", textAlign: TextAlign.left )
+                        )
+                            :
+                        SizedBox(
+                          height: 20,
+                          width: 80,
+                          child:
+                              TextFormField(
+                                  keyboardType: TextInputType.number,
+                                  controller: _quantityController,
+
+                                  enabled: _forceLPNReceiving ? false : true,
+                                  textInputAction: TextInputAction.next,
+                                  autofocus: _forceLPNReceiving ? false : true,
+                                  focusNode: quantityFocusNode,
+                                  onFieldSubmitted: (v){
+                                    printLongLogMessage("start to focus on lpn node");
+                                    _lpnControllerFocusNode.requestFocus();
+
+                                  },
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    fillColor: _forceLPNReceiving ? Colors.black12 : Colors.white,
+                                    filled: true,
+                                  ),
+                                  // 校验ITEM NUMBER（不能为空）
+                                  validator: (v) {
+                                    if (v.trim().isEmpty) {
+                                      return "please type in quantity";
+                                    }
+                                    return null;
+                                  }),
+                      ),
+                      _getItemUnitOfMeasures().isEmpty ?
+                        Container() :
+                        _forceLPNReceiving ?
+                          SizedBox(
+                              width: 20,
+                              child:
+                                Text(_getLPNUOMName(), textAlign: TextAlign.left )
+                          )
+                            :
+                          SizedBox(
+                            height: 38,
+                            width: 40,
+                            child:
+                                    DropdownButton(
+
+                                      hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                                      items: _getItemUnitOfMeasures(),
+                                      value: _selectedItemUnitOfMeasure,
+                                      elevation: 16,
+                                      icon: const Icon(Icons.arrow_downward),
+                                      underline: Container(
+                                        height: 0,
+                                        color: Colors.deepPurpleAccent,
+                                      ),
+                                      onChanged: (T) {
+                                        //下拉菜单item点击之后的回调
+                                        setState(() {
+                                          _selectedItemUnitOfMeasure = T;
+                                        });
+                                      },
+                                    )
+                        )
+                    )
+              ),
+              /*
               buildThreeSectionInputRow(
                 CWMSLocalizations.of(context).producingQuantity,
                 TextFormField(
@@ -252,7 +342,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                   )
 
 
-              ),
+              ),*/
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).lpn,
                 Focus(
@@ -261,7 +351,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                       focusNode: lpnFocusNode,
                       onKey: (event) {
 
-                        // printLongLogMessage("user pressed : ${event.logicalKey}");
                         if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
                           // Do something
 
@@ -278,10 +367,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                         SystemControllerNumberTextBox(
                             type: "lpn",
                             controller: _lpnController,
+                            focusNode: _lpnControllerFocusNode,
                             readOnly: false,
                             showKeyboard: false,
                             validator: (v) {
-                              if (v.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
+                              if (v.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity) == 1) {
                                 return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
                               }
 
@@ -303,7 +393,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   Widget _buildButtons(BuildContext context) {
     return buildSingleButtonRow(context,
       ElevatedButton(
-        onPressed: () {
+        onPressed: !_readyToConfirm ? null : () {
           printLongLogMessage("confirm button click!");
           print("1. _formKey.currentState.validate()? ${_formKey.currentState.validate()}");
           if (_formKey.currentState.validate()) {
@@ -313,12 +403,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               _readyToConfirm = false;
               print("1. form validation passed");
               print("1. set _readyToConfirm to false");
-              _onWorkOrderProduceConfirm(_currentWorkOrder,
-                  int.parse(_quantityController.text),
-                  _lpnController.text);
+              _onWorkOrderProduceConfirm();
             }
           }
-
         },
         child: Text(CWMSLocalizations
             .of(context)
@@ -328,6 +415,24 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   }
 
+  String _getLPNUOMName() {
+
+    ItemUnitOfMeasure lpnUOM = _getLPNUOM();
+    if ( lpnUOM == null) {
+      return "";
+    }
+    return lpnUOM.unitOfMeasure.name;
+
+  }
+  ItemUnitOfMeasure _getLPNUOM() {
+
+    if ( _selectedItemPackageType == null || _selectedItemPackageType.itemUnitOfMeasures == null ||
+        _selectedItemPackageType.itemUnitOfMeasures.length == 0 || _selectedItemPackageType.trackingLpnUOM == null) {
+      return null;
+    }
+    return _selectedItemPackageType.trackingLpnUOM;
+
+  }
   List<DropdownMenuItem> _getItemUnitOfMeasures() {
     List<DropdownMenuItem> items = [];
 
@@ -527,7 +632,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // enter in the LPN controller. In either case, we will need to make sure
     // the lpn doesn't have focus before we start confirm
 
-    // printLongLogMessage("Start to confirm work order produced inventory, tryTime = $tryTime}");
+    printLongLogMessage("_enterOnLPNController: Start to confirm work order produced inventory, tryTime = $tryTime");
     if (tryTime <= 0) {
       // do nothing as we run out of try time
 
@@ -537,6 +642,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       });
       return;
     }
+    printLongLogMessage("_enterOnLPNController / lpnFocusNode.hasFocus:   ${lpnFocusNode.hasFocus}");
     if (lpnFocusNode.hasFocus) {
       // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
       Future.delayed(const Duration(milliseconds: 100),
@@ -554,7 +660,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     if (_formKey.currentState.validate()) {
       printLongLogMessage("2. form passed validation");
       printLongLogMessage("2. _readyToConfirm? $_readyToConfirm");
-      if (_readyToConfirm == true) {
         // set ready to confirm to fail so other trigger point
         // won't process the receiving request
         // the issue happens when we have 2 trigger point to process
@@ -565,10 +670,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         // _onRecevingConfirm function will be fired twice
         printLongLogMessage("2. set _readyToConfirm to false");
         _readyToConfirm = false;
-        _onWorkOrderProduceConfirm(_currentWorkOrder,
-            int.parse(_quantityController.text),
-            _lpnController.text);
-      }
+        _onWorkOrderProduceConfirm();
     }
 
 
@@ -579,9 +681,51 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   }
 
-  void _onWorkOrderProduceConfirm(WorkOrder workOrder, int confirmedQuantity,
+  void _onWorkOrderProduceConfirm() async {
+
+    // the user start to confirm receiving from the work order
+    // let's calculate the quantity first
+
+    int inventoryQuantity = 0;
+
+    if (_forceLPNReceiving) {
+
+      // if we force the user to receiving by LPN, then default the
+      // receiving quantity to one LPN UOM's quantity
+      ItemUnitOfMeasure lpnUOM = _getLPNUOM();
+      if (lpnUOM == null) {
+
+        showErrorDialog(context, "LPN UOM is not setup for the item. please specify the quantity");
+        // reset ready to confirm flag so the operators can confirm the produce again
+        _readyToConfirm = true;
+        return;
+
+      }
+      printLongLogMessage("lpnUOM: ${lpnUOM.unitOfMeasure.name}, quantity: ${lpnUOM.quantity}");
+      inventoryQuantity = lpnUOM.quantity;
+    }
+    else {
+      inventoryQuantity = int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity;
+    }
+
+
+    try {
+
+      _confirmWorkOrderProduce(_currentWorkOrder,
+          inventoryQuantity,
+          _lpnController.text);
+    }
+    finally {
+
+      _lpnControllerFocusNode.requestFocus();
+      // reset ready to confirm flag so the operators can confirm the produce again
+      _readyToConfirm = true;
+    }
+  }
+  void _confirmWorkOrderProduce(WorkOrder workOrder, int inventoryQuantity,
       String lpn ) async {
 
+    printLongLogMessage("_onWorkOrderProduceConfirm");
     if (lpn.isNotEmpty) {
       showLoading(context);
       // first of all, validate the LPN
@@ -590,6 +734,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         if (!validLpn) {
           Navigator.of(context).pop();
           showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+
           return;
         }
         printLongLogMessage("LPN ${lpn} passed the validation");
@@ -604,7 +749,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       Navigator.of(context).pop();
     }
 
-    int lpnCount = _getRequiredLPNCount(confirmedQuantity);
+    printLongLogMessage("_forceLPNReceiving: $_forceLPNReceiving");
+
+
+    int lpnCount = _getRequiredLPNCount(inventoryQuantity);
 
     // see if we are receiving single lpn or multiple lpn
     if (lpnCount == 1) {
@@ -616,9 +764,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       // before we will receive one LPN, we will verify if the quantity exceed
       // the LPN's standard quantity. If so, then we will warn the user to make sure
       // they don't accidentally input a wrong number
-      bool validateLPNQuantity = await _validateQuantityForSingleLPN(confirmedQuantity);
+      bool validateLPNQuantity = await _validateQuantityForSingleLPN(inventoryQuantity);
       if (validateLPNQuantity) {
-        _onWorkOrderProduceSingleLPNConfirm(workOrder, confirmedQuantity, lpn);
+        _onWorkOrderProduceSingleLPNConfirm(workOrder, inventoryQuantity, lpn);
       }
       else {
         // quantity is not valid(normally it means we only need one LPN but the total
@@ -628,11 +776,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       }
     }
     else {
-      _onWorkOrderProduceMiltipleLPNConfirm(workOrder, confirmedQuantity, lpn);
+      _onWorkOrderProduceMiltipleLPNConfirm(workOrder, inventoryQuantity, lpn);
     }
   }
 
-  Future<bool> _validateQuantityForSingleLPN(int confirmedQuantity) async {
+  Future<bool> _validateQuantityForSingleLPN(int inventoryQuantity) async {
 
     if (_selectedItemPackageType.trackingLpnUOM == null) {
       // the tracking LPN UOM is not defined for this item package type
@@ -644,14 +792,13 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // the user to make sure it is not a typo. Since we already define the LPN
     // uom, normally the quantity of the single LPN won't exceed the standard
     // lpn UOM's quantity
-    if (confirmedQuantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
+    if (inventoryQuantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
       // bool continueWithExceedQuantity = await showYesNoDialog(context, "lpn validation", "lpn quantity exceed the standard quantity, continue?");
       bool continueWithExceedQuantity = false;
       await showYesNoDialog(context, CWMSLocalizations.of(context).lpnQuantityExceedWarningTitle, CWMSLocalizations.of(context).lpnQuantityExceedWarningMessage,
             () => continueWithExceedQuantity = true,
             () => continueWithExceedQuantity = false,
       );
-      printLongLogMessage("continueWithExceedQuantity: $continueWithExceedQuantity");
 
       return continueWithExceedQuantity;
     }
@@ -659,7 +806,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     return true;
   }
 
-  void _onWorkOrderProduceSingleLPNConfirm(WorkOrder workOrder, int confirmedQuantity,
+  void _onWorkOrderProduceSingleLPNConfirm(WorkOrder workOrder, int inventoryQuantity,
       String lpn ) async {
 
     showLoading(context);
@@ -670,24 +817,24 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       if (!validLpn) {
         Navigator.of(context).pop();
         showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+        _lpnControllerFocusNode.requestFocus();
         return;
       }
-      printLongLogMessage("LPN ${lpn} passed the validation");
+
     }
     on CWMSHttpException catch(ex) {
 
       Navigator.of(context).pop();
       showErrorDialog(context, "${ex.code} - ${ex.message}");
+      _lpnControllerFocusNode.requestFocus();
       return;
 
     }
 
-    printLongLogMessage("Start to prepare the work order produce transaction");
-
     WorkOrderProduceTransaction workOrderProduceTransaction =
         generateWorkOrderProduceTransaction(
-            _lpnController.text, _selectedInventoryStatus,
-            _selectedItemPackageType, confirmedQuantity * _selectedItemUnitOfMeasure.quantity
+            lpn, _selectedInventoryStatus,
+            _selectedItemPackageType, inventoryQuantity
         );
 
     try {
@@ -699,13 +846,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
       Navigator.of(context).pop();
       showErrorDialog(context, ex.errMsg());
+      _lpnControllerFocusNode.requestFocus();
       return;
 
     }
 
-    print("inventory produced!");
-   //  printLongLogMessage("start to print lpn label: $lpn, findPrinterBy: ${workOrderProduceTransaction.productionLine.name}");
-    // InventoryService.printLPNLabel(lpn, workOrderProduceTransaction.productionLine.name);
 
     Navigator.of(context).pop();
     _refreshScreenAfterProducing();
@@ -713,22 +858,22 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   }
 
-  _onWorkOrderProduceMiltipleLPNConfirm(WorkOrder workOrder, int confirmedQuantity,
+  _onWorkOrderProduceMiltipleLPNConfirm(WorkOrder workOrder, int inventoryQuantity,
       String lpn ) async {
 
     // let's see how many LPNs we will need
-    int lpnCount = _getRequiredLPNCount(confirmedQuantity);
+    int lpnCount = _getRequiredLPNCount(inventoryQuantity);
 
-    printLongLogMessage("we will need to produce $lpnCount LPNs");
+
     if (lpnCount == 1) {
 
 
       // before we will receive one LPN, we will verify if the quantity exceed
       // the LPN's standard quantity. If so, then we will warn the user to make sure
       // they don't accidentally input a wrong number
-      bool validateLPNQuantity = await _validateQuantityForSingleLPN(confirmedQuantity);
+      bool validateLPNQuantity = await _validateQuantityForSingleLPN(inventoryQuantity);
       if (validateLPNQuantity) {
-        _onWorkOrderProduceSingleLPNConfirm(workOrder, confirmedQuantity, lpn);
+        _onWorkOrderProduceSingleLPNConfirm(workOrder, inventoryQuantity, lpn);
       }
       else {
         // quantity is not valid(normally it means we only need one LPN but the total
@@ -870,9 +1015,12 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     _lpnController.clear();
     // default the quantity to 1
     _quantityController.text = "1";
-    lpnFocusNode.requestFocus();
+    _lpnControllerFocusNode.requestFocus();
+    // FocusScope.of(context).requestFocus(lpnFocusNode);
+    printLongLogMessage("start to forcue on the LPN node");
 
     _readyToConfirm = true;
+
 
   }
 
@@ -882,7 +1030,13 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   // the UOM that the user select
   int _getRequiredLPNCount(int totalQuantity) {
 
+    // if the user choose force LPN receiving, then
+    // we will default to receive by 1 LPN uom
+    if (_forceLPNReceiving) {
+      return 1;
+    }
     printLongLogMessage("start to get required lpn quantity with total quantity $totalQuantity");
+    printLongLogMessage("_selectedItemPackageType.trackingLpnUOM.quantity is ${_selectedItemPackageType.trackingLpnUOM.quantity}");
     int lpnCount = 0;
 
     if (_selectedItemPackageType.trackingLpnUOM == null) {
@@ -890,13 +1044,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       // how to calculate how many LPNs we may need based on the UOM and quantity
       lpnCount = 1;
     }
-    else if (_selectedItemUnitOfMeasure.quantity == _selectedItemPackageType.trackingLpnUOM.quantity) {
+    else if (_selectedItemUnitOfMeasure.quantity >= _selectedItemPackageType.trackingLpnUOM.quantity) {
       // we are receiving at LPN uom level, then see what's the quantity the user specify
-      lpnCount = totalQuantity;
-    }
-    else if (_selectedItemUnitOfMeasure.quantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
-      // we are receiving at some higher level, see how many LPN uom we will need
-      lpnCount = (totalQuantity * _selectedItemUnitOfMeasure.quantity / _selectedItemPackageType.trackingLpnUOM.quantity) as int;
+      lpnCount = totalQuantity ~/ _selectedItemPackageType.trackingLpnUOM.quantity;
     }
     else {
       // we are receiving at some lower level than the tracking LPN UOM,
