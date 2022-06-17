@@ -22,6 +22,10 @@ WorkOrder _$WorkOrderFromJson(Map<String, dynamic> json) {
         ?.map(
             (e) => e == null ? null : WorkOrderLine.fromJson(e as Map<String, dynamic>))
         ?.toList()
+    ..productionLineAssignments = (json['productionLineAssignments'] as List)
+        ?.map(
+            (e) => e == null ? null : ProductionLineAssignment.fromJson(e as Map<String, dynamic>))
+        ?.toList()
     ..status =  EnumToString.fromString(WorkOrderStatus.values, json['status'] as String)
     ..expectedQuantity = json['expectedQuantity'] as int
     ..producedQuantity = json['producedQuantity'] as int
@@ -56,4 +60,5 @@ Map<String, dynamic> _$WorkOrderToJson(WorkOrder instance) => <String, dynamic>{
   'materialConsumeTiming': instance.materialConsumeTiming == null ? null : EnumToString.convertToString(instance.materialConsumeTiming),
   'consumeByBomOnly': instance.consumeByBomOnly,
   'consumeByBom': instance.consumeByBom,
+  'productionLineAssignments': instance.productionLineAssignments,
 };

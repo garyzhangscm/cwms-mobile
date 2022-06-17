@@ -15,6 +15,7 @@ import 'package:cwms_mobile/states/profile_change_notifier.dart';
 import 'package:cwms_mobile/workorder/routes/pick_by_work_order.dart';
 import 'package:cwms_mobile/workorder/routes/production_line_check_in.dart';
 import 'package:cwms_mobile/workorder/routes/production_line_check_out.dart';
+import 'package:cwms_mobile/workorder/routes/work_order_manual_pick.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_inventory.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_kpi.dart';
@@ -140,6 +141,7 @@ class MyApp extends StatelessWidget {
               "lpn_capture":(context) => LpnCapturePage(),
               "work_order_qc_sampling":(context) => WorkOrderQCSamplingPage(),
               "item_sampling":(context) => ItemSamplingPage(),
+              "work_order_manual_pick":(context) => WorkOrderManualPickPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },
