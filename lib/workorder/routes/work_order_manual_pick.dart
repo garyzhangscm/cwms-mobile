@@ -174,11 +174,20 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     showLoading(context);
     _currentWorkOrder = await WorkOrderService.getWorkOrderByNumber(_workOrderNumberController.text);
 
+
+    Navigator.of(context).pop();
+    // make sure the work order already have production line assigned
+    if(_currentWorkOrder.productionLineAssignments.isEmpty) {
+
+      showErrorDialog(context, "Work order " + _currentWorkOrder.number + " doesn't have any production line assigned yet");
+      _currentWorkOrder = null;
+      return;
+    }
+
+    _lpnController.text = "";
     setState(()  {
       _currentWorkOrder;
     });
-
-    Navigator.of(context).pop();
   }
 
   Widget _buildProductionLineAssignmentSelection(BuildContext context) {
@@ -299,8 +308,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     // action listner handler fired before the input characters are
     // full assigned to the lpnController.
 
-      printLongLogMessage("2. form passed validation");
-      printLongLogMessage("2. _readyToConfirm? $_readyToConfirm");
+    printLongLogMessage("2. form passed validation");
+    printLongLogMessage("2. _readyToConfirm? $_readyToConfirm");
       // set ready to confirm to fail so other trigger point
       // won't process the receiving request
       // the issue happens when we have 2 trigger point to process
@@ -311,6 +320,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       // _onRecevingConfirm function will be fired twice
       printLongLogMessage("2. set _readyToConfirm to false");
       _readyToConfirm = false;
+
+    // check if we can fully pick from the LPN
       _onWorkOrderMaualPickConfirm();
 
 
@@ -364,13 +375,64 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       showErrorDialog(context, "please select a production line");
       return;
     }
+
+    //verify if we can pick full quantity from the LPN or partial quantity
+
+    showLoading(context);
+    bool continuePicking = true;
+
+    try {
+      List<Inventory> inventories = await InventoryService.findInventory(lpn: _lpnController.text);
+
+      // check the quantity we can pick from the invenotry
+      int pickableQuantity = await WorkOrderService.getPickableQuantityForManualPick(
+          _currentWorkOrder.id, _lpnController.text,
+          _selectedProductionLineAssignment.productionLine.id
+      );
+
+      // check the total quantity of the LPN
+      int inventoryQuantity =  inventories.fold(0, (previous, current) => previous + current.quantity);
+
+
+      if (pickableQuantity < inventoryQuantity) {
+
+        // ok, we will need to inform the user that it will be a partial pick
+        await showYesNoDialog(context, "partial pick",
+            "The LPN has quantity of $inventoryQuantity but the work order only requires $pickableQuantity, do you want to continue with a partial pick? ",
+                () =>  continuePicking = true, // the user press Yes, continue with partial quantity
+                ()  => continuePicking = false);
+      }
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+
+    Navigator.of(context).pop();
+    if (!continuePicking) {
+      return;
+    }
+
+
     showLoading(context);
     try {
-      await WorkOrderService.processManualPick(
+      List<Pick> picks = await WorkOrderService.generateManualPick(
           _currentWorkOrder.id, _lpnController.text,
           _selectedProductionLineAssignment.productionLine.id
 
       );
+      printLongLogMessage("get ${picks.length} by generating manual pick for the work order ${_currentWorkOrder.number}");
+
+      // let's finish each pick one by one
+      for(var i = 0; i < picks.length; i++){
+
+        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity - picks[i].pickedQuantity}");
+        await PickService.confirmPick(
+            picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text);
+      }
     }
     on WebAPICallException catch(ex) {
 

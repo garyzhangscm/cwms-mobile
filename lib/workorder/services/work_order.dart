@@ -133,13 +133,42 @@ class WorkOrderService {
   }
 
 
+  static Future<List<Pick>> generateManualPick(
+      int workOrderId, String lpn, int productionLineId
+      ) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "workorder/work-orders/${workOrderId}/generate-manual-pick",
+        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+          "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
+    );
+
+    printLongLogMessage("response from generateManualPick: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    // List<dynamic> responseData = responseString["data"];
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    List<Pick> picks
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+    print("get ${picks.length} picks by manual picking for work order $workOrderId, lpn: $lpn");
+
+    return picks;
+
+  }
   static Future<List<Pick>> processManualPick(
       int workOrderId, String lpn, int productionLineId
       ) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.post(
-        "workorder/${workOrderId}/process-manual-pick",
+        "workorder/work-orders/${workOrderId}/process-manual-pick",
         queryParameters: {"warehouseId": Global.currentWarehouse.id,
           "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
     );
@@ -163,6 +192,33 @@ class WorkOrderService {
 
   }
 
+
+  static Future<int> getPickableQuantityForManualPick(
+      int workOrderId, String lpn, int productionLineId
+      ) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "workorder/work-orders/${workOrderId}/get-manual-pick-quantity",
+        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+          "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
+    );
+
+    printLongLogMessage("response from getPickableQuantityForManualPick: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    // List<dynamic> responseData = responseString["data"];
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    int pickableQuantity
+    = (responseString["data"] as int);
+
+
+    return pickableQuantity;
+
+  }
 }
 
 
