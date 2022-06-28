@@ -16,8 +16,11 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
+import 'package:cwms_mobile/workorder/models/production_line.dart';
 import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
+import 'package:cwms_mobile/workorder/services/production_line.dart';
+import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:cwms_mobile/workorder/widgets/work_order_list_item.dart';
 import 'package:flutter/cupertino.dart';
@@ -44,12 +47,18 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   FocusNode _workOrderNumberFocusNode = FocusNode();
   FocusNode _workOrderNumberControllerFocusNode = FocusNode();
 
+
+  TextEditingController _productionLineController = new TextEditingController();
+  FocusNode _productionLineFocusNode = FocusNode();
+  FocusNode _productionLineControllerFocusNode = FocusNode();
+
   GlobalKey _formKey = new GlobalKey<FormState>();
 
   WorkOrder _currentWorkOrder;
   // list all the production line that assigned to this work order
   List<ProductionLineAssignment> _productionLineAssignment;
   ProductionLineAssignment _selectedProductionLineAssignment;
+  ProductionLine _scannedProductionLine;
 
   bool _readyToConfirm = true;
 
@@ -65,6 +74,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     super.initState();
 
     _currentWorkOrder = null;
+    _scannedProductionLine = null;
     inventoryOnRF = <Inventory>[];
 
     _reloadInventoryOnRF();
@@ -82,8 +92,12 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
               // input controller for work order number
               _buildWorkOrderNumberInput(context),
-              // dropdown list to select production line
-              _currentWorkOrder == null ? Container() : _buildProductionLineAssignmentSelection(context),
+              // If the user start with a work order, show the dropdown list to select production line
+              // if the user start with a production line, show a text box
+
+              _currentWorkOrder == null || _scannedProductionLine != null ?
+                  _buildProductionLineTextBox(context) :
+                  _buildProductionLineAssignmentSelection(context),
               // allow user to scan in LPN
               _currentWorkOrder == null ? Container() : _buildLPNInput(context),
               // allow user to input LPN
@@ -99,6 +113,13 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
               CWMSLocalizations.of(context).workOrderNumber,
               _getWorkOrderInputWidget(context));
   }
+  Widget _buildProductionLineTextBox(BuildContext context) {
+    return buildTwoSectionInputRow(
+        CWMSLocalizations.of(context).productionLine,
+        _getProductionLineInputWidget(context));
+  }
+
+
 
   Widget _getWorkOrderInputWidget(BuildContext context) {
     return
@@ -121,6 +142,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                   showCursor: true,
                   autofocus: true,
                   focusNode: _workOrderNumberControllerFocusNode,
+
                   decoration: InputDecoration(
                   suffixIcon:
                     Row(
@@ -142,11 +164,56 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
   }
 
+
+  Widget _getProductionLineInputWidget(BuildContext context) {
+    return
+      Focus(
+          child:
+          RawKeyboardListener(
+              focusNode: _productionLineFocusNode,
+              onKey: (event) {
+
+                if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                  // Do something
+
+
+                  _enterOnProductionLineController(10);
+                }
+              },
+              child:
+              TextFormField(
+                  controller: _productionLineController,
+                  showCursor: true,
+                  autofocus: true,
+                  focusNode: _productionLineControllerFocusNode,
+                  decoration: InputDecoration(
+                    suffixIcon:
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                      mainAxisSize: MainAxisSize.min, // added line
+                      children: <Widget>[
+                        IconButton(
+                          onPressed: () => _clearField(),
+                          icon: Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                  )
+
+              )
+          )
+      );
+
+
+  }
+
   _clearField() {
     _workOrderNumberController.text = "";
+    _productionLineController.text = "";
     _workOrderNumberControllerFocusNode.requestFocus();
     setState(() {
       _currentWorkOrder = null;
+      _scannedProductionLine = null;
     });
   }
 
@@ -162,7 +229,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       // do nothing as we run out of try time
       return;
     }
-    printLongLogMessage("_enterOnWorkOrderController / _workOrderNumberFocusNode.hasFocus:   ${_workOrderNumberFocusNode.hasFocus}");
+    printLongLogMessage("_enterOnWorkOrderController / _workOrderNumberControllerFocusNode.hasFocus:   ${_workOrderNumberControllerFocusNode.hasFocus}");
     if (_workOrderNumberControllerFocusNode.hasFocus) {
       // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
       Future.delayed(const Duration(milliseconds: 100),
@@ -190,6 +257,97 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     });
   }
 
+  void _enterOnProductionLineController(int tryTime) async {
+
+    printLongLogMessage("_enterOnProductionLineController");
+    // if the user input an empty work order number, then clear the page
+    if (_productionLineController.text.isEmpty) {
+      _clearField();
+      return;
+    }
+    printLongLogMessage("_enterOnProductionLineController: Start to get production line information, tryTime = $tryTime");
+    if (tryTime <= 0) {
+      // do nothing as we run out of try time
+      return;
+    }
+    printLongLogMessage("_enterOnWorkOrderController / _productionLineControllerFocusNode.hasFocus:   ${_productionLineControllerFocusNode.hasFocus}");
+    if (_productionLineControllerFocusNode.hasFocus) {
+      // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
+      Future.delayed(const Duration(milliseconds: 100),
+              () => _enterOnProductionLineController(tryTime - 1));
+
+      return;
+
+    }
+    showLoading(context);
+
+
+    try {
+      _scannedProductionLine =
+          await ProductionLineService.getProductionLineByNumber(_productionLineController.text);
+
+    }
+    on WebAPICallException catch(ex) {
+      Navigator.of(context).pop();
+      showErrorDialog(context, "can't find production line by name ${_productionLineController.text}");
+      return;
+    }
+
+    printLongLogMessage("get production line: ${_scannedProductionLine.name}");
+    try {
+      _currentWorkOrder = await _getAssignedWorkOrder(_scannedProductionLine);
+
+    }
+    on WebAPICallException catch(ex) {
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+    }
+
+    printLongLogMessage("get work order: ${_currentWorkOrder.number}");
+    _workOrderNumberController.text = _currentWorkOrder.number;
+    Navigator.of(context).pop();
+
+    _lpnController.text = "";
+    setState(()  {
+      _currentWorkOrder;
+      _scannedProductionLine;
+    });
+  }
+
+  Future<WorkOrder> _getAssignedWorkOrder(ProductionLine productionLine) async {
+
+    WorkOrder assignedWorkOrder;
+    List<WorkOrder> workOrders =
+    await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
+
+    printLongLogMessage("workOrders.length: ${workOrders.length}");
+    if (workOrders.length == 0) {
+      // we should only have one work order that assigned to the specific production line
+      // at a time
+      throw new WebAPICallException(
+          "Can't find any work order that assigned to the production line ${productionLine.name}"
+      );
+
+    }
+    else if (workOrders.length == 1 ){
+      assignedWorkOrder = workOrders[0];
+    }
+    // we found multiple work order that assigned to the production line, make sure
+    // the user specify the work order number as well
+    else if (_workOrderNumberController.text.isEmpty) {
+      throw new WebAPICallException(
+          "multiple work orders found. please specify the work order number as well"
+      );
+    }
+    else {
+      // see if the work order number specified by the user matches any of the work order that
+      // assigned to the production
+      assignedWorkOrder = workOrders.firstWhere((workOrder) => _workOrderNumberController.text == workOrder.number);
+    }
+    return assignedWorkOrder;
+  }
+
   Widget _buildProductionLineAssignmentSelection(BuildContext context) {
     return buildTwoSectionInputRow(
         CWMSLocalizations.of(context).productionLine,
@@ -213,8 +371,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     );
   }
 
-  List<DropdownMenuItem> _getProductionLineAssignmentItems() {
+  List<DropdownMenuItem> _getProductionLineAssignmentItems()  {
     List<DropdownMenuItem> items = [];
+
     if (_currentWorkOrder.productionLineAssignments == null || _currentWorkOrder.productionLineAssignments.length == 0) {
       return items;
     }
@@ -371,7 +530,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     }
 
     // make sure the user select a production line
-    if (_selectedProductionLineAssignment == null) {
+    if (_scannedProductionLine == null &&  _selectedProductionLineAssignment == null) {
       showErrorDialog(context, "please select a production line");
       return;
     }
@@ -381,13 +540,16 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     showLoading(context);
     bool continuePicking = true;
 
+    ProductionLine productionLine = _scannedProductionLine == null ?
+        _selectedProductionLineAssignment.productionLine : _scannedProductionLine;
+
     try {
       List<Inventory> inventories = await InventoryService.findInventory(lpn: _lpnController.text);
 
       // check the quantity we can pick from the invenotry
       int pickableQuantity = await WorkOrderService.getPickableQuantityForManualPick(
           _currentWorkOrder.id, _lpnController.text,
-          _selectedProductionLineAssignment.productionLine.id
+          productionLine.id
       );
 
       // check the total quantity of the LPN
@@ -421,7 +583,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     try {
       List<Pick> picks = await WorkOrderService.generateManualPick(
           _currentWorkOrder.id, _lpnController.text,
-          _selectedProductionLineAssignment.productionLine.id
+          productionLine.id
 
       );
       printLongLogMessage("get ${picks.length} by generating manual pick for the work order ${_currentWorkOrder.number}");
