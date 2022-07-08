@@ -251,6 +251,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "userName" : MessageLookupByLibrary.simpleMessage("User Name"),
     "userNameOrPasswordWrong" : MessageLookupByLibrary.simpleMessage("User name or password is not correct!"),
     "userNameRequired" : MessageLookupByLibrary.simpleMessage("User name required!"),
-    "yes" : MessageLookupByLibrary.simpleMessage("yes")
+    "yes" : MessageLookupByLibrary.simpleMessage("yes"),
+    "no" : MessageLookupByLibrary.simpleMessage("no")
   };
 }

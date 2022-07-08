@@ -27,7 +27,7 @@ class BillOfMaterial{
   Item item;
   int itemId;
 
-  int expectedQuantity;
+  double expectedQuantity;
 
   int warehouseId;
   Warehouse warehouse;

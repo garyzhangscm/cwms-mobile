@@ -20,7 +20,7 @@ BillOfMaterial _$BillOfMaterialFromJson(Map<String, dynamic> json) {
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
     ..itemId = json['itemId'] as int
-    ..expectedQuantity = json['expectedQuantity'] as int
+    ..expectedQuantity = json['expectedQuantity'] as double
     ..warehouse = json['warehouse'] == null
         ? null
         : Warehouse.fromJson(json['warehouse'] as Map<String, dynamic>)

@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/auth/services/login.dart';
@@ -8,7 +7,6 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/rf_app_version.dart';
 import 'package:cwms_mobile/shared/services/rf_app_version.dart';
-import 'package:cwms_mobile/warehouse_layout/models/company.dart';
 
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
@@ -69,7 +67,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
 
-    _companyCodeController.text = Global.lastLoginCompanyCode;
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).login)),
@@ -277,6 +274,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
           selectedWarehouse = Global.getAutoLoginWarehouse();
           _rfCodeController.text = Global.getLastLoginRFCode();
+
           _companyCodeController.text = Global.getAutoLoginCompany().code;
           _unameController.text = user.username;
           _pwdController.text = user.password;

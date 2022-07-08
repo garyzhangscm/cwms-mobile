@@ -20,7 +20,7 @@ class WarehouseLocationService {
 
     Response response = await httpClient.get(
         "/layout/locations",
-        queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+        queryParameters: {'warehouseId': Global.currentWarehouse.id,
           'name': locationName}
     );
 

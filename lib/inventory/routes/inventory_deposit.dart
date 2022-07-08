@@ -10,6 +10,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -35,6 +36,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   final  _formKey = GlobalKey<FormState>();
   FocusNode _locationFocusNode = FocusNode();
+  FocusNode _lpnFocusNode = FocusNode();
+  FocusNode _lpnControllerFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -44,11 +47,30 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     inventoryOnRF = new List<Inventory>();
 
     _locationFocusNode.addListener(() {
-      print("_locationFocusNode.hasFocus: ${_locationFocusNode.hasFocus}");
-      print("_locationFocusNode.text: ${_locationController.text}");
       if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
         _onDepositConfirm(inventoryDepositRequest);
+
+      }
+    });
+
+    _lpnFocusNode.addListener(() {
+      print("_lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
+      if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+
+        setState(() {
+
+          inventoryDepositRequest = _getNextInventoryToDeposit(_lpnController.text);
+          if (inventoryDepositRequest == null) {
+            showErrorDialog(context, "can't find inventory with lpn ${_lpnController.text} to deposit");
+
+          }
+          else {
+            // move focus to the location
+            _locationFocusNode.requestFocus();
+          }
+        });
 
       }
     });
@@ -118,23 +140,23 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
               _buildLPNScanner(context),
               buildTwoSectionInformationRow(
                   "Item:",
-                inventoryDepositRequest.itemName,
+                inventoryDepositRequest == null ? "" : inventoryDepositRequest.itemName,
               ),
               buildTwoSectionInformationRow(
                 "Item:",
-                inventoryDepositRequest.itemDescription,
+                inventoryDepositRequest == null ? "" : inventoryDepositRequest.itemDescription,
               ),
               buildTwoSectionInformationRow(
                 "Inventory Status:",
-                inventoryDepositRequest.inventoryStatusDescription,
+                inventoryDepositRequest == null ? "" : inventoryDepositRequest.inventoryStatusDescription,
               ),
               buildTwoSectionInformationRow(
                 "Quantity:",
-                  inventoryDepositRequest.quantity.toString()
+                  inventoryDepositRequest == null ? "" :  inventoryDepositRequest.quantity.toString()
               ),
               buildTwoSectionInformationRow(
                 "Location:",
-                inventoryDepositRequest.nextLocation == null? "" : inventoryDepositRequest.nextLocation.name,
+                inventoryDepositRequest == null || inventoryDepositRequest.nextLocation == null ? "" : inventoryDepositRequest.nextLocation.name,
               ),
               _buildLocationScanner(context),
               Padding(
@@ -143,13 +165,15 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                   constraints: BoxConstraints.expand(height: 55.0),
                   child: RaisedButton(
                     color: Theme.of(context).primaryColor,
-                    onPressed: () {
-                       if (_formKey.currentState.validate()) {
-                         print("form validation passed");
-                         _onDepositConfirm(inventoryDepositRequest);
-                       }
+                    onPressed: inventoryDepositRequest == null || inventoryDepositRequest.lpn == null || inventoryDepositRequest.lpn.isEmpty ?
+                       null :
+                       () {
+                         if (_formKey.currentState.validate()) {
+                           print("form validation passed");
+                           _onDepositConfirm(inventoryDepositRequest);
+                         }
 
-                    },
+                      },
                     textColor: Colors.white,
                     child: Text("Confirm"),
                   ),
@@ -167,13 +191,48 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   // scan in barcode to add a order into current batch
   Widget _buildLPNScanner(BuildContext context) {
     return
+      Focus(
+          child:
+          RawKeyboardListener(
+              focusNode: _lpnFocusNode,
+              child:
+              TextFormField(
+                  controller: _lpnController,
+                  showCursor: true,
+                  autofocus: true,
+                  focusNode: _lpnControllerFocusNode,
+
+                  decoration: InputDecoration(
+                    suffixIcon:
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                      mainAxisSize: MainAxisSize.min, // added line
+                      children: <Widget>[
+                        IconButton(
+                          onPressed: () => _clearField(),
+                          icon: Icon(Icons.close),
+                        ),
+                        IconButton(
+                          onPressed: _singleLPNDeposit() ? null : _showLPNDialog,
+                          icon: Icon(Icons.list),
+                        ),
+                      ],
+                    ),
+                  )
+
+              )
+          )
+      );
+
+
+    return
       Padding(
           padding: const EdgeInsets.only(top: 10),
           child: Column(
              children: <Widget>[
                  TextFormField(
                     controller: _lpnController,
-                    readOnly: true,
+                    // readOnly: true,
                     decoration: InputDecoration(
                       labelText: CWMSLocalizations
                           .of(context)
@@ -187,8 +246,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                           mainAxisSize: MainAxisSize.min, // added line
                           children: <Widget>[
                             IconButton(
-                              onPressed: _singleLPNDeposit() ? null :  _startLPNBarcodeScanner,
-                              icon: Icon(Icons.scanner),
+                              onPressed: () => _clearField(),
+                              icon: Icon(Icons.close),
                             ),
                             IconButton(
                               onPressed: _singleLPNDeposit() ? null : _showLPNDialog,
@@ -202,6 +261,15 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
              ]
           )
       );
+  }
+
+  _clearField() {
+    _lpnController.text = "";
+    setState(() {
+      inventoryDepositRequest = new InventoryDepositRequest();
+    });
+    _lpnControllerFocusNode.requestFocus();
+
   }
 
   // scan in location barcode to confirm
@@ -236,8 +304,13 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       );
   }
 
-  InventoryDepositRequest _getNextInventoryToDeposit() {
+  InventoryDepositRequest _getNextInventoryToDeposit([String lpn]) {
 
+    printLongLogMessage("_getNextInventoryToDeposit with lpn ${lpn}");
+    if (lpn != null && lpn.isNotEmpty) {
+      return InventoryService.getNextInventoryDepositRequest(
+          inventoryOnRF.where((inventory) => inventory.lpn == lpn).toList(), true, true);
+    }
     return InventoryService.getNextInventoryDepositRequest(inventoryOnRF, true, true);
 
   }
@@ -338,11 +411,13 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         print("inventory to be deposit: $inventoryDepositRequest");
         _lpnController.text = inventoryDepositRequest.lpn;
         _locationController.text = "";
+        _locationFocusNode.requestFocus();
       }
       else {
         inventoryDepositRequest = _getNextInventoryToDeposit();
         _lpnController.text = inventoryDepositRequest.lpn;
         _locationController.text = "";
+        _locationFocusNode.requestFocus();
       }
     });
 

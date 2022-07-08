@@ -325,6 +325,7 @@ class CWMSLocalizations {
   String get logout => Intl.message('logout', name: 'logout');
   String get logoutTip => Intl.message('Are you sure you want to quit your current account?', name: 'logoutTip');
   String get yes => Intl.message('yes', name: 'yes');
+  String get no => Intl.message('no', name: 'no');
   String get cancel => Intl.message('cancel', name: 'cancel');
 }
 

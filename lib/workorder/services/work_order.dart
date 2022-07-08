@@ -134,14 +134,17 @@ class WorkOrderService {
 
 
   static Future<List<Pick>> generateManualPick(
-      int workOrderId, String lpn, int productionLineId
+      int workOrderId, String lpn, int productionLineId, bool pickWholeLPN
       ) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.post(
         "workorder/work-orders/${workOrderId}/generate-manual-pick",
         queryParameters: {"warehouseId": Global.currentWarehouse.id,
-          "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
+          "lpn": lpn,
+          "productionLineId": productionLineId,
+          "rfCode":Global.getLastLoginRFCode(),
+        "pickWholeLPN": pickWholeLPN}
     );
 
     printLongLogMessage("response from generateManualPick: $response");

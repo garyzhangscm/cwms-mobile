@@ -205,6 +205,53 @@ Future<bool>  showYesNoDialog(BuildContext context, String title, String message
   );
 }
 
+Future<bool>  showYesNoCancelDialog(BuildContext context, String title, String message,
+    Function yesOnPressed, Function noOnPressed, Function cancelOnPressed) {
+
+  Widget yesButton = TextButton(
+    child: Text(CWMSLocalizations.of(context).yes),
+    onPressed: () {
+      yesOnPressed();
+      Navigator.of(context).pop();
+    },
+  );
+  Widget noButton = TextButton(
+    child: Text(CWMSLocalizations.of(context).no),
+    onPressed: () {
+      noOnPressed();
+      Navigator.of(context).pop();
+    },
+  );
+
+  Widget cancelButton = TextButton(
+    child: Text(CWMSLocalizations.of(context).cancel),
+    onPressed: () {
+      cancelOnPressed();
+      Navigator.of(context).pop();
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text(title),
+    content: Text(message),
+    actions: [
+      yesButton,
+      noButton,
+      cancelButton
+
+    ],
+  );
+
+  // show the dialog
+  return showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
 showInformationDialog(BuildContext context, String name, Widget content,
     {
         double verticalPadding = 0.0,

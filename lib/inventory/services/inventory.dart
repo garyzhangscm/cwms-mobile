@@ -105,6 +105,10 @@ class InventoryService {
       bool groupInventoryStatusFlag
   ) {
 
+    printLongLogMessage("getNextInventoryDepositRequest with inventory list ");
+    inventories.forEach((element) {printLongLogMessage(element.toJson().toString());
+    });
+
     if (inventories.isEmpty) {
       printLongLogMessage("no inventory to be deposit");
       return null;

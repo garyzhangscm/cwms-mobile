@@ -79,6 +79,19 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
     _reloadInventoryOnRF();
 
+    _productionLineFocusNode.addListener(() {
+      print("_productionLineFocusNode.hasFocus: ${_productionLineFocusNode.hasFocus}");
+      if (!_productionLineFocusNode.hasFocus && _productionLineController.text.isNotEmpty) {
+        _enterOnProductionLineController(10);
+      }
+    });
+
+    _workOrderNumberFocusNode.addListener(() {
+      print("_workOrderNumberFocusNode.hasFocus: ${_workOrderNumberFocusNode.hasFocus}");
+      if (!_workOrderNumberFocusNode.hasFocus && _workOrderNumberController.text.isNotEmpty) {
+        _enterOnWorkOrderController(10);
+      }
+    });
   }
 
   @override
@@ -133,7 +146,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                 // Do something
 
 
-                _enterOnWorkOrderController(10);
+                // _enterOnWorkOrderController(10);
               }
             },
             child:
@@ -177,7 +190,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                   // Do something
 
 
-                  _enterOnProductionLineController(10);
+                  // _enterOnProductionLineController(10);
                 }
               },
               child:
@@ -539,6 +552,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
     showLoading(context);
     bool continuePicking = true;
+    bool continueWholeLPN = true;
 
     ProductionLine productionLine = _scannedProductionLine == null ?
         _selectedProductionLineAssignment.productionLine : _scannedProductionLine;
@@ -559,10 +573,20 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       if (pickableQuantity < inventoryQuantity) {
 
         // ok, we will need to inform the user that it will be a partial pick
-        await showYesNoDialog(context, "partial pick",
-            "The LPN has quantity of $inventoryQuantity but the work order only requires $pickableQuantity, do you want to continue with a partial pick? ",
-                () =>  continuePicking = true, // the user press Yes, continue with partial quantity
-                ()  => continuePicking = false);
+        await showYesNoCancelDialog(context, "partial pick",
+            "The LPN has quantity of $inventoryQuantity but the work order only requires $pickableQuantity," +
+            " do you want to continue with a partial pick? \nYes to pick partial LPN. \nNo to pick whole LPN, \nCancel to cancel the pick",
+            () {
+                    // the user press Yes, continue with partial quantity
+                    continuePicking= true;
+                    continueWholeLPN = false;
+            },
+            () {
+              // the user press Yes, continue with partial quantity
+              continuePicking= true;
+              continueWholeLPN = true;
+            },
+            ()  => continuePicking = false);
       }
     }
     on WebAPICallException catch(ex) {
@@ -583,7 +607,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     try {
       List<Pick> picks = await WorkOrderService.generateManualPick(
           _currentWorkOrder.id, _lpnController.text,
-          productionLine.id
+          productionLine.id, continueWholeLPN
 
       );
       printLongLogMessage("get ${picks.length} by generating manual pick for the work order ${_currentWorkOrder.number}");

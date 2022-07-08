@@ -267,7 +267,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                         Container() :
                         _forceLPNReceiving ?
                           SizedBox(
-                              width: 20,
+                              width: 60,
                               child:
                                 Text(_getLPNUOMName(), textAlign: TextAlign.left )
                           )

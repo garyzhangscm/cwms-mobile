@@ -19,7 +19,7 @@ class BillOfMaterialLine{
   Item item;
   int itemId;
 
-  int expectedQuantity;
+  double expectedQuantity;
 
   int inventoryStatusId;
   InventoryStatus inventoryStatus;
