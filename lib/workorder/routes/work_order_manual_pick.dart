@@ -560,6 +560,11 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     try {
       List<Inventory> inventories = await InventoryService.findInventory(lpn: _lpnController.text);
 
+      if (inventories.isEmpty) {
+
+        throw new WebAPICallException("can't find inventory by LPN " + _lpnController.text);
+      }
+
       // check the quantity we can pick from the invenotry
       int pickableQuantity = await WorkOrderService.getPickableQuantityForManualPick(
           _currentWorkOrder.id, _lpnController.text,

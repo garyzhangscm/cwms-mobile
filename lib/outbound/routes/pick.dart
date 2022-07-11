@@ -41,6 +41,9 @@ class _PickPageState extends State<PickPage> {
   FocusNode _quantityFocusNode = FocusNode();
   FocusNode _quantityControllerFocusNode = FocusNode();
 
+
+
+
   final  _formKey = GlobalKey<FormState>();
 
   List<Inventory>  inventoryOnRF;
@@ -75,6 +78,7 @@ class _PickPageState extends State<PickPage> {
 
       }});
 
+    /**
     _quantityFocusNode.addListener(() async {
       printLongLogMessage("_quantityFocusNode hasFocus?: ${_quantityFocusNode.hasFocus}");
       printLongLogMessage("_quantityController text?: ${_quantityController.text}");
@@ -82,7 +86,7 @@ class _PickPageState extends State<PickPage> {
         _enterOnQuantityController(10);
 
       }});
-
+**/
 
   }
   @override
@@ -215,6 +219,7 @@ class _PickPageState extends State<PickPage> {
     return buildThreeButtonRow(context,
         ElevatedButton(
             onPressed: () async {
+
               _onPickConfirm(_currentPick, int.parse(_quantityController.text));
             },
             child: Text(CWMSLocalizations.of(context).confirm)
@@ -308,7 +313,10 @@ class _PickPageState extends State<PickPage> {
 
     }
 
+    showLoading(context);
     int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
+
+    Navigator.of(context).pop();
     if (pickableQuantity > 0) {
       // lpn is valid, go to next control
       _quantityController.text = pickableQuantity.toString();
@@ -354,10 +362,18 @@ class _PickPageState extends State<PickPage> {
   }
 
   Future<int> validateLPNByQuantity(String lpn) async{
-    List<Inventory> inventories = await InventoryService.findInventory(
-        lpn: lpn,
-        locationName: _currentPick.sourceLocation.name
-    );
+    List<Inventory> inventories = [];
+    try {
+      inventories = await InventoryService.findInventory(
+          lpn: lpn,
+          locationName: _currentPick.sourceLocation.name
+      );
+    }
+    on WebAPICallException catch(ex) {
+      return 0;
+
+    }
+
     printLongLogMessage("validateLPNByQuantity, lpn: ${lpn}\n found ${inventories.length} inventory record");
     if (inventories.isEmpty) {
       return 0;

@@ -171,27 +171,6 @@ class _ReceivingPageState extends State<ReceivingPage> {
                               icon: Icon(Icons.list),
                           ),
                     ),
-
-                    /**
-                     *
-                        decoration: InputDecoration(
-                        suffixIcon:
-                        Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                        mainAxisSize: MainAxisSize.min, // added line
-                        children: <Widget>[
-                        IconButton(
-                        onPressed: _startItemBarcodeScanner,
-                        icon: Icon(Icons.scanner),
-                        ),
-                        IconButton(
-                        onPressed: _showChoosingItemsDialog,
-                        icon: Icon(Icons.list),
-                        ),
-                        ],
-                        ),
-                        ),
-                     */
                     // 校验ITEM NUMBER（不能为空）
                     validator: (v) {
 
@@ -224,11 +203,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
                           // hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                           items: _getItemPackageTypeItems(),
                           value: _selectedItemPackageType,
-                          elevation: 16,
-                          icon: const Icon(Icons.arrow_downward),
-                          underline: Container(
-                            height: 2,
-                            color: Colors.deepPurpleAccent,
+                          elevation: 1,
+                          isExpanded: true,
+                          icon: Icon(
+                            Icons.list,
+                            size: 20,
                           ),
                           onChanged: (T) {
                             //下拉菜单item点击之后的回调
@@ -236,8 +215,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                               _selectedItemPackageType = T;
                             });
                           },
-                        ),
-                    expanded: false
+                        )
                 ),
               // Allow the user to choose inventory status
 
@@ -247,20 +225,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
                    //  hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getInventoryStatusItems(),
                     value: _selectedInventoryStatus,
-                    /**
-                     *
-                        elevation: 1,
-                        isExpanded: true,
-                        icon: Icon(
-                        Icons.list,
-                        size: 15,
-                        ),
-                     */
-                    elevation: 16,
-                    icon: const Icon(Icons.arrow_downward),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.deepPurpleAccent,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
                     ),
                     onChanged: (T) {
                       //下拉菜单item点击之后的回调
@@ -268,8 +237,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         _selectedInventoryStatus = T;
                       });
                     },
-                  ),
-                  expanded: false
+                  )
               ),
               buildThreeSectionInputRow(
                   "RCV Quantity:",
@@ -305,11 +273,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                         items: _getItemUnitOfMeasures(),
                         value: _selectedItemUnitOfMeasure,
-                        elevation: 16,
-                        icon: const Icon(Icons.arrow_downward),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.deepPurpleAccent,
+                        elevation: 1,
+                        isExpanded: true,
+                        icon: Icon(
+                          Icons.list,
+                          size: 20,
                         ),
                         onChanged: (T) {
                           //下拉菜单item点击之后的回调
