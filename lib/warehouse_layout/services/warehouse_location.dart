@@ -51,6 +51,42 @@ class WarehouseLocationService {
   }
 
 
+  static Future<WarehouseLocation> getWarehouseLocationByCode(String locationCode) async {
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "/layout/locations",
+        queryParameters: {'warehouseId': Global.currentWarehouse.id,
+          'code': locationCode}
+    );
+
+    print("response from warehouse location:");
+
+    printLongLogMessage(response.toString());
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    List<WarehouseLocation> locations
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : WarehouseLocation.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+    // we should only have one location returned since we qualify by
+    // name and warehouse id
+    if (locations.length != 1) {
+      throw new WebAPICallException("can't find location by code ${locationCode}");
+    }
+    else {
+      return locations[0];
+    }
+  }
 
   static WarehouseLocation getBestLocationForNextPick(
       WarehouseLocation currentLocation,

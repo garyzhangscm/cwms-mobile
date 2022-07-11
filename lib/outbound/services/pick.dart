@@ -107,28 +107,35 @@ class PickService {
       // the closed one.
       // otherwise, return the one in the right direction first
         picks.sort((pickA, pickB) {
-           if (pickA.sourceLocation.pickSequence == currentLocation.pickSequence) {
+          int pickASourceLocationPickSequence = pickA.sourceLocation.pickSequence == null ?
+              0: pickA.sourceLocation.pickSequence;
+          int pickBSourceLocationPickSequence = pickB.sourceLocation.pickSequence == null ?
+              0: pickB.sourceLocation.pickSequence;
+          int currentLocationPickSequence = currentLocation.pickSequence == null ?
+              0: currentLocation.pickSequence;
+
+           if (pickASourceLocationPickSequence == currentLocationPickSequence) {
              return 1;
            }
-           else if (pickB.sourceLocation.pickSequence == currentLocation.pickSequence) {
+           else if (pickB.sourceLocation.pickSequence == currentLocationPickSequence) {
              return -1;
            }
-           else if ((pickA.sourceLocation.pickSequence - currentLocation.pickSequence) *
-               (pickB.sourceLocation.pickSequence - currentLocation.pickSequence) > 0) {
-             return (pickA.sourceLocation.pickSequence - currentLocation.pickSequence).abs().compareTo(
-                 (pickB.sourceLocation.pickSequence - currentLocation.pickSequence).abs());
+           else if ((pickASourceLocationPickSequence - currentLocationPickSequence) *
+               (pickBSourceLocationPickSequence - currentLocationPickSequence) > 0) {
+             return (pickASourceLocationPickSequence - currentLocationPickSequence).abs().compareTo(
+                 (pickBSourceLocationPickSequence - currentLocationPickSequence).abs());
            }
            else {
              if (isMovingForward) {
                // moving forward, return the one that is in the forward direction first
-               return pickA.sourceLocation.pickSequence.compareTo(
-                 currentLocation.pickSequence
+               return pickASourceLocationPickSequence.compareTo(
+                   currentLocationPickSequence
                );
              }
              else {
                // moving backward, return the one that is in the forward direction first
-               return pickB.sourceLocation.pickSequence.compareTo(
-                   currentLocation.pickSequence
+               return pickBSourceLocationPickSequence.compareTo(
+                   currentLocationPickSequence
                );
              }
 

@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart';
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
@@ -8,6 +9,8 @@ import 'package:cwms_mobile/outbound/models/pick_result.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
+import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -31,8 +34,12 @@ class _PickPageState extends State<PickPage> {
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
   Pick _currentPick;
-  bool _lpnValidateResult = true;
   FocusNode _lpnFocusNode = FocusNode();
+  FocusNode _lpnControllerFocusNode = FocusNode();
+  FocusNode _sourceLocationFocusNode = FocusNode();
+  FocusNode _sourceLocationControllerFocusNode = FocusNode();
+  FocusNode _quantityFocusNode = FocusNode();
+  FocusNode _quantityControllerFocusNode = FocusNode();
 
   final  _formKey = GlobalKey<FormState>();
 
@@ -52,202 +59,163 @@ class _PickPageState extends State<PickPage> {
 
     _reloadInventoryOnRF();
 
+    _sourceLocationFocusNode.addListener(() async {
+      printLongLogMessage("_sourceLocationFocusNode hasFocus?: ${_sourceLocationFocusNode.hasFocus}");
+      printLongLogMessage("_sourceLocationController text?: ${_sourceLocationController.text}");
+      if (!_sourceLocationFocusNode.hasFocus && _sourceLocationController.text.isNotEmpty) {
+        _enterOnLocationController(10);
+
+      }});
+
     _lpnFocusNode.addListener(() async {
       printLongLogMessage("_lpnFocusNode hasFocus?: ${_lpnFocusNode.hasFocus}");
-      printLongLogMessage("_lpnFocusNode text?: ${_lpnController.text}");
+      printLongLogMessage("_sourceLocationController text?: ${_lpnController.text}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
-        // if we tab out, then confirm the pick
-        int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
+        _enterOnLPNController(10);
 
-        if (pickableQuantity > 0) {
+      }});
 
-          // lpn is valid, go to next control
-          _quantityController.text = pickableQuantity.toString();
-          if(_currentPick.confirmLpnFlag) {
-            _lpnValidateResult = await validateLPN(_lpnController.text);
-          }
-          if (_formKey.currentState.validate()) {
-            _onPickConfirm(_currentPick, int.parse(_quantityController.text));
-          }
-        }
-        else {
-          if (_currentPick.quantity > _currentPick.pickedQuantity) {
-            _quantityController.text = (_currentPick.quantity - _currentPick.pickedQuantity).toString();
-          }
-          else {
-            _quantityController.text = "0";
-          }
-          showToast(CWMSLocalizations.of(context).pickWrongLPN);
-        }
+    _quantityFocusNode.addListener(() async {
+      printLongLogMessage("_quantityFocusNode hasFocus?: ${_quantityFocusNode.hasFocus}");
+      printLongLogMessage("_quantityController text?: ${_quantityController.text}");
+      if (!_quantityFocusNode.hasFocus && _quantityController.text.isNotEmpty) {
+        _enterOnQuantityController(10);
 
+      }});
 
-      }
-    });
 
   }
   @override
   Widget build(BuildContext context) {
     _currentPick  = ModalRoute.of(context).settings.arguments;
-    // if we want the user to confirm LPN, then default the LPN Validator Result
-    // to false and force the user to input one valid LPN
-    _lpnValidateResult = _currentPick.confirmLpnFlag ? false : true;
-
-    setupControllers(_currentPick);
 
     return Scaffold(
+
       appBar: AppBar(title: Text("CWMS - Pick")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          //autovalidateMode: AutovalidateMode.always, //开启自动校验
-          child: Column(
+      body:
+          Column(
             children: <Widget>[
               buildTwoSectionInformationRow("Work Number:", _currentPick.number),
               buildTwoSectionInformationRow("Location:", _currentPick.sourceLocation.name),
-              buildTwoSectionInputRow("Location:",
-                Focus(
-                  child: TextFormField(
-                      textInputAction: TextInputAction.next,
-                      controller: _sourceLocationController,
-                      decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                          onPressed: () => _startLocationBarcodeScanner(),
-                          icon: Icon(Icons.scanner),
-                        ),
-                      ),
-                      // 校验company code（不能为空）
-                      validator: (v) {
-                        if (v.trim().isEmpty) {
-                          return "please scan in location";
-                        }
-                        if (v.trim() != _currentPick.sourceLocation.name) {
-
-                          return "wrong location";
-                        }
-                        return null;
-
-                      }),
-                )
-              ),
-
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
-                  _currentPick.confirmLpnFlag ?
-                  TextFormField(
-                    textInputAction: TextInputAction.next,
-                    onEditingComplete: () async {
-                      int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
-                      if (pickableQuantity > 0) {
-                        // lpn is valid, go to next control
-                        _quantityController.text = pickableQuantity.toString();
-                        FocusScope.of(context).nextFocus();
-                      }
-                      else {
-                        if (_currentPick.quantity > _currentPick.pickedQuantity) {
-                          _quantityController.text = (_currentPick.quantity - _currentPick.pickedQuantity).toString();
-                        }
-                        else {
-                          _quantityController.text = "0";
-                        }
-                        showToast(CWMSLocalizations.of(context).pickWrongLPN);
-                      }
-                    },
-                    controller: _lpnController,
-                    focusNode: _lpnFocusNode,
-                    autofocus: true,
-                    validator: (v) {
-                      if (v.trim().isEmpty) {
-                        return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
-                      }
-                      if (!_lpnValidateResult) {
-                       return CWMSLocalizations.of(context).pickWrongLPN;
-                      }
-                      return null;
-                  })
-                  :
-                  Container()
-              ),
+              _buildLocationInput(context),
+              _buildLPNInput(context),
               buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
-                  _currentPick.confirmItemFlag ?
-                  Expanded(
-                    child:
-                    Focus(
-                      child: TextFormField(
-                          textInputAction: TextInputAction.next,
-                          controller: _itemController,
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                              onPressed: () => _startItemBarcodeScanner(),
-                              icon: Icon(Icons.scanner),
-                            ),
-                          ),
-                          // 校验ITEM NUMBER（不能为空）
-                          validator: (v) {
-
-                            if (v.trim().isEmpty) {
-                              return "please scan in item";
-                            }
-                            if (v.trim() != _currentPick.item.name) {
-
-                              return "wrong item";
-                            }
-                            return null;
-                          }),
-                    ),
-                  )
-                      :
-                  Container()
-              ),
               buildTwoSectionInformationRow("Pick Quantity:", _currentPick.quantity.toString()),
               buildTwoSectionInformationRow("Picked Quantity:", _currentPick.pickedQuantity.toString()),
-              buildTwoSectionInputRow("Picking Quantity:",
-                Focus(
-                  child: TextFormField(
-                      textInputAction: TextInputAction.next,
-                      keyboardType: TextInputType.number,
-                      controller: _quantityController,
-                      // 校验ITEM NUMBER（不能为空）
-                      validator: (v) {
-
-                        if (v.trim().isEmpty) {
-                          return "please type in quantity";
-                        }
-                        if (int.parse(v.trim()) >
-                            (_currentPick.quantity - _currentPick.pickedQuantity)) {
-                          printLongLogMessage("v.trim(): ${v.trim()} ");
-                          printLongLogMessage("_currentPick.quantity: ${_currentPick.quantity} ");
-                          printLongLogMessage("_currentPick.pickedQuantity: ${_currentPick.pickedQuantity} ");
-
-                          return "over pick is not allowed";
-                        }
-                        return null;
-                      }),
-                ),
-              ),
+              _buildQuantityInput(context),
               _buildButtons(context),
             ],
           ),
-        ),
-      ),
       endDrawer: MyDrawer(),
     );
   }
 
+  Widget _buildLocationInput(BuildContext context) {
+    return buildTwoSectionInputRow(
+        CWMSLocalizations.of(context).location,
+        _currentPick.confirmLocationFlag == true || _currentPick.confirmLocationCodeFlag == true ?
+          Focus(
+              focusNode: _sourceLocationFocusNode,
+              child:
+              TextFormField(
+                  controller: _sourceLocationController,
+                  showCursor: true,
+                  autofocus: true,
+                  focusNode: _sourceLocationControllerFocusNode,
+                  decoration: InputDecoration(
+                    suffixIcon:
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                      mainAxisSize: MainAxisSize.min, // added line
+                      children: <Widget>[
+                        IconButton(
+                          onPressed: () => _sourceLocationController.text = "",
+                          icon: Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                  )
 
+              )
+          )
+          :
+          Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Text(_currentPick.item.name, textAlign: TextAlign.left ),
+          ),
+    );
+  }
+
+
+  Widget _buildLPNInput(BuildContext context) {
+    return buildTwoSectionInputRow(
+      CWMSLocalizations.of(context).lpn,
+      _currentPick.confirmLpnFlag == true ?
+      Focus(
+          focusNode: _lpnFocusNode,
+          child:
+          TextFormField(
+              controller: _lpnController,
+              showCursor: true,
+              autofocus: true,
+              focusNode: _lpnControllerFocusNode,
+              decoration: InputDecoration(
+                suffixIcon:
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                  mainAxisSize: MainAxisSize.min, // added line
+                  children: <Widget>[
+                    IconButton(
+                      onPressed: () => _lpnController.text = "",
+                      icon: Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              )
+
+          )
+      )
+          :
+      Container()
+    );
+  }
+
+  Widget _buildQuantityInput(BuildContext context) {
+    return buildTwoSectionInputRow(
+        CWMSLocalizations.of(context).quantity,
+        Focus(
+            focusNode: _quantityFocusNode,
+            child:
+            TextFormField(
+                controller: _quantityController,
+                showCursor: true,
+                autofocus: true,
+                focusNode: _quantityControllerFocusNode,
+                decoration: InputDecoration(
+                  suffixIcon:
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                    mainAxisSize: MainAxisSize.min, // added line
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: () => _quantityController.text = "",
+                        icon: Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                )
+
+            )
+        )
+    );
+  }
 
   Widget _buildButtons(BuildContext context) {
 
     return buildThreeButtonRow(context,
         ElevatedButton(
             onPressed: () async {
-              //  Let's make sure the user input the right LPN
-              if(_currentPick.confirmLpnFlag) {
-                _lpnValidateResult = await validateLPN(_lpnController.text);
-              }
-              if (_formKey.currentState.validate()) {
-                _onPickConfirm(_currentPick, int.parse(_quantityController.text));
-              }
+              _onPickConfirm(_currentPick, int.parse(_quantityController.text));
             },
             child: Text(CWMSLocalizations.of(context).confirm)
         ),
@@ -279,21 +247,118 @@ class _PickPageState extends State<PickPage> {
   }
 
 
-  Future<bool> validateLPN(String lpn) async{
-    List<Inventory> inventories = await InventoryService.findInventory(
-      lpn: lpn,
-      locationName: _currentPick.sourceLocation.name
-    );
-    return inventories.isNotEmpty;
+  void _enterOnLocationController(int tryTime) async {
+
+    // if the location is empty, then ask the user to input the
+    // right location
+    if (_sourceLocationController.text.isEmpty) {
+      showErrorDialog(context,
+          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).location));
+      _sourceLocationControllerFocusNode.requestFocus();
+      return;
+    }
+    printLongLogMessage("_enterOnLocationController: Start to validate source location, tryTime = $tryTime");
+    if (tryTime <= 0) {
+      // do nothing as we run out of try time
+      return;
+    }
+    printLongLogMessage("_enterOnLocationController / _sourceLocationControllerFocusNode.hasFocus:   ${_sourceLocationControllerFocusNode.hasFocus}");
+    if (_sourceLocationControllerFocusNode.hasFocus) {
+      // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
+      Future.delayed(const Duration(milliseconds: 100),
+              () => _enterOnLocationController(tryTime - 1));
+
+      return;
+
+    }
+
+    bool locationValid = await _validateSourceLocation();
+    if (!locationValid) {
+      // validation fail, leave the user in the location control
+
+      showErrorDialog(context, "location " + _sourceLocationController.text + " is invalid");
+      _sourceLocationFocusNode.requestFocus();
+      return;
+    }
+
   }
 
-  // validate lPN for picking. If this LPN is not valid for the pick
-  // return 0, otherwise, return the pickable quantity
+  void _enterOnLPNController(int tryTime) async {
+
+    // if the location is empty, then ask the user to input the
+    // right location
+    if (_lpnController.text.isEmpty) {
+      showErrorDialog(context,
+          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn));
+      _lpnControllerFocusNode.requestFocus();
+      return;
+    }
+    printLongLogMessage("_enterOnLPNController: Start to validate source location, tryTime = $tryTime");
+    if (tryTime <= 0) {
+      // do nothing as we run out of try time
+      return;
+    }
+    printLongLogMessage("_enterOnLPNController / _lpnControllerFocusNode.hasFocus:   ${_lpnControllerFocusNode.hasFocus}");
+    if (_lpnControllerFocusNode.hasFocus) {
+      // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
+      Future.delayed(const Duration(milliseconds: 100),
+              () => _enterOnLPNController(tryTime - 1));
+
+      return;
+
+    }
+
+    int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
+    if (pickableQuantity > 0) {
+      // lpn is valid, go to next control
+      _quantityController.text = pickableQuantity.toString();
+      _quantityFocusNode.requestFocus();
+
+    }
+    else {
+      await showBlockedErrorDialog(context, "lpn " + _lpnController.text + " is not pickable");
+      _lpnControllerFocusNode.requestFocus();
+      return;
+    }
+
+  }
+
+  void _enterOnQuantityController(int tryTime) async {
+
+    // if the location is empty, then ask the user to input the
+    // right location
+    if (_quantityController.text.isEmpty) {
+      showErrorDialog(context,
+          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).quantity));
+      _quantityControllerFocusNode.requestFocus();
+      return;
+    }
+    printLongLogMessage("_enterOnQuantityController: Start to validate quantity, tryTime = $tryTime");
+    if (tryTime <= 0) {
+      // do nothing as we run out of try time
+      return;
+    }
+    printLongLogMessage("_enterOnQuantityController / _quantityControllerFocusNode.hasFocus:   ${_quantityControllerFocusNode.hasFocus}");
+    if (_quantityControllerFocusNode.hasFocus) {
+      // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
+      Future.delayed(const Duration(milliseconds: 100),
+              () => _enterOnQuantityController(tryTime - 1));
+
+      return;
+
+    }
+
+
+    _onPickConfirm(_currentPick, int.parse(_quantityController.text));
+
+  }
+
   Future<int> validateLPNByQuantity(String lpn) async{
     List<Inventory> inventories = await InventoryService.findInventory(
         lpn: lpn,
         locationName: _currentPick.sourceLocation.name
     );
+    printLongLogMessage("validateLPNByQuantity, lpn: ${lpn}\n found ${inventories.length} inventory record");
     if (inventories.isEmpty) {
       return 0;
     }
@@ -302,8 +367,11 @@ class _PickPageState extends State<PickPage> {
 
   void _onPickConfirm(Pick pick, int confirmedQuantity) async {
 
-    // TO-DO:Current we don't support the location code. Will add
-    //      it later
+    // over pick is not allowed at this moment
+    if (confirmedQuantity > _currentPick.quantity - _currentPick.pickedQuantity) {
+      showErrorDialog(context,
+        CWMSLocalizations.of(context).overPickNotAllowed);
+    }
 
     showLoading(context);
     if (pick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
@@ -398,6 +466,50 @@ class _PickPageState extends State<PickPage> {
         _itemController.text = barcodeScanRes;
      * */
 
+  }
+
+  Future<bool> _validateSourceLocation() async {
+    // validate the source location
+    if (_sourceLocationController.text.isEmpty) {
+      return true;
+    }
+    showLoading(context);
+    WarehouseLocation warehouseLocation;
+    try {
+      if (_currentPick.confirmLocationCodeFlag) {
+        // ok, the pick is required to verify by location code, make sure
+        // the user in put a location code
+        warehouseLocation =
+        await WarehouseLocationService.getWarehouseLocationByCode(
+            _sourceLocationController.text
+        );
+      }
+      else {
+        warehouseLocation =
+        await WarehouseLocationService.getWarehouseLocationByName(
+            _sourceLocationController.text
+        );
+      }
+    }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return false;
+
+    }
+
+    Navigator.of(context).pop();
+    if (warehouseLocation == null) {
+      showErrorDialog(context, "can't find location by input value ${_sourceLocationController.text}");
+      return false;
+    }
+    else if (warehouseLocation.id != _currentPick.sourceLocationId) {
+      showErrorDialog(context, "Location ${_sourceLocationController.text} is not the right location for pick");
+      return false;
+
+    }
+    return true;
   }
 
 

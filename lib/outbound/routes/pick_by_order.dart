@@ -42,6 +42,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   // a map of relationship beteen order and pick id
   HashMap orderPicks = new HashMap<String, Set<int>>();
   FocusNode _orderNumberFocusNode = FocusNode();
+  FocusNode _orderNumberControllerFocusNode = FocusNode();
 
 
   // map to store order's priority
@@ -83,7 +84,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
       print("_orderNumberFocusNode.hasFocus: ${_orderNumberFocusNode.hasFocus}");
       if (!_orderNumberFocusNode.hasFocus && _orderNumberController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
-        _onAddingOrder();
+        _onAddingOrder(10);
 
       }
     });
@@ -115,32 +116,39 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     return
       Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Form(
-              key: _formKey,
-              // autovalidateMode: AutovalidateMode.always, //开启自动校验
-              child: Column(
+          child:
+              Column(
                   children: <Widget>[
-                    TextFormField(
-                      controller: _orderNumberController,
-                      autofocus: true,
+                    Focus(
                       focusNode: _orderNumberFocusNode,
-                      decoration: InputDecoration(
-                        labelText: CWMSLocalizations
-                            .of(context)
-                            .orderNumber,
-                        hintText: CWMSLocalizations
-                            .of(context)
-                            .inputOrderNumberHint,
-                        suffixIcon: IconButton(
-                          onPressed: () => _startBarcodeScanner(),
-                          icon: Icon(Icons.scanner),
-                        ),
-                      ),
-                    ),
+                      child:
+                        TextFormField(
+                        controller: _orderNumberController,
+                        showCursor: true,
+                        autofocus: true,
+                        focusNode: _orderNumberControllerFocusNode,
+                        decoration: InputDecoration(
+                          labelText: CWMSLocalizations.of(context).orderNumber,
+                          hintText: "please input order number",
+                          suffixIcon:
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                            mainAxisSize: MainAxisSize.min, // added line
+                            children: <Widget>[
+                              IconButton(
+                                onPressed: () => _orderNumberController.text = "",
+                                icon: Icon(Icons.close),
+                              ),
+                            ],
+                          ),
+                        )
+
+                    )
+                    )
                   ]
               )
-          )
-      );
+          );
+
   }
   Widget _buildButtons(BuildContext context) {
 
@@ -148,7 +156,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
       children: [
         buildTwoButtonRow(context,
           ElevatedButton(
-              onPressed: _onAddingOrder,
+              onPressed: () => _onAddingOrder(10),
               child: Text(CWMSLocalizations.of(context).addOrder)
           ),
           ElevatedButton(
@@ -184,7 +192,6 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
 
   }
-
 
 
   Widget _buildOrderList(BuildContext context) {
@@ -235,8 +242,22 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   }
 
   // Prompt to let the user choose existing orders to add
-  void _onAddingOrder() async {
+  void _onAddingOrder(int tryTime) async {
 
+    printLongLogMessage("_onAddingOrder: Start to adding order , tryTime = $tryTime");
+    if (tryTime <= 0) {
+      // do nothing as we run out of try time
+      return;
+    }
+    printLongLogMessage("_onAddingOrder / _orderNumberControllerFocusNode.hasFocus:   ${_orderNumberControllerFocusNode.hasFocus}");
+    if (_orderNumberControllerFocusNode.hasFocus) {
+      // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
+      Future.delayed(const Duration(milliseconds: 100),
+              () => _onAddingOrder(tryTime - 1));
+
+      return;
+
+    }
     print("Will get information for ${_orderNumberController.text} ");
 
     // check if hte order is already in the list
@@ -254,7 +275,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
           _assignOrderToUser(order);
           print("Will add order ${order.number} to the list");
           _orderNumberController.clear();
-          _orderNumberFocusNode.requestFocus();
+          _orderNumberControllerFocusNode.requestFocus();
         }
 
         Navigator.of(context).pop();
@@ -272,7 +293,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     else {
 
       _orderNumberController.clear();
-      _orderNumberFocusNode.requestFocus();
+      _orderNumberControllerFocusNode.requestFocus();
     }
 
   }

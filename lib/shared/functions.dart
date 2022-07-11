@@ -136,6 +136,33 @@ showErrorDialog(BuildContext context, String message) {
   );
 }
 
+showBlockedErrorDialog(BuildContext context, String message) async {
+
+  // set up the button
+  Widget okButton = FlatButton(
+    child: Text("OK"),
+    onPressed: () {
+      Navigator.of(context).pop();
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text(CWMSLocalizations.of(context).error),
+    content: Text(message),
+    actions: [
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
 
 showWarningDialog(BuildContext context, String message) {
 

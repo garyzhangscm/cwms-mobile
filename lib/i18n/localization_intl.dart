@@ -234,6 +234,7 @@ class CWMSLocalizations {
 
   String get lpnQuantityExceedWarningTitle => Intl.message('Exceed LPN Standard Quantity', name: 'lpnQuantityExceedWarningTitle');
   String get lpnQuantityExceedWarningMessage => Intl.message('The quantity of inventory you are receiving exceeds the LPN standard quantity. Press Yes to continue receiving', name: 'lpnQuantityExceedWarningMessage');
+  String get overPickNotAllowed => Intl.message('Over pick is not allowed', name: 'overPickNotAllowed');
 
 
 

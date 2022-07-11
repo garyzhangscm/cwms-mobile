@@ -13,6 +13,7 @@ class Pick{
 
   int id;
   String number;
+  int sourceLocationId;
   WarehouseLocation sourceLocation;
   WarehouseLocation destinationLocation;
   Item item;

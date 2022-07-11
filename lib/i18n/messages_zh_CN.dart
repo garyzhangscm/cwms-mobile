@@ -225,6 +225,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
     "lpnQuantityExceedWarningTitle" : MessageLookupByLibrary.simpleMessage("数量过多"),
     "lpnQuantityExceedWarningMessage" : MessageLookupByLibrary.simpleMessage("收货数量超过了该商品标准LPN所能容纳的数量， 是否继续？"),
+    "overPickNotAllowed" : MessageLookupByLibrary.simpleMessage("拣货数量超过了所需数量"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

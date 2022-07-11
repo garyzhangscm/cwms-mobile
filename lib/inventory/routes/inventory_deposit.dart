@@ -307,6 +307,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   InventoryDepositRequest _getNextInventoryToDeposit([String lpn]) {
 
     printLongLogMessage("_getNextInventoryToDeposit with lpn ${lpn}");
+
     if (lpn != null && lpn.isNotEmpty) {
       return InventoryService.getNextInventoryDepositRequest(
           inventoryOnRF.where((inventory) => inventory.lpn == lpn).toList(), true, true);
