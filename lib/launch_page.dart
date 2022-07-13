@@ -48,7 +48,7 @@ class _LaunchPageState extends State<LaunchPage> {
 
       // in debug mode
       _serverURLController =  TextEditingController(
-          text: 'http://k8s-staging-zuulserv-707034e5d3-870995222.us-west-1.elb.amazonaws.com/api/');
+          text: 'http://k8s-staging-zuulserv-707034e5d3-1792177591.us-west-1.elb.amazonaws.com/api/');
       _autoConnect = true;
     }
     else if (server != null) {
@@ -88,7 +88,12 @@ class _LaunchPageState extends State<LaunchPage> {
                   decoration: InputDecoration(
                       labelText: "Server URL",
                       hintText: "Server URL",
-                      prefixIcon: Icon(Icons.web)
+                      prefixIcon: Icon(Icons.web),
+                      suffixIcon:
+                        IconButton(
+                          onPressed: () => _clearField(),
+                          icon: Icon(Icons.close),
+                        ),
                   ),
                   //
                   validator: (v) {
@@ -135,7 +140,9 @@ class _LaunchPageState extends State<LaunchPage> {
       ),
     );
   }
-
+  _clearField() {
+    _serverURLController.text = "";
+  }
 
   void _onAutoConnect(CWMSSiteInformation server) async  {
 
@@ -181,7 +188,9 @@ class _LaunchPageState extends State<LaunchPage> {
       } catch (e) {
         //登录失败则提示
         print(e.toString());
-        showToast(e.toString());
+        // showToast(e.toString());
+        showToast("Can't connect to server $serverUrl");
+        return;
       } finally {
         // 隐藏loading框
         // Navigator.of(context).pop();

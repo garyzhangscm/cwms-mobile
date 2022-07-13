@@ -287,6 +287,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         },
                       )
               ),
+
               buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).lpn+ ": ",
                   Focus(

@@ -225,7 +225,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                           },
                       ),
                       Expanded (
-                        child: Text(CWMSLocalizations.of(context).producingQuantity + ": ", textAlign: TextAlign.left ),
+                        child: Text(CWMSLocalizations.of(context).quantity + ": ", textAlign: TextAlign.left ),
                       ),
                       _forceLPNReceiving ?
                         SizedBox(
@@ -235,7 +235,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             :
                         SizedBox(
                           height: 20,
-                          width: 80,
+                          width: 110,
                           child:
                               TextFormField(
                                   keyboardType: TextInputType.number,
@@ -274,15 +274,19 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             :
                           SizedBox(
                             height: 38,
-                            width: 40,
+                            width: 90,
                             child:
-                                    DropdownButton(
+                            DropdownButton(
 
                                       hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                                       items: _getItemUnitOfMeasures(),
                                       value: _selectedItemUnitOfMeasure,
-                                      elevation: 16,
-                                      icon: const Icon(Icons.arrow_downward),
+                                      elevation: 1,
+                                      isExpanded: true,
+                                      icon: Icon(
+                                        Icons.list,
+                                        size: 20,
+                                      ),
                                       underline: Container(
                                         height: 0,
                                         color: Colors.deepPurpleAccent,
@@ -297,52 +301,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                         )
                     )
               ),
-              /*
-              buildThreeSectionInputRow(
-                CWMSLocalizations.of(context).producingQuantity,
-                TextFormField(
-                      keyboardType: TextInputType.number,
-                      controller: _quantityController,
-                      textInputAction: TextInputAction.next,
-                      autofocus: true,
-                      focusNode: quantityFocusNode,
-                      onFieldSubmitted: (v){
-                        printLongLogMessage("start to focus on lpn node");
-                        lpnFocusNode.requestFocus();
-
-                      },
-                      decoration: InputDecoration(
-                          isDense: true
-                      ),
-                      // 校验ITEM NUMBER（不能为空）
-                      validator: (v) {
-                        if (v.trim().isEmpty) {
-                          return "please type in quantity";
-                        }
-                        return null;
-                      }),
-                _getItemUnitOfMeasures().isEmpty ?
-                  Container() :
-                  DropdownButton(
-                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
-                    items: _getItemUnitOfMeasures(),
-                    value: _selectedItemUnitOfMeasure,
-                    elevation: 16,
-                    icon: const Icon(Icons.arrow_downward),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.deepPurpleAccent,
-                    ),
-                    onChanged: (T) {
-                      //下拉菜单item点击之后的回调
-                      setState(() {
-                        _selectedItemUnitOfMeasure = T;
-                      });
-                    },
-                  )
-
-
-              ),*/
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).lpn,
                 Focus(
