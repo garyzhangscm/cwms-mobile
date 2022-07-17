@@ -48,7 +48,7 @@ class _LaunchPageState extends State<LaunchPage> {
 
       // in debug mode
       _serverURLController =  TextEditingController(
-          text: 'http://k8s-staging-zuulserv-707034e5d3-1792177591.us-west-1.elb.amazonaws.com/api/');
+          text: 'http://k8s-staging-zuulserv-707034e5d3-282171243.us-west-1.elb.amazonaws.com/api/');
       _autoConnect = true;
     }
     else if (server != null) {

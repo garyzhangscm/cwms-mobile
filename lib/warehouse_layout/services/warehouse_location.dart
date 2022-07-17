@@ -12,7 +12,30 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
 
 class WarehouseLocationService {
-  // Get all cycle count requests by batch id
+
+  static Future<WarehouseLocation> getWarehouseLocationById(int id) async {
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "/layout/locations/$id",
+    );
+
+    print("response from getWarehouseLocationById:");
+
+    printLongLogMessage(response.toString());
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return WarehouseLocation.fromJson(responseString["data"] as Map<String, dynamic>);
+
+  }
   static Future<WarehouseLocation> getWarehouseLocationByName(String locationName) async {
 
 

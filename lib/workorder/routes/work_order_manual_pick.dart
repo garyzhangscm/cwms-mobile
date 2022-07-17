@@ -16,6 +16,8 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
+import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
+import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
 import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
@@ -61,6 +63,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   ProductionLine _scannedProductionLine;
 
   bool _readyToConfirm = true;
+  bool _pickToProductionLineInStage = true;
 
 
   TextEditingController _lpnController = new TextEditingController();
@@ -111,6 +114,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
               _currentWorkOrder == null || _scannedProductionLine != null ?
                   _buildProductionLineTextBox(context) :
                   _buildProductionLineAssignmentSelection(context),
+              // whether directly pick the inventory onto production line's in stage
+              // or pick the inventory onto the RF
+              _currentWorkOrder == null ? Container() : _buildPickToProductionInput(context),
               // allow user to scan in LPN
               _currentWorkOrder == null ? Container() : _buildLPNInput(context),
               // allow user to input LPN
@@ -410,6 +416,22 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     return items;
   }
 
+  Widget _buildPickToProductionInput(BuildContext context) {
+    return
+      buildTwoSectionInputRow(
+        CWMSLocalizations.of(context).pickToProductionLineInStage,
+
+        Checkbox(
+          value: _pickToProductionLineInStage,
+          onChanged: (bool value) {
+            setState(() {
+              _pickToProductionLineInStage = value;
+            });
+          },
+        ),
+      );
+  }
+
   Widget _buildLPNInput(BuildContext context) {
     return
       buildTwoSectionInputRow(
@@ -621,8 +643,27 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       for(var i = 0; i < picks.length; i++){
 
         printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity - picks[i].pickedQuantity}");
-        await PickService.confirmPick(
-            picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text);
+        if (_pickToProductionLineInStage) {
+          if (productionLine.inboundStageLocation == null) {
+            WarehouseLocation inboundStageLocation = await WarehouseLocationService.getWarehouseLocationById(
+                productionLine.inboundStageLocationId);
+            printLongLogMessage("Will pick to production's stage ${inboundStageLocation.name}");
+            await PickService.confirmPick(
+                picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text,
+                inboundStageLocation.name);
+          }
+          else {
+            printLongLogMessage("Will pick to production's stage ${productionLine.inboundStageLocation.name}");
+            await PickService.confirmPick(
+                picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text,
+                productionLine.inboundStageLocation.name);
+          }
+        }
+        else {
+
+          await PickService.confirmPick(
+              picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text);
+        }
       }
     }
     on WebAPICallException catch(ex) {

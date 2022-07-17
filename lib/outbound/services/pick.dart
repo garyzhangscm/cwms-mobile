@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:cwms_mobile/outbound/models/pick.dart';
+import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
@@ -149,7 +150,7 @@ class PickService {
 
   }
   // Confirm pick, with picking quantity
-  static Future<void> confirmPick(Pick pick, int confirmQuantity, [String lpn]) async{
+  static Future<void> confirmPick(Pick pick, int confirmQuantity, [String lpn, String nextLocationName = ""]) async{
 
     print("start to confirm pick ${pick.number}, confirmQuantity: ${confirmQuantity}, lpn: ${lpn}");
 
@@ -165,10 +166,13 @@ class PickService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     // pick to RF
+    // if the user specify the next location, then pick to the next location
+    // otherwise  pick to the RF
+    printLongLogMessage("start to pick to ${nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName}");
     Response response = await httpClient.post(
         "outbound/picks/${pick.id}/confirm",
         queryParameters: {"quantity": confirmQuantity,
-          "nextLocationName": Global.getLastLoginRFCode(),
+          "nextLocationName": nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName,
         "lpn": lpn}
     );
 
