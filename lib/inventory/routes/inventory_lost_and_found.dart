@@ -1,11 +1,5 @@
 import 'package:badges/badges.dart';
-import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inbound/models/receipt.dart';
-import 'package:cwms_mobile/inbound/models/receipt_line.dart';
-import 'package:cwms_mobile/inbound/services/receipt.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_line_list_item.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_list_item.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
@@ -15,6 +9,7 @@ import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/item.dart';
+import 'package:cwms_mobile/inventory/widgets/item_query.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
@@ -46,6 +41,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   TextEditingController _lpnController = new TextEditingController();
 
 
+  FocusNode _itemNumberFocusNode = FocusNode();
   FocusNode _quantityFocusNode = FocusNode();
   FocusNode _lpnFocusNode = FocusNode();
 
@@ -54,6 +50,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   ItemPackageType _selectedItemPackageType;
   ItemUnitOfMeasure _selectedItemUnitOfMeasure;
   Item _currentItem;
+  bool _readyToConfirm = true;
 
   ProgressDialog _progressDialog;
 
@@ -78,8 +75,13 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
     _lpnFocusNode.addListener(() {
       print("_lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
-      if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
+      if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty && _readyToConfirm) {
         // if we tab out, then add the LPN to the list
+        // set _readyToConfirm to false to disable the 'confirm' button
+        // so that we won't create the same LPN twice
+
+        _readyToConfirm = false;
+        printLongLogMessage("1. set _readyToConfirm to false ");
         _enterOnLPNController();
       }
     });
@@ -109,19 +111,28 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               // ask the user to input item number
               buildTwoSectionInputRow(CWMSLocalizations.of(context).item,
                 Focus(
-                    child: TextFormField(
-                        controller: _itemController,
-                        textInputAction: TextInputAction.next,
+                    child: ItemQuery(
+                        itemNumberController: _itemController,
                         autofocus: true,
-                        onEditingComplete: () => _quantityFocusNode.requestFocus(),
-                        // 校验ITEM NUMBER（不能为空）
+                        focusNode: _itemNumberFocusNode,
+                        onItemSelected: (selectedItem) {
+                          if (selectedItem != null) {
+
+                            setState(() {
+                              _currentItem = selectedItem;
+                            });
+                            _quantityFocusNode.requestFocus();
+                          }
+                        },
                         validator: (v) {
                           if (v.trim().isEmpty) {
                             return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).item);
                           }
 
                           return null;
-                        }),
+                        }
+
+                    ),
                     onFocusChange: (hasFocus) {
                       if (!hasFocus && _itemController.text
                           .trim()
@@ -131,6 +142,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                                 (itemRes) {
                               if (itemRes != null) {
                                 // we find the item by name, let's save it
+                                printLongLogMessage("set current item to ${itemRes.name}");
                                 setState(() {
                                   _currentItem = itemRes;
                                 });
@@ -151,11 +163,11 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     // hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getItemPackageTypeItems(),
                     value: _selectedItemPackageType,
-                    elevation: 16,
-                    icon: const Icon(Icons.arrow_downward),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.deepPurpleAccent,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
                     ),
                     onChanged: (T) {
                       //下拉菜单item点击之后的回调
@@ -163,8 +175,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                         _selectedItemPackageType = T;
                       });
                     },
-                  ),
-                  expanded: false
+                  )
               ),
               // Allow the user to choose inventory status
               buildTwoSectionInputRow(
@@ -173,20 +184,11 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     //  hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getInventoryStatusItems(),
                     value: _selectedInventoryStatus,
-                    /**
-                     *
-                        elevation: 1,
-                        isExpanded: true,
-                        icon: Icon(
-                        Icons.list,
-                        size: 15,
-                        ),
-                     */
-                    elevation: 16,
-                    icon: const Icon(Icons.arrow_downward),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.deepPurpleAccent,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
                     ),
                     onChanged: (T) {
                       //下拉菜单item点击之后的回调
@@ -194,8 +196,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                         _selectedInventoryStatus = T;
                       });
                     },
-                  ),
-                  expanded: false
+                  )
               ),
               buildThreeSectionInputRow(
                   CWMSLocalizations.of(context).quantity,
@@ -227,11 +228,11 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                     hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getItemUnitOfMeasures(),
                     value: _selectedItemUnitOfMeasure,
-                    elevation: 16,
-                    icon: const Icon(Icons.arrow_downward),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.deepPurpleAccent,
+                    elevation: 1,
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.list,
+                      size: 20,
                     ),
                     onChanged: (T) {
                       //下拉菜单item点击之后的回调
@@ -278,9 +279,12 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     return buildTwoButtonRow(context,
 
         ElevatedButton(
-          onPressed: _currentItem == null ? null :
+          onPressed: !_readyToConfirm || _currentItem == null ? null :
               () {
-            if (_formKey.currentState.validate()) {
+            if (_formKey.currentState.validate() && _readyToConfirm) {
+
+              _readyToConfirm = false;
+              printLongLogMessage("2. _readyToConfirm = ${_readyToConfirm} ");
               _onInventoryAdjustConfirm(
                   int.parse(_quantityController.text),
                   _lpnController.text
@@ -455,6 +459,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
         if (!validLpn) {
           Navigator.of(context).pop();
           showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+          _readyToConfirm = true;
+          printLongLogMessage("3. set _readyToConfirm to ${_readyToConfirm} ");
           return;
         }
         printLongLogMessage("LPN ${lpn} passed the validation");
@@ -463,6 +469,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
         Navigator.of(context).pop();
         showErrorDialog(context, "${ex.code} - ${ex.message}");
+        printLongLogMessage("4. set _readyToConfirm to ${_readyToConfirm} ");
+        _readyToConfirm = true;
         return;
 
       }
@@ -667,7 +675,11 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     _itemController.clear();
     setState(() {
       _currentItem = null;
+      _readyToConfirm = true;
+      printLongLogMessage("5. set _readyToConfirm to ${_readyToConfirm} ");
     });
+
+    _itemNumberFocusNode.requestFocus();
 
 
     // refresh the inventory on the RF
@@ -694,6 +706,11 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     if (tryTime <= 0) {
       // do nothing as we run out of try time
 
+      setState(() {
+        // enable the confirm button
+        printLongLogMessage("6. set _readyToConfirm to ${_readyToConfirm} ");
+        _readyToConfirm = true;
+      });
       return;
     }
     if (_lpnFocusNode.hasFocus) {

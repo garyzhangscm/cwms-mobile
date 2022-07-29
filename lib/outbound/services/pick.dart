@@ -152,7 +152,7 @@ class PickService {
   // Confirm pick, with picking quantity
   static Future<void> confirmPick(Pick pick, int confirmQuantity, [String lpn, String nextLocationName = ""]) async{
 
-    print("start to confirm pick ${pick.number}, confirmQuantity: ${confirmQuantity}, lpn: ${lpn}");
+    printLongLogMessage("start to confirm pick ${pick.number}, confirmQuantity: ${confirmQuantity}, lpn: ${lpn}");
 
     // only continue when the confirmed quantity is bigger than 0
     if (confirmQuantity <= 0) {

@@ -137,6 +137,7 @@ class WorkOrderService {
       int workOrderId, String lpn, int productionLineId, bool pickWholeLPN
       ) async {
     Dio httpClient = CWMSHttpClient.getDio();
+    printLongLogMessage("start to generate manual pick for lpn ${lpn}");
 
     Response response = await httpClient.post(
         "workorder/work-orders/${workOrderId}/generate-manual-pick",

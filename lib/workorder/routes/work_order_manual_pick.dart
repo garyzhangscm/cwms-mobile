@@ -65,6 +65,12 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   bool _readyToConfirm = true;
   bool _pickToProductionLineInStage = true;
 
+  // flag to indicate whether we will need to
+  // validate partial LPN pick. Default to false to skip
+  // the validation for performance seek, temporary. We may
+  // need to convert to configuration!
+  bool _validatePartialLPNPick = false;
+
 
   TextEditingController _lpnController = new TextEditingController();
   FocusNode _lpnFocusNode = FocusNode();
@@ -579,50 +585,54 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     ProductionLine productionLine = _scannedProductionLine == null ?
         _selectedProductionLineAssignment.productionLine : _scannedProductionLine;
 
-    try {
-      List<Inventory> inventories = await InventoryService.findInventory(lpn: _lpnController.text);
+    if (_validatePartialLPNPick) {
+      try {
+        List<Inventory> inventories = await InventoryService.findInventory(lpn: _lpnController.text);
 
-      if (inventories.isEmpty) {
+        if (inventories.isEmpty) {
 
-        throw new WebAPICallException("can't find inventory by LPN " + _lpnController.text);
+          throw new WebAPICallException("can't find inventory by LPN " + _lpnController.text);
+        }
+
+        // check the quantity we can pick from the invenotry
+        int pickableQuantity = await WorkOrderService.getPickableQuantityForManualPick(
+            _currentWorkOrder.id, _lpnController.text,
+            productionLine.id
+        );
+
+        // check the total quantity of the LPN
+        int inventoryQuantity =  inventories.fold(0, (previous, current) => previous + current.quantity);
+
+
+        if (pickableQuantity < inventoryQuantity) {
+
+          // ok, we will need to inform the user that it will be a partial pick
+          await showYesNoCancelDialog(context, "partial pick",
+              "The LPN has quantity of $inventoryQuantity but the work order only requires $pickableQuantity," +
+                  " do you want to continue with a partial pick? \nYes to pick partial LPN. \nNo to pick whole LPN, \nCancel to cancel the pick",
+                  () {
+                // the user press Yes, continue with partial quantity
+                continuePicking= true;
+                continueWholeLPN = false;
+              },
+                  () {
+                // the user press Yes, continue with partial quantity
+                continuePicking= true;
+                continueWholeLPN = true;
+              },
+                  ()  => continuePicking = false);
+        }
+      }
+      on WebAPICallException catch(ex) {
+
+        Navigator.of(context).pop();
+        showErrorDialog(context, ex.errMsg());
+        return;
+
       }
 
-      // check the quantity we can pick from the invenotry
-      int pickableQuantity = await WorkOrderService.getPickableQuantityForManualPick(
-          _currentWorkOrder.id, _lpnController.text,
-          productionLine.id
-      );
-
-      // check the total quantity of the LPN
-      int inventoryQuantity =  inventories.fold(0, (previous, current) => previous + current.quantity);
-
-
-      if (pickableQuantity < inventoryQuantity) {
-
-        // ok, we will need to inform the user that it will be a partial pick
-        await showYesNoCancelDialog(context, "partial pick",
-            "The LPN has quantity of $inventoryQuantity but the work order only requires $pickableQuantity," +
-            " do you want to continue with a partial pick? \nYes to pick partial LPN. \nNo to pick whole LPN, \nCancel to cancel the pick",
-            () {
-                    // the user press Yes, continue with partial quantity
-                    continuePicking= true;
-                    continueWholeLPN = false;
-            },
-            () {
-              // the user press Yes, continue with partial quantity
-              continuePicking= true;
-              continueWholeLPN = true;
-            },
-            ()  => continuePicking = false);
-      }
     }
-    on WebAPICallException catch(ex) {
 
-      Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
-      return;
-
-    }
 
     Navigator.of(context).pop();
     if (!continuePicking) {
