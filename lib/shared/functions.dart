@@ -48,6 +48,21 @@ void showToast(String text, {
   );
 }
 
+void showErrorToast(String text, {
+  gravity: ToastGravity.TOP,
+  toastLength: Toast.LENGTH_SHORT,
+}) {
+  Fluttertoast.showToast(
+    msg: text,
+    toastLength: toastLength,
+    gravity: gravity,
+    timeInSecForIosWeb: 1,
+    backgroundColor: Colors.grey[600],
+    textColor: Colors.red,
+    fontSize: 16.0,
+  );
+}
+
 void showLoading(context, [String text]) {
   text = text ?? "Loading...";
   showDialog(

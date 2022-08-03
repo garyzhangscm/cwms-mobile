@@ -658,21 +658,45 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
             WarehouseLocation inboundStageLocation = await WarehouseLocationService.getWarehouseLocationById(
                 productionLine.inboundStageLocationId);
             printLongLogMessage("Will pick to production's stage ${inboundStageLocation.name}");
-            await PickService.confirmPick(
+            // Async confirmed the pick to increase the performance
+            // await PickService.confirmPick(
+            PickService.confirmPick(
                 picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text,
-                inboundStageLocation.name);
+                inboundStageLocation.name).then((value) {
+
+                  showToast("pick confirmed");
+            } , onError: (e) {
+              showErrorToast("pick confirmed error, please contact your supervisor or manager");
+              showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
+            });
           }
           else {
             printLongLogMessage("Will pick to production's stage ${productionLine.inboundStageLocation.name}");
-            await PickService.confirmPick(
+            // Async confirmed the pick to increase the performance
+            // await PickService.confirmPick(
+            PickService.confirmPick(
                 picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text,
-                productionLine.inboundStageLocation.name);
+                productionLine.inboundStageLocation.name).then((value) {
+
+              showToast("pick confirmed");
+            } , onError: (e) {
+              showErrorToast("pick confirmed error, please contact your supervisor or manager");
+              showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
+            });
           }
         }
         else {
 
-          await PickService.confirmPick(
-              picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text);
+          // Async confirmed the pick to increase the performance
+          // await PickService.confirmPick(
+          PickService.confirmPick(
+              picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text).then((value) {
+
+            showToast("pick confirmed");
+          } , onError: (e) {
+            showErrorToast("pick confirmed error, please contact your supervisor or manager");
+            showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
+          });
         }
       }
     }
@@ -684,6 +708,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       return;
 
     }
+    printLongLogMessage("All manual picks are done");
 
     Navigator.of(context).pop();
     _refreshScreenAfterPickConfirm();
