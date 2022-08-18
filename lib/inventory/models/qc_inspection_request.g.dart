@@ -33,7 +33,7 @@ Map<String, dynamic> _$QCInspectionRequestToJson(QCInspectionRequest instance) =
       'warehouseId': instance.warehouseId,
       'number': instance.number,
       'inventory': instance.inventory,
-  'qcQuantity': instance.qcQuantity,
+      'qcQuantity': instance.qcQuantity,
       'workOrderQCSampleId': instance.workOrderQCSampleId,
       'qcInspectionResult': EnumToString.convertToString(instance.qcInspectionResult),
       'qcUsername': instance.qcUsername,

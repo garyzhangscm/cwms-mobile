@@ -77,9 +77,11 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Inventory Putaway")),
+      appBar: AppBar(title: Text("CWMS - Inventory QC")),
       body:
-          Column(
+        Padding(padding: EdgeInsets.all(10),
+          child:
+            Column(
               children: [
                 _buildLPNScanner(context),
                 _buildButtons(context),
@@ -88,6 +90,8 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
                 buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemDescription),
                 _buildQCResultButtons(context),
               ],
+        ),
+
       ),
       endDrawer: MyDrawer(),
     );

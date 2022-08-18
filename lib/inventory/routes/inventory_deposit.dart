@@ -154,10 +154,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                 "Quantity:",
                   inventoryDepositRequest == null ? "" :  inventoryDepositRequest.quantity.toString()
               ),
-              buildTwoSectionInformationRow(
-                "Location:",
-                inventoryDepositRequest == null || inventoryDepositRequest.nextLocation == null ? "" : inventoryDepositRequest.nextLocation.name,
-              ),
+              _buildDestinationLocationRow(context),
               _buildLocationScanner(context),
               Padding(
                 padding: const EdgeInsets.only(top: 25),
@@ -187,6 +184,42 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     );
   }
 
+  Widget _buildDestinationLocationRow(BuildContext context) {
+
+    if (inventoryDepositRequest == null) {
+      // there's no more to deposit
+      return
+        buildTwoSectionInformationRow(
+          "Location:", ""
+        );
+    }
+    else if (inventoryDepositRequest.nextLocation == null) {
+      // the inventory has no destination location assigned yet, let the user
+      // to allocate one or manually choose one destination
+      return Padding(
+        padding: EdgeInsets.only(top: 5, bottom: 5),
+        child:
+        Row(
+            children: <Widget>[
+              Padding(padding: EdgeInsets.only(right: 10),
+                child: Text("Location:", textAlign: TextAlign.left),
+              ),
+              IconButton(
+                onPressed: () => _allocateLocation(),
+                icon: Icon(Icons.approval_rounded),
+              ),
+            ]
+        ),
+      );
+    }
+    else {
+
+      // there's already destination location assigned, show the location
+      return buildTwoSectionInformationRow(
+        "Location:", inventoryDepositRequest.nextLocation.name,
+      );
+    }
+  }
 
   // scan in barcode to add a order into current batch
   Widget _buildLPNScanner(BuildContext context) {
@@ -208,10 +241,6 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
                       mainAxisSize: MainAxisSize.min, // added line
                       children: <Widget>[
-                        IconButton(
-                          onPressed: () => _allocateLocation(),
-                          icon: Icon(Icons.approval_rounded),
-                        ),
                         IconButton(
                           onPressed: () => _clearField(),
                           icon: Icon(Icons.close),

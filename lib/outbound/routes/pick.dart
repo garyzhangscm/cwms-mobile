@@ -387,20 +387,32 @@ class _PickPageState extends State<PickPage> {
     if (confirmedQuantity > _currentPick.quantity - _currentPick.pickedQuantity) {
       showErrorDialog(context,
         CWMSLocalizations.of(context).overPickNotAllowed);
+      return;
     }
 
     showLoading(context);
-    if (pick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
-      printLongLogMessage("We will confirm the pick with LPN ${_lpnController.text}");
-      await PickService.confirmPick(
-          pick, confirmedQuantity, _lpnController.text);
-    }
-    else {
 
-      printLongLogMessage("We will confirm the pick with specify the LPN");
-      await PickService.confirmPick(
-          pick, confirmedQuantity);
+    try {
+      if (pick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
+        printLongLogMessage(
+            "We will confirm the pick with LPN ${_lpnController.text}");
+        await PickService.confirmPick(
+            pick, confirmedQuantity, _lpnController.text);
+      }
+      else {
+        printLongLogMessage("We will confirm the pick with specify the LPN");
+        await PickService.confirmPick(
+            pick, confirmedQuantity);
+      }
     }
+    on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      return;
+
+    }
+
     print("pick confirmed");
 
     Navigator.of(context).pop();

@@ -21,6 +21,9 @@ class QCInspectionService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("will save qc inspection request");
+    qcInspectionRequests.forEach((element) {
+      printLongLogMessage("${element.number} resultis ${element.qcInspectionResult}");
+    });
 
     Response response = await httpClient.post(
         "/inventory/qc-inspection-requests",

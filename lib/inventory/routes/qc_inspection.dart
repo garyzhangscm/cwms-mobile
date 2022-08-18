@@ -54,16 +54,20 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(title: Text("CWMS - QC")),
       body:
-        Column(
-            children: [
-              // for work order qc, we will show the input to let the user input the qc quantity
-              _qcInspectionRequest.workOrderQCSampleId == null ?
+        Padding(padding: EdgeInsets.all(10),
+          child:
+            Column(
+                children: [
+                  // for work order qc, we will show the input to let the user input the qc quantity
+                  _qcInspectionRequest.workOrderQCSampleId == null ?
                   Container() :
                   _buildQCQuantity(context),
-              _buildQCItemName(context),
-              _buildQCItemOptionList(context),
-              _buildQCResultButtons(context),
-            ]),
+                  _buildQCItemName(context),
+                  _buildQCItemOptionList(context),
+                  _buildQCResultButtons(context),
+                ]),
+        ),
+
       endDrawer: MyDrawer(),
     );
   }
