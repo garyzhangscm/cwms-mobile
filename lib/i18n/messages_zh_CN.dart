@@ -227,6 +227,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "lpnQuantityExceedWarningMessage" : MessageLookupByLibrary.simpleMessage("收货数量超过了该商品标准LPN所能容纳的数量， 是否继续？"),
     "overPickNotAllowed" : MessageLookupByLibrary.simpleMessage("拣货数量超过了所需数量"),
     "pickToProductionLineInStage" : MessageLookupByLibrary.simpleMessage("拣货到生产线暂存区"),
+    "itemNotReceivableNoPackageType" : MessageLookupByLibrary.simpleMessage("该商品暂时无法入库。 请先设定包装规格"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

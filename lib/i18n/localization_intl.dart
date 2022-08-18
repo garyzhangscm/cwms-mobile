@@ -237,6 +237,7 @@ class CWMSLocalizations {
   String get overPickNotAllowed => Intl.message('Over pick is not allowed', name: 'overPickNotAllowed');
 
   String get pickToProductionLineInStage => Intl.message("Pick To Production Line's Stage", name: 'pickToProductionLineInStage');
+  String get itemNotReceivableNoPackageType => Intl.message("Item is not receivable as there's no item package setup yet", name: 'itemNotReceivableNoFootprint');
 
 
 

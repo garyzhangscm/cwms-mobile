@@ -1,4 +1,5 @@
 import 'package:cwms_mobile/common/models/client.dart';
+import 'package:cwms_mobile/inventory/models/item_family.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -19,7 +20,7 @@ class Item{
     clientId = null;
     client = null;
     itemPackageTypes = [];
-
+    itemFamily = null;
   }
 
   int id;
@@ -34,6 +35,7 @@ class Item{
 
   int warehouseId;
 
+  ItemFamily itemFamily;
 
 
 

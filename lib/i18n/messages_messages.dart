@@ -234,6 +234,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "lpnQuantityExceedWarningMessage" : MessageLookupByLibrary.simpleMessage("The quantity of inventory you are receiving exceeds the LPN standard quantity. Press Yes to continue receiving"),
     "overPickNotAllowed" : MessageLookupByLibrary.simpleMessage("Over pick is not allowed"),
     "pickToProductionLineInStage" : MessageLookupByLibrary.simpleMessage("Pick To Production Line's Stage"),
+    "itemNotReceivableNoPackageType" : MessageLookupByLibrary.simpleMessage("Item is not receivable as there's no item package setup yet"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

@@ -68,6 +68,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _selectedItemPackageType = new ItemPackageType();
 
 
+
     InventoryStatusService.getAllInventoryStatus()
         .then((value) {
       _validInventoryStatus = value;
@@ -478,6 +479,16 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   void _onRecevingConfirm(ReceiptLine receiptLine, int confirmedQuantity,
                 String lpn) async {
+
+    if (_getItemPackageTypeItems().isEmpty) {
+      showErrorToast(
+
+        CWMSLocalizations.of(context).itemNotReceivableNoPackageType,
+      );
+      _readyToConfirm = true;
+      return;
+    }
+
     int lpnCount = _getRequiredLPNCount(confirmedQuantity);
 
     printLongLogMessage("1. lpn count: $lpnCount");
@@ -1040,6 +1051,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
 
   void _enterOnLPNController({int tryTime = 10}) async {
+    if (_getItemPackageTypeItems().isEmpty) {
+      showErrorToast(
+
+        CWMSLocalizations.of(context).itemNotReceivableNoPackageType,
+      );
+      _readyToConfirm = true;
+      return;
+    }
     // we may come here when the user scan / press
     // enter in the LPN controller. In either case, we will need to make sure
     // the lpn doesn't have focus before we start confirm

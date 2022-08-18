@@ -13,6 +13,9 @@ Item _$ItemFromJson(Map<String, dynamic> json) {
     ..description = json['description'] as String
     ..warehouseId = json['warehouseId'] as int
     ..clientId = json['clientId'] as int
+    ..itemFamily = json['itemFamily'] == null
+        ? null
+        : ItemFamily.fromJson(json['itemFamily'] as Map<String, dynamic>)
     ..itemPackageTypes = (json['itemPackageTypes'] as List)
         ?.map(
           (e) => e == null ? null : ItemPackageType.fromJson(e as Map<String, dynamic>))
@@ -32,5 +35,6 @@ Map<String, dynamic> _$ItemToJson(Item instance) => <String, dynamic>{
       'warehouseId': instance.warehouseId,
       'clientId': instance.clientId,
       'client': instance.client,
+  'itemFamily': instance.itemFamily,
       'itemPackageTypes': instance.itemPackageTypes,
     };

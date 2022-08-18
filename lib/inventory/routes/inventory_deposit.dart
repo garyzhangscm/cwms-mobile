@@ -209,6 +209,10 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                       mainAxisSize: MainAxisSize.min, // added line
                       children: <Widget>[
                         IconButton(
+                          onPressed: () => _allocateLocation(),
+                          icon: Icon(Icons.approval_rounded),
+                        ),
+                        IconButton(
                           onPressed: () => _clearField(),
                           icon: Icon(Icons.close),
                         ),
@@ -272,6 +276,26 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   }
 
+  _allocateLocation() {
+    // allocatet a location for the inventory. If the LPN
+    // already has a location , reallocate the inventory
+    showLoading(context);
+    InventoryService.findInventory(lpn: inventoryDepositRequest.lpn)
+        .then((inventoryList) {
+          inventoryList.forEach((inventory) async {
+            printLongLogMessage("will allocate location for lpn ${inventory.lpn}");
+            printLongLogMessage("item family: ${inventory.item.toJson()}");
+            await InventoryService.allocateLocation(inventory);
+          });
+
+          // refresh to show the destination location
+          _refreshInventoryOnRF();
+          _getNextInventoryToDeposit(inventoryDepositRequest.lpn);
+          Navigator.of(context).pop();
+
+    });
+
+  }
   // scan in location barcode to confirm
   Widget _buildLocationScanner(BuildContext context) {
     return
