@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:cwms_mobile/auth/models/user.dart';
+import 'package:cwms_mobile/shared/models/rf_configuration.dart';
 import 'package:cwms_mobile/warehouse_layout/models/company.dart';
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
@@ -49,6 +50,8 @@ class Global {
   static int lastLoginCompanyId;
 
   static Profile profile = Profile();
+
+  static RFConfiguration _rfConfiguration = RFConfiguration();
 
   // 可选的主题列表
   static List<MaterialColor> get themes => _themes;
@@ -105,6 +108,9 @@ class Global {
     await FlutterDownloader.initialize(
         debug: true // optional: set false to disable printing logs to console
     );
+
+    // default configuration
+    _rfConfiguration = RFConfiguration();
   }
   static _initServers() {
     var _servers = _prefs.getString("servers");
@@ -336,6 +342,31 @@ class Global {
   static void setLastActivityLocation(WarehouseLocation location) {
     print("_lastActivityLocation is changed to ${location.name}");
     _lastActivityLocation = location;
+  }
+
+  static bool getConfigurationAsBoolean(String key) {
+    Map<String, dynamic> configurations = _rfConfiguration.toJson();
+
+    // return false by default for boolean value
+    return configurations.containsKey(key) ? configurations[key] as bool :
+        false;
+  }
+  static String getConfigurationAsString(String key) {
+    Map<String, dynamic> configurations = _rfConfiguration.toJson();
+
+    // return empty string by default for String value
+    return configurations.containsKey(key) ? configurations[key] as String :
+        "";
+  }
+  static int getConfigurationAsInt(String key) {
+    Map<String, dynamic> configurations = _rfConfiguration.toJson();
+
+    // return 0  by default for int value
+    return configurations.containsKey(key) ? configurations[key] as int :
+     0;
+  }
+  static void setRFConfiguration(RFConfiguration rfConfiguration) {
+    _rfConfiguration = rfConfiguration;
   }
 
   // logout the current user

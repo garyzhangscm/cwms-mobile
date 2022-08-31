@@ -1,20 +1,15 @@
 
-import 'dart:collection';
 import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/outbound/models/pick_result.dart';
-import 'package:cwms_mobile/outbound/services/order.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
-import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
@@ -24,10 +19,8 @@ import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/services/production_line.dart';
 import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
-import 'package:cwms_mobile/workorder/widgets/work_order_list_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter/services.dart';
 
@@ -54,22 +47,19 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   FocusNode _productionLineFocusNode = FocusNode();
   FocusNode _productionLineControllerFocusNode = FocusNode();
 
-  GlobalKey _formKey = new GlobalKey<FormState>();
 
   WorkOrder _currentWorkOrder;
-  // list all the production line that assigned to this work order
-  List<ProductionLineAssignment> _productionLineAssignment;
   ProductionLineAssignment _selectedProductionLineAssignment;
   ProductionLine _scannedProductionLine;
 
   bool _readyToConfirm = true;
-  bool _pickToProductionLineInStage = true;
 
   // flag to indicate whether we will need to
   // validate partial LPN pick. Default to false to skip
   // the validation for performance seek, temporary. We may
   // need to convert to configuration!
   bool _validatePartialLPNPick = false;
+  bool _pickToProductionLineInStage = true;
 
 
   TextEditingController _lpnController = new TextEditingController();
@@ -81,6 +71,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   @override
   void initState() {
     super.initState();
+
+    _validatePartialLPNPick = Global.getConfigurationAsBoolean("validatePartialLPNPick");
+    _pickToProductionLineInStage = Global.getConfigurationAsBoolean("pickToProductionLineInStage");
 
     _currentWorkOrder = null;
     _scannedProductionLine = null;

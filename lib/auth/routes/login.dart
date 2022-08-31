@@ -2,11 +2,13 @@
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/auth/services/login.dart';
 import 'package:cwms_mobile/common/services/rf.dart';
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/rf_app_version.dart';
 import 'package:cwms_mobile/shared/services/rf_app_version.dart';
+import 'package:cwms_mobile/shared/services/rf_configuration.dart';
 
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
@@ -419,6 +421,17 @@ class _LoginPageState extends State<LoginPage> {
 
         print("login with user: ${user.username}, token: ${user.token}. companyCode: ${Global.lastLoginCompanyId}, company Id: ${Global.lastLoginCompanyCode}");
 
+        // load the rf configuration
+        try {
+
+          RFConfigurationService.getRFConfiguration(Global.lastLoginRFCode).then((rfConfiguration) {
+              Global.setRFConfiguration(rfConfiguration);
+          });
+        }
+        on WebAPICallException catch(ex) {
+          // ignore the except and continue with the default configuration
+
+        }
         RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
 
         bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
