@@ -260,7 +260,11 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     _currentWorkOrder = await WorkOrderService.getWorkOrderByNumber(_workOrderNumberController.text);
 
 
+
     Navigator.of(context).pop();
+    if (_currentWorkOrder == null) {
+      showErrorDialog(context, "Can't find work order by number " + _workOrderNumberController.text);
+    }
     // make sure the work order already have production line assigned
     if(_currentWorkOrder.productionLineAssignments.isEmpty) {
 

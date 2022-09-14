@@ -15,7 +15,6 @@ import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:badges/badges.dart';
 import 'package:flutter/services.dart';
 
 
@@ -90,10 +89,10 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
               _currentWorkOrder == null || _scannedProductionLine != null ?
               _buildProductionLineTextBox(context) :
-              _buildProductionLineAssignmentSelection(context),
+              _buildProductionLineAssignmentSelection(context)
 
               // _buildWorkOrderNumberAndProductionLineScanner(context),
-              _buildButtons(context)
+              // _buildButtons(context)
             ],
           ),
       // bottomNavigationBar: buildBottomNavigationBar(context)
@@ -453,31 +452,6 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
             child: Text(CWMSLocalizations.of(context).workOrderProduce),
           )
         );
-    /***
-      Row(
-
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.max,
-        //交叉轴的布局方式，对于column来说就是水平方向的布局方式
-        crossAxisAlignment: CrossAxisAlignment.center,
-        //就是字child的垂直布局方向，向上还是向下
-        verticalDirection: VerticalDirection.down,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onStartProduce,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).workOrderProduce),
-            ),
-
-          ),
-
-        ],
-    );
-        **/
   }
 
   Future<void> _onStartProduce() async {
