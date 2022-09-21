@@ -25,7 +25,7 @@ class RFAppVersionService {
 
     Response response = await Dio().get(
         Global.currentServer.url + "/resource/rf-app-version/latest-version",
-        queryParameters: {"companyId": Global.currentWarehouse.id,
+        queryParameters: {"companyId": Global.getLastLoginCompanyId(),
         "rfCode": rfCode}
     );
 

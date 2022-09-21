@@ -166,6 +166,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     // remove the file with the same name from the downloading directory
     await _removeExistingDownloadedFile(_appLocalPath + "/" + _latestRFAppVersion.fileName);
 
+    printLongLogMessage("start to download the apk and saved to ${_appLocalPath}");
     await FlutterDownloader.enqueue(
       url: serverUrl,
       // url: 'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf',
@@ -173,7 +174,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
       fileName: _latestRFAppVersion.fileName,
       showNotification: true,
       openFileFromNotification: true,
-      saveInPublicStorage: true,
+      saveInPublicStorage: false,
     );
   }
 

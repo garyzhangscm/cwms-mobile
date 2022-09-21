@@ -434,6 +434,7 @@ class _LoginPageState extends State<LoginPage> {
         }
         RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
 
+        printLongLogMessage("latestRFAppVersion: ${latestRFAppVersion.versionNumber}");
         bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
         if (_appNeedUpdate) {
           Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
