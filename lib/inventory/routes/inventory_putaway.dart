@@ -182,9 +182,15 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
   void _onAddingLPN() async {
 
+    if (_lpnController.text.isEmpty) {
+
+      showErrorDialog(context, "please input the LPN number");
+      return;
+    }
     showLoading(context);
     // move the inventory being scanned onto RF
     printLongLogMessage("==>> Start to adding LPN for deposit");
+
     List<Inventory> inventories = await InventoryService.findInventory(lpn :_lpnController.text, includeDetails: false);
     printLongLogMessage("==>> LPN ${_lpnController.text} is found");
     if(inventories.isNotEmpty) {

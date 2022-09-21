@@ -88,7 +88,8 @@ class ProductionLineAssignmentService {
     printLongLogMessage("start to get assigned work order by productionLineId: ${productionLine.id}");
     Response response = await httpClient.get(
         "workorder/production-line-assignments/assigned-work-orders",
-        queryParameters: {"productionLineId": productionLine.id}
+        queryParameters: {
+        "warehouseId": Global.currentWarehouse.id, "productionLineId": productionLine.id}
     );
 
     printLongLogMessage("response from getAssignedWorkOrderByProductionLine: $response");

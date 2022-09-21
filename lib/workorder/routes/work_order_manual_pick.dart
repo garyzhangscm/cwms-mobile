@@ -20,6 +20,7 @@ import 'package:cwms_mobile/workorder/services/production_line.dart';
 import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter/services.dart';
@@ -102,26 +103,33 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
       body:
-          Column(
-            children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child:
+            Column(
+              children: [
 
-              // input controller for work order number
-              _buildWorkOrderNumberInput(context),
-              // If the user start with a work order, show the dropdown list to select production line
-              // if the user start with a production line, show a text box
+                // input controller for work order number
+                _buildWorkOrderNumberInput(context),
+                // If the user start with a work order, show the dropdown list to select production line
+                // if the user start with a production line, show a text box
 
-              _currentWorkOrder == null || _scannedProductionLine != null ?
-                  _buildProductionLineTextBox(context) :
-                  _buildProductionLineAssignmentSelection(context),
-              // whether directly pick the inventory onto production line's in stage
-              // or pick the inventory onto the RF
-              _currentWorkOrder == null ? Container() : _buildPickToProductionInput(context),
-              // allow user to scan in LPN
-              _currentWorkOrder == null ? Container() : _buildLPNInput(context),
-              // allow user to input LPN
-              _buildButtons(context),
-            ],
+                _currentWorkOrder == null || _scannedProductionLine != null ?
+                _buildProductionLineTextBox(context) :
+                _buildProductionLineAssignmentSelection(context),
+                // build a hypelink to allow the user to click and show
+                // what the user will need to pick and the remain quantity to be picked
+                _currentWorkOrder == null ? Container() : _buildPickingInformation(context),
+                // whether directly pick the inventory onto production line's in stage
+                // or pick the inventory onto the RF
+                _currentWorkOrder == null ? Container() : _buildPickToProductionInput(context),
+                // allow user to scan in LPN
+                _currentWorkOrder == null ? Container() : _buildLPNInput(context),
+                // allow user to input LPN
+                _buildButtons(context),
+              ],
           ),
+        ),
       // bottomNavigationBar: buildBottomNavigationBar(context)
       endDrawer: MyDrawer(),
     );
@@ -137,7 +145,68 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
         _getProductionLineInputWidget(context));
   }
 
+  Widget _buildPickingInformation(BuildContext context) {
+    return
+        // confirm the location
+        Row(
+          children: <Widget>[
+             RichText(
+              text: TextSpan(
+                text: 'click to see the item to be picked',
+                style: new TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15
+                ),
+                recognizer: new TapGestureRecognizer()
+                ..onTap = () => openPickingInformationForm()
+              ),
+            )
 
+        ]
+      );
+  }
+
+  void openPickingInformationForm() async{
+
+    printLongLogMessage("openPickingInformationForm");
+
+    await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          var child = Column(
+              children: <Widget>[
+                ListTile(title:  Text("item list")),
+                _buildPickableItemList(context)
+              ],
+          );
+          //使用AlertDialog会报错
+          //return AlertDialog(content: child);
+          return Center(
+              child: Dialog(child: child)
+          );
+        },
+    );
+  }
+
+  Widget _buildPickableItemList(BuildContext context) {
+    return
+      Expanded(
+        child: ListView.builder(
+            itemCount: _currentWorkOrder.workOrderLines.length,
+            itemBuilder: (BuildContext context, int index) {
+
+              return ListTile(
+
+                title: Text(
+                    CWMSLocalizations.of(context).item + ':' + _currentWorkOrder.workOrderLines[index].item.name),
+                subtitle: Text(
+                    CWMSLocalizations.of(context).expectedQuantity + ':' + _currentWorkOrder.workOrderLines[index].openQuantity.toString()),
+              );
+            }),
+      );
+  }
 
   Widget _getWorkOrderInputWidget(BuildContext context) {
     return

@@ -89,10 +89,10 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
               _currentWorkOrder == null || _scannedProductionLine != null ?
               _buildProductionLineTextBox(context) :
-              _buildProductionLineAssignmentSelection(context)
+              _buildProductionLineAssignmentSelection(context),
 
               // _buildWorkOrderNumberAndProductionLineScanner(context),
-              // _buildButtons(context)
+              _buildButtons(context)
             ],
           ),
       // bottomNavigationBar: buildBottomNavigationBar(context)
@@ -357,6 +357,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     setState(()  {
       _currentWorkOrder;
       _scannedProductionLine;
+      _assignedProductionLine;
     });
   }
 
