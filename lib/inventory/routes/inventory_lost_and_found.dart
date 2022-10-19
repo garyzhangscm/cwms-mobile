@@ -98,6 +98,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).inventoryAdjust)),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

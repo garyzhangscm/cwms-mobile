@@ -102,6 +102,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
+      resizeToAvoidBottomInset: true,
       body:
         Padding(
           padding: const EdgeInsets.all(16.0),

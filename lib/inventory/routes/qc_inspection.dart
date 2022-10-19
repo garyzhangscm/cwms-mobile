@@ -53,6 +53,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(title: Text("CWMS - QC")),
+
       body:
         Padding(padding: EdgeInsets.all(10),
           child:

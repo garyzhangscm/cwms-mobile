@@ -126,7 +126,7 @@ printLongLogMessage(String message) {
 showErrorDialog(BuildContext context, String message) {
 
   // set up the button
-  Widget okButton = FlatButton(
+  Widget okButton = ElevatedButton(
     child: Text("OK"),
     onPressed: () {
       Navigator.of(context).pop();
@@ -154,7 +154,7 @@ showErrorDialog(BuildContext context, String message) {
 showBlockedErrorDialog(BuildContext context, String message) async {
 
   // set up the button
-  Widget okButton = FlatButton(
+  Widget okButton = ElevatedButton(
     child: Text("OK"),
     onPressed: () {
       Navigator.of(context).pop();

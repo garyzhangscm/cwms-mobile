@@ -56,6 +56,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).captureLPN)),
+      resizeToAvoidBottomInset: true,
       body:  Padding(
                padding: const EdgeInsets.all(16.0),
                child:

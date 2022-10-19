@@ -78,6 +78,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text("CWMS - Inventory QC")),
+      resizeToAvoidBottomInset: true,
       body:
         Padding(padding: EdgeInsets.all(10),
           child:
@@ -275,13 +276,13 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
           children: <Widget>[
             Row(
               children: [
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                       .of(context)
                       .cancel),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                       .of(context)
                       .confirm),

@@ -79,6 +79,7 @@ class _AuditCountRequestPageState extends State<AuditCountRequestPage> {
     printLongLogMessage("_auditCountRequest.location == null? ${_auditCountRequest.location == null}");
     return Scaffold(
       appBar: AppBar(title: Text("${CWMSLocalizations.of(context).auditCount} - ${_auditCountRequest?.location?.name}")),
+      resizeToAvoidBottomInset: true,
       body: _buildInventoryList(context),
       bottomNavigationBar:_buildBottomNavigationBar(context),
       floatingActionButton:

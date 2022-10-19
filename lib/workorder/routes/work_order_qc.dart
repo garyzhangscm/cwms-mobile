@@ -99,6 +99,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderQC)),
+      resizeToAvoidBottomInset: true,
       body:
           Column(
             children: [

@@ -72,6 +72,7 @@ class _LaunchPageState extends State<LaunchPage> {
       appBar: AppBar(
         title: Text(CWMSLocalizations.of(context).chooseServer),
       ),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: EdgeInsets.all(18),
         child: Form(
@@ -120,13 +121,21 @@ class _LaunchPageState extends State<LaunchPage> {
 
                   ]
               ),
-              RaisedButton(
-                color: Colors.blue,
-                highlightColor: Colors.blue[700],
-                colorBrightness: Brightness.dark,
-                splashColor: Colors.grey,
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue,
+
+                ),
+                // color: Colors.blue,
+                // highlightColor: Colors.blue[700],
+                // colorBrightness: Brightness.dark,
+                // splashColor: Colors.grey,
                 child: Text("Connect"),
-                shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+                // shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
                 onPressed: () {
                   if (_formKey.currentState.validate()) {
                      _onConnect(_serverURLController.text, _autoConnect);

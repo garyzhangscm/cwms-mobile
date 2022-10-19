@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.15+1
+version: 1.1.1+1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -46,20 +46,23 @@ dependencies:
 
   # http client
   # dio: ^3.0.10
-  dio: ^4.0.1
+  dio: ^4.0.6
 
   # Parse JSON
   # json_annotation: ^3.1.0
-  json_annotation: ^4.3.0
-
+  # json_annotation: ^4.3.0
+  json_annotation: ^4.7.0
 
   # cached_network_image: ^2.0.0
-  cached_network_image: ^3.1.0+1
+  # cached_network_image: ^3.1.0+1
+  cached_network_image: ^3.2.2
 
-  fluttertoast: ^8.0.8
+  # fluttertoast: ^8.0.8
+  fluttertoast: ^8.1.1
 
   # webview_flutter: ^1.0.6
-  webview_flutter: ^2.3.0
+  # webview_flutter: ^2.3.0
+  webview_flutter: ^3.0.4
 
   # barcode scanner
   # flutter_barcode_scanner: ^1.0.2
@@ -80,9 +83,11 @@ dependencies:
   # printing: ^5.0.0
 
   # setup the launcher icon
-  flutter_launcher_icons: ^0.9.2
+  #  flutter_launcher_icons: ^0.9.2
+  flutter_launcher_icons: ^0.10.0
 
-  carousel_slider: ^4.0.0
+  # carousel_slider: ^4.0.0
+  carousel_slider: ^4.1.1
 
   # Auto upgrade
   # 1. get package information from the server
@@ -90,7 +95,8 @@ dependencies:
   # 2. get the local path to download and store the app file
   path_provider: ^2.0.4
   # 3. download the latest app file from the server
-  flutter_downloader: ^1.7.1
+  # flutter_downloader: ^1.7.1
+  flutter_downloader: ^1.8.4
   # 3.1 Show the download progress
   progress_dialog: ^1.2.4
   # 4. open the downloaded file and install the apk
@@ -99,9 +105,11 @@ dependencies:
   device_info: ^2.0.3
   android_path_provider: ^0.3.0
   permission_handler: ^8.2.6
+  # permission_handler: ^9.2.0
 
   #upload images
-  image_picker: ^0.8.4+4
+  # image_picker: ^0.8.4+4
+  image_picker: ^0.8.6
 
 dev_dependencies:
   flutter_test:
@@ -109,9 +117,11 @@ dev_dependencies:
 
   # process JSON
   # build_runner: ^1.10.4
-  build_runner: ^2.1.4
+  # build_runner: ^2.1.4
+  build_runner: ^2.3.2
   # json_serializable: ^3.5.0
-  json_serializable: ^6.0.1
+  # json_serializable: ^6.0.1
+  json_serializable: ^6.5.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

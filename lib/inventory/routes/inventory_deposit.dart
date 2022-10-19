@@ -98,7 +98,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                   content: Text("No more inventory on the RF"),
                   actions: <Widget>[
 
-                    FlatButton(
+                    ElevatedButton(
                       child: Text("Confirm"),
                       onPressed: () {
                         Navigator.of(context).pop(true); //关闭对话框
@@ -160,8 +160,11 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                 padding: const EdgeInsets.only(top: 25),
                 child: ConstrainedBox(
                   constraints: BoxConstraints.expand(height: 55.0),
-                  child: RaisedButton(
-                    color: Theme.of(context).primaryColor,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).primaryColor,
+                    ),
                     onPressed: inventoryDepositRequest == null || inventoryDepositRequest.lpn == null || inventoryDepositRequest.lpn.isEmpty ?
                        null :
                        () {
@@ -171,7 +174,6 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                          }
 
                       },
-                    textColor: Colors.white,
                     child: Text("Confirm"),
                   ),
                 ),

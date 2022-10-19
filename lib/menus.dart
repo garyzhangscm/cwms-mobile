@@ -80,6 +80,7 @@ class _MenusState extends State<Menus> {
       appBar: AppBar(title: Text(
           "CWMS"
       )),
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children:  [
           Container(

@@ -62,6 +62,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).kpi)),
+      resizeToAvoidBottomInset: true,
       body:
         Column(
           children: [
@@ -310,9 +311,13 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                         Padding(
                           padding: const EdgeInsets.only(left: 25.0, right: 25.0),
                           child:
-                          RaisedButton(
-                            color: Theme.of(context).primaryColor,
-                            textColor: Colors.white,
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Theme.of(context).primaryColor,
+                            ),
+                            // color: Theme.of(context).primaryColor,
+                            // textColor: Colors.white,
                             child: Text(CWMSLocalizations
                                 .of(context)
                                 .cancel),
@@ -323,9 +328,11 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                         Padding(
                           padding: const EdgeInsets.only(left: 25.0, right: 25.0),
                           child:
-                          RaisedButton(
-                            color: Theme.of(context).primaryColor,
-                            textColor: Colors.white,
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Theme.of(context).primaryColor,
+                            ),
                             child: Text(CWMSLocalizations
                                 .of(context)
                                 .confirm),

@@ -41,6 +41,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text("CWMS - Inventory")),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -56,15 +57,17 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
                 padding: const EdgeInsets.only(top: 25),
                 child: ConstrainedBox(
                   constraints: BoxConstraints.expand(height: 55.0),
-                  child: RaisedButton(
-                    color: Theme.of(context).primaryColor,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).primaryColor,
+                    ),
                     onPressed: () {
                        if (_formKey.currentState.validate()) {
                          print("form validation passed");
                          _onInventoryQuery();
                        }
                     },
-                    textColor: Colors.white,
                     child: Text(CWMSLocalizations.of(context).query),
                   ),
                 ),

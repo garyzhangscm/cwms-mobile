@@ -78,6 +78,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
+      resizeToAvoidBottomInset: true,
       body:
           Column(
             children: [
@@ -446,10 +447,12 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
         width: double.infinity,
           height: 50,
         child:
-          RaisedButton(
-            color: Theme.of(context).primaryColor,
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).primaryColor,
+            ),
             onPressed: _onStartProduce,
-            textColor: Colors.white,
             child: Text(CWMSLocalizations.of(context).workOrderProduce),
           )
         );

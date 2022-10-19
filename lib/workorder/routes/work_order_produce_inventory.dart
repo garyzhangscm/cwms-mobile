@@ -123,6 +123,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

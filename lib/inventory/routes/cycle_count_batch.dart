@@ -58,6 +58,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text("CWMS - Cycle Count")),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -110,33 +111,40 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
           Padding(
             padding: const EdgeInsets.only(left: 10),
             child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onAddingCountBatch,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).addCountBatch),
-            ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+                onPressed: _onAddingCountBatch,
+                child: Text(CWMSLocalizations.of(context).addCountBatch),
+              ),
 
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10),
             child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onChooseCountBatch,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).chooseCountBatch),
-            ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+                onPressed: _onChooseCountBatch,
+                child: Text(CWMSLocalizations.of(context).chooseCountBatch),
+              ),
 
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10),
-            child: RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onStartingCycleCount,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).start),
-            ),
+            child:
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+                onPressed: _onStartingCycleCount,
+                child: Text(CWMSLocalizations.of(context).start),
+              ),
           ),
         ],
       );
@@ -257,13 +265,13 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
           children: <Widget>[
             Row(
               children: [
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                       .of(context)
                       .cancel),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                       .of(context)
                       .confirm),

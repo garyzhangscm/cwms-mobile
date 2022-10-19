@@ -62,6 +62,7 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text("CWMS - Cycle Count - ${_cycleCountRequest?.location?.name}")),
+      resizeToAvoidBottomInset: true,
       body: _buildInventorySummaryList(context),
       bottomNavigationBar:_buildBottomNavigationBar(context),
       floatingActionButton: FloatingActionButton( //悬浮按钮

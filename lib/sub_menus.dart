@@ -39,6 +39,7 @@ class _SubMenusState extends State<SubMenus> {
 
     return Scaffold(
         appBar: AppBar(title: Text("CWMS - ${_menuSubGroup.text}")),
+      resizeToAvoidBottomInset: true,
         body: Stack(
           children:  [
             Container(

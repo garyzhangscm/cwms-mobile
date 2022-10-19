@@ -60,6 +60,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).auditCount)),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -112,33 +113,40 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
           Padding(
             padding: const EdgeInsets.only(left: 10),
             child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onAddingCountBatch,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).addCountBatch),
-            ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+                onPressed: _onAddingCountBatch,
+                child: Text(CWMSLocalizations.of(context).addCountBatch),
+              ),
 
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10),
             child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onChooseCountBatch,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).chooseCountBatch),
-            ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+                onPressed: _onChooseCountBatch,
+                child: Text(CWMSLocalizations.of(context).chooseCountBatch),
+              ),
 
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10),
-            child: RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onStartingAuditCount,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).start),
-            ),
+            child:
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+                onPressed: _onStartingAuditCount,
+                child: Text(CWMSLocalizations.of(context).start),
+              ),
           ),
         ],
       );
@@ -258,13 +266,13 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
           children: <Widget>[
             Row(
               children: [
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                       .of(context)
                       .cancel),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                       .of(context)
                       .confirm),

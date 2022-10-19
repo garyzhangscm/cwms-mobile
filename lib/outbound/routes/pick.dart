@@ -96,6 +96,7 @@ class _PickPageState extends State<PickPage> {
     return Scaffold(
 
       appBar: AppBar(title: Text("CWMS - Pick")),
+      resizeToAvoidBottomInset: true,
       body:
           Column(
             children: <Widget>[

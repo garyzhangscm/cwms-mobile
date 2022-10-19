@@ -121,6 +121,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).receiving)),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Form(
@@ -881,7 +882,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           children: <Widget>[
             Row(
               children: [
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                       .of(context)
                       .cancel),
@@ -973,7 +974,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           children: <Widget>[
             Row(
               children: [
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                       .of(context)
                       .cancel),

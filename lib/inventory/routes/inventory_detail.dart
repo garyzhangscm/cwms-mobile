@@ -36,6 +36,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).inventory)),
+        resizeToAvoidBottomInset: true,
       body:  _buildInventoryList(context, _inventories)
       //endDrawer: MyDrawer(),
       // endDrawer: MyDrawer(),

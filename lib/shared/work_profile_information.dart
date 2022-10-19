@@ -35,6 +35,7 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).workProfile)),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -47,18 +48,21 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
                 padding: const EdgeInsets.only(top: 25),
                 child: ConstrainedBox(
                   constraints: BoxConstraints.expand(height: 55.0),
-                  child: RaisedButton(
-                    color: Theme.of(context).primaryColor,
-                    onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        print("form validation passed");
-                        _changeWorkProfile();
-                      }
+                  child:
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState.validate()) {
+                          print("form validation passed");
+                          _changeWorkProfile();
+                        }
 
-                    },
-                    textColor: Colors.white,
-                    child: Text(CWMSLocalizations.of(context).confirm),
-                  ),
+                      },
+                      child: Text(CWMSLocalizations.of(context).confirm),
+                    ),
                 ),
               ),
             ],

@@ -66,6 +66,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).appUpgrade)),
+      resizeToAvoidBottomInset: true,
       body:
           Column(
             children: [
@@ -245,6 +246,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     if (androidInfo.version.sdkInt <= 28) {
+
       final status = await Permission.storage.status;
 
       if (status != PermissionStatus.granted) {

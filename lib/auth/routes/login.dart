@@ -72,6 +72,7 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).login)),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -182,10 +183,13 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.only(top: 5),
                 child: ConstrainedBox(
                   constraints: BoxConstraints.expand(height: 55.0),
-                  child: RaisedButton(
-                    color: Theme.of(context).primaryColor,
+                  child: ElevatedButton(
+
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).primaryColor,
+                    ),
                     onPressed: _onLogin,
-                    textColor: Colors.white,
                     child: Text("login"),
                   ),
                 ),
@@ -402,7 +406,7 @@ class _LoginPageState extends State<LoginPage> {
           CompanyService.getCompanyByCode(_companyCodeController.text)
               .then((company)  {
                 Global.setAutoLoginCompany(company);
-                printLongLogMessage("auto login company is setup to ${Global.getAutoLoginCompany().name}");
+                printLongLogMessage("auto login company is setup to ${company.name}");
               });
 
         }
@@ -434,8 +438,16 @@ class _LoginPageState extends State<LoginPage> {
         }
         RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
 
-        printLongLogMessage("latestRFAppVersion: ${latestRFAppVersion.versionNumber}");
-        bool _appNeedUpdate = await _needUpdate(latestRFAppVersion);
+        printLongLogMessage("latestRFAppVersion: ${latestRFAppVersion == null ? "N/A" : latestRFAppVersion.versionNumber}");
+
+        bool _appNeedUpdate = false;
+        if (latestRFAppVersion == null) {
+          _appNeedUpdate = false;
+        }
+        else {
+          _appNeedUpdate = await _needUpdate(latestRFAppVersion);
+        }
+
         if (_appNeedUpdate) {
           Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);
         }

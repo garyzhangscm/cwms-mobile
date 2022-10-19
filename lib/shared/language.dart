@@ -32,6 +32,7 @@ class LanguageRoute extends StatelessWidget {
       appBar: AppBar(
         title: Text(gm.language),
       ),
+      resizeToAvoidBottomInset: true,
       body: ListView(
         children: <Widget>[
           _buildLanguageItem("中文简体", "zh_CN"),

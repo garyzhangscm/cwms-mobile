@@ -145,6 +145,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           title: Text(CWMSLocalizations.of(context).productionLineCheckOut),
           bottom: TabBar(

@@ -98,6 +98,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByOrder)),
+      resizeToAvoidBottomInset: true,
       body:
           Column(
             children: [
@@ -498,13 +499,13 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
           children: <Widget>[
             Row(
               children: [
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                             .of(context)
                             .cancel),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
-                FlatButton(
+                ElevatedButton(
                   child: Text(CWMSLocalizations
                               .of(context)
                               .confirm),

@@ -69,6 +69,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text("CWMS - Item Sampling")),
+      resizeToAvoidBottomInset: true,
       body:
           Column(
               children: [

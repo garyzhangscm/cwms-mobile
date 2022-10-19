@@ -129,6 +129,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).productionLineCheckIn)),
+      resizeToAvoidBottomInset: true,
       body:
           Column(
             children: [

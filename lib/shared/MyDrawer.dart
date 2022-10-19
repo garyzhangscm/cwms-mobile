@@ -102,11 +102,11 @@ class MyDrawer extends StatelessWidget {
                     return AlertDialog(
                       content: Text(gm.logoutTip),
                       actions: <Widget>[
-                        FlatButton(
+                        ElevatedButton(
                           child: Text(gm.cancel),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        FlatButton(
+                        ElevatedButton(
                           child: Text(gm.yes),
                           onPressed: () {
                             //该赋值语句会触发MaterialApp rebuild

@@ -69,6 +69,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text("CWMS - Inventory Putaway")),
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -127,12 +128,14 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
           Padding(
             padding: const EdgeInsets.only(left: 10),
             child:
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
-              onPressed: _onAddingLPN,
-              textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).add),
-            ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+                onPressed: _onAddingLPN,
+                child: Text(CWMSLocalizations.of(context).add),
+              ),
 
           ),
 
@@ -147,10 +150,11 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                   inventoryOnRF.length.toString(),
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
-                child: RaisedButton(
-                  onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
-                ),
+                child:
+                  ElevatedButton(
+                    onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+                    child: Text(CWMSLocalizations.of(context).depositInventory),
+                  ),
               )
           ),
         ],
