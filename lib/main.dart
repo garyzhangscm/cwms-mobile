@@ -21,6 +21,7 @@ import 'package:cwms_mobile/workorder/routes/work_order_produce_inventory.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_kpi.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_qc.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_qc_sampling.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:provider/provider.dart';
@@ -46,7 +47,9 @@ import 'outbound/routes/pick.dart';
 
 import 'package:flutter/rendering.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
   // debugPaintSizeEnabled = true;
   Global.init().then((e) => runApp(MyApp()));
 }

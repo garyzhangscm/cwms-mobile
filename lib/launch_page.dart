@@ -48,7 +48,7 @@ class _LaunchPageState extends State<LaunchPage> {
 
       // in debug mode
       _serverURLController =  TextEditingController(
-          text: 'https://staging.claytechsuite.com/api/');
+          text: 'https://prod.claytechsuite.com/api/');
       _autoConnect = true;
     }
     else if (server != null) {

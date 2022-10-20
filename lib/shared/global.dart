@@ -105,9 +105,9 @@ class Global {
     lastLoginCompanyCode = _prefs.getString("lastLoginCompanyCode");
 
     // initial download flugin
-    await FlutterDownloader.initialize(
-        debug: true // optional: set false to disable printing logs to console
-    );
+    // await FlutterDownloader.initialize(
+    //     debug: true // optional: set false to disable printing logs to console
+   //  );
 
     // default configuration
     _rfConfiguration = RFConfiguration();

@@ -10,7 +10,6 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/rf_app_version.dart';
 import 'package:device_info/device_info.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:open_file/open_file.dart';
@@ -40,21 +39,61 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
 
   String _appLocalPath;
 
+  String message = "";
+
+  TextEditingController _resultController = new TextEditingController();
+
 
   @override
   void initState() {
     super.initState();
 
-    // init tools for the upgrade current app
-    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
-    _port.listen(_updateDownLoadInfo);
-    FlutterDownloader.registerCallback(_downLoadCallback);
 
+    _bindBackgroundIsolate();
+
+    FlutterDownloader.registerCallback(_downLoadCallback, step: 1);
+
+
+    // init tools for the upgrade current app
+    // IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
+    // _port.listen(_updateDownLoadInfo);
+    // FlutterDownloader.registerCallback(_downLoadCallback);
+  }
+
+
+  void _bindBackgroundIsolate() {
+    final isSuccess = IsolateNameServer.registerPortWithName(
+      _port.sendPort,
+      'downloader_send_port',
+    );
+    if (!isSuccess) {
+      _unbindBackgroundIsolate();
+      _bindBackgroundIsolate();
+      return;
+    }
+    _port.listen((dynamic data) {
+      final taskId = (data as List<dynamic>)[0] as String;
+      final status = data[1] as DownloadTaskStatus;
+      final progress = data[2] as int;
+
+      print(
+        'Callback on UI isolate: '
+            'task ($taskId) is in status ($status) and process ($progress)',
+      );
+      _displayDownLoadInfo(status, progress);
+    });
+  }
+
+
+  void _unbindBackgroundIsolate() {
+    IsolateNameServer.removePortNameMapping('downloader_send_port');
   }
 
   @override
   void dispose() {
-    IsolateNameServer.removePortNameMapping('downloader_send_port');
+
+    _unbindBackgroundIsolate();
+
     super.dispose();
   }
 
@@ -72,7 +111,8 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
             children: [
               _buildReleaseNoteHeader(context),
               _buildReleaseNote(context),
-              _buildButtons(context)
+              _buildButtons(context),
+              // _buildResult(context),
             ],
           ),
       endDrawer: MyDrawer(),
@@ -133,10 +173,36 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     );
   }
 
+  Widget _buildResult(BuildContext context) {
+
+    return Column(
+      children: [
+        Card(
+            color: Colors.grey,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: TextField(
+                maxLines: 8, //or null
+                controller: _resultController,
+                readOnly: true,
+              ),
+            )
+        ),
+      ],
+    );
+  }
+
+  _displayResultMessage(String message) {
+    this._resultController.text = this._resultController.text + "\n" + message;
+  }
+
   _onUpgrade() async {
 
     // first, request the write permission
+    _displayResultMessage("start to upgrade");
+
     bool hasPermission =  await _retryRequestPermission();
+    _displayResultMessage("hasPermission? ${hasPermission}" );
     if (hasPermission) {
       printLongLogMessage("We got permission! Let's start update the APP");
       String apkUrl =
@@ -144,6 +210,8 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
               "/resource/rf-apk-files?versionNumber=" + _latestRFAppVersion.versionNumber  +
               "&companyId=" + Global.lastLoginCompanyId.toString();
       printLongLogMessage("start to download from $apkUrl");
+
+      _displayResultMessage("start to download from $apkUrl" );
 
       _downloadLatestApp(context, apkUrl);
     }
@@ -165,9 +233,12 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
       pr.show();
     }
     // remove the file with the same name from the downloading directory
+    _displayResultMessage("start to remove the existing download files from " +
+        _appLocalPath + "/" + _latestRFAppVersion.fileName);
     await _removeExistingDownloadedFile(_appLocalPath + "/" + _latestRFAppVersion.fileName);
 
     printLongLogMessage("start to download the apk and saved to ${_appLocalPath}");
+    _displayResultMessage("start to download the apk and saved to ${_appLocalPath}");
     await FlutterDownloader.enqueue(
       url: serverUrl,
       // url: 'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf',
@@ -175,7 +246,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
       fileName: _latestRFAppVersion.fileName,
       showNotification: true,
       openFileFromNotification: true,
-      saveInPublicStorage: false,
+      // saveInPublicStorage: false,
     );
   }
 
@@ -187,17 +258,21 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     }
   }
   /// 下载进度回调函数
+  @pragma('vm:entry-point')
   static void _downLoadCallback(String id, DownloadTaskStatus status, int progress) {
     printLongLogMessage("_downLoadCallback: id: ${id}, status: ${status.value}, progress: ${progress}");
 
-    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
-    send.send([id, status, progress]);
+    IsolateNameServer.lookupPortByName('downloader_send_port')
+        ?.send([id, status, progress]);
+
+    // final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    // send.send([id, status, progress]);
   }
 
   /// 更新下载进度框
-  _updateDownLoadInfo(dynamic data) {
-    DownloadTaskStatus status = data[1];
-    int progress = data[2];
+  _displayDownLoadInfo(DownloadTaskStatus status, int progress) {
+
+    _displayResultMessage("status: $status, progress: $progress");
 
     if (status == DownloadTaskStatus.running) {
 
@@ -231,11 +306,14 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
 
 
   Future<bool> _retryRequestPermission() async {
+    _displayResultMessage("start to check if we already have permission");
     final hasGranted = await _checkPermission();
     printLongLogMessage("permissiong granted? ${hasGranted}");
+    _displayResultMessage("permissiong granted? ${hasGranted}");
 
     if (hasGranted) {
       printLongLogMessage("We have permissiong. let's create the local folder");
+      _displayResultMessage("We have permissiong. let's create the local folder");
       await _prepareSaveDir();
     }
 
@@ -245,12 +323,17 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
   Future<bool> _checkPermission() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    _displayResultMessage("androidInfo: $androidInfo.version.sdkInt");
+
     if (androidInfo.version.sdkInt <= 28) {
 
       final status = await Permission.storage.status;
+      _displayResultMessage("Permission.storage.status: $status");
 
       if (status != PermissionStatus.granted) {
+        _displayResultMessage("start to request storage permission");
         final result = await Permission.storage.request();
+        _displayResultMessage("Permission.storage.status: $result");
         if (result == PermissionStatus.granted) {
           return true;
         }
