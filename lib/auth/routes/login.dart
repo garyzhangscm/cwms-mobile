@@ -519,6 +519,13 @@ class _LoginPageState extends State<LoginPage> {
         printLongLogMessage("we will need to upgrade current app");
         return true;
       }
+      else if (int.parse(serverVersions[i]) < int.parse(currentVersions[i])) {
+        // local version is greater than the server version, we will stop here
+        // we don't need to compare the lower version digit
+        return false;
+      }
+      // if the version digit is the same for local version and server version,
+      // let's continue with the next minor version number
     }
     printLongLogMessage("we don't need to upgrade current app");
     return false;

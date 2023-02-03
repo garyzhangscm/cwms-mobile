@@ -188,9 +188,28 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
       }
       else {
 
-        printLongLogMessage("we get qc samples from production line id: ${productionLineAssignment.id}, we will create one");
-        _newWorkOrderQCSample = false;
+        printLongLogMessage("we get qc samples from production line id: ${productionLineAssignment.id}, we will show this one");
+
+        // show dialog to ask whether the user would like to create a new sample, or change the existing sample
+        await showYesNoDialog(context,
+            CWMSLocalizations.of(context).addOrModify,
+            CWMSLocalizations.of(context).whetherAddNewSample,
+            () {
+              // the user press Yes, we will keep the current qc sample 
+              _newWorkOrderQCSample = false;
+
+
+            },
+            () {
+              // the user press No, we will create a new QC sample
+              _workOrderQCSample = new WorkOrderQCSample.fromProductionLineAssignment(_productionLineAssignment);
+              _newWorkOrderQCSample = true;
+
+            });
       }
+
+      printLongLogMessage("_newWorkOrderQCSample? $_newWorkOrderQCSample");
+      printLongLogMessage("_workOrderQCSample.number? ${_workOrderQCSample.number}");
       setState(() {
         _workOrderQCSample;
         _newWorkOrderQCSample;
@@ -232,7 +251,13 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
                               :
                           Image.network(
                               Global.currentServer.url + "workorder/qc-samples/images/${Global.currentWarehouse.id}/${_workOrderQCSample.productionLineAssignment.id}/$imageUrl",
-                              fit: BoxFit.cover, width: 1000),
+                              fit: BoxFit.cover, width: 1000,
+                              headers: {
+                                HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+                                "rfCode": Global.lastLoginRFCode,
+                                "warehouseId": Global.currentWarehouse.id.toString(),
+                                "companyId": Global.lastLoginCompanyId.toString()
+                              }),
                           Positioned(
                             top: 0,
                             right: 0,
@@ -354,6 +379,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
   _uploadImageFile(XFile imageFile) async {
 
     showLoading(context);
+    printLongLogMessage("start to upload file ${imageFile.path}");
     String filename = await uploadFile(imageFile,
         "workorder/qc-samples/${_productionLineAssignment.id}/images");
 

@@ -236,6 +236,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "pickToProductionLineInStage" : MessageLookupByLibrary.simpleMessage("Pick To Production Line's Stage"),
     "itemNotReceivableNoPackageType" : MessageLookupByLibrary.simpleMessage("Item is not receivable as there's no item package setup yet"),
 
+    "addOrModify" : MessageLookupByLibrary.simpleMessage("Add or Modify"),
+    "whetherAddNewSample" : MessageLookupByLibrary.simpleMessage("QC Sample exists for this production line, click Yes to modify the sample, No to add new sample"),
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,
@@ -254,7 +257,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "userName" : MessageLookupByLibrary.simpleMessage("User Name"),
     "userNameOrPasswordWrong" : MessageLookupByLibrary.simpleMessage("User name or password is not correct!"),
     "userNameRequired" : MessageLookupByLibrary.simpleMessage("User name required!"),
-    "yes" : MessageLookupByLibrary.simpleMessage("yes"),
-    "no" : MessageLookupByLibrary.simpleMessage("no")
+    "yes" : MessageLookupByLibrary.simpleMessage("Yes"),
+    "no" : MessageLookupByLibrary.simpleMessage("No")
   };
 }

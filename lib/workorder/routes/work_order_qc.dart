@@ -1,6 +1,7 @@
 
 import 'dart:collection';
 import 'dart:core';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:carousel_slider/carousel_slider.dart';
@@ -202,7 +203,13 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
                           Image.network(
                              Global.currentServer.url + "/qc-samples/images/${Global.currentWarehouse.id}/${_workOrderQCSample.productionLineAssignment.id}/${imageUrl}",
                              fit: BoxFit.cover,
-                             width: 1000.0),
+                             width: 1000.0,
+                              headers: {
+                                HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+                                "rfCode": Global.lastLoginRFCode,
+                                "warehouseId": Global.currentWarehouse.id.toString(),
+                                "companyId": Global.lastLoginCompanyId.toString()
+                              }),
                           Positioned(
                             bottom: 0.0,
                             left: 0.0,
@@ -248,7 +255,13 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
                     child:
                     Image.network(
                         Global.currentServer.url + "workorder/qc-samples/images/${Global.currentWarehouse.id}/${_workOrderQCSample.productionLineAssignment.id}/${imageUrl}",
-                        fit: BoxFit.cover, width: 1000)),
+                        fit: BoxFit.cover, width: 1000,
+                        headers: {
+                          HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+                          "rfCode": Global.lastLoginRFCode,
+                          "warehouseId": Global.currentWarehouse.id.toString(),
+                          "companyId": Global.lastLoginCompanyId.toString()
+                        })),
               ))
           .toList(),
     );

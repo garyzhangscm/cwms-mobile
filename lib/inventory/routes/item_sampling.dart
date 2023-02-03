@@ -248,7 +248,13 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
                         :
                     Image.network(
                         Global.currentServer.url + "inventory/item-sampling/images/${Global.currentWarehouse.id}/${_currentItemSampling.item.id}/${_currentItemSampling.number}/$imageUrl",
-                        fit: BoxFit.cover, width: 1000),
+                        fit: BoxFit.cover, width: 1000,
+                        headers: {
+                          HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+                          "rfCode": Global.lastLoginRFCode,
+                          "warehouseId": Global.currentWarehouse.id.toString(),
+                          "companyId": Global.lastLoginCompanyId.toString()
+                        }),
                     Positioned(
                       top: 0,
                       right: 0,

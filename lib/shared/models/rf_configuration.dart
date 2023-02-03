@@ -14,7 +14,7 @@ part 'rf_configuration.g.dart';
 class RFConfiguration {
   RFConfiguration() {
     validatePartialLPNPick = false;
-    pickToProductionLineInStage = false;
+    pickToProductionLineInStage = true;
     receiveToStage = false;
 
   }

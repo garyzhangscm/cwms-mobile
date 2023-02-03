@@ -220,7 +220,7 @@ Future<bool>  showYesNoDialog(BuildContext context, String title, String message
   );
 
   Widget cancelButton = TextButton(
-    child: Text(CWMSLocalizations.of(context).cancel),
+    child: Text(CWMSLocalizations.of(context).no),
     onPressed: () {
       noOnPressed();
       Navigator.of(context).pop();
@@ -232,8 +232,8 @@ Future<bool>  showYesNoDialog(BuildContext context, String title, String message
     title: Text(title),
     content: Text(message),
     actions: [
-      cancelButton,
       okButton,
+      cancelButton,
 
     ],
   );
@@ -543,6 +543,7 @@ Future<String> uploadFile(XFile file, String url) async {
     'file':  await MultipartFile.fromFile(file.path,filename: file.name)
   });
 
+  printLongLogMessage("start to upload file from ${file.path} to $url");
   Response response = await httpClient.post(
       url,
       data:fileData);

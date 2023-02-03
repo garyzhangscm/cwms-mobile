@@ -229,6 +229,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "pickToProductionLineInStage" : MessageLookupByLibrary.simpleMessage("拣货到生产线暂存区"),
     "itemNotReceivableNoPackageType" : MessageLookupByLibrary.simpleMessage("该商品暂时无法入库。 请先设定包装规格"),
 
+    "addOrModify" : MessageLookupByLibrary.simpleMessage("新增或者修改"),
+    "whetherAddNewSample" : MessageLookupByLibrary.simpleMessage("该产线已经存在质检样品。点击Yes修改当前样品，点击No新增样品"),
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,

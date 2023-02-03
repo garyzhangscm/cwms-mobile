@@ -240,6 +240,10 @@ class CWMSLocalizations {
   String get itemNotReceivableNoPackageType => Intl.message("Item is not receivable as there's no item package setup yet", name: 'itemNotReceivableNoFootprint');
 
 
+  String get addOrModify => Intl.message("Add or Modify", name: 'addOrModify');
+  String get whetherAddNewSample => Intl.message("QC Sample exists for this production line, click Yes to modify the sample, No to add new sample", name: 'whetherAddNewSample');
+
+
 
   String missingField(Object name) {
     return Intl.message(
@@ -327,8 +331,8 @@ class CWMSLocalizations {
   String get userNameOrPasswordWrong=>Intl.message('User name or password is not correct!', name: 'userNameOrPasswordWrong');
   String get logout => Intl.message('logout', name: 'logout');
   String get logoutTip => Intl.message('Are you sure you want to quit your current account?', name: 'logoutTip');
-  String get yes => Intl.message('yes', name: 'yes');
-  String get no => Intl.message('no', name: 'no');
+  String get yes => Intl.message('Yes', name: 'yes');
+  String get no => Intl.message('No', name: 'no');
   String get cancel => Intl.message('cancel', name: 'cancel');
 }
 
