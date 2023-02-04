@@ -188,13 +188,14 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
                     ),
                   ),
                   trailing:
-                  Checkbox(
-                    tristate: true,
-                    value: widget._qcResult,
-                    onChanged: (value) {
-                      _qcBooleanResultChanged(value);
-                    },
-                  ),
+                    SizedBox(
+                      width: 150,
+                      child:  new TextField(
+                        onChanged: (value) {
+                          _qcStringResultChanged(value);
+                        },// Only numbers can be entered
+                      ),
+                    ),
                 ),
               ],
             ),
@@ -205,28 +206,46 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
   }
 
 
-  _qcBooleanResultChanged(bool pass){
+  _qcBooleanResultChanged(bool value){
+    widget.qcInspectionRequestItemOption.booleanValue = value;
     setState(() {
-      widget._qcResult = pass;
-      if (pass == null) {
+      widget._qcResult = value;
+      if (value == null) {
         widget.qcInspectionRequestItemOption.qcInspectionResult =
             QCInspectionResult.PENDING;
       }
-      else if (pass == true) {
+      else if (_validateBooleanResult(value)) {
         widget.qcInspectionRequestItemOption.qcInspectionResult =
             QCInspectionResult.PASS;
       }
-      else if (pass == false) {
+      else {
         widget.qcInspectionRequestItemOption.qcInspectionResult =
             QCInspectionResult.FAIL;
       }
     });
   }
 
+  // check if the user input number is a pass or fail
+  bool _validateBooleanResult(bool value) {
+
+    var expectedValue = widget.qcInspectionRequestItemOption.qcRuleItem.expectedValue;
+    if (expectedValue == null) {
+      // the expected value is not defined correctly, QC fail
+      return false;
+    }
+    bool result = true;
+    switch(widget.qcInspectionRequestItemOption.qcRuleItem.qcRuleItemComparator) {
+      case QCRuleItemComparator.EQUAL:
+        result = value.toString().toLowerCase() == expectedValue.toLowerCase();
+        break;
+      default:
+        result = false;  // not support, QC fail
+
+    }
+    return result;
+  }
+
   _qcNumberResultChanged(String value){
-    printLongLogMessage("number value is changed to $value");
-    printLongLogMessage("expected value is ${widget.qcInspectionRequestItemOption.qcRuleItem.expectedValue}");
-    printLongLogMessage("comparator is ${widget.qcInspectionRequestItemOption.qcRuleItem.qcRuleItemComparator}");
 
 
     setState(() {
@@ -236,6 +255,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
         widget.qcInspectionRequestItemOption.qcInspectionResult =
             QCInspectionResult.PENDING;
         printLongLogMessage("the user didn't input anything, pending for input");
+        widget.qcInspectionRequestItemOption.doubleValue = null;
       }
       else {
         var doubleValue = double.tryParse(value);
@@ -245,12 +265,14 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
           widget.qcInspectionRequestItemOption.qcInspectionResult =
               QCInspectionResult.FAIL;
           printLongLogMessage("the user input something that can't convert to number, QC fail");
+          widget.qcInspectionRequestItemOption.doubleValue = null;
         }
         else if (_validateNumberResult(doubleValue)){
           widget._qcResult = true;
           widget.qcInspectionRequestItemOption.qcInspectionResult =
               QCInspectionResult.PASS;
           printLongLogMessage("QC pass the validation");
+          widget.qcInspectionRequestItemOption.doubleValue = doubleValue;
 
         }
         else {
@@ -259,11 +281,13 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
           widget.qcInspectionRequestItemOption.qcInspectionResult =
               QCInspectionResult.FAIL;
           printLongLogMessage("QC fail the validation");
+          widget.qcInspectionRequestItemOption.doubleValue = doubleValue;
 
         }
       }
     });
   }
+
 
 
   // check if the user input number is a pass or fail
@@ -291,6 +315,62 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
       case QCRuleItemComparator.LESS_THAN:
         result = value <  expectedValue;
         break;
+      default:
+        result = false;  // not support, QC fail
+
+    }
+    return result;
+  }
+
+
+  _qcStringResultChanged(String value){
+
+
+    setState(() {
+      // the user didn't input anything
+      if (value.isEmpty) {
+        widget._qcResult = null;
+        widget.qcInspectionRequestItemOption.qcInspectionResult =
+            QCInspectionResult.PENDING;
+        printLongLogMessage("the user didn't input anything, pending for input");
+        widget.qcInspectionRequestItemOption.stringValue = null;
+      }
+      else if (_validateStringResult(value)){
+          widget._qcResult = true;
+          widget.qcInspectionRequestItemOption.qcInspectionResult =
+              QCInspectionResult.PASS;
+          printLongLogMessage("QC pass the validation");
+          widget.qcInspectionRequestItemOption.stringValue = value;
+
+      }
+      else {
+          // the user's input fail the QC validation
+          widget._qcResult = false;
+          widget.qcInspectionRequestItemOption.qcInspectionResult =
+              QCInspectionResult.FAIL;
+          printLongLogMessage("QC fail the validation");
+          widget.qcInspectionRequestItemOption.stringValue = value;
+      }
+    });
+  }
+
+  // check if the user input number is a pass or fail
+  bool _validateStringResult(String value) {
+
+    var expectedValue =  widget.qcInspectionRequestItemOption.qcRuleItem.expectedValue;
+    if (expectedValue == null) {
+      // the expected value is not defined, we will take everything as a pass
+      return true;
+    }
+    bool result = true;
+    switch(widget.qcInspectionRequestItemOption.qcRuleItem.qcRuleItemComparator) {
+      case QCRuleItemComparator.EQUAL:
+        result = value == expectedValue;
+        break;
+      case QCRuleItemComparator.LIKE:
+        result = value.contains(expectedValue) || expectedValue.contains(value);
+        break;
+
       default:
         result = false;  // not support, QC fail
 

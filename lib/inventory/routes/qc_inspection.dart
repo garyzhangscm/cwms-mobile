@@ -14,6 +14,9 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../models/qc_inspection_request_item.dart';
+import '../models/qc_inspection_request_item_option.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -108,16 +111,23 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
                 constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 100),
                 child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: _qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex].qcInspectionRequestItemOptions.length,
+                    itemCount: getEnabledQCItemOptions(_qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex]).length,
                     itemBuilder: (context, index) {
                       return QCInspectionItemOptionListItem(
-                          qcInspectionRequestItemOption: _qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex].qcInspectionRequestItemOptions[index]
+                          qcInspectionRequestItemOption: getEnabledQCItemOptions(_qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex])[index]
                       );
                     }),
               )
             ],
           ));
   }
+
+  List<QCInspectionRequestItemOption> getEnabledQCItemOptions(QCInspectionRequestItem qcItem) {
+    return qcItem.qcInspectionRequestItemOptions.where((option) => option.qcRuleItem.enabled
+    ).toList();
+  }
+
+
 
   Widget _buildQCResultButtons(BuildContext context) {
     return
@@ -187,6 +197,12 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       int failedQCInspectionRequestItemOption = 0;
       int pendingQCInspectionRequestItemOption = 0;
       qcInspectionRequestItem.qcInspectionRequestItemOptions.forEach((qcInspectionRequestItemOption) {
+          if (!qcInspectionRequestItemOption.qcRuleItem.enabled) {
+            // if the item is disabled, then the user won't need to do QC on the item
+            // it is a pass by default
+            qcInspectionRequestItemOption.qcInspectionResult = QCInspectionResult.PASS;
+            passedQCInspectionRequestItemOption++;
+          }
           if (qcInspectionRequestItemOption.qcInspectionResult == QCInspectionResult.PENDING) {
             pendingQCInspectionRequestItemOption++;
           }

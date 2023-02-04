@@ -24,6 +24,7 @@ class QCRuleItem{
   int id;
   String checkPoint;
   QCRuleItemType qcRuleItemType;
+  bool enabled;
   String expectedValue;
   QCRuleItemComparator qcRuleItemComparator;
 

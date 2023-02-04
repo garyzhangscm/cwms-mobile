@@ -25,6 +25,13 @@ class QCInspectionRequestItemOption{
   QCInspectionResult qcInspectionResult;
 
 
+  bool booleanValue;
+
+  String stringValue;
+
+  double doubleValue;
+
+
 
 
   //不同的类使用不同的mixin即可

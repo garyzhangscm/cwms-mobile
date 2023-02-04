@@ -27,7 +27,7 @@ class QCInspectionService {
 
     Response response = await httpClient.post(
         "/inventory/qc-inspection-requests",
-      queryParameters: {'warehouseId': Global.lastLoginCompanyId,
+      queryParameters: {'warehouseId': Global.currentWarehouse.id,
           'rfCode': Global.getLastLoginRFCode()},
         data: qcInspectionRequests
     );
