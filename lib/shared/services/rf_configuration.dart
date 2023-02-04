@@ -28,7 +28,7 @@ class RFConfigurationService {
 
     Response response = await httpClient.get(
         Global.currentServer.url + "/resource/rf-configurations",
-        queryParameters: {"companyId": Global.currentWarehouse.id,
+        queryParameters: {"warehouseId": Global.currentWarehouse.id,
         "rfCode": rfCode}
     );
 
