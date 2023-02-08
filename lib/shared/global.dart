@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:cwms_mobile/auth/models/user.dart';
+import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/rf_configuration.dart';
 import 'package:cwms_mobile/warehouse_layout/models/company.dart';
 
@@ -111,6 +112,7 @@ class Global {
 
     // default configuration
     _rfConfiguration = RFConfiguration();
+    printLongLogMessage("setup the default _rfConfiguration");
   }
   static _initServers() {
     var _servers = _prefs.getString("servers");
@@ -345,6 +347,7 @@ class Global {
   }
 
   static bool getConfigurationAsBoolean(String key) {
+    printLongLogMessage("_rfConfiguration is null? ${_rfConfiguration == null}");
     Map<String, dynamic> configurations = _rfConfiguration.toJson();
 
     // return false by default for boolean value

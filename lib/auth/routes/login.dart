@@ -429,7 +429,12 @@ class _LoginPageState extends State<LoginPage> {
         try {
 
           RFConfigurationService.getRFConfiguration(Global.lastLoginRFCode).then((rfConfiguration) {
-              Global.setRFConfiguration(rfConfiguration);
+              // if the configuration is not setup yet, use the default one
+            // which should be already setup when we launch the app
+              if (rfConfiguration != null) {
+
+                Global.setRFConfiguration(rfConfiguration);
+              }
           });
         }
         on WebAPICallException catch(ex) {
