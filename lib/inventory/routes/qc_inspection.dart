@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 
 import '../models/qc_inspection_request_item.dart';
 import '../models/qc_inspection_request_item_option.dart';
+import '../models/qc_rule_item_type.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -37,12 +38,17 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   TextEditingController _qcQuantityController = new TextEditingController();
   final  _formKey = GlobalKey<FormState>();
 
+  // map to store the value for each option
+  // so that when we refresh the screen, we can still keep the value
+  Map valueMap = new Map();
 
   @override
   void initState() {
     super.initState();
     _qcInspectionRequestItemIndex = 0;
     _qcQuantityController.clear();
+
+    valueMap.clear();
   }
 
 
@@ -103,6 +109,9 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
 
   Widget _buildQCItemOptionList(BuildContext context) {
 
+    List<QCInspectionRequestItemOption> enabledQCInspectionRequestItemOptions =
+        getEnabledQCItemOptions(_qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex]);
+
     return
       Expanded(
           child: Stack(
@@ -111,15 +120,32 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
                 constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 100),
                 child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: getEnabledQCItemOptions(_qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex]).length,
+                    itemCount: enabledQCInspectionRequestItemOptions.length,
                     itemBuilder: (context, index) {
                       return QCInspectionItemOptionListItem(
-                          qcInspectionRequestItemOption: getEnabledQCItemOptions(_qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex])[index]
+                          qcInspectionRequestItemOption: enabledQCInspectionRequestItemOptions[index],
+                          value: _getOptionValue(enabledQCInspectionRequestItemOptions[index])
+
                       );
                     }),
               )
             ],
           ));
+  }
+
+  Object _getOptionValue(QCInspectionRequestItemOption option) {
+    switch(option.qcRuleItem.qcRuleItemType) {
+      case QCRuleItemType.NUMBER:
+        return option.doubleValue;
+        break;
+      case QCRuleItemType.STRING:
+        return option.stringValue;
+        break;
+
+      default:
+        return option.booleanValue;
+
+    }
   }
 
   List<QCInspectionRequestItemOption> getEnabledQCItemOptions(QCInspectionRequestItem qcItem) {

@@ -10,13 +10,14 @@ import '../models/qc_rule_item_comparator.dart';
 import '../models/qc_rule_item_type.dart';
 
 class QCInspectionItemOptionListItem extends StatefulWidget {
-  QCInspectionItemOptionListItem({this.qcInspectionRequestItemOption}
+  QCInspectionItemOptionListItem({this.qcInspectionRequestItemOption, this.value }
        ) : super(key: ValueKey(qcInspectionRequestItemOption.id));
 
 
 
   final QCInspectionRequestItemOption qcInspectionRequestItemOption;
-  bool _qcResult = null;
+  bool _qcResult;
+  Object value;
 
   @override
   _QCInspectionItemOptionListItemState createState() => _QCInspectionItemOptionListItemState();
@@ -45,6 +46,9 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
 
   Widget buildYesNoOption(BuildContext context) {
 
+    if (widget.value != null) {
+      widget._qcResult = widget.value;
+    }
     return Padding(
       padding: const EdgeInsets.only(top: 2.0),
       child: Material(
@@ -135,8 +139,12 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
                   trailing:
                       SizedBox(
                           width: 100,
-                          child:  new TextField(
+                          child:  new TextFormField(
                             keyboardType: TextInputType.number,
+                            initialValue:
+                                widget.value is int ? int.parse(widget.value.toString()).toString()  :
+                                    widget.value is double ? double.parse(widget.value.toString()).toString()
+                                        : null,
                             inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.]+'))],
                             onChanged: (value) {
                               _qcNumberResultChanged(value);
@@ -190,7 +198,8 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
                   trailing:
                     SizedBox(
                       width: 150,
-                      child:  new TextField(
+                      child:  new TextFormField(
+                        initialValue: widget.value,
                         onChanged: (value) {
                           _qcStringResultChanged(value);
                         },// Only numbers can be entered
@@ -207,9 +216,13 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
 
 
   _qcBooleanResultChanged(bool value){
+
+    printLongLogMessage("_qcBooleanResultChanged ${widget.qcInspectionRequestItemOption.qcRuleItem.checkPoint} is changed to ${value}");
+
     widget.qcInspectionRequestItemOption.booleanValue = value;
     setState(() {
       widget._qcResult = value;
+      widget.value = value;
       if (value == null) {
         widget.qcInspectionRequestItemOption.qcInspectionResult =
             QCInspectionResult.PENDING;
@@ -222,6 +235,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
         widget.qcInspectionRequestItemOption.qcInspectionResult =
             QCInspectionResult.FAIL;
       }
+
     });
   }
 
@@ -325,6 +339,8 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
 
   _qcStringResultChanged(String value){
 
+
+    printLongLogMessage("_qcStringResultChanged to ${value}");
 
     setState(() {
       // the user didn't input anything
