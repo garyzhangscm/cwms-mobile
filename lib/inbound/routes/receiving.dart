@@ -16,10 +16,9 @@ import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
+import 'package:cwms_mobile/shared/services/qr_code_service.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -79,7 +78,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // setup the default inventory status
 
 
-    inventoryOnRF = new List<Inventory>();
+    inventoryOnRF = [];
 
     _receiptNumberFocusNode.addListener(() {
       print("_receiptFocusNode.hasFocus: ${_receiptNumberFocusNode.hasFocus}");
@@ -129,33 +128,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
           child: Column(
             children: <Widget>[
-
-              buildTwoSectionInputRow(
-                CWMSLocalizations.of(context).receiptNumber,
-                TextFormField(
-
-                    controller: _receiptNumberController,
-                    autofocus: true,
-                    focusNode: _receiptNumberFocusNode,
-                    textInputAction: TextInputAction.next,
-                    onEditingComplete: () => _itemFocusNode.requestFocus(),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      suffixIcon:
-                        IconButton(
-                          onPressed: _showChoosingReceiptDialog,
-                          icon: Icon(Icons.list),
-                        ),
-
-                    ),
-                    // 校验ITEM NUMBER（不能为空）
-                    validator: (v) {
-                      if (v.trim().isEmpty) {
-                        return "please scan in receipt";
-                      }
-                      return null;
-                    }),
-              ),
+              _buildReceiptNumberControl(context),
 
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).item,
@@ -321,6 +294,52 @@ class _ReceivingPageState extends State<ReceivingPage> {
       endDrawer: MyDrawer(),
     );
   }
+
+  Widget _buildReceiptNumberControl(BuildContext context) {
+    return
+      buildTwoSectionInputRow(
+        CWMSLocalizations.of(context).receiptNumber,
+        TextFormField(
+
+            controller: _receiptNumberController,
+            autofocus: true,
+            focusNode: _receiptNumberFocusNode,
+            textInputAction: TextInputAction.next,
+            onEditingComplete: () => _itemFocusNode.requestFocus(),
+            decoration: InputDecoration(
+              isDense: true,
+              suffixIcon:
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                  mainAxisSize: MainAxisSize.min, // added line
+                  children: <Widget>[
+                    IconButton(
+                      onPressed: _showChoosingReceiptDialog,
+                      icon: Icon(Icons.list),
+                    ),
+                    IconButton(
+                      onPressed: _showQRCodeView,
+                      icon: Icon(Icons.camera),
+                    ),
+
+                  ],
+              ),
+
+
+
+
+
+            ),
+            // 校验ITEM NUMBER（不能为空）
+            validator: (v) {
+              if (v.trim().isEmpty) {
+                return "please scan in receipt";
+              }
+              return null;
+            }),
+      );
+  }
+
   Widget _buildButtons(BuildContext context) {
     return buildTwoButtonRow(
       context,
@@ -860,7 +879,18 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
 
   }
+  _showQRCodeView() async {
 
+    final result = await Navigator.of(context)
+        .pushNamed("qr_code_view");
+
+    printLongLogMessage("capture the QR CODE: " + result);
+
+    var parameters = QRCodeService.parseQRCode(result);
+
+    printLongLogMessage("resutl after parse the code code: \n ${parameters}");
+
+  }
   // show all open receipt that can be received
   _showChoosingReceiptDialog() async {
 
