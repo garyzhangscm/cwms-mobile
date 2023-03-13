@@ -145,7 +145,10 @@ class ReceiptService {
 
     Response response = await httpClient.post(
         "/inbound/receipts/${receipt.id}/lines/${receiptLine.id}/receive",
-        data: inventory
+        data: inventory,
+      queryParameters: {
+          "receiveToStage": Global.getRFConfiguration.receiveToStage
+      }
     );
 
     // printLongLogMessage("response from receiving: $response");
@@ -157,6 +160,8 @@ class ReceiptService {
     }
 
     return Inventory.fromJson(responseString["data"]);
+
+
 
 
 

@@ -70,6 +70,8 @@ class Global {
   // 是否为release版
   static bool get isRelease => bool.fromEnvironment("dart.vm.product");
 
+  static RFConfiguration get getRFConfiguration => _rfConfiguration;
+
   //初始化全局信息
   static Future init() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -368,8 +370,9 @@ class Global {
     return configurations.containsKey(key) ? configurations[key] as int :
      0;
   }
-  static void setRFConfiguration(RFConfiguration rfConfiguration) {
-    _rfConfiguration = rfConfiguration;
+
+  static bool receiveInToStage() {
+    return getConfigurationAsBoolean("")
   }
 
   // logout the current user
