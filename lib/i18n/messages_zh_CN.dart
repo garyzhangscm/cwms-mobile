@@ -232,6 +232,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "addOrModify" : MessageLookupByLibrary.simpleMessage("新增或者修改"),
     "whetherAddNewSample" : MessageLookupByLibrary.simpleMessage("该产线已经存在质检样品。点击Yes修改当前样品，点击No新增样品"),
 
+    "barcodeReceiving" : MessageLookupByLibrary.simpleMessage("扫码入库"),
+    "startCamera" : MessageLookupByLibrary.simpleMessage("开启摄像头"),
+    "incorrectBarcodeFormat" : MessageLookupByLibrary.simpleMessage("二维码格式不正确"),
+    "barcodeReceivingVerbiage" : MessageLookupByLibrary.simpleMessage("扫描二维码，或者点击按钮启动摄像头"),
+    "barcodeLastReceivingVerbiage" : MessageLookupByLibrary.simpleMessage("最后入库的商品"),
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,

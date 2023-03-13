@@ -30,6 +30,7 @@ class ItemPackageType{
   int supplierId;
 
   ItemUnitOfMeasure stockItemUnitOfMeasure;
+  ItemUnitOfMeasure displayItemUnitOfMeasure;
   List<ItemUnitOfMeasure> itemUnitOfMeasures;
   ItemUnitOfMeasure defaultInboundReceivingUOM;
   ItemUnitOfMeasure defaultWorkOrderReceivingUOM;

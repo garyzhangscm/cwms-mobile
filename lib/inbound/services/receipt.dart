@@ -21,6 +21,48 @@ import 'package:dio/dio.dart';
 
 class ReceiptService {
 
+  static Future<Receipt> getReceiptById(int receiptId) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "inbound/receipts/${receiptId}",
+        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+    );
+
+    printLongLogMessage("response from receipt: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return Receipt.fromJson(responseString["data"]);
+
+  }
+
+  static Future<ReceiptLine> getReceiptLineById(int receiptLineId) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "inbound/receipts/receipt-lines/$receiptLineId",
+        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+    );
+
+    printLongLogMessage("response from receipt: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return ReceiptLine.fromJson(responseString["data"]);
+
+  }
+
   static Future<Receipt> getReceiptByNumber(String receiptNumber) async {
     Dio httpClient = CWMSHttpClient.getDio();
 

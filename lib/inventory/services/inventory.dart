@@ -217,6 +217,27 @@ class InventoryService {
     return Inventory.fromJson(json.decode(response.toString()));
   }
 
+  static Future<Inventory> getInventoryById(int inventoryId) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "inventory/inventory/$inventoryId",
+        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+    );
+
+    printLongLogMessage("response from receipt: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return Inventory.fromJson(responseString["data"]);
+
+  }
+
 
   static Future<List<Inventory>> findInventory(
       {String locationName = "", String itemName = "", String lpn = "", bool includeDetails = true}

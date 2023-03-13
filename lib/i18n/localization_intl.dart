@@ -243,6 +243,11 @@ class CWMSLocalizations {
   String get addOrModify => Intl.message("Add or Modify", name: 'addOrModify');
   String get whetherAddNewSample => Intl.message("QC Sample exists for this production line, click Yes to modify the sample, No to add new sample", name: 'whetherAddNewSample');
 
+  String get barcodeReceiving => Intl.message("Barcode Receiving", name: 'barcodeReceiving');
+  String get startCamera => Intl.message("Start Camera", name: 'startCamera');
+  String get incorrectBarcodeFormat => Intl.message("Barcode is not in the right format", name: 'incorrectBarcodeFormat');
+  String get barcodeReceivingVerbiage  => Intl.message("Scan in the barcode or click the button to start the camera", name: 'barcodeReceivingVerbiage');
+  String get barcodeLastReceivingVerbiage  => Intl.message("Last received inventory", name: 'barcodeLastReceivingVerbiage');
 
 
   String missingField(Object name) {

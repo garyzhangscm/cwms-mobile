@@ -55,9 +55,9 @@ class QRCodeService {
 
     // qc code should be in the format of
     // qcCode:foo=bar;x=y;
-    printLongLogMessage("qrCode.length <= 7? ${qrCode.length <= 7}");
-    printLongLogMessage("qrCode.substring(0, 7): ${qrCode.substring(0, 7)}");
-    printLongLogMessage("qrCode.substring(0, 7).compareTo(qrcode) ${qrCode.substring(0, 7).toLowerCase().compareTo("qrcode:")}");
+    // printLongLogMessage("qrCode.length <= 7? ${qrCode.length <= 7}");
+    // printLongLogMessage("qrCode.substring(0, 7): ${qrCode.substring(0, 7)}");
+    // printLongLogMessage("qrCode.substring(0, 7).compareTo(qrcode) ${qrCode.substring(0, 7).toLowerCase().compareTo("qrcode:")}");
     if (qrCode.length <= 7 || qrCode.substring(0, 7).toLowerCase().compareTo("qrcode:") != 0) {
       return false;
     }

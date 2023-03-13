@@ -37,7 +37,7 @@ class Item{
 
   ItemFamily itemFamily;
 
-
+  ItemPackageType defaultItemPackageType;
 
 
   //不同的类使用不同的mixin即可

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cwms_mobile/inbound/routes/barcode_receiving.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_batch.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_request.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_lost_and_found.dart';
@@ -147,6 +148,7 @@ class MyApp extends StatelessWidget {
               "item_sampling":(context) => ItemSamplingPage(),
               "work_order_manual_pick":(context) => WorkOrderManualPickPage(),
               "qr_code_view":(context) => QRCodeView(),
+              "barcode-receiving":(context) => BarcodeReceivingPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

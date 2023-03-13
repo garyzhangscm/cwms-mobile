@@ -239,6 +239,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "addOrModify" : MessageLookupByLibrary.simpleMessage("Add or Modify"),
     "whetherAddNewSample" : MessageLookupByLibrary.simpleMessage("QC Sample exists for this production line, click Yes to modify the sample, No to add new sample"),
 
+
+    "barcodeReceiving" : MessageLookupByLibrary.simpleMessage("Barcode Receiving"),
+    "startCamera" : MessageLookupByLibrary.simpleMessage("Start Camera"),
+    "incorrectBarcodeFormat" : MessageLookupByLibrary.simpleMessage("Barcode is not in the right format"),
+    "barcodeReceivingVerbiage" : MessageLookupByLibrary.simpleMessage("Scan in the barcode or click the button to start the camera"),
+    "barcodeLastReceivingVerbiage" : MessageLookupByLibrary.simpleMessage("Last received inventory"),
+
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,
