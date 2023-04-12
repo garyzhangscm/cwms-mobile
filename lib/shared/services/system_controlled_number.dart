@@ -28,7 +28,7 @@ class SystemControlledNumberService {
         queryParameters: {"warehouseId": Global.currentWarehouse.id}
     );
 
-    print("response from receipt: $response");
+    // print("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 

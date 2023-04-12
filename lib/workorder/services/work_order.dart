@@ -24,7 +24,7 @@ class WorkOrderService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getWorkOrderByNumber: $response");
+    // printLongLogMessage("response from getWorkOrderByNumber: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<WorkOrder> workOrders
@@ -51,7 +51,7 @@ class WorkOrderService {
         "workorder/work-orders/${workOrderId}",
     );
 
-    printLongLogMessage("response from getWorkOrderById: $response");
+    // printLongLogMessage("response from getWorkOrderById: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     return WorkOrder.fromJson(responseString["data"] as Map<String, dynamic>) ;
@@ -98,7 +98,7 @@ class WorkOrderService {
        data: workOrderProduceTransaction
     );
 
-    printLongLogMessage("response from saveWorkOrderProduceTransaction: $response");
+    // printLongLogMessage("response from saveWorkOrderProduceTransaction: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
     if (responseString["result"] as int != 0) {
@@ -148,7 +148,7 @@ class WorkOrderService {
         "pickWholeLPN": pickWholeLPN}
     );
 
-    printLongLogMessage("response from generateManualPick: $response");
+    // printLongLogMessage("response from generateManualPick: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
     if (responseString["result"] as int != 0) {
@@ -177,7 +177,7 @@ class WorkOrderService {
           "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
     );
 
-    printLongLogMessage("response from saveWorkOrderProduceTransaction: $response");
+    // printLongLogMessage("response from saveWorkOrderProduceTransaction: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
     if (responseString["result"] as int != 0) {
@@ -208,7 +208,7 @@ class WorkOrderService {
           "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
     );
 
-    printLongLogMessage("response from getPickableQuantityForManualPick: $response");
+    // printLongLogMessage("response from getPickableQuantityForManualPick: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
     if (responseString["result"] as int != 0) {

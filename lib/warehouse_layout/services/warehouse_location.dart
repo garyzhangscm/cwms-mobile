@@ -22,9 +22,9 @@ class WarehouseLocationService {
         "/layout/locations/$id",
     );
 
-    print("response from getWarehouseLocationById:");
+    // print("response from getWarehouseLocationById:");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
@@ -47,9 +47,9 @@ class WarehouseLocationService {
           'name': locationName}
     );
 
-    print("response from warehouse location:");
+    // print("response from warehouse location:");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
@@ -85,9 +85,9 @@ class WarehouseLocationService {
           'code': locationCode}
     );
 
-    print("response from warehouse location:");
+    // print("response from warehouse location:");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 

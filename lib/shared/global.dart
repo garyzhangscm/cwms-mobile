@@ -348,6 +348,10 @@ class Global {
     _lastActivityLocation = location;
   }
 
+  static void setRFConfiguration(RFConfiguration rfConfiguration) {
+    _rfConfiguration = rfConfiguration;
+  }
+
   static bool getConfigurationAsBoolean(String key) {
     printLongLogMessage("_rfConfiguration is null? ${_rfConfiguration == null}");
     Map<String, dynamic> configurations = _rfConfiguration.toJson();
@@ -371,9 +375,6 @@ class Global {
      0;
   }
 
-  static bool receiveInToStage() {
-    return getConfigurationAsBoolean("")
-  }
 
   // logout the current user
   static logout() {

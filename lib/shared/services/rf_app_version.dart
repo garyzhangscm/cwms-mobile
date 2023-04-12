@@ -29,7 +29,7 @@ class RFAppVersionService {
         "rfCode": rfCode}
     );
 
-    print("response from getLatestRFAppVersion: $response");
+    // print("response from getLatestRFAppVersion: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

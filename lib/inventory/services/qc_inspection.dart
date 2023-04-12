@@ -34,7 +34,7 @@ class QCInspectionService {
 
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("response from saveQCInspectionRequest: ${responseString} ");
+    // printLongLogMessage("response from saveQCInspectionRequest: ${responseString} ");
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("Start to raise error with message: ${responseString["message"]}");

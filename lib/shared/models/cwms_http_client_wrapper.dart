@@ -1,9 +1,12 @@
+
 import 'dart:io';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_default_http_transformer.dart';
+import 'package:cwms_mobile/shared/services/navigation_service.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../main.dart';
 import 'cwms_dio.dart';
@@ -43,16 +46,40 @@ class CWMSHttpClientAdapter {
             ProgressCallback onReceiveProgress,
             CWMSHttpTransformer httpTransformer}) async {
 
-            var response = await _dio.post(
-                uri,
-                data: data,
-                queryParameters: queryParameters,
-                options: options,
-                cancelToken: cancelToken,
-                onSendProgress: onSendProgress,
-                onReceiveProgress: onReceiveProgress,
-            );
-            return handleResponse(response, httpTransformer: httpTransformer);
+        try{
+
+          var response = await _dio.post(
+            uri,
+            data: data,
+            queryParameters: queryParameters,
+            options: options,
+            cancelToken: cancelToken,
+            onSendProgress: onSendProgress,
+            onReceiveProgress: onReceiveProgress,
+          );
+          return handleResponse(response, httpTransformer: httpTransformer);
+        }
+        on DioError catch(ex) {
+          printLongLogMessage("get DioError while call http post");
+          printLongLogMessage("message: ${ex.message}");
+          printLongLogMessage("response: ${ex.response}");
+          printLongLogMessage("response.statusCode: ${ex.response.statusCode}");
+          printLongLogMessage("response.statusMessage: ${ex.response.statusMessage}");
+          printLongLogMessage("response.extra: ${ex.response.extra}");
+          printLongLogMessage("response.data: ${ex.response.data}");
+          printLongLogMessage("type: ${ex.type}");
+          printLongLogMessage("error: ${ex.error}");
+
+          if (ex.response.statusCode == 401) {
+            showYesNoDialog(NavigationService.navigatorKey.currentContext,
+                "User Not Login", "User is not login, please click Yes to go back to the login page and login",
+                  () => Navigator.popUntil(NavigationService.navigatorKey.currentContext, ModalRoute.withName('login_page')),
+                  () {});
+          }
+          else {
+            throw ex;
+          }
+        }
 
     }
 
@@ -168,6 +195,7 @@ class CWMSHttpClientAdapter {
         }
 
         // token失效
+        printLongLogMessage("response.statusCode: ${response.statusCode}");
         if (_isTokenTimeout(response.statusCode)) {
 
             return CWMSHttpResponse.failureFromError(

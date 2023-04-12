@@ -54,14 +54,14 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     _scannedProductionLine = null;
 
     _productionLineFocusNode.addListener(() {
-      print("_productionLineFocusNode.hasFocus: ${_productionLineFocusNode.hasFocus}");
+      // print("_productionLineFocusNode.hasFocus: ${_productionLineFocusNode.hasFocus}");
       if (!_productionLineFocusNode.hasFocus && _productionLineController.text.isNotEmpty) {
         _enterOnProductionLineController(10);
       }
     });
 
     _workOrderNumberFocusNode.addListener(() {
-      print("_workOrderNumberFocusNode.hasFocus: ${_workOrderNumberFocusNode.hasFocus}");
+      // print("_workOrderNumberFocusNode.hasFocus: ${_workOrderNumberFocusNode.hasFocus}");
       if (!_workOrderNumberFocusNode.hasFocus && _workOrderNumberController.text.isNotEmpty) {
         _enterOnWorkOrderController(10);
       }
@@ -74,7 +74,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
   @override
   Widget build(BuildContext context) {
 
-    printLongLogMessage("rebuild work order produce");
+    // printLongLogMessage("rebuild work order produce");
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),

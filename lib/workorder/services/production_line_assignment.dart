@@ -26,7 +26,7 @@ class ProductionLineAssignmentService {
         }
     );
 
-    printLongLogMessage("response from getProductionLineAssignmentByProductionLine: $response");
+    // printLongLogMessage("response from getProductionLineAssignmentByProductionLine: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -59,7 +59,7 @@ class ProductionLineAssignmentService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getProductionLineAssignmentByProductionLineName: $response");
+    // printLongLogMessage("response from getProductionLineAssignmentByProductionLineName: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -95,7 +95,7 @@ class ProductionLineAssignmentService {
         "warehouseId": Global.currentWarehouse.id, "productionLineId": productionLine.id}
     );
 
-    printLongLogMessage("response from getAssignedWorkOrderByProductionLine: $response");
+    // printLongLogMessage("response from getAssignedWorkOrderByProductionLine: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

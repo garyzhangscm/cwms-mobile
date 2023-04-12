@@ -22,9 +22,9 @@ class ItemSamplingService {
       "currentSampleOnly": true}
     );
 
-    printLongLogMessage("response from getCurrentItemSamplingByItemName by item $itemName");
+    // printLongLogMessage("response from getCurrentItemSamplingByItemName by item $itemName");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
@@ -57,9 +57,9 @@ class ItemSamplingService {
           'number': number}
     );
 
-    printLongLogMessage("response from getCurrentItemSamplingByItemName by number $number");
+    // printLongLogMessage("response from getCurrentItemSamplingByItemName by number $number");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
@@ -91,9 +91,9 @@ class ItemSamplingService {
       data: itemSampling
     );
 
-    printLongLogMessage("response from addItemSampling by number ${itemSampling.number}");
+    // printLongLogMessage("response from addItemSampling by number ${itemSampling.number}");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
@@ -114,9 +114,9 @@ class ItemSamplingService {
         data: itemSampling
     );
 
-    printLongLogMessage("response from changeItemSampling by number ${itemSampling.number}");
+    // printLongLogMessage("response from changeItemSampling by number ${itemSampling.number}");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 

@@ -23,7 +23,7 @@ class RFService {
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
-    printLongLogMessage("response from valdiateRFCode: $responseString");
+    // printLongLogMessage("response from valdiateRFCode: $responseString");
 
     bool isValid = responseString["data"];
 

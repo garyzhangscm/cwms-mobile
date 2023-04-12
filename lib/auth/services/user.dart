@@ -18,7 +18,7 @@ class UserService {
         queryParameters:{"companyId": companyId, "username":username}
     );
 
-    print("response from findUser: $response");
+    // print("response from findUser: $response");
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 

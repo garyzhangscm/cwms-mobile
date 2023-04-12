@@ -20,9 +20,9 @@ class ItemService {
           'name': name}
     );
 
-    printLongLogMessage("response from item by name $name");
+    // printLongLogMessage("response from item by name $name");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
@@ -53,9 +53,9 @@ class ItemService {
           'keyword': keyword}
     );
 
-    printLongLogMessage("response from item by keyword $keyword");
+    // printLongLogMessage("response from item by keyword $keyword");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 

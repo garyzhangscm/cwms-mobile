@@ -32,7 +32,7 @@ class RFConfigurationService {
         "rfCode": rfCode}
     );
 
-    print("response from getRFConfiguration: $response");
+    // print("response from getRFConfiguration: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

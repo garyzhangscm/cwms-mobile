@@ -26,7 +26,7 @@ class ProductionLineService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getProductionLineByNumber: $response");
+    // printLongLogMessage("response from getProductionLineByNumber: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -60,7 +60,7 @@ class ProductionLineService {
         "loadDetails": loadDetails}
     );
 
-    printLongLogMessage("response from getAllAssignedProductionLines: $response");
+    // printLongLogMessage("response from getAllAssignedProductionLines: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -90,7 +90,7 @@ class ProductionLineService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from checkInUser: $response");
+    // printLongLogMessage("response from checkInUser: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -116,7 +116,7 @@ class ProductionLineService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from checkOutUser: $response");
+    // printLongLogMessage("response from checkOutUser: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -139,7 +139,7 @@ class ProductionLineService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from findAllCheckedInProductionLines: $response");
+    // printLongLogMessage("response from findAllCheckedInProductionLines: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -169,7 +169,7 @@ class ProductionLineService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from findAllCheckedInUsers: $response");
+    // printLongLogMessage("response from findAllCheckedInUsers: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

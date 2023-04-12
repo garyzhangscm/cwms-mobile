@@ -20,7 +20,7 @@ class PickService {
         queryParameters: {"orderId": orderId, "warehouseId": Global.currentWarehouse.id}
     );
 
-    print("response from Pick by Order: $response");
+    // print("response from Pick by Order: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<Pick> picks
@@ -177,7 +177,7 @@ class PickService {
         "lpn": lpn}
     );
 
-    print("response from confirm pick: $response");
+    // print("response from confirm pick: $response");
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 

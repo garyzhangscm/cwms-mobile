@@ -248,6 +248,9 @@ class CWMSLocalizations {
   String get incorrectBarcodeFormat => Intl.message("Barcode is not in the right format", name: 'incorrectBarcodeFormat');
   String get barcodeReceivingVerbiage  => Intl.message("Scan in the barcode or click the button to start the camera", name: 'barcodeReceivingVerbiage');
   String get barcodeLastReceivingVerbiage  => Intl.message("Last received inventory", name: 'barcodeLastReceivingVerbiage');
+  String get number  => Intl.message("Number", name: 'number');
+  String get type  => Intl.message("Type", name: 'type');
+  String get acknowledge  => Intl.message("Acknowledge", name: 'acknowledge');
 
 
   String missingField(Object name) {

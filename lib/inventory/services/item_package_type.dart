@@ -21,9 +21,9 @@ class ItemPackageTypeService {
           'name': name}
     );
 
-    printLongLogMessage("response from item package type by name $itemId / $name");
+    // printLongLogMessage("response from item package type by name $itemId / $name");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 

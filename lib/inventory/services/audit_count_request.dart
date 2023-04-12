@@ -26,7 +26,7 @@ class AuditCountRequestService {
         "/inventory/audit-count-request/batch/${Global.currentWarehouse.id}/$batchId"
     );
 
-    printLongLogMessage("response from audit count request: $response");
+    // printLongLogMessage("response from audit count request: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     List<dynamic> responseData = responseString["data"];
 
@@ -85,7 +85,7 @@ class AuditCountRequestService {
       "/inventory/audit-count-result/${auditCountRequest.batchId}/${auditCountRequest.locationId}/inventories",
     );
 
-    printLongLogMessage("response from audit count request / inventory summary: $response");
+    // printLongLogMessage("response from audit count request / inventory summary: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<AuditCountResult> _auditCountResults
@@ -113,7 +113,7 @@ class AuditCountRequestService {
         data: inventories
     );
 
-    printLongLogMessage("response from audit count request / inventory summary: $response");
+    // printLongLogMessage("response from audit count request / inventory summary: $response");
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 

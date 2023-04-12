@@ -113,14 +113,18 @@ void showLoading(context, [String text]) {
 }
 
 printLongLogMessage(String message) {
-
-  int maxLogSize = 2000;
+/**
+  int maxLogSize = 200;
   for(int i = 0; i <= message.length / maxLogSize; i++) {
     int start = i * maxLogSize;
     int end = (i+1) * maxLogSize;
     end = end > message.length ? message.length : end;
     print("${DateTime.now().toString()} : ${message.substring(start, end)}");
   }
+    **/
+
+  final pattern = RegExp('.{1,800}'); // 800 is the size of each chunk
+  pattern.allMatches(message).forEach((match) => print(match.group(0)));
 }
 
 showErrorDialog(BuildContext context, String message) {
@@ -549,7 +553,7 @@ Future<String> uploadFile(XFile file, String url) async {
       data:fileData);
 
 
-  printLongLogMessage("response from uploadFile: $response");
+  // printLongLogMessage("response from uploadFile: $response");
   Map<String, dynamic> responseString = json.decode(response.toString());
 
   if (responseString["result"] as int != 0) {

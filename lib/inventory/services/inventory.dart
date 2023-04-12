@@ -28,7 +28,7 @@ class InventoryService {
           'location': Global.getLastLoginRFCode()}
     );
 
-    printLongLogMessage("response from inventory on RF:");
+    // printLongLogMessage("response from inventory on RF:");
 
     // printLongLogMessage(response.toString());
 
@@ -209,9 +209,9 @@ class InventoryService {
         data: destinationLocation
     );
 
-    printLongLogMessage("response from move inventory:");
+    // printLongLogMessage("response from move inventory:");
 
-    printLongLogMessage(response.toString());
+    // printLongLogMessage(response.toString());
 
     // return the moved inventory
     return Inventory.fromJson(json.decode(response.toString()));
@@ -225,7 +225,7 @@ class InventoryService {
         queryParameters: {"warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from receipt: $response");
+    // printLongLogMessage("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 
@@ -382,6 +382,9 @@ class InventoryService {
 
 
     printLongLogMessage("validate LPN result: ${response.data}");
+    if (response.data != null && response.data.toString().isNotEmpty) {
+      return false;
+    }
 
 
     return true;

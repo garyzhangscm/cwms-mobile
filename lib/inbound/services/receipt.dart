@@ -29,7 +29,7 @@ class ReceiptService {
         queryParameters: {"warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from receipt: $response");
+    // printLongLogMessage("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 
@@ -50,7 +50,7 @@ class ReceiptService {
         queryParameters: {"warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from receipt: $response");
+    // printLongLogMessage("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 
@@ -72,7 +72,7 @@ class ReceiptService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from receipt: $response");
+    // printLongLogMessage("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 
@@ -111,7 +111,7 @@ class ReceiptService {
             "receipt_status_list": openReceiptStatuses}
     );
 
-    printLongLogMessage("response from Receipt: $response");
+    // printLongLogMessage("response from Receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
 
@@ -205,7 +205,7 @@ class ReceiptService {
         data: inventoryList
     );
 
-    printLongLogMessage("response from receiving: $response");
+    // printLongLogMessage("response from receiving: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

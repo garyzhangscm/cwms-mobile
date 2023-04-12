@@ -14,6 +14,7 @@ class MenuSubGroup{
   String text;
   String icon;
   String i18n;
+  String link;
 
   List<Menu> menus;
 

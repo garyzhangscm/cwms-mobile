@@ -237,6 +237,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "incorrectBarcodeFormat" : MessageLookupByLibrary.simpleMessage("二维码格式不正确"),
     "barcodeReceivingVerbiage" : MessageLookupByLibrary.simpleMessage("扫描二维码，或者点击按钮启动摄像头"),
     "barcodeLastReceivingVerbiage" : MessageLookupByLibrary.simpleMessage("最后入库的商品"),
+    "number" : MessageLookupByLibrary.simpleMessage("号码"),
+    "type" : MessageLookupByLibrary.simpleMessage("类型"),
+    "acknowledge" : MessageLookupByLibrary.simpleMessage("确认"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

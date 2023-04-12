@@ -157,8 +157,18 @@ class _MenusState extends State<Menus> {
   }
   void _onPressed(int index){
 
+    printLongLogMessage("${_menuGroup.menuSubGroups[index].name}: ${_menuGroup.menuSubGroups[index].link}");
 
-    Navigator.of(context).pushNamed("sub_menus_page", arguments: _menuGroup.menuSubGroups[index]);
+    if (_menuGroup.menuSubGroups[index].link != null && _menuGroup.menuSubGroups[index].link.isNotEmpty) {
+
+      printLongLogMessage("flow to page ${_menuGroup.menuSubGroups[index].link}");
+      Navigator.of(context).pushNamed(_menuGroup.menuSubGroups[index].link);
+    }
+    else {
+
+      printLongLogMessage("flow to sub menu ${_menuGroup.menuSubGroups[index].name}");
+      Navigator.of(context).pushNamed("sub_menus_page", arguments: _menuGroup.menuSubGroups[index]);
+    }
 
 
   }

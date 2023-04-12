@@ -245,6 +245,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "incorrectBarcodeFormat" : MessageLookupByLibrary.simpleMessage("Barcode is not in the right format"),
     "barcodeReceivingVerbiage" : MessageLookupByLibrary.simpleMessage("Scan in the barcode or click the button to start the camera"),
     "barcodeLastReceivingVerbiage" : MessageLookupByLibrary.simpleMessage("Last received inventory"),
+    "number" : MessageLookupByLibrary.simpleMessage("Number"),
+    "type" : MessageLookupByLibrary.simpleMessage("Type"),
+    "acknowledge" : MessageLookupByLibrary.simpleMessage("Acknowledge"),
 
 
     'greetingMessage':greetingMessage,

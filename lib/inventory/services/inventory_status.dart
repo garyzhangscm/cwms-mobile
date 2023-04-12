@@ -49,7 +49,7 @@ class InventoryStatusService {
         queryParameters: {'warehouseId': Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getAllInventoryStatus");
+    // printLongLogMessage("response from getAllInventoryStatus");
 
 
     List<InventoryStatus> inventoryStatuses
@@ -72,7 +72,7 @@ class InventoryStatusService {
           'name': name}
     );
 
-    printLongLogMessage("response from inventory status by name $name");
+    // printLongLogMessage("response from inventory status by name $name");
 
     printLongLogMessage(response.toString());
 
@@ -101,7 +101,7 @@ class InventoryStatusService {
         queryParameters: {'warehouseId': Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getAvaiableInventoryStatus: $response");
+    // printLongLogMessage("response from getAvaiableInventoryStatus: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 

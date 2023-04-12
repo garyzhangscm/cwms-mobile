@@ -32,7 +32,7 @@ class ProductionLineActivityService {
           "workingTeamMemberCount": productionLineActivity.workingTeamMemberCount}
     );
 
-    print("response from saveCheckInProductionLineActivity: $response");
+    // print("response from saveCheckInProductionLineActivity: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -62,7 +62,7 @@ class ProductionLineActivityService {
           "workingTeamMemberCount": productionLineActivity.workingTeamMemberCount}
     );
 
-    print("response from saveCheckInProductionLineActivity: $response");
+    // print("response from saveCheckInProductionLineActivity: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

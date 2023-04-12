@@ -692,7 +692,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         bool validLpn = await InventoryService.validateNewLpn(lpn);
         if (!validLpn) {
           Navigator.of(context).pop();
-          showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+          showErrorDialog(context, "LPN is not valid, please make sure it is a new LPN and follow the right format");
 
           return;
         }

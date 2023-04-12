@@ -19,7 +19,7 @@ class CycleCountBatchService {
         "/inventory/cycle-count-batches/open-with-cycle-count"
     );
 
-    printLongLogMessage("response from open cycle count batch: $response");
+    // printLongLogMessage("response from open cycle count batch: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 
@@ -39,7 +39,7 @@ class CycleCountBatchService {
         "/inventory/cycle-count-batches/open-with-audit-count"
     );
 
-    printLongLogMessage("response from open audit count batch: $response");
+    // printLongLogMessage("response from open audit count batch: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 
@@ -81,7 +81,7 @@ class CycleCountBatchService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getCycleCountBatchByBatchId: $response");
+    // printLongLogMessage("response from getCycleCountBatchByBatchId: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 

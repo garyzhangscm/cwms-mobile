@@ -30,7 +30,7 @@ class WorkOrderQCService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getWorkOrderQCSampleByNumber: $response");
+    // printLongLogMessage("response from getWorkOrderQCSampleByNumber: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -65,7 +65,7 @@ class WorkOrderQCService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getWorkOrderQCSampleByProductionLineAssignment: $response");
+    // printLongLogMessage("response from getWorkOrderQCSampleByProductionLineAssignment: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -101,7 +101,7 @@ class WorkOrderQCService {
 
     );
 
-    printLongLogMessage("response from recordWorkOrderQCResult: $response");
+    // printLongLogMessage("response from recordWorkOrderQCResult: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -126,7 +126,7 @@ class WorkOrderQCService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    printLongLogMessage("response from getWorkOrderQCInspectionRequest: $response");
+    // printLongLogMessage("response from getWorkOrderQCInspectionRequest: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -148,7 +148,7 @@ class WorkOrderQCService {
         "workorder/qc-rule-configuration/qc-samples/${workOrderQCSampleId}/matched",
     );
 
-    printLongLogMessage("response from getWorkOrderQCRules: $response");
+    // printLongLogMessage("response from getWorkOrderQCRules: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
@@ -182,7 +182,7 @@ class WorkOrderQCService {
         data:  workOrderQCSample
     );
 
-    printLongLogMessage("response from addWorkOrderQCSample: $response");
+    // printLongLogMessage("response from addWorkOrderQCSample: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
