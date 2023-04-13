@@ -5,6 +5,7 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/work/models/work-task-type.dart';
 import 'package:cwms_mobile/work/models/work_task.dart';
 import 'package:cwms_mobile/work/services/work_task_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -27,23 +28,40 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
   List<Inventory>  _inventoryOnRF = [];
 
   @override
-  Future<void> didChangeDependencies() async {
-    printLongLogMessage("Start to get the next work");
-    showLoading(context);
-    WorkTask nextWorkTask;
+  void initState() {
+    super.initState();
+
 
     _inventoryOnRF = [];
+
+
+
     _reloadInventoryOnRF();
+
+    Future.delayed(Duration.zero, () {
+      this._getNextWorkTask();
+    });
+
+
+  }
+  _getNextWorkTask() {
+    printLongLogMessage("Start to get the next work");
+    showLoading(context);
+    printLongLogMessage("SHOWN loading");
+
     try {
 
-      nextWorkTask = await WorkTaskService.getNextWorkTask();
-      if (nextWorkTask == null) {
-        printLongLogMessage("there's no available work task");
-      }
-      else {
-        printLongLogMessage("start to work on the task ${nextWorkTask.number}");
-      }
-      Navigator.of(context).pop();
+      WorkTaskService.getNextWorkTask().then((nextWorkTask) {
+
+        if (nextWorkTask == null) {
+          printLongLogMessage("there's no available work task");
+        }
+        else {
+          printLongLogMessage("start to work on the task ${nextWorkTask.number}");
+        }
+        Navigator.of(context).pop();
+        _currentWorkTask = nextWorkTask;
+      });
     }
     on WebAPICallException catch(ex) {
 
@@ -52,10 +70,8 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     }
 
-    _currentWorkTask = nextWorkTask;
-
-
   }
+
   @override
   Widget build(BuildContext context) {
 
@@ -89,7 +105,9 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).number,
                       _currentWorkTask == null ? "" : _currentWorkTask.number),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).type,
-                      _currentWorkTask == null ? "" : _currentWorkTask.type),
+                      _currentWorkTask == null ? "" : _currentWorkTask.type.name),
+                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).sourceLocation,
+                      _currentWorkTask == null ? "" : _currentWorkTask.sourceLocation.name),
                 ]),
               ),
               // Expanded(child: Container(color: Colors.amber)),
@@ -105,7 +123,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
           onPressed: _acknowledgeWorkTask,
           child: Text(CWMSLocalizations
               .of(context)
-              .acknowledge),
+              .start),
         ),
         Badge(
           showBadge: true,
@@ -135,13 +153,17 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     // refresh the inventory on the RF
     _reloadInventoryOnRF();
   }
-  void _acknowledgeWorkTask() {
+  Future<void> _acknowledgeWorkTask() async {
     if (_currentWorkTask == null) {
       showErrorToast("No available work task for the current user");
       return;
     }
 
     printLongLogMessage("start to acknowlege current work task ${_currentWorkTask.number} of type ${_currentWorkTask.type}");
+    if (_currentWorkTask.type == WorkTaskType.BULK_PICK) {
+
+      await Navigator.of(context).pushNamed("bulk_pick");
+    }
   }
   void _reloadInventoryOnRF() {
 

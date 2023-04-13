@@ -12,3 +12,9 @@ WorkTaskType workTaskTypeFromString(String value){
   return WorkTaskType.values.firstWhere((e)=>
       e.toString().split('.')[1].toUpperCase()==value.toUpperCase());
 }
+
+extension ParseToString on WorkTaskType {
+  String toShortString() {
+    return this.toString().split('.').last;
+  }
+}

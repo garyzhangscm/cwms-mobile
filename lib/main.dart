@@ -7,6 +7,8 @@ import 'package:cwms_mobile/inventory/routes/inventory_lost_and_found.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_detail.dart';
 import 'package:cwms_mobile/inventory/routes/item_sampling.dart';
 import 'package:cwms_mobile/inventory/routes/lpn_capture.dart';
+import 'package:cwms_mobile/outbound/models/bulk_pick.dart';
+import 'package:cwms_mobile/outbound/routes/bulk_pick.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/language.dart';
@@ -151,6 +153,7 @@ class MyApp extends StatelessWidget {
               "qr_code_view":(context) => QRCodeView(),
               "barcode_receiving":(context) => BarcodeReceivingPage(),
               "system_driven_work":(context) => SystemDrivenWork(),
+              "bulk_pick":(context) => BulkPickPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

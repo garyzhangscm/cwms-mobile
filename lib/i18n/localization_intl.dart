@@ -251,6 +251,10 @@ class CWMSLocalizations {
   String get number  => Intl.message("Number", name: 'number');
   String get type  => Intl.message("Type", name: 'type');
   String get acknowledge  => Intl.message("Acknowledge", name: 'acknowledge');
+  String get sourceLocation  => Intl.message("Source Location", name: 'sourceLocation');
+  String get partailBulkPickNotAllowed  => Intl.message("Partial Bulk Pick is Not Allowed", name: 'partailBulkPickNotAllowed');
+
+
 
 
   String missingField(Object name) {
