@@ -43,6 +43,8 @@ class _BulkPickPageState extends State<BulkPickPage> {
   FocusNode _quantityControllerFocusNode = FocusNode();
 
 
+  String _previousPage;
+
   List<Inventory>  inventoryOnRF;
 
   @override
@@ -76,9 +78,20 @@ class _BulkPickPageState extends State<BulkPickPage> {
       }});
 
   }
+
+  @override
+  void didChangeDependencies() {
+
+    // extract the argument
+    Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
+    _previousPage = arguments['previousPage'];
+
+    _currentBulkPick = arguments['bulkPick'];
+
+  }
+
   @override
   Widget build(BuildContext context) {
-    _currentBulkPick  = ModalRoute.of(context).settings.arguments;
 
     return Scaffold(
 

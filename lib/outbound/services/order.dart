@@ -35,8 +35,6 @@ class OrderService {
       e == null ? null : Order.fromJson(e as Map<String, dynamic>))
         ?.toList();
 
-    // Sort the picks according to the current location. We
-    // will assign the closed pick to the user
     if (orders.length > 0) {
       return orders.first;
     }

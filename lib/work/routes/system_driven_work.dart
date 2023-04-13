@@ -1,8 +1,12 @@
+import 'dart:collection';
+
 import 'package:badges/badges.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
+import 'package:cwms_mobile/outbound/models/bulk_pick.dart';
+import 'package:cwms_mobile/outbound/services/bulk_pick.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/work/models/work-task-type.dart';
@@ -162,7 +166,18 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     printLongLogMessage("start to acknowlege current work task ${_currentWorkTask.number} of type ${_currentWorkTask.type}");
     if (_currentWorkTask.type == WorkTaskType.BULK_PICK) {
 
-      await Navigator.of(context).pushNamed("bulk_pick");
+      BulkPick bulkPick = await BulkPickService.getBulkPickByNumber(_currentWorkTask.referenceNumber);
+      printLongLogMessage("bulk pick: ${bulkPick.number}");
+      printLongLogMessage("bulk pick source location id: ${bulkPick.sourceLocationId}");
+      printLongLogMessage("bulk pick source location: ${bulkPick.sourceLocation == null ? 'N/A' : bulkPick.sourceLocation.name}");
+      Map argumentMap = new HashMap();
+      argumentMap['bulkPick'] = bulkPick;
+      argumentMap['previousPage'] = "system_driven_work"; 
+
+      printLongLogMessage("flow to produce inventory page");
+
+      await Navigator.of(context).pushNamed("bulk_pick", arguments: argumentMap);
+       
     }
   }
   void _reloadInventoryOnRF() {

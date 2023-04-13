@@ -49,6 +49,46 @@ class BulkPickService {
 
   }
 
+
+  // find bulk pick by number
+  static Future<BulkPick> getBulkPickByNumber(String number) async{
+
+    printLongLogMessage("start to find bulk pick by number $number");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "outbound/bulk-picks",
+        queryParameters: {"number": number,
+          "warehouseId": Global.currentWarehouse.id
+        }
+    );
+
+    // print("response from confirm pick: $response");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    List<BulkPick> bulkPicks
+      = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : BulkPick.fromJson(e as Map<String, dynamic>))
+          ?.toList();
+
+
+    if (bulkPicks.length > 0) {
+      return bulkPicks.first;
+    }
+    else {
+      throw new WebAPICallException("can't find bulk pick by number $number");
+    }
+
+  }
+
 }
 
 
