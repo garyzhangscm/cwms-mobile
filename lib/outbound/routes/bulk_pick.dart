@@ -15,6 +15,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/bulk_pick.dart';
+import '../models/pick_mode.dart';
 
 
 class BulkPickPage extends StatefulWidget{
@@ -43,7 +44,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
   FocusNode _quantityControllerFocusNode = FocusNode();
 
 
-  String _previousPage;
+  PickMode _pickMode;
 
   List<Inventory>  inventoryOnRF;
 
@@ -84,7 +85,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
     // extract the argument
     Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
-    _previousPage = arguments['previousPage'];
+    _pickMode = arguments['pickMode'];
 
     _currentBulkPick = arguments['bulkPick'];
 

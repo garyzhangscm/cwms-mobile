@@ -13,6 +13,8 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../models/pick_mode.dart';
+
 
 class PickPage extends StatefulWidget{
 
@@ -40,6 +42,7 @@ class _PickPageState extends State<PickPage> {
   FocusNode _quantityControllerFocusNode = FocusNode();
 
 
+  PickMode _pickMode;
 
 
   final  _formKey = GlobalKey<FormState>();
@@ -87,9 +90,21 @@ class _PickPageState extends State<PickPage> {
 **/
 
   }
+
+  @override
+  void didChangeDependencies() {
+
+    // extract the argument
+    Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
+    _pickMode = arguments['pickMode'];
+
+    _currentPick = arguments['pick'];
+
+  }
+
   @override
   Widget build(BuildContext context) {
-    _currentPick  = ModalRoute.of(context).settings.arguments;
+    // _currentPick  = ModalRoute.of(context).settings.arguments;
 
     return Scaffold(
 

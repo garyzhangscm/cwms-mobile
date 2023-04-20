@@ -20,6 +20,8 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart';
 
+import '../models/pick_mode.dart';
+
 
 class PickByOrderPage extends StatefulWidget{
 
@@ -381,6 +383,11 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     currentPick = _getNextValidPick();
 
     if (currentPick != null) {
+
+      Map argumentMap = new HashMap();
+      argumentMap['pick'] = currentPick;
+      argumentMap['pickMode'] = PickMode.BY_ORDER;
+
       final result = await Navigator.of(context).pushNamed("pick", arguments: currentPick);
       if (result == null) {
         // if the user click the return button instead of confirming

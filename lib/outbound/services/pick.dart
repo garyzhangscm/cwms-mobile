@@ -11,7 +11,29 @@ import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:dio/dio.dart';
 
 class PickService {
-  // Get all cycle count requests by batch id
+  static Future<Pick> getPicksByNumber(String number) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "outbound/picks",
+        queryParameters: {"number": number, "warehouseId": Global.currentWarehouse.id}
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    List<Pick> picks
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+    // we should only have one pick that match with the number
+    if (picks.isEmpty) {
+      return null;
+    }
+
+    return picks[0];
+  }
+
   static Future<List<Pick>> getPicksByOrder(int orderId) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
