@@ -8,10 +8,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class InventoryDepositPage extends StatefulWidget{
@@ -44,7 +41,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     super.initState();
     print("Start to get inventory on RF");
     inventoryDepositRequest = new InventoryDepositRequest();
-    inventoryOnRF = new List<Inventory>();
+    inventoryOnRF = [];
 
     _locationFocusNode.addListener(() {
       if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty) {
@@ -78,12 +75,17 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     _locationController.clear();
     _locationFocusNode.requestFocus();
 
-    _refreshInventoryOnRF();
+    Future.delayed(Duration.zero, () {
+      _refreshInventoryOnRF();
+    });
   }
 
   void _refreshInventoryOnRF() {
+    showLoading(context);
+
     InventoryService.getInventoryOnCurrentRF().then((value)  async {
       inventoryOnRF = value;
+      Navigator.of(context).pop();
 
       if (inventoryOnRF.isEmpty) {
         // no inventory on the RF yet

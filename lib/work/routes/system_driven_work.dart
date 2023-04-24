@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:badges/badges.dart';
@@ -35,12 +36,18 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
   WorkTask _currentWorkTask;
   List<Inventory>  _inventoryOnRF = [];
 
+  Timer _timer;  // timer to load the next work every 10 second
+
   @override
   void dispose() {
     super.dispose();
+    // remove any timer so we won't need to load the next work again after
+    // the user return from this page
+    _timer?.cancel();
+
     if (_currentWorkTask != null) {
       printLongLogMessage("we will need to unaknowledge the current work task ${_currentWorkTask.number}");
-      WorkTaskService.unacknowledgeWorkTask(_currentWorkTask).then((value) =>
+      WorkTaskService.unacknowledgeWorkTask(_currentWorkTask, false).then((value) =>
           printLongLogMessage("Current work task ${_currentWorkTask.number} is unaknowledged")
       );
     }
@@ -51,17 +58,19 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
   void initState() {
     super.initState();
 
-
     _inventoryOnRF = [];
-
-
 
     _reloadInventoryOnRF();
 
+    _currentWorkTask = null;
+    _timer = Timer(Duration.zero, () {
+      this._getNextWorkTask();
+    });
+    /**
     Future.delayed(Duration.zero, () {
       this._getNextWorkTask();
     });
-
+**/
 
   }
 
@@ -76,10 +85,16 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
         if (nextWorkTask == null) {
           printLongLogMessage("there's no available work task, let's try again every 10 second");
+          _timer = Timer(new Duration(seconds: 10), () {
+            Navigator.of(context).pop();
+            this._getNextWorkTask();
+          });
+          /**
           Future.delayed(new Duration(seconds: 10), () {
             Navigator.of(context).pop();
             this._getNextWorkTask();
           });
+              **/
         }
         else {
           printLongLogMessage("start to work on the task ${nextWorkTask.number}");
@@ -182,16 +197,35 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
   Future<void> _skipWorkTask() async {
 
+    showLoading(context);
+    await WorkTaskService.unacknowledgeWorkTask(_currentWorkTask, true);
 
+    Navigator.of(context).pop();
+
+    _refresh();
   }
 
-
   // call the deposit form to deposit the inventory on the RF
-  Future<void> _startDeposit() async {
-    await Navigator.of(context).pushNamed("inventory_deposit");
+  Future<void> _refresh() async {
+
+    setState(() {
+
+      _currentWorkTask = null;
+    });
+    this._getNextWorkTask();
 
     // refresh the inventory on the RF
     _reloadInventoryOnRF();
+  }
+
+  // call the deposit form to deposit the inventory on the RF
+  Future<void> _startDeposit() async {
+    // cancel the timer when we start depositr
+    _timer?.cancel();
+    await Navigator.of(context).pushNamed("inventory_deposit");
+
+    // refresh the inventory on the RF
+    _refresh();
   }
   Future<void> _acknowledgeWorkTask() async {
     if (_currentWorkTask == null) {
@@ -215,22 +249,28 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
   Future<void> _startBulkPick(WorkTask workTask) async {
     BulkPick bulkPick;
+    showLoading(context);
     try {
       bulkPick = await BulkPickService.getBulkPickByNumber(workTask.referenceNumber);
     }
     on WebAPICallException catch(ex) {
       // ok it is possible that the actual work is already cancelled but the work task is still present,
       // let's cancel the work task as it is no long valid
+
+      Navigator.of(context).pop();
       printLongLogMessage("start to cancel the work task ${workTask.number} as there's no bulk pick attached");
 
       await _cancelWorkTask(workTask);
-      setState(() {
-        _currentWorkTask = null;
-      });
-      _getNextWorkTask();
+      _refresh();
       return;
     }
 
+    Navigator.of(context).pop();
+    if (bulkPick.pickedQuantity == bulkPick.quantity) {
+      _completeWorkTask(_currentWorkTask);
+      _refresh();
+      return;
+    }
     printLongLogMessage("bulk pick: ${bulkPick.number}");
     printLongLogMessage("bulk pick source location id: ${bulkPick.sourceLocationId}");
     printLongLogMessage("bulk pick source location: ${bulkPick.sourceLocation == null ? 'N/A' : bulkPick.sourceLocation.name}");
@@ -242,23 +282,34 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     await Navigator.of(context).pushNamed("bulk_pick", arguments: argumentMap);
 
+
+    // get the next work task
+    _refresh();
   }
 
   Future<void> _startSinglePick(WorkTask workTask) async {
     Pick pick;
+    showLoading(context);
     try {
       pick = await PickService.getPicksByNumber(workTask.referenceNumber);
     }
     on WebAPICallException catch(ex) {
+
+      Navigator.of(context).pop();
       // ok it is possible that the actual work is already cancelled but the work task is still present,
       // let's cancel the work task as it is no long valid
       printLongLogMessage("start to cancel the work task ${workTask.number} as there's no bulk pick attached");
 
       await _cancelWorkTask(workTask);
-      setState(() {
-        _currentWorkTask = null;
-      });
-      _getNextWorkTask();
+      _refresh();
+      return;
+    }
+
+    Navigator.of(context).pop();
+
+    if (pick.pickedQuantity == pick.quantity) {
+      _completeWorkTask(_currentWorkTask);
+      _refresh();
       return;
     }
 
@@ -275,14 +326,26 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     if (result ==  null) {
       // the user press Return, let's unacknowledge the work task and then start with the next work task
-      await WorkTaskService.unacknowledgeWorkTask(_currentWorkTask);
-
+      await WorkTaskService.unacknowledgeWorkTask(_currentWorkTask, true);
     }
+
+    // get the next work task
+    _refresh();
+  }
+
+  Future<void> _completeWorkTask(WorkTask workTask) async {
+    showLoading(context);
+    await WorkTaskService.completeWorkTask(workTask);
+
+    Navigator.of(context).pop();
+
   }
 
   Future<void> _cancelWorkTask(WorkTask workTask) async {
+    showLoading(context);
     await WorkTaskService.cancelWorkTask(workTask);
 
+    Navigator.of(context).pop();
 
   }
   void _reloadInventoryOnRF() {

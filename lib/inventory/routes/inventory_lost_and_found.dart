@@ -521,6 +521,13 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   Future<Inventory> createInventory(String lpn, int quantity) async {
     Inventory inventory = new Inventory();
     inventory.item = _currentItem;
+    // in 3pl environment, let's set the inventory's client id based on the item
+    // client id
+    if (_currentItem.clientId != null) {
+      printLongLogMessage("current item belongs to client ${_currentItem.clientId}" +
+      ", we will setup the inventory with the same client id");
+      inventory.clientId = _currentItem.clientId;
+    }
     inventory.quantity = quantity;
     WarehouseLocation rfLocation = await WarehouseLocationService.getWarehouseLocationByName(
         Global.lastLoginRFCode

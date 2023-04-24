@@ -1,15 +1,8 @@
 import 'package:badges/badges.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_request_action.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
-import 'package:cwms_mobile/inventory/services/cycle_count_batch.dart';
-import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/inventory/widgets/count_batch_list_item.dart';
 import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -18,7 +11,6 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
@@ -48,7 +40,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   void initState() {
     super.initState();
 
-    inventoryOnRF = new List<Inventory>();
+    inventoryOnRF = [];
 
 
 
@@ -96,7 +88,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         autofocus: true,
         decoration: InputDecoration(
           labelText: CWMSLocalizations.of(context).lpn,
-          hintText: "please input batch id",
+          hintText: "please input LPN",
           suffixIcon:
             IconButton(
               onPressed: _startLPNBarcodeScanner,

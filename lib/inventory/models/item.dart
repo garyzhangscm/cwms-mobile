@@ -1,6 +1,5 @@
 import 'package:cwms_mobile/common/models/client.dart';
 import 'package:cwms_mobile/inventory/models/item_family.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'item_package_type.dart';

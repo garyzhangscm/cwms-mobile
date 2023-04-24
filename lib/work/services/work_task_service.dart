@@ -56,6 +56,27 @@ class WorkTaskService {
 
   }
 
+  static Future<WorkTask> completeWorkTask(WorkTask workTask) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "resource/work-tasks/${workTask.id}/complete",
+        queryParameters: {"rfCode":  Global.getLastLoginRFCode(),
+          "warehouseId": Global.currentWarehouse.id}
+    );
+
+    // printLongLogMessage("response from getNextWorkTask: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return WorkTask.fromJson(responseString["data"]);
+
+  }
+
   static Future<WorkTask> acknowledgeWorkTask(WorkTask workTask) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
