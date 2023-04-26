@@ -253,6 +253,7 @@ class CWMSLocalizations {
   String get acknowledge  => Intl.message("Acknowledge", name: 'acknowledge');
   String get sourceLocation  => Intl.message("Source Location", name: 'sourceLocation');
   String get partailBulkPickNotAllowed  => Intl.message("Partial Bulk Pick is Not Allowed", name: 'partailBulkPickNotAllowed');
+  String get cannotFindWarehouse  => Intl.message("Cannot find warehouse", name: 'cannotFindWarehouse');
 
 
 

@@ -189,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
                       foregroundColor: Colors.white,
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
-                    onPressed: _onLogin,
+                    onPressed: selectedWarehouse == null ?  null : _onLogin,
                     child: Text("login"),
                   ),
                 ),
@@ -471,14 +471,30 @@ class _LoginPageState extends State<LoginPage> {
       // we will need to get the company code and user name so we can know
       // which warehouse the user has access to
       // simply reset the valid warehouse to empty list will disable the control
-      _validWarehouses = [];
-      selectedWarehouse = null;
+      setState(() {
+        _validWarehouses = [];
+        selectedWarehouse = null;
+
+      });
     }
     else {
 
+      showLoading(context);
       List<Warehouse> warehouses = await WarehouseService.getWarehouseByUser(
           _companyCodeController.text, _unameController.text
       );
+      Navigator.of(context).pop();
+
+      if (warehouses == null || warehouses.isEmpty) {
+        showErrorToast(CWMSLocalizations.of(context).cannotFindWarehouse);
+        setState(() {
+          _validWarehouses = [];
+          selectedWarehouse = null;
+
+        });
+        return;
+
+      }
       print("get ${warehouses.length} warheouses from server: ${warehouses.join('####')}");
       setState(() {
 

@@ -48,9 +48,11 @@ class _LaunchPageState extends State<LaunchPage> {
 
       // in debug mode
       _serverURLController =  TextEditingController(
-          text: 'https://staging.claytechsuite.com/api/');
+          text: 'https://prod.claytechsuite.com/api/');
           // text: 'http。 ://k8s-staging-zuulserv-707034e5d3-990722035.us-west-1.elb.amazonaws.com/api/');
       _autoConnect = true;
+      printLongLogMessage("In debug mode, we will always auto connect");
+      _onAutoConnect(server);
     }
     else if (server != null) {
 

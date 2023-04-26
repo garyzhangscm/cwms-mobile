@@ -250,6 +250,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "acknowledge" : MessageLookupByLibrary.simpleMessage("Acknowledge"),
     "sourceLocation" : MessageLookupByLibrary.simpleMessage("Source Location"),
     "partailBulkPickNotAllowed" : MessageLookupByLibrary.simpleMessage("Partial Bulk Pick is Not Allowed"),
+    "cannotFindWarehouse" : MessageLookupByLibrary.simpleMessage("Cannot find warehouse"),
 
 
     'greetingMessage':greetingMessage,
