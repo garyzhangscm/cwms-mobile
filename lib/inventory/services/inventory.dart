@@ -209,12 +209,19 @@ class InventoryService {
         data: destinationLocation
     );
 
-    // printLongLogMessage("response from move inventory:");
 
-    // printLongLogMessage(response.toString());
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return Inventory.fromJson(responseString["data"]);
 
     // return the moved inventory
-    return Inventory.fromJson(json.decode(response.toString()));
+    // return Inventory.fromJson(json.decode(response.toString()));
   }
 
   static Future<Inventory> getInventoryById(int inventoryId) async {

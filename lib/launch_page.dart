@@ -45,14 +45,15 @@ class _LaunchPageState extends State<LaunchPage> {
     print("get auto connect server? ${server == null? '' : server.url}");
 
     if (kDebugMode) {
+      String url = 'https://staging.claytechsuite.com/api/';
 
       // in debug mode
       _serverURLController =  TextEditingController(
-          text: 'https://prod.claytechsuite.com/api/');
+          text: url);
           // text: 'http。 ://k8s-staging-zuulserv-707034e5d3-990722035.us-west-1.elb.amazonaws.com/api/');
       _autoConnect = true;
       printLongLogMessage("In debug mode, we will always auto connect");
-      _onAutoConnect(server);
+      _onConnect(url, true);
     }
     else if (server != null) {
 

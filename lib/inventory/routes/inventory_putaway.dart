@@ -12,6 +12,8 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../exception/WebAPICallException.dart';
+
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
 // with or without any pre-assigned destination
@@ -201,11 +203,21 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
       for(Inventory inventory in inventories) {
         printLongLogMessage("==>> start to move invenotry with id ${inventory.id} lpn ${inventory.lpn}");
-        await InventoryService.moveInventory(
 
-          inventoryId: inventory.id,
-          destinationLocation: rfLocation
-        );
+        try {
+          await InventoryService.moveInventory(
+
+              inventoryId: inventory.id,
+              destinationLocation: rfLocation
+          );
+        }
+        on WebAPICallException catch(ex) {
+
+          Navigator.of(context).pop();
+          showErrorDialog(context, ex.errMsg());
+          return;
+        }
+
         printLongLogMessage("==>> finish moving invenotry with id ${inventory.id} lpn ${inventory.lpn}");
       }
 

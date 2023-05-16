@@ -529,10 +529,21 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     for (int i = 0; i < inventoryDepositRequest.inventoryIdList.length; i++) {
       int inventoryId = inventoryDepositRequest.inventoryIdList[i];
 
-      await InventoryService.moveInventory(
-          inventoryId: inventoryId,
-          destinationLocation: destinationLocation
-      );
+      try {
+
+        await InventoryService.moveInventory(
+            inventoryId: inventoryId,
+            destinationLocation: destinationLocation
+        );
+      }
+      on WebAPICallException catch(ex) {
+
+        Navigator.of(context).pop();
+        showErrorDialog(context, ex.errMsg());
+        _locationController.selection = TextSelection(baseOffset: 0,
+          extentOffset: _locationController.text.length);
+        return;
+      }
     }
 
     printLongLogMessage("all inventory is deposit");
