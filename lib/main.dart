@@ -45,6 +45,7 @@ import 'inventory/routes/inventory_deposit.dart';
 import 'inventory/routes/inventory_putaway.dart';
 import 'inventory/routes/inventory_qc.dart';
 import 'inventory/routes/inventory_query.dart';
+import 'inventory/routes/partial_inventory_move.dart';
 import 'inventory/routes/qc_inspection.dart';
 import 'launch_page.dart';
 import 'menus.dart';
@@ -154,6 +155,7 @@ class MyApp extends StatelessWidget {
               "barcode_receiving":(context) => BarcodeReceivingPage(),
               "system_driven_work":(context) => SystemDrivenWork(),
               "bulk_pick":(context) => BulkPickPage(),
+              "partial_inventory_move":(context) => PartialInventoryMovePage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

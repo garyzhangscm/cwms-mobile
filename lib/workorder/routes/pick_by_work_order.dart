@@ -163,13 +163,13 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
               child:
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: ElevatedButton(
-                  onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                      onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+                      child: Text(CWMSLocalizations.of(context).depositInventory),
+                    ),
                 ),
-              ),
             )
         )
       ],

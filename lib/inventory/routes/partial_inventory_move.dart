@@ -8,9 +8,12 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../exception/WebAPICallException.dart';
+import '../../shared/global.dart';
+import '../../warehouse_layout/models/warehouse_location.dart';
+import '../../warehouse_layout/services/warehouse_location.dart';
 import '../models/item.dart';
 import '../models/item_unit_of_measure.dart';
 
@@ -33,7 +36,6 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   TextEditingController _lpnController = new TextEditingController();
   GlobalKey _formKey = new GlobalKey<FormState>();
   TextEditingController _quantityController = new TextEditingController();
-  FocusNode _quantityFocusNode = FocusNode();
   ItemUnitOfMeasure _selectedItemUnitOfMeasure;
 
 
@@ -43,6 +45,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
   var _itemNames = Set<String>();
   Map<String, Item> _itemMap = HashMap();
+  // map to save the total quantity of the map so that
+  // the partial move won't exceed the total quantity of the
+  // item on the LPN
+  Map<String, int> _itemQuantityMap = HashMap();
   var _selectedItemName = "";
 
 
@@ -53,6 +59,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     inventoryOnRF = [];
     _itemNames = Set<String>();
     _itemMap.clear();
+    _itemQuantityMap.clear();
     _selectedItemName = "";
 
     _lpnFocusNode.addListener(() {
@@ -89,7 +96,9 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
               _selectedItemName == "" ?
                   Container() :
                   _builItemDescriptionController(context),
-              _buildQuantityController(context),
+              _selectedItemName == "" ?
+                Container() :
+                _buildQuantityController(context),
               _buildButtons(context),
               _buildDepositRequestList(context)
             ],
@@ -106,6 +115,14 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             controller: _lpnController,
             autofocus: true,
             // 校验用户名（不能为空）
+            focusNode: _lpnFocusNode,
+            decoration: InputDecoration(
+              suffixIcon:
+                IconButton(
+                  onPressed: () => _clearLPN(),
+                  icon: Icon(Icons.close),
+                ),
+            ),
             validator: (v) {
               return v.trim().isNotEmpty ?
               null :
@@ -113,6 +130,19 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                   CWMSLocalizations.of(context).lpn);
             })
     );
+  }
+
+  void _clearLPN() {
+
+    setState(() {
+      _lpnController.text = "";
+      _itemNames = Set<String>();
+      _itemMap.clear();
+      _itemQuantityMap.clear();
+      _selectedItemName = "";
+    });
+
+    _lpnFocusNode.requestFocus();
   }
   Widget _buildItemInformation(BuildContext context, String itemName) {
     return buildTwoSectionInformationRow(
@@ -160,14 +190,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         TextFormField(
             keyboardType: TextInputType.number,
             controller: _quantityController,
-            textInputAction: TextInputAction.next,
             autofocus: true,
-            focusNode: _quantityFocusNode,
-            onFieldSubmitted: (v){
-              printLongLogMessage("start to focus on lpn node");
-              _lpnFocusNode.requestFocus();
-
-            },
             decoration: InputDecoration(
                 isDense: true
             ),
@@ -193,6 +216,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             icon: Icon(
               Icons.list,
               size: 20,
+            ),
+            underline: Container(
+              height: 0,
+              color: Colors.deepPurpleAccent,
             ),
             onChanged: (T) {
               //下拉菜单item点击之后的回调
@@ -221,7 +248,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         child: Text(item.defaultItemPackageType.itemUnitOfMeasures[i].unitOfMeasure.name),
       ));
     }
-
+    if (item.defaultItemPackageType.itemUnitOfMeasures.length == 1) {
+      _selectedItemUnitOfMeasure = item.defaultItemPackageType.itemUnitOfMeasures[0];
+    }
+    return dropdownMenuItems;
   }
 
   bool _validateQuantity() {
@@ -240,6 +270,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     return dropdownMenuItems;
   }
 
+  // load the inventory information that is associated with the LPN
+  // if there's only one item on the LPN, then display the item
+  // otherwise, list all the items and let the user choose one
+  // to move
   void _onLoadingLPNInformation() async {
 
     if (_lpnController.text.isEmpty) {
@@ -255,17 +289,42 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   Future<void> _loadItemsFromLPN(String lpn) async {
     if (lpn.trim().isEmpty) {
       // if the user hasn't input the LPN, return an empty list
-      return new Set();
+      return;
     }
     // get the invetory from the LPN
 
     showLoading(context);
-    List<Inventory> inventories = await InventoryService.findInventory(lpn :_lpnController.text, includeDetails: false);
+    List<Inventory> inventories = await InventoryService.findInventory(lpn :_lpnController.text, includeDetails: true);
 
+    if (inventories.isEmpty) {
+
+      Navigator.of(context).pop();
+      showToast(CWMSLocalizations.of(context).noInventoryFound);
+      _clearLPN();
+      return;
+    }
     inventories.forEach((inventory) {
       _itemNames.add(inventory.item.name);
-      _itemMap.putIfAbsent(inventory.item.name, () => inventory.item);
+      _itemMap[inventory.item.name] = inventory.item;
+      int accumulativeQuantity = _itemQuantityMap.putIfAbsent(inventory.item.name, () => 0);
+      _itemQuantityMap[inventory.item.name] = accumulativeQuantity + inventory.quantity;
 
+    });
+
+    _itemMap.forEach((key, value) {
+      printLongLogMessage("item \n================= ${key}       ===============");
+      printLongLogMessage("${value.toJson()}");
+    });
+
+    setState(() {
+      _itemNames;
+      _itemMap;
+      _itemQuantityMap;
+      if (_itemMap.isNotEmpty) {
+        printLongLogMessage("get ${_itemMap.length} items");
+
+        _selectedItemName = _itemNames.first;
+      }
     });
 
     Navigator.of(context).pop();
@@ -273,7 +332,37 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
   Widget _buildButtons(BuildContext context) {
 
-    return
+    return buildTwoButtonRow(context,
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+          onPressed: _lpnController.text.isNotEmpty && _selectedItemName != "" &&
+                     _selectedItemUnitOfMeasure != null && _quantityController.text.isNotEmpty ?
+              _onAddingLPN : null,
+          child: Text(CWMSLocalizations.of(context).add),
+        ),
+
+        Badge(
+          showBadge: true,
+          padding: EdgeInsets.all(8),
+          badgeColor: Colors.deepPurple,
+          badgeContent: Text(
+            inventoryOnRF.length.toString(),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          child:
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: ElevatedButton(
+              onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+              child: Text(CWMSLocalizations.of(context).depositInventory),
+            ),
+          ),
+        )
+    );
+      /**
       Row(
 
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -317,6 +406,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
           ),
         ],
       );
+          **/
   }
 
   // call the deposit form to deposit the inventory on the RF
@@ -348,6 +438,46 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   }
 
 
+  void _onAddingLPN() async {
+      showLoading(context);
+      // move the inventory being scanned onto RF
+      printLongLogMessage("==>> Start to adding LPN for deposit");
+
+      printLongLogMessage("quantity: ${_quantityController.text}");
+      WarehouseLocation rfLocation =
+        await WarehouseLocationService.getWarehouseLocationByName(
+            Global.lastLoginRFCode
+        );
+      printLongLogMessage("==>> GOT RF location ");
+
+      int quantity = int.parse(_quantityController.text);
+      printLongLogMessage("quantity: ${quantity}");
+
+        try {
+          await InventoryService.moveInventory(
+              lpn: _lpnController.text,
+              quantity: quantity,
+              unitOfMeasure: _selectedItemUnitOfMeasure.unitOfMeasure.name,
+              itemName: _selectedItemName,
+              destinationLocation: rfLocation
+          );
+        }
+        on WebAPICallException catch(ex) {
+
+          Navigator.of(context).pop();
+          showErrorDialog(context, ex.errMsg());
+          return;
+        }
+
+
+      Navigator.of(context).pop();
+      _clearLPN();
+
+      showToast(CWMSLocalizations.of(context).actionComplete);
+      printLongLogMessage("==>> start to reload inventory after adding the lpn ${_lpnController.text}");
+      _reloadInventoryOnRF();
+      printLongLogMessage("==>> inventory loaded");
+  }
 
 
   void _reloadInventoryOnRF() {

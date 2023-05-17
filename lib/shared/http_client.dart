@@ -18,6 +18,8 @@ class CWMSHttpClient {
   BuildContext context;
   Options _options;
 
+  static int timeoutRetryTime = 20;
+
 
   static Dio _dio = new Dio(BaseOptions(
     baseUrl: Global.currentServer.url,

@@ -9,10 +9,12 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../exception/WebAPICallException.dart';
+import '../../shared/http_client.dart';
 
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
@@ -93,8 +95,8 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
           hintText: "please input LPN",
           suffixIcon:
             IconButton(
-              onPressed: _startLPNBarcodeScanner,
-              icon: Icon(Icons.scanner),
+              onPressed: () => _clearLPN(),
+              icon: Icon(Icons.close),
             ),
         ),
         // 校验用户名（不能为空）
@@ -107,8 +109,43 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   }
 
 
+  void _clearLPN() {
+
+    _lpnController.text = "";
+    lpnFocusNode.requestFocus();
+  }
+
   Widget _buildButtons(BuildContext context) {
 
+    return buildTwoButtonRow(context,
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+          onPressed: _onAddingLPN,
+          child: Text(CWMSLocalizations.of(context).add),
+        ),
+
+        Badge(
+          showBadge: true,
+          padding: EdgeInsets.all(8),
+          badgeColor: Colors.deepPurple,
+          badgeContent: Text(
+            inventoryOnRF.length.toString(),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          child:
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: ElevatedButton(
+              onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+              child: Text(CWMSLocalizations.of(context).depositInventory),
+            ),
+          ),
+        )
+    );
+    /**
     return
       Row(
 
@@ -153,6 +190,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
           ),
         ],
       );
+        **/
   }
 
   void _startLPNBarcodeScanner() async  {
@@ -185,56 +223,72 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
       showErrorDialog(context, "please input the LPN number");
       return;
     }
-    showLoading(context);
+    _moveInventoryAsync(_lpnController.text, retryTime: 0);
+
+    showToast("LPN putaway request sent");
+    _lpnController.clear();
+    lpnFocusNode.requestFocus();
+  }
+  /// move inventory async
+  void _moveInventoryAsync(String lpn, {int retryTime = 0}) {
+    // showLoading(context);
     // move the inventory being scanned onto RF
     printLongLogMessage("==>> Start to adding LPN for deposit");
+    InventoryService.findInventory(lpn : lpn, includeDetails: false)
+        .then((inventories) async {
 
-    List<Inventory> inventories = await InventoryService.findInventory(lpn :_lpnController.text, includeDetails: false);
-    printLongLogMessage("==>> LPN ${_lpnController.text} is found");
-    if(inventories.isNotEmpty) {
+            if(inventories.isNotEmpty) {
 
-      // move each inventory on to the RF
-      printLongLogMessage("==>> Start to get the RF's location");
-      WarehouseLocation rfLocation =
+              WarehouseLocation rfLocation =
                   await WarehouseLocationService.getWarehouseLocationByName(
-                      Global.lastLoginRFCode
+                  Global.lastLoginRFCode
+              );
+              printLongLogMessage("==>> GOT RF location ");
+
+              for(Inventory inventory in inventories) {
+                printLongLogMessage("==>> start to move invenotry with id ${inventory.id} lpn ${inventory.lpn}");
+
+                await InventoryService.moveInventory(
+                      inventoryId: inventory.id,
+                      destinationLocation: rfLocation
                   );
-      printLongLogMessage("==>> GOT RF location ");
 
-      for(Inventory inventory in inventories) {
-        printLongLogMessage("==>> start to move invenotry with id ${inventory.id} lpn ${inventory.lpn}");
+                printLongLogMessage("==>> finish moving invenotry with id ${inventory.id} lpn ${inventory.lpn}");
+              }
 
-        try {
-          await InventoryService.moveInventory(
+              // Navigator.of(context).pop();
 
-              inventoryId: inventory.id,
-              destinationLocation: rfLocation
-          );
-        }
-        on WebAPICallException catch(ex) {
+              // showToast(CWMSLocalizations.of(context).actionComplete);
+              printLongLogMessage("==>> start to reload inventory after adding the lpn ${_lpnController.text}");
+              _reloadInventoryOnRF();
+              printLongLogMessage("==>> inventory loaded");
 
-          Navigator.of(context).pop();
-          showErrorDialog(context, ex.errMsg());
-          return;
-        }
+            }
+            else {
+              // show error message
 
-        printLongLogMessage("==>> finish moving invenotry with id ${inventory.id} lpn ${inventory.lpn}");
-      }
+              showErrorDialog(context, CWMSLocalizations.of(context).noInventoryFound + ", LPN: " + lpn);
 
-      Navigator.of(context).pop();
-      _lpnController.clear();
+              // Navigator.of(context).pop();
+              // showToast(CWMSLocalizations.of(context).noInventoryFound);
+            }
+        })
+        .catchError((err) {
+            if (err is DioError &&
+                err.type == DioErrorType.connectTimeout &&
+                retryTime <= CWMSHttpClient.timeoutRetryTime) {
+              // for timeout error and we are still in the retry threshold, let's try again
+              _moveInventoryAsync(lpn, retryTime: retryTime + 1);
+            }
+            else if (err is WebAPICallException) {
+                // for business error, show the result
+              showErrorDialog(context, err.errMsg() + ", LPN: " + lpn);
+              return;
+            }
+            // ignore any other error
 
-      showToast(CWMSLocalizations.of(context).actionComplete);
-      printLongLogMessage("==>> start to reload inventory after adding the lpn ${_lpnController.text}");
-      _reloadInventoryOnRF();
-      printLongLogMessage("==>> inventory loaded");
-    }
-    else {
-      // show error message
+    });
 
-      Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context).noInventoryFound);
-    }
   }
   // call the deposit form to deposit the inventory on the RF
   Future<void> _startDeposit() async {

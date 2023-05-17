@@ -452,7 +452,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
               foregroundColor: Colors.white,
               backgroundColor: Theme.of(context).primaryColor,
             ),
-            onPressed: _onStartProduce,
+            onPressed: _currentWorkOrder == null || _assignedProductionLine == null ? null : _onStartProduce,
             child: Text(CWMSLocalizations.of(context).workOrderProduce),
           )
         );

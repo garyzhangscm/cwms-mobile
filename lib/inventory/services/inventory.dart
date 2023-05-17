@@ -188,13 +188,34 @@ class InventoryService {
 
   }
 
+
   // move inventory
-  static Future<Inventory> moveInventory  (
+  static Future<List<Inventory>> moveInventory  (
       {int inventoryId, int pickId, bool immediateMove = true,
-        String destinationLpn = "", WarehouseLocation destinationLocation}) async {
+        String destinationLpn = "", WarehouseLocation destinationLocation,
+        String lpn = "",
+        String itemName = "", int quantity, String unitOfMeasure = ""}) async {
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
+
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+
+    if (inventoryId != null) {
+      queryParameters["inventoryId"] = inventoryId;
+    }
     if (pickId != null) {
       queryParameters["pickId"] = pickId;
+    }
+    if (itemName.isNotEmpty) {
+      queryParameters["itemName"] = itemName;
+    }
+    if (lpn.isNotEmpty) {
+      queryParameters["lpn"] = lpn;
+    }
+    if (quantity != null && quantity > 0) {
+      queryParameters["quantity"] = quantity;
+    }
+    if (unitOfMeasure.isNotEmpty) {
+      queryParameters["unitOfMeasure"] = unitOfMeasure;
     }
     queryParameters["immediateMove"] = immediateMove;
     if (destinationLpn.isNotEmpty) {
@@ -203,8 +224,10 @@ class InventoryService {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
+    printLongLogMessage("start to move inventory");
+
     Response response = await httpClient.post(
-        "/inventory/inventory/$inventoryId/move",
+        "/inventory/inventory/move",
         queryParameters: queryParameters,
         data: destinationLocation
     );
@@ -218,7 +241,15 @@ class InventoryService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
-    return Inventory.fromJson(responseString["data"]);
+
+    List<Inventory> inventories
+      = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+          ?.toList();
+
+
+    return inventories;
+
 
     // return the moved inventory
     // return Inventory.fromJson(json.decode(response.toString()));
