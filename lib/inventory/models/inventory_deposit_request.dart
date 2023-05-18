@@ -38,7 +38,7 @@ class InventoryDepositRequest{
     multipleInventoryStatusFlag = false;
 
     quantity = 0;
-    inventoryIdList = new List<int>();
+    inventoryIdList = [];
   }
 
 

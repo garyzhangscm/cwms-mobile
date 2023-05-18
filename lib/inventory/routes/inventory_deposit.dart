@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -8,7 +10,10 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+
+import '../../shared/http_client.dart';
 
 
 class InventoryDepositPage extends StatefulWidget{
@@ -36,6 +41,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
 
+
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +53,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     _locationFocusNode.addListener(() {
       if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
-        _onDepositConfirm(inventoryDepositRequest);
+        _onDepositConfirmAsync(inventoryDepositRequest);
 
       }
     });
@@ -79,7 +86,52 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       _refreshInventoryOnRF();
     });
   }
+  // remove the inventory from inventory On RF once we complete a inventory deposit
+  // request. We will remove the inventory from the local
+  Future<void>  _removeInventoryOnRf(InventoryDepositRequest inventoryDepositRequest) async{
 
+    inventoryOnRF = inventoryOnRF.where((inventory) =>
+        !inventoryDepositRequest.inventoryIdList.contains(inventory.id)
+    ).toList();
+    await _displayInventoryForDeposit();
+  }
+  Future<void> _displayInventoryForDeposit() async {
+
+    if (inventoryOnRF.isEmpty) {
+      // no inventory on the RF yet
+      // return to the previous page
+      printLongLogMessage("start to show dialog");
+      await showDialog(
+          context: context,
+          builder: (context) {
+            return
+              AlertDialog(
+                title: Text(""),
+                content: Text("No more inventory on the RF"),
+                actions: <Widget>[
+
+                  ElevatedButton(
+                    child: Text("Confirm"),
+                    onPressed: () {
+                      Navigator.of(context).pop(true); //关闭对话框
+                    },
+                  ),
+                ],
+              );
+          }
+      );
+      // return to the previous page after display the message
+      Navigator.of(context).pop();
+    }
+    else {
+      setState(() {
+
+        inventoryDepositRequest = _getNextInventoryToDeposit();
+        _lpnController.text = inventoryDepositRequest.lpn;
+      // _locationController.text = "";
+      });
+    }
+  }
   void _refreshInventoryOnRF() {
     showLoading(context);
 
@@ -87,41 +139,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       inventoryOnRF = value;
       Navigator.of(context).pop();
 
-      if (inventoryOnRF.isEmpty) {
-        // no inventory on the RF yet
-        // return to the previous page
-        printLongLogMessage("start to show dialog");
-        await showDialog(
-            context: context,
-            builder: (context) {
-              return
-                AlertDialog(
-                  title: Text(""),
-                  content: Text("No more inventory on the RF"),
-                  actions: <Widget>[
-
-                    ElevatedButton(
-                      child: Text("Confirm"),
-                      onPressed: () {
-                        Navigator.of(context).pop(true); //关闭对话框
-                      },
-                    ),
-                  ],
-                );
-            }
-        );
-        // return to the previous page after display the message
-        Navigator.of(context).pop();
-      }
-      else {
-        setState(() {
-
-          inventoryDepositRequest = _getNextInventoryToDeposit();
-          _lpnController.text = inventoryDepositRequest.lpn;
-          // _locationController.text = "";
-        });
-
-      }
+      await _displayInventoryForDeposit();
     });
 
   }
@@ -172,7 +190,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                        () {
                          if (_formKey.currentState.validate()) {
                            print("form validation passed");
-                           _onDepositConfirm(inventoryDepositRequest);
+                           _onDepositConfirmAsync(inventoryDepositRequest);
                          }
 
                       },
@@ -481,7 +499,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   }
 
-
+/**
   void _onDepositConfirm(InventoryDepositRequest inventoryDepositRequest) async {
 
 
@@ -558,5 +576,70 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
 
   }
+**/
 
+  Future<void> _onDepositConfirmAsync(InventoryDepositRequest inventoryDepositRequest,
+    {int retryTime = 0}) async {
+
+
+    printLongLogMessage("start to deposit invenotry ${inventoryDepositRequest.lpn}");
+
+    WarehouseLocationService.getWarehouseLocationByName(
+        _locationController.text
+    ).then((destinationLocation) async {
+      if (inventoryDepositRequest.nextLocation != null &&
+          destinationLocation.id != inventoryDepositRequest.nextLocation.id &&
+          destinationLocation.locationGroup.locationGroupType.pickupAndDeposit == false) {
+
+        throw new WebAPICallException("should only deposit to  ${inventoryDepositRequest.nextLocation.name} or a Pickup and Deposit location");
+
+      }
+
+      for (int i = 0; i < inventoryDepositRequest.inventoryIdList.length; i++) {
+        int inventoryId = inventoryDepositRequest.inventoryIdList[i];
+          await InventoryService.moveInventory(
+              inventoryId: inventoryId,
+              destinationLocation: destinationLocation
+          );
+      }
+
+      showToast("inventory deposit");
+
+      // let's get next inventory to be deposit
+
+    }).catchError((err) {
+      printLongLogMessage("Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
+      if (err is DioError) {
+          // err.type == DioErrorType.connectTimeout &&) {
+        // for timeout error and we are still in the retry threshold, let's try again
+
+        if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
+
+          Future.delayed(const Duration(milliseconds: 2000),
+                  () => _onDepositConfirmAsync(inventoryDepositRequest, retryTime: retryTime + 1));
+        }
+        else {
+          // do nothing as we already running out of retry time
+          showErrorDialog(context, "Fail to deposit LPN: " + inventoryDepositRequest.lpn + " after trying ${CWMSHttpClient.timeoutRetryTime} times");
+        }
+
+      }
+      else if (err is WebAPICallException){
+        // for any other error display it
+        final webAPICallException = err as WebAPICallException;
+        showErrorDialog(context, webAPICallException.errMsg() + ", LPN: " + inventoryDepositRequest.lpn);
+      }
+      else {
+
+        showErrorDialog(context, err.toString() + ", LPN: " + inventoryDepositRequest.lpn);
+      }
+      // ignore any other error
+
+    });
+    _locationController.clear();
+    _locationFocusNode.requestFocus();
+
+    await _removeInventoryOnRf(inventoryDepositRequest);
+
+  }
 }

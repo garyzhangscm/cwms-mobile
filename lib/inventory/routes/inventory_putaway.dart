@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:badges/badges.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -39,6 +41,9 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   List<Inventory>  inventoryOnRF;
 
   FocusNode lpnFocusNode = FocusNode();
+
+
+  Timer _timer;  // timer to refresh inventory on RF every 2 second
 
   @override
   void initState() {
@@ -274,16 +279,32 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             }
         })
         .catchError((err) {
-            if (err is DioError &&
-                err.type == DioErrorType.connectTimeout &&
-                retryTime <= CWMSHttpClient.timeoutRetryTime) {
+            printLongLogMessage("Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
+            if (err is DioError ) {
               // for timeout error and we are still in the retry threshold, let's try again
-              _moveInventoryAsync(lpn, retryTime: retryTime + 1);
+              printLongLogMessage("time out while get inventory by LPN $lpn, let's try again.");
+              // retry after 2 second
+
+              if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
+
+                Future.delayed(const Duration(milliseconds: 2000),
+                        () => _moveInventoryAsync(lpn, retryTime: retryTime + 1));
+              }
+              else {
+                // do nothing as we already running out of retry time
+                showErrorDialog(context, "Fail to move LPN: " + lpn + " after trying ${CWMSHttpClient.timeoutRetryTime}  times");
+              }
+
+
             }
-            else if (err is WebAPICallException) {
-                // for business error, show the result
-              showErrorDialog(context, err.errMsg() + ", LPN: " + lpn);
-              return;
+            else if (err is WebAPICallException){
+              // for any other error display it
+              final webAPICallException = err as WebAPICallException;
+              showErrorDialog(context, webAPICallException.errMsg() + ", LPN: " + lpn);
+            }
+            else {
+
+              showErrorDialog(context, err.toString() + ", LPN: " + lpn);
             }
             // ignore any other error
 
@@ -292,10 +313,14 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   }
   // call the deposit form to deposit the inventory on the RF
   Future<void> _startDeposit() async {
+    _timer?.cancel();
     await Navigator.of(context).pushNamed("inventory_deposit");
 
     // refresh the inventory on the RF
-    _reloadInventoryOnRF();
+    // when we come back from the deposit page, we will refresh
+    // 3 times as the deposit happens async so when we return from
+    // the deposit page, the last deposit may not be actually done yet
+    _reloadInventoryOnRF(refreshCount: 3);
   }
 
 
@@ -318,15 +343,34 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
       );
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    // remove any timer so we won't need to load the next work again after
+    // the user return from this page
+    _timer?.cancel();
+
+
+  }
 
 
 
-  void _reloadInventoryOnRF() {
+  void _reloadInventoryOnRF({int refreshCount = 0}) {
 
     InventoryService.getInventoryOnCurrentRF()
         .then((value) {
       setState(() {
         inventoryOnRF = value;
+
+        if (refreshCount > 0) {
+
+          _timer = Timer(new Duration(seconds: 2), () {
+            this._reloadInventoryOnRF(refreshCount: refreshCount - 1);
+          });
+        }
+        else {
+          _timer?.cancel();
+        }
       });
     });
 

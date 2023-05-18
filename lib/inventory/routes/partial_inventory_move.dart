@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:badges/badges.dart';
@@ -8,11 +9,12 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../../exception/WebAPICallException.dart';
 import '../../shared/global.dart';
-import '../../warehouse_layout/models/warehouse_location.dart';
+import '../../shared/http_client.dart';
 import '../../warehouse_layout/services/warehouse_location.dart';
 import '../models/item.dart';
 import '../models/item_unit_of_measure.dart';
@@ -50,6 +52,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   // item on the LPN
   Map<String, int> _itemQuantityMap = HashMap();
   var _selectedItemName = "";
+  Timer _timer;  // timer to refresh inventory on RF every 2 second
 
 
   @override
@@ -70,6 +73,16 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     });
 
     _reloadInventoryOnRF();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // remove any timer so we won't need to load the next work again after
+    // the user return from this page
+    _timer?.cancel();
+
+
   }
 
   @override
@@ -411,10 +424,14 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
   // call the deposit form to deposit the inventory on the RF
   Future<void> _startDeposit() async {
+    _timer?.cancel();
     await Navigator.of(context).pushNamed("inventory_deposit");
 
     // refresh the inventory on the RF
-    _reloadInventoryOnRF();
+    // when we come back from the deposit page, we will refresh
+    // 3 times as the deposit happens async so when we return from
+    // the deposit page, the last deposit may not be actually done yet
+    _reloadInventoryOnRF(refreshCount: 3);
   }
 
 
@@ -438,54 +455,88 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   }
 
 
-  void _onAddingLPN() async {
-      showLoading(context);
+
+  void _onAddingLPN() {
+
+      // showLoading(context);
       // move the inventory being scanned onto RF
       printLongLogMessage("==>> Start to adding LPN for deposit");
-
       printLongLogMessage("quantity: ${_quantityController.text}");
-      WarehouseLocation rfLocation =
-        await WarehouseLocationService.getWarehouseLocationByName(
-            Global.lastLoginRFCode
-        );
-      printLongLogMessage("==>> GOT RF location ");
 
       int quantity = int.parse(_quantityController.text);
-      printLongLogMessage("quantity: ${quantity}");
+      String lpn = _lpnController.text;
+      _moveInventoryAsync(lpn, quantity,
+          _selectedItemName,
+          _selectedItemUnitOfMeasure.unitOfMeasure.name,
+          retryTime: 0);
 
-        try {
-          await InventoryService.moveInventory(
-              lpn: _lpnController.text,
-              quantity: quantity,
-              unitOfMeasure: _selectedItemUnitOfMeasure.unitOfMeasure.name,
-              itemName: _selectedItemName,
-              destinationLocation: rfLocation
-          );
-        }
-        on WebAPICallException catch(ex) {
-
-          Navigator.of(context).pop();
-          showErrorDialog(context, ex.errMsg());
-          return;
-        }
-
-
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
       _clearLPN();
 
-      showToast(CWMSLocalizations.of(context).actionComplete);
-      printLongLogMessage("==>> start to reload inventory after adding the lpn ${_lpnController.text}");
-      _reloadInventoryOnRF();
-      printLongLogMessage("==>> inventory loaded");
+      showToast("LPN putaway request sent");
+      // showToast(CWMSLocalizations.of(context).actionComplete);
   }
 
 
-  void _reloadInventoryOnRF() {
+  void _moveInventoryAsync(String lpn, int quantity,
+      String itemName, String unitOfMeasure,  {int retryTime = 0}) {
+    WarehouseLocationService.getWarehouseLocationByName(
+        Global.lastLoginRFCode
+    ).then((rfLocation) async {
+      await InventoryService.moveInventory(
+          lpn: lpn,
+          quantity: quantity,
+          itemName: itemName,
+          unitOfMeasure: unitOfMeasure,
+          destinationLocation: rfLocation
+      );
+      _reloadInventoryOnRF();
+    }).catchError((err) {
+      printLongLogMessage("Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
+      if (err is DioError &&
+          // err.type == DioErrorType.connectTimeout &&
+          retryTime <= CWMSHttpClient.timeoutRetryTime) {
+        // for timeout error and we are still in the retry threshold, let's try again
+
+        if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
+
+          Future.delayed(const Duration(milliseconds: 2000),
+                  () => _moveInventoryAsync(lpn, quantity,
+                  itemName, unitOfMeasure, retryTime: retryTime + 1));
+        }
+        else {
+          // do nothing as we already running out of retry time
+          showErrorDialog(context, "Fail to move LPN: " + lpn + " after trying ${CWMSHttpClient.timeoutRetryTime}  times");
+        }
+
+
+      }
+      else if (err is WebAPICallException){
+        // for any other error display it
+        final webAPICallException = err as WebAPICallException;
+        showErrorDialog(context, webAPICallException.errMsg() + ", LPN: " + lpn);
+      }
+      else {
+
+        showErrorDialog(context, err.toString() + ", LPN: " + lpn);
+      }
+    });
+  }
+  void _reloadInventoryOnRF({int refreshCount = 0}) {
 
     InventoryService.getInventoryOnCurrentRF()
         .then((value) {
       setState(() {
         inventoryOnRF = value;
+        if (refreshCount > 0) {
+
+          _timer = Timer(new Duration(seconds: 2), () {
+            this._reloadInventoryOnRF(refreshCount: refreshCount - 1);
+          });
+        }
+        else {
+          _timer?.cancel();
+        }
       });
     });
 
