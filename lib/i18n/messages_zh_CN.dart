@@ -243,6 +243,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "sourceLocation" : MessageLookupByLibrary.simpleMessage("源库位"),
     "partailBulkPickNotAllowed" : MessageLookupByLibrary.simpleMessage("无法部分确认合并拣货"),
     "cannotFindWarehouse" : MessageLookupByLibrary.simpleMessage("无法找到仓库"),
+    "reverseProduction" : MessageLookupByLibrary.simpleMessage("冲消完工入库"),
+
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

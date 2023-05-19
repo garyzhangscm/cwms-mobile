@@ -254,6 +254,8 @@ class CWMSLocalizations {
   String get sourceLocation  => Intl.message("Source Location", name: 'sourceLocation');
   String get partailBulkPickNotAllowed  => Intl.message("Partial Bulk Pick is Not Allowed", name: 'partailBulkPickNotAllowed');
   String get cannotFindWarehouse  => Intl.message("Cannot find warehouse", name: 'cannotFindWarehouse');
+  String get reverseProduction  => Intl.message("Reverse Production", name: 'reverseProduction');
+  String get reverseErrorMixedWithClient  => Intl.message("Can't reverse inventory when it is mixed with different client", name: 'reverseErrorMixedWithClient');
 
 
 
