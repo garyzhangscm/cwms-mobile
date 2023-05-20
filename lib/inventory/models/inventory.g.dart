@@ -22,6 +22,9 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
     ..receiptId = json['receiptId'] as int
     ..receiptLineId = json['receiptLineId'] as int
     ..workOrderId = json['workOrderId'] as int
+    ..workOrder = json['workOrder'] == null
+        ? null
+        : WorkOrder.fromJson(json['workOrder'] as Map<String, dynamic>)
     ..workOrderLineId = json['workOrderLineId'] as int
     ..workOrderByProductId = json['workOrderByProductId'] as int
     ..item = json['item'] == null
@@ -55,6 +58,7 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'receiptId': instance.receiptId,
       'receiptLineId': instance.receiptLineId,
       'workOrderId': instance.workOrderId,
+      'workOrder': instance.workOrder,
       'workOrderLineId': instance.workOrderLineId,
       'workOrderByProductId': instance.workOrderByProductId,
       'item': instance.item,

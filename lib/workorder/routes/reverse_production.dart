@@ -49,6 +49,8 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
   String _quantity;
   String _locationName;
   bool _allowReverse;
+  String _workOrderNumber;
+  bool _reverseInProgress;
 
 
   TextEditingController _lpnController = new TextEditingController();
@@ -60,6 +62,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
     super.initState();
     _inventoryForReverse = null;
     _allowReverse = false;
+    _reverseInProgress = false;
 
 
     _lpnFocusNode.addListener(() {
@@ -85,21 +88,10 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
           child: Column(
             children: <Widget>[
               _buildLPNController(context),
-              Row(
-                children: [
-                  Text(CWMSLocalizations.of(context).barcodeLastReceivingVerbiage,
-                      style: DefaultTextStyle.of(context).style.apply(fontSizeFactor: 0.5))
-                ],
-              ),
-              _inventoryForReverse == null ?
-                  _buildEmptyReverseInventoryInformationDisplay(context) :
-                  _buildReverseInventoryInformationDisplay(context),
-              Row(
-                children: [
-                  Text(CWMSLocalizations.of(context).barcodeReceivingVerbiage,
-                      style: TextStyle(fontWeight: FontWeight.bold))
-                ],
-              ),
+              _allowReverse ?
+                  _buildReverseInventoryInformationDisplay(context) :
+                  Container(),
+              // _buildEmptyReverseInventoryInformationDisplay(context),
               _buildButtons(context)
             ],
           ),
@@ -121,7 +113,10 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
       _itemPackageTypeName = "";
       _quantity = "";
       _locationName = "";
+      _workOrderNumber = "";
       _allowReverse = false;
+      _reverseInProgress = false;
+
     });
     _lpnController.clear();
 
@@ -148,35 +143,60 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
     Set<String> clientNames = new Set();
     Set<String> itemNames = new Set();
     Set<String> itemPackageTypeNames = new Set();
+    Set<String> workOrderNumbers = new Set();
     int totalQuantity = 0;
     _allowReverse = false;
+    bool includeNonWorkOrderInventory = false;
 
     inventories.forEach((inventory) {
       clientNames.add(inventory.client == null ? "" : inventory.client.name);
       itemNames.add(inventory.item.name);
       itemPackageTypeNames.add(inventory.itemPackageType.name);
       totalQuantity += inventory.quantity;
-    });
-    if (clientNames.length > 1) {
-      showErrorDialog(context, CWMSLocalizations.of(context).noInventoryFound)
-    }
-
-    _itemMap.forEach((key, value) {
-      printLongLogMessage("item \n================= ${key}       ===============");
-      printLongLogMessage("${value.toJson()}");
-    });
-
-    setState(() {
-      _itemNames;
-      _itemMap;
-      _itemQuantityMap;
-      if (_itemMap.isNotEmpty) {
-        printLongLogMessage("get ${_itemMap.length} items");
-
-        _selectedItemName = _itemNames.first;
+      _locationName = inventory.location.name;
+      if (inventory.workOrder == null) {
+        includeNonWorkOrderInventory = true;
+      }
+      else {
+        workOrderNumbers.add(inventory.workOrder.number);
       }
     });
 
+    if (includeNonWorkOrderInventory) {
+
+      showErrorDialog(context, CWMSLocalizations.of(context).reverseErrorNoWorkOrder);
+      return;
+    }
+    if (workOrderNumbers.length >1) {
+
+      showErrorDialog(context, CWMSLocalizations.of(context).reverseErrorMixedWorkOrder);
+      return;
+    }
+    if (clientNames.length > 1) {
+      showErrorDialog(context, CWMSLocalizations.of(context).reverseErrorMixedWithClient);
+      return;
+    }
+    if (itemNames.length > 1) {
+      showErrorDialog(context, CWMSLocalizations.of(context).reverseErrorMixedWithItem);
+      return;
+    }
+    setState(() {
+      _lpn = _lpnController.text;
+      _itemName = itemNames.first;
+      _clientName = clientNames.first;
+      _workOrderNumber = workOrderNumbers.first;
+      if (itemPackageTypeNames.length > 1) {
+        _itemPackageTypeName = "MULTIPLE-VALUES";
+      }
+      else {
+        _itemPackageTypeName = itemPackageTypeNames.first;
+      }
+      _quantity = totalQuantity.toString();
+      _locationName;
+      _allowReverse = true;
+
+    });
+    _lpnController.clear();
     Navigator.of(context).pop();
   }
 
@@ -187,6 +207,13 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
             autofocus: true,
             // 校验用户名（不能为空）
             focusNode: _lpnFocusNode,
+            decoration: InputDecoration(
+              suffixIcon:
+              IconButton(
+                onPressed: () => _clear(),
+                icon: Icon(Icons.close),
+              ),
+            ),
             validator: (v) {
               return v.trim().isNotEmpty ?
               null :
@@ -214,307 +241,117 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
     );
 
   }
+
   Widget _buildReverseInventoryInformationDisplay(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 10),
-      child: IntrinsicHeight(
-        child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Column(children: [
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).receiptNumber,
-                      _lastReceivedReceipt.number),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
-                      _lastReceivedInventory.lpn),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                      _lastReceivedInventory.item.name),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                      _lastReceivedInventory.item.description),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity,
-                      _lastReceivedInventory.quantity.toString() + " " +
-                          ( _lastReceivedInventory.itemPackageType.stockItemUnitOfMeasure == null ?
-                         "" : _lastReceivedInventory.itemPackageType.stockItemUnitOfMeasure.unitOfMeasure.description)),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity,
-                      _getDisplayQuantity(_lastReceivedInventory).toString() + " " + _getDisplayUOM(_lastReceivedInventory)),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).inventoryStatus,
-                      _lastReceivedInventory.inventoryStatus.description),
-                ]),
+    if (_reverseInProgress) {
+
+      return SizedBox(
+        height: 250,
+        child:  Stack(
+          alignment:Alignment.center ,
+          fit: StackFit.expand, //未定位widget占满Stack整个空间
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+              child: IntrinsicHeight(
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Column(children: [
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
+                              _lpn),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
+                              _itemName),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).itemPackageType,
+                              _itemPackageTypeName),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).workOrderNumber,
+                              _workOrderNumber),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity, _quantity),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).location, _locationName),
+                        ]),
+                      ),
+                      // Expanded(child: Container(color: Colors.amber)),
+                    ]),
               ),
-              // Expanded(child: Container(color: Colors.amber)),
-          ]),
-      ),
-    );
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 100.0, bottom: 100),
+              child:  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Column(children: [
+                          CircularProgressIndicator()
+                        ]),
+                      ),
+                      // Expanded(child: Container(color: Colors.amber)),
+                    ]),
+            ),
+
+          ],
+        )
+      );
+    }
+    else {
+
+      return
+        SizedBox(
+          height: 250,
+          child:
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+              child: IntrinsicHeight(
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Column(children: [
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
+                              _lpn),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
+                              _itemName),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).itemPackageType,
+                              _itemPackageTypeName),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).workOrderNumber,
+                              _workOrderNumber),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity, _quantity),
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).location, _locationName),
+                        ]),
+                      ),
+                      // Expanded(child: Container(color: Colors.amber)),
+                    ]),
+                ),
+              )
+        );
+    }
 
   }
   Widget _buildButtons(BuildContext context) {
     return buildTwoButtonRow(
       context,
       ElevatedButton(
-        onPressed: _showQRCodeView,
+        onPressed: _allowReverse ? _reverseProduction : null,
         child: Text(CWMSLocalizations
-            .of(context)
-            .startCamera),
+            .of(context).reverseProduction),
       ),
-      Badge(
-        showBadge: true,
-        padding: EdgeInsets.all(8),
-        badgeColor: Colors.deepPurple,
-        badgeContent: Text(
-          _inventoryOnRF == null || _inventoryOnRF.length == 0 ? "0" : _inventoryOnRF.length.toString(),
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        child:
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: ElevatedButton(
-              onPressed: _inventoryOnRF.length == 0 ? null : _startDeposit,
-              child: Text(CWMSLocalizations.of(context).depositInventory),
-            ),
-          ),
-      )
+      ElevatedButton(
+        onPressed: _clear,
+        child: Text(CWMSLocalizations
+            .of(context).clear),
+      ),
     );
 
   }
+  _reverseProduction() {
+    // show in progress indicator
+    setState(() {
+      _reverseInProgress = true;
+    });
 
-  // call the deposit form to deposit the inventory on the RF
-  Future<void> _startDeposit() async {
-    await Navigator.of(context).pushNamed("inventory_deposit");
-
-    // refresh the inventory on the RF
-    _reloadInventoryOnRF();
-  }
-  _showQRCodeView() async {
-
-    final result = await Navigator.of(context)
-        .pushNamed("qr_code_view");
-
-    printLongLogMessage("capture the QR CODE: " + result);
-
-    var parameters = QRCodeService.parseQRCode(result);
-
-    printLongLogMessage("resutl after parse the code code: \n ${parameters}");
-
-    String receiptIdString = parameters["receiptId"];
-    String receiptLineIdString = parameters["receiptLineId"];
-    // String itemName = parameters["itemName"];
-    String quantityString = parameters["quantity"];
-    String inventoryStatusString = parameters["inventoryStatus"];
-    String itemPackageTypeString = parameters["itemPackageType"];
-    String lpn = parameters["lpn"];
-
-    // validate the barcode
-    // we will need to pass in either
-    // 1. receiptId and receiptLineId and Item
-    if (receiptIdString == null || receiptIdString.isEmpty ||
-        receiptLineIdString == null || receiptLineIdString.isEmpty ||
-        quantityString == null || quantityString.isEmpty ||
-        lpn == null || lpn.isEmpty) {
-
-      showErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
-      return;
-    }
-    showLoading(context);
-
-    InventoryStatus inventoryStatus;
-    if (inventoryStatusString == null || inventoryStatusString.isEmpty) {
-      // if inventory status is not passed in, receive by default available inventory status
-      inventoryStatus = await InventoryStatusService.getAvaiableInventoryStatus();
-    }
-    else {
-      inventoryStatus = await InventoryStatusService.getInventoryStatusByName(inventoryStatusString);
-    }
-    if (inventoryStatus == null) {
-
-      Navigator.of(context).pop();
-      showErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
-      return;
-    }
-
-    Receipt receipt = await ReceiptService.getReceiptById(int.parse(receiptIdString));
-    ReceiptLine receiptLine = await ReceiptService.getReceiptLineById(int.parse(receiptLineIdString));
-
-    ItemPackageType itemPackageType;
-    if (itemPackageTypeString == null || itemPackageTypeString.isEmpty) {
-      // if item package type is not passed, get the default item package type from the item
-
-      itemPackageType = receiptLine.item.defaultItemPackageType != null ?
-          receiptLine.item.defaultItemPackageType :
-          receiptLine.item.itemPackageTypes.length == 1 ?
-              receiptLine.item.itemPackageTypes[0] : null;
-    }
-    else {
-      itemPackageType = await ItemPackageTypeService.getItemPackageTypeByName(
-          receiptLine.item.id, itemPackageTypeString
-      );
-    }
-    if (itemPackageType == null) {
-
-      Navigator.of(context).pop();
-      showErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
-      return;
-    }
-
-    _onRecevingSingleLpnConfirm(receipt, receiptLine, int.parse(quantityString),
-        inventoryStatus, itemPackageType, lpn);
-
-  }
-
-  void _onRecevingSingleLpnConfirm(Receipt receipt,
-      ReceiptLine receiptLine, int quantity,
-      InventoryStatus inventoryStatus,
-      ItemPackageType itemPackageType,
-      String lpn) async {
-    // TO-DO:Current we don't support the location code. Will add
-    //      it later
-
-    bool qcRequired = false;
-
-    printLongLogMessage("1. _onRecevingSingleLpnConfirm / showLoading");
-    // make sure the user input a valid LPN
-    try {
-      bool validLpn = await InventoryService.validateNewLpn(lpn);
-      if (!validLpn) {
-        Navigator.of(context).pop();
-        showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
-        return;
-      }
-      printLongLogMessage("LPN ${lpn} passed the validation");
-    }
-    on CWMSHttpException catch(ex) {
-
-      Navigator.of(context).pop();
-      showErrorDialog(context, "${ex.code} - ${ex.message}");
-      return;
-
-    }
-    try {
-      Inventory inventory = await ReceiptService.receiveInventory(
-          receipt, receiptLine,
-          lpn, inventoryStatus,
-          itemPackageType, quantity
-      );
-      qcRequired = inventory.inboundQCRequired;
-      printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
-      if (qcRequired) {
-        // for any inventory that needs qc, let's allocate the location automatically
-        // for the inventory
-
-        printLongLogMessage("allocate location for the QC needed inventory ${inventory.lpn}");
-        InventoryService.allocateLocation(inventory);
-      }
-
-      // refresh the inventory to get latest information
-      inventory = await InventoryService.getInventoryById(inventory.id);
-
-      setState(() {
-        _lastReceivedReceipt = receipt;
-        _lastReceivedInventory = inventory;
-      });
-      // get the inventory with latest information
-    }
-    on WebAPICallException catch(ex) {
+    // start reverse the inventory
 
 
-      Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
-      return;
-
-    }
-
-    _refreshScreenAfterReceive(qcRequired);
-
-
-  }
-
-  _refreshScreenAfterReceive(bool qcRequired) {
-    print("inventory received!");
-
-    Navigator.of(context).pop();
-
-    if (qcRequired == true) {
-      showWarningDialog(context, CWMSLocalizations.of(context).inventoryNeedQC);
-    }
-    showToast("inventory received");
-
-    // refresh the inventory on the RF
-    _reloadInventoryOnRF();
-
-  }
-  num _getDisplayQuantity(Inventory inventory) {
-    // get the display UOM
-    // display by the display UOM only if the display UOM is defined and the quantity
-    // of the inventory can be divided by the display UOM
-    ItemUnitOfMeasure displayItemUnitOfMeasure = _getDisplayItemUnitOfMeasure(inventory);
-
-    if (displayItemUnitOfMeasure == null) {
-      printLongLogMessage("display item unit of measure is not defined");
-      return inventory.quantity;
-    }
-    else if (inventory.quantity % displayItemUnitOfMeasure.quantity == 0) {
-      printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
-      printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
-      printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity % displayItemUnitOfMeasure.quantity}");
-
-      return inventory.quantity / displayItemUnitOfMeasure.quantity;
-    }
-    else {
-
-      printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
-      printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
-      printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity % displayItemUnitOfMeasure.quantity}");
-      return inventory.quantity;
-    }
-
-  }
-  String _getDisplayUOM(Inventory inventory) {
-    // get the display UOM
-    // display by the display UOM only if the display UOM is defined and the quantity
-    // of the inventory can be divided by the display UOM
-    ItemUnitOfMeasure displayItemUnitOfMeasure = _getDisplayItemUnitOfMeasure(inventory);
-    if (displayItemUnitOfMeasure == null) {
-      return "";
-    }
-    else if (inventory.quantity % displayItemUnitOfMeasure.quantity == 0) {
-      return displayItemUnitOfMeasure.unitOfMeasure.description;
-    }
-    else {
-
-      return "";
-    }
-
-  }
-  ItemUnitOfMeasure _getDisplayItemUnitOfMeasure(Inventory inventory) {
-    printLongLogMessage("start to get display item unit of measure from inventory:\n ${inventory.toJson()}");
-    printLongLogMessage("inventory.itemPackageType: \n ${inventory.itemPackageType.toJson()}");
-
-    if (inventory.itemPackageType.displayItemUnitOfMeasure != null) {
-       printLongLogMessage("inventory.itemPackageType.displayItemUnitOfMeasure: \n ${inventory.itemPackageType.displayItemUnitOfMeasure.toJson()}");
-    }
-
-    return inventory.itemPackageType.displayItemUnitOfMeasure != null ?
-          inventory.itemPackageType.displayItemUnitOfMeasure :
-          inventory.itemPackageType.stockItemUnitOfMeasure;
-  }
-
-  void _reloadInventoryOnRF() {
-
-    try {
-
-      InventoryService.getInventoryOnCurrentRF()
-          .then((value) {
-        setState(() {
-          _inventoryOnRF = value;
-        });
-      });
-    }
-    on WebAPICallException catch(ex) {
-
-      Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
-      return;
-
-    }
 
   }
 }

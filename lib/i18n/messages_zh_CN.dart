@@ -244,6 +244,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "partailBulkPickNotAllowed" : MessageLookupByLibrary.simpleMessage("无法部分确认合并拣货"),
     "cannotFindWarehouse" : MessageLookupByLibrary.simpleMessage("无法找到仓库"),
     "reverseProduction" : MessageLookupByLibrary.simpleMessage("冲消完工入库"),
+    "reverseErrorMixedWithClient" : MessageLookupByLibrary.simpleMessage("该LPN包含多个货主，无法冲消"),
+    "reverseErrorMixedWithItem" : MessageLookupByLibrary.simpleMessage("该LPN包含多个商品，无法冲消"),
+    "reverseErrorNoWorkOrder" : MessageLookupByLibrary.simpleMessage("该LPN包含非工单生成的商品，无法冲消"),
+    "reverseErrorMixedWorkOrder" : MessageLookupByLibrary.simpleMessage("该LPN包含多个工单，无法冲消"),
 
 
     'greetingMessage':greetingMessage,

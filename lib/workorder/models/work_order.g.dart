@@ -26,7 +26,9 @@ WorkOrder _$WorkOrderFromJson(Map<String, dynamic> json) {
         ?.map(
             (e) => e == null ? null : ProductionLineAssignment.fromJson(e as Map<String, dynamic>))
         ?.toList()
-    ..status =  EnumToString.fromString(WorkOrderStatus.values, json['status'] as String)
+    ..status =  json['status'] == null
+        ? null
+        : EnumToString.fromString(WorkOrderStatus.values, json['status'] as String)
     ..expectedQuantity = json['expectedQuantity'] as int
     ..producedQuantity = json['producedQuantity'] as int
     ..totalLineExpectedQuantity = json['totalLineExpectedQuantity'] as int

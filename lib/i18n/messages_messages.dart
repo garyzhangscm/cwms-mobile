@@ -252,6 +252,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "partailBulkPickNotAllowed" : MessageLookupByLibrary.simpleMessage("Partial Bulk Pick is Not Allowed"),
     "cannotFindWarehouse" : MessageLookupByLibrary.simpleMessage("Cannot find warehouse"),
     "reverseProduction" : MessageLookupByLibrary.simpleMessage("Reverse Production"),
+    "reverseErrorMixedWithClient" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory when it is mixed with different Client"),
+    "reverseErrorMixedWithItem" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory when it is mixed with different Item"),
+    "reverseErrorNoWorkOrder" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory as it has inventory that is not from work order"),
+    "reverseErrorMixedWorkOrder" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory when it is mixed with different Work Order"),
 
 
     'greetingMessage':greetingMessage,

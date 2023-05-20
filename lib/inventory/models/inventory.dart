@@ -1,6 +1,7 @@
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
+import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:cwms_mobile/common/models/client.dart';
 
@@ -34,6 +35,7 @@ class Inventory{
   int receiptId;
   int receiptLineId;
   int workOrderId;
+  WorkOrder workOrder;
   int workOrderLineId;
   int workOrderByProductId;
 

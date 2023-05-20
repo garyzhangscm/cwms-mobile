@@ -20,6 +20,7 @@ import 'package:cwms_mobile/work/routes/system_driven_work.dart';
 import 'package:cwms_mobile/workorder/routes/pick_by_work_order.dart';
 import 'package:cwms_mobile/workorder/routes/production_line_check_in.dart';
 import 'package:cwms_mobile/workorder/routes/production_line_check_out.dart';
+import 'package:cwms_mobile/workorder/routes/reverse_production.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_manual_pick.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_inventory.dart';
@@ -156,6 +157,7 @@ class MyApp extends StatelessWidget {
               "system_driven_work":(context) => SystemDrivenWork(),
               "bulk_pick":(context) => BulkPickPage(),
               "partial_inventory_move":(context) => PartialInventoryMovePage(),
+              "work_order_reverse_production":(context) => ReverseProductionPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },
