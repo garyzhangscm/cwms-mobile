@@ -11,6 +11,7 @@ import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
 import 'package:cwms_mobile/inventory/models/item_unit_of_measure.dart';
 import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
+import 'package:cwms_mobile/inventory/models/reversed_inventory_information.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/item_package_type.dart';
@@ -19,6 +20,8 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/services/qr_code_service.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
+import 'package:cwms_mobile/workorder/services/work_order.dart';
+import 'package:cwms_mobile/workorder/widgets/reversed_inventory_item.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -38,19 +41,10 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
 
 
   final  _formKey = GlobalKey<FormState>();
-  Inventory _inventoryForReverse;
   // information for display. When there's multiple inventory attribute
   // match with the LPN input, then we will show MULTIPLE-VALUES instead of
   // the actual value and won't allow reverse
-  String _lpn;
-  String _clientName;
-  String _itemName;
-  String _itemPackageTypeName;
-  String _quantity;
-  String _locationName;
-  bool _allowReverse;
-  String _workOrderNumber;
-  bool _reverseInProgress;
+  List<ReversedInventoryInformation> _reversedInventories = [];
 
 
   TextEditingController _lpnController = new TextEditingController();
@@ -60,15 +54,12 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
   void initState() {
 
     super.initState();
-    _inventoryForReverse = null;
-    _allowReverse = false;
-    _reverseInProgress = false;
 
 
     _lpnFocusNode.addListener(() {
       print("lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
-        _onLoadingLPNInformation();
+        _addReversedInventory();
       }
     });
   }
@@ -88,11 +79,9 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
           child: Column(
             children: <Widget>[
               _buildLPNController(context),
-              _allowReverse ?
-                  _buildReverseInventoryInformationDisplay(context) :
-                  Container(),
+              _buildButtons(context),
+              _buildReverseInventoryInformationDisplay(context),
               // _buildEmptyReverseInventoryInformationDisplay(context),
-              _buildButtons(context)
             ],
           ),
         ),
@@ -106,98 +95,188 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
 
     setState(() {
 
-      _inventoryForReverse = null;
-      _lpn = "";
-      _clientName = "";
-      _itemName = "";
-      _itemPackageTypeName = "";
-      _quantity = "";
-      _locationName = "";
-      _workOrderNumber = "";
-      _allowReverse = false;
-      _reverseInProgress = false;
-
+      _reversedInventories = [];
     });
     _lpnController.clear();
 
   }
-  void _onLoadingLPNInformation() async {
-
+  void _addReversedInventory() async {
     if (_lpnController.text.isEmpty) {
-
       showErrorDialog(context, "please input the LPN number");
       return;
     }
-    showLoading(context);
+    // add the LPN to the request
 
-    List<Inventory> inventories = await InventoryService.findInventory(lpn :_lpnController.text, includeDetails: true);
+    ReversedInventoryInformation reversedInventoryInformation =
+      ReversedInventoryInformation.fromProducedInventory(
+          _lpnController.text, "", "", "",
+          0, "", "");
 
-    if (inventories.isEmpty) {
-
-      Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context).noInventoryFound);
-      _clear();
-      return;
-    }
-
-    Set<String> clientNames = new Set();
-    Set<String> itemNames = new Set();
-    Set<String> itemPackageTypeNames = new Set();
-    Set<String> workOrderNumbers = new Set();
-    int totalQuantity = 0;
-    _allowReverse = false;
-    bool includeNonWorkOrderInventory = false;
-
-    inventories.forEach((inventory) {
-      clientNames.add(inventory.client == null ? "" : inventory.client.name);
-      itemNames.add(inventory.item.name);
-      itemPackageTypeNames.add(inventory.itemPackageType.name);
-      totalQuantity += inventory.quantity;
-      _locationName = inventory.location.name;
-      if (inventory.workOrder == null) {
-        includeNonWorkOrderInventory = true;
-      }
-      else {
-        workOrderNumbers.add(inventory.workOrder.number);
-      }
-    });
-
-    if (includeNonWorkOrderInventory) {
-
-      showErrorDialog(context, CWMSLocalizations.of(context).reverseErrorNoWorkOrder);
-      return;
-    }
-    if (workOrderNumbers.length >1) {
-
-      showErrorDialog(context, CWMSLocalizations.of(context).reverseErrorMixedWorkOrder);
-      return;
-    }
-    if (clientNames.length > 1) {
-      showErrorDialog(context, CWMSLocalizations.of(context).reverseErrorMixedWithClient);
-      return;
-    }
-    if (itemNames.length > 1) {
-      showErrorDialog(context, CWMSLocalizations.of(context).reverseErrorMixedWithItem);
-      return;
-    }
+    // add it to the list so we can display the result
+    reversedInventoryInformation.reverseInProgress = true;
+    reversedInventoryInformation.reverseResult = false;
+    _reversedInventories.insert(0, reversedInventoryInformation);
     setState(() {
-      _lpn = _lpnController.text;
-      _itemName = itemNames.first;
-      _clientName = clientNames.first;
-      _workOrderNumber = workOrderNumbers.first;
-      if (itemPackageTypeNames.length > 1) {
-        _itemPackageTypeName = "MULTIPLE-VALUES";
+      _reversedInventories;
+    });
+    _addReversedInventorySync(reversedInventoryInformation);
+
+    _lpnController.clear();
+
+    _lpnFocusNode.requestFocus();
+
+  }
+
+  void _addReversedInventorySync(ReversedInventoryInformation reversedInventoryInformation) {
+
+    InventoryService.findInventory(lpn :_lpnController.text, includeDetails: true).then((inventories) {
+
+      printLongLogMessage("find ${inventories.length} inventories");
+
+      if (inventories.isEmpty) {
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations.of(context).noInventoryFound;
+
+        setState(() {
+          _reversedInventories;
+        });
+        return;
       }
-      else {
-        _itemPackageTypeName = itemPackageTypeNames.first;
+
+      Set<String> clientNames = new Set();
+      Set<String> itemNames = new Set();
+      Set<String> itemPackageTypeNames = new Set();
+      Set<String> workOrderNumbers = new Set();
+      int totalQuantity = 0;
+      bool includeNonWorkOrderInventory = false;
+      String locationName = "";
+      int workOrderId;
+
+      inventories.forEach((inventory) {
+        clientNames.add(inventory.client == null ? "" : inventory.client.name);
+        itemNames.add(inventory.item.name);
+        itemPackageTypeNames.add(inventory.itemPackageType.name);
+        totalQuantity += inventory.quantity;
+        locationName = inventory.location.name;
+        if (inventory.workOrder == null) {
+          includeNonWorkOrderInventory = true;
+        }
+        else {
+          workOrderNumbers.add(inventory.workOrder.number);
+        }
+        if (inventory.workOrderId != null) {
+          workOrderId = inventory.workOrderId;
+        }
+      });
+
+      // make sure the LPN is not mixed with client, item
+      // or work orders
+      if (includeNonWorkOrderInventory) {
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorNoWorkOrder;
+
+        setState(() {
+          _reversedInventories;
+        });
+        return;
       }
-      _quantity = totalQuantity.toString();
-      _locationName;
-      _allowReverse = true;
+      if (workOrderNumbers.length >1) {
+
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWorkOrder;
+
+        setState(() {
+          _reversedInventories;
+        });
+        return;
+      }
+      if (clientNames.length > 1) {
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWithClient;
+
+        setState(() {
+          _reversedInventories;
+        });
+        return;
+      }
+      if (itemNames.length > 1) {
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWithItem;
+
+        setState(() {
+          _reversedInventories;
+        });
+        return;
+      }
+
+      printLongLogMessage("start to add the inventory ${reversedInventoryInformation.lpn} to display");
+
+      // start to process the lpn
+      if (workOrderId == null) {
+        setState(() {
+          reversedInventoryInformation.reverseResult = false;
+          reversedInventoryInformation.reverseInProgress = false;
+          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorNoWorkOrder;
+          _reversedInventories;
+        });
+        return;
+      }
+
+      reversedInventoryInformation.clientName = clientNames.first;
+      reversedInventoryInformation.itemName = itemNames.first;
+      reversedInventoryInformation.itemPackageTypeName = itemPackageTypeNames.length > 1 ? "MULTIPLE-VALUES" : itemPackageTypeNames.first;
+      reversedInventoryInformation.workOrderNumber = workOrderNumbers.first;
+      reversedInventoryInformation.locationName = locationName;
+      reversedInventoryInformation.quantity = totalQuantity;
+      reversedInventoryInformation.reverseResult = false;
+      reversedInventoryInformation.reverseInProgress = true;
+      reversedInventoryInformation.result = "";
+
+      setState(() {
+        _reversedInventories;
+      });
+
+      WorkOrderService.reverseProduction(workOrderId, reversedInventoryInformation.lpn).
+      then((value) =>
+          setState(() {
+            reversedInventoryInformation.reverseResult = true;
+            reversedInventoryInformation.reverseInProgress = false;
+            reversedInventoryInformation.result = "";
+            _reversedInventories;
+          })
+      ).catchError((error)  {
+          if (error is WebAPICallException){
+            // for any other error display it
+            final webAPICallException = error as WebAPICallException;
+            setState(() {
+              reversedInventoryInformation.reverseResult = false;
+              reversedInventoryInformation.reverseInProgress = false;
+              reversedInventoryInformation.result = webAPICallException.errMsg();
+              _reversedInventories;
+            });
+          }
+          else {
+            setState(() {
+              reversedInventoryInformation.reverseResult = false;
+              reversedInventoryInformation.reverseInProgress = false;
+              reversedInventoryInformation.result = error.toString();
+              _reversedInventories;
+            });
+          }
+        }
+      );
+
 
     });
-    _lpnController.clear();
-    Navigator.of(context).pop();
+
+
+
+
   }
 
   Widget _buildLPNController(BuildContext context) {
@@ -223,25 +302,246 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
     );
   }
 
-  Widget _buildEmptyReverseInventoryInformationDisplay(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 10),
-      child: IntrinsicHeight(
-        child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Column(children: [
-                  Container(height: 240.0),
-                ]),
-              ),
-              // Expanded(child: Container(color: Colors.amber)),
-            ]),
-      ),
-    );
+  Widget _buildReverseInventoryInformationDisplay(BuildContext context) {
 
+    return
+      Expanded(
+        child: ListView.separated(
+              itemCount: _reversedInventories.length,
+              itemBuilder: (BuildContext context, int index) {
+
+                return _buildReverseInventoryInformationListTile(context, index);
+              },
+              separatorBuilder: (context, index) => Divider(
+                color: Colors.black,
+              ),
+        )
+      );
   }
 
+  Widget _buildReverseInventoryInformationListTile(BuildContext context, int index) {
+
+    printLongLogMessage("index ${index}");
+    printLongLogMessage("_reversedInventories[index].reverseInProgress: ${_reversedInventories[index].reverseInProgress}");
+    printLongLogMessage("_reversedInventories[index].reverseInProgress: ${_reversedInventories[index].reverseResult}");
+
+    if (_reversedInventories[index].reverseInProgress == true) {
+      // show loading indicator if the inventory still reverse in progress
+      printLongLogMessage("show loading for index $index / ${_reversedInventories[index].lpn}");
+      return SizedBox(
+          height: 75,
+          child:  Stack(
+            alignment:Alignment.center ,
+            fit: StackFit.expand, //未定位widget占满Stack整个空间
+            children: <Widget>[
+              ListTile(
+                title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn),
+                subtitle:
+                Column(
+                    children: <Widget>[
+                      Row(
+                          children: <Widget>[
+                            Text(
+                                CWMSLocalizations.of(context).item + ": ",
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                            Text(
+                                _reversedInventories[index].itemName,
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                          ]
+                      ),
+                      Row(
+                          children: <Widget>[
+                            Text(
+                                CWMSLocalizations.of(context).quantity + ": ",
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                            Text(
+                                _reversedInventories[index].quantity.toString(),
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                          ]
+                      ),
+                    ]
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 5, bottom: 5),
+                child:  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Column(children: [
+                          CircularProgressIndicator()
+                        ]),
+                      ),
+                      // Expanded(child: Container(color: Colors.amber)),
+                    ]),
+              ),
+            ],
+          )
+      );
+    }
+    else if(_reversedInventories[index].reverseResult == true) {
+      return
+        SizedBox(
+          height: 75,
+          child:
+            ListTile(
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn),
+              subtitle:
+                Column(
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          CWMSLocalizations.of(context).item + ": ",
+                          textScaleFactor: .9,
+                          style: TextStyle(
+                            height: 1.15,
+                            color: Colors.blueGrey[700],
+                            fontSize: 17,
+                          )
+                        ),
+                        Text(
+                          _reversedInventories[index].itemName,
+                          textScaleFactor: .9,
+                          style: TextStyle(
+                            height: 1.15,
+                            color: Colors.blueGrey[700],
+                            fontSize: 17,
+                          )
+                        ),
+                      ]
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          CWMSLocalizations.of(context).quantity + ": ",
+                          textScaleFactor: .9,
+                          style: TextStyle(
+                            height: 1.15,
+                            color: Colors.blueGrey[700],
+                            fontSize: 17,
+                          )
+                        ),
+                        Text(
+                          _reversedInventories[index].quantity.toString(),
+                          textScaleFactor: .9,
+                          style: TextStyle(
+                            height: 1.15,
+                            color: Colors.blueGrey[700],
+                            fontSize: 17,
+                          )
+                        ),
+                      ]
+                    ),
+
+                  ]
+                ),
+
+              tileColor: Colors.lightGreen,
+            )
+        );
+    }
+    else {
+      double height = 75 + (_reversedInventories[index].result.length / 50) * 15;
+      printLongLogMessage("print with height $height");
+      return
+        SizedBox(
+            height: height,
+            child:
+            ListTile(
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn),
+              subtitle:
+              Column(
+                  children: <Widget>[
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              CWMSLocalizations.of(context).item + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _reversedInventories[index].itemName,
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              CWMSLocalizations.of(context).quantity + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _reversedInventories[index].quantity.toString(),
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+                    Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(CWMSLocalizations.of(context).result + ": " + _reversedInventories[index].result.toString(),
+                                maxLines: 3,
+                                style: TextStyle(
+                                    color: Colors.lightBlue,
+                                    fontWeight: FontWeight.normal)),
+                          ),
+                        ]
+                    ),
+                  ]
+              ),
+
+              tileColor: Colors.amberAccent,
+            )
+        );
+
+    }
+  }
+  /**
   Widget _buildReverseInventoryInformationDisplay(BuildContext context) {
     if (_reverseInProgress) {
 
@@ -288,7 +588,6 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                       // Expanded(child: Container(color: Colors.amber)),
                     ]),
             ),
-
           ],
         )
       );
@@ -325,33 +624,16 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
               )
         );
     }
-
   }
+      **/
   Widget _buildButtons(BuildContext context) {
-    return buildTwoButtonRow(
-      context,
-      ElevatedButton(
-        onPressed: _allowReverse ? _reverseProduction : null,
-        child: Text(CWMSLocalizations
-            .of(context).reverseProduction),
-      ),
+    return buildSingleButtonRow(context,
       ElevatedButton(
         onPressed: _clear,
         child: Text(CWMSLocalizations
             .of(context).clear),
       ),
     );
-
-  }
-  _reverseProduction() {
-    // show in progress indicator
-    setState(() {
-      _reverseInProgress = true;
-    });
-
-    // start reverse the inventory
-
-
 
   }
 }

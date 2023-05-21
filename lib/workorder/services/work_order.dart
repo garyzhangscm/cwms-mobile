@@ -223,6 +223,33 @@ class WorkOrderService {
     return pickableQuantity;
 
   }
+
+
+  static Future<WorkOrder> reverseProduction(int workOrderId, String lpn) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    printLongLogMessage("Start to reverse work order by id ${workOrderId}");
+    Response response = await httpClient.post(
+      "workorder/work-orders/${workOrderId}/reverse-production",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id,
+          "lpn": lpn,
+          "rfCode":Global.getLastLoginRFCode()}
+
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    // List<dynamic> responseData = responseString["data"];
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return WorkOrder.fromJson(responseString["data"] as Map<String, dynamic>) ;
+
+
+
+  }
 }
 
 

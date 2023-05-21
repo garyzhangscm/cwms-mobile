@@ -104,6 +104,9 @@ class InventoryDepositRequest{
 
   List<int> inventoryIdList;
 
+  bool requestInProcess;
+  bool requestResult;
+
 
 
 
