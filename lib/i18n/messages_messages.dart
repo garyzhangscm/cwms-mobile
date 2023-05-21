@@ -256,6 +256,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "reverseErrorMixedWithItem" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory when it is mixed with different Item"),
     "reverseErrorNoWorkOrder" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory as it has inventory that is not from work order"),
     "reverseErrorMixedWorkOrder" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory when it is mixed with different Work Order"),
+    "reverseErrorNoReceipt" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory as it has inventory that is not from Receipt"),
+    "reverseErrorMixedReceipt" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory when it is mixed with different Receipt"),
 
 
     'greetingMessage':greetingMessage,

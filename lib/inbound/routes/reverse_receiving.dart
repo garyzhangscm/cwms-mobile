@@ -32,17 +32,17 @@ import '../../shared/http_client.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
-class ReverseProductionPage extends StatefulWidget{
+class ReverseReceivingPage extends StatefulWidget{
 
-  ReverseProductionPage({Key key}) : super(key: key);
+  ReverseReceivingPage({Key key}) : super(key: key);
 
 
   @override
-  State<StatefulWidget> createState() => _ReverseProductionPageState();
+  State<StatefulWidget> createState() => _ReverseReceivingPageState();
 
 }
 
-class _ReverseProductionPageState extends State<ReverseProductionPage> {
+class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
 
 
   final  _formKey = GlobalKey<FormState>();
@@ -113,7 +113,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
     // add the LPN to the request
 
     ReversedInventoryInformation reversedInventoryInformation =
-      ReversedInventoryInformation.fromProducedInventory(
+      ReversedInventoryInformation.fromReceivedInventory(
           _lpnController.text, "", "", "",
           0, "", "");
 
@@ -135,134 +135,129 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
   void _addReversedInventorySync(ReversedInventoryInformation reversedInventoryInformation, {int retryTime = 0}) {
 
     InventoryService.findInventory(lpn :_lpnController.text, includeDetails: true).then((inventories) async {
+      printLongLogMessage("find ${inventories.length} inventories");
 
-        printLongLogMessage("find ${inventories.length} inventories");
-
-        if (inventories.isEmpty) {
-          reversedInventoryInformation.reverseInProgress = false;
-          reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context).noInventoryFound;
-
-          setState(() {
-            _reversedInventories;
-          });
-          return;
-        }
-
-        Set<String> clientNames = new Set();
-        Set<String> itemNames = new Set();
-        Set<String> itemPackageTypeNames = new Set();
-        Set<String> workOrderNumbers = new Set();
-        int totalQuantity = 0;
-        bool includeNonWorkOrderInventory = false;
-        String locationName = "";
-        int workOrderId;
-
-        inventories.forEach((inventory) {
-          clientNames.add(inventory.client == null ? "" : inventory.client.name);
-          itemNames.add(inventory.item.name);
-          itemPackageTypeNames.add(inventory.itemPackageType.name);
-          totalQuantity += inventory.quantity;
-          locationName = inventory.location.name;
-          if (inventory.workOrder == null) {
-            includeNonWorkOrderInventory = true;
-          }
-          else {
-            workOrderNumbers.add(inventory.workOrder.number);
-          }
-          if (inventory.workOrderId != null) {
-            workOrderId = inventory.workOrderId;
-          }
-        });
-
-        // make sure the LPN is not mixed with client, item
-        // or work orders
-        if (includeNonWorkOrderInventory) {
-          reversedInventoryInformation.reverseInProgress = false;
-          reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorNoWorkOrder;
-
-          setState(() {
-            _reversedInventories;
-          });
-          return;
-        }
-        if (workOrderNumbers.length >1) {
-
-          reversedInventoryInformation.reverseInProgress = false;
-          reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWorkOrder;
-
-          setState(() {
-            _reversedInventories;
-          });
-          return;
-        }
-        if (clientNames.length > 1) {
-          reversedInventoryInformation.reverseInProgress = false;
-          reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWithClient;
-
-          setState(() {
-            _reversedInventories;
-          });
-          return;
-        }
-        if (itemNames.length > 1) {
-          reversedInventoryInformation.reverseInProgress = false;
-          reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWithItem;
-
-          setState(() {
-            _reversedInventories;
-          });
-          return;
-        }
-
-        printLongLogMessage("start to add the inventory ${reversedInventoryInformation.lpn} to display");
-
-        // start to process the lpn
-        if (workOrderId == null) {
-          setState(() {
-            reversedInventoryInformation.reverseResult = false;
-            reversedInventoryInformation.reverseInProgress = false;
-            reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorNoWorkOrder;
-            _reversedInventories;
-          });
-          return;
-        }
-
-        reversedInventoryInformation.clientName = clientNames.first;
-        reversedInventoryInformation.itemName = itemNames.first;
-        reversedInventoryInformation.itemPackageTypeName = itemPackageTypeNames.length > 1 ? "MULTIPLE-VALUES" : itemPackageTypeNames.first;
-        reversedInventoryInformation.workOrderNumber = workOrderNumbers.first;
-        reversedInventoryInformation.locationName = locationName;
-        reversedInventoryInformation.quantity = totalQuantity;
+      if (inventories.isEmpty) {
+        reversedInventoryInformation.reverseInProgress = false;
         reversedInventoryInformation.reverseResult = false;
-        reversedInventoryInformation.reverseInProgress = true;
-        reversedInventoryInformation.result = "";
+        reversedInventoryInformation.result = CWMSLocalizations
+            .of(context)
+            .noInventoryFound;
 
         setState(() {
           _reversedInventories;
         });
+        return;
+      }
 
-        await WorkOrderService.reverseProduction(workOrderId, reversedInventoryInformation.lpn);
+      Set<String> clientNames = new Set();
+      Set<String> itemNames = new Set();
+      Set<String> itemPackageTypeNames = new Set();
+      Set<String> receiptNumbers = new Set();
+      int totalQuantity = 0;
+      bool includeNonReceiptInventory = false;
+      String locationName = "";
+
+      inventories.forEach((inventory) {
+        clientNames.add(inventory.client == null ? "" : inventory.client.name);
+        itemNames.add(inventory.item.name);
+        itemPackageTypeNames.add(inventory.itemPackageType.name);
+        totalQuantity += inventory.quantity;
+        locationName = inventory.location.name;
+        if (inventory.receipt == null) {
+          includeNonReceiptInventory = true;
+        }
+        else {
+          receiptNumbers.add(inventory.receipt.number);
+        }
+      });
+
+      // make sure the LPN is not mixed with client, item
+      // or work orders
+      if (includeNonReceiptInventory) {
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations
+            .of(context)
+            .reverseErrorNoReceipt;
 
         setState(() {
-              reversedInventoryInformation.reverseResult = true;
-              reversedInventoryInformation.reverseInProgress = false;
-              reversedInventoryInformation.result = "";
-              _reversedInventories;
+          _reversedInventories;
         });
+        return;
+      }
+      if (receiptNumbers.length > 1) {
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations
+            .of(context)
+            .reverseErrorMixedReceipt;
+
+        setState(() {
+          _reversedInventories;
+        });
+        return;
+      }
+      if (clientNames.length > 1) {
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations
+            .of(context)
+            .reverseErrorMixedWithClient;
+
+        setState(() {
+          _reversedInventories;
+        });
+        return;
+      }
+      if (itemNames.length > 1) {
+        reversedInventoryInformation.reverseInProgress = false;
+        reversedInventoryInformation.reverseResult = false;
+        reversedInventoryInformation.result = CWMSLocalizations
+            .of(context)
+            .reverseErrorMixedWithItem;
+
+        setState(() {
+          _reversedInventories;
+        });
+        return;
+      }
+
+      printLongLogMessage(
+          "start to add the inventory ${reversedInventoryInformation
+              .lpn} to display");
 
 
-    }).catchError((error)  {
+      reversedInventoryInformation.clientName = clientNames.first;
+      reversedInventoryInformation.itemName = itemNames.first;
+      reversedInventoryInformation.itemPackageTypeName =
+      itemPackageTypeNames.length > 1 ? "MULTIPLE-VALUES" : itemPackageTypeNames
+          .first;
+      reversedInventoryInformation.receiptNumber = receiptNumbers.first;
+      reversedInventoryInformation.locationName = locationName;
+      reversedInventoryInformation.quantity = totalQuantity;
+      reversedInventoryInformation.reverseResult = false;
+      reversedInventoryInformation.reverseInProgress = true;
+      reversedInventoryInformation.result = "";
 
+      setState(() {
+        _reversedInventories;
+      });
 
-      if (error is DioError ) {
+        for (var inventory in inventories) {
+          await InventoryService.reverseReceivedInventory(inventory.id);
+        }
+        setState(() {
+          reversedInventoryInformation.reverseResult = true;
+          reversedInventoryInformation.reverseInProgress = false;
+          _reversedInventories;
+        });
+    })
+    .catchError((err) {
+
+      if (err is DioError ) {
         // for timeout error and we are still in the retry threshold, let's try again
         // retry after 2 second
-        printLongLogMessage("get dio error ${error.type}");
 
         if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
           Future.delayed(const Duration(milliseconds: 2000),
@@ -277,28 +272,26 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
           });
         }
       }
-      if (error is WebAPICallException){
+      else if (err is WebAPICallException){
         // for any other error display it
-        final webAPICallException = error as WebAPICallException;
-        printLongLogMessage("get WebAPICallException error ${webAPICallException.errMsg()}");
+        final webAPICallException = err as WebAPICallException;
         setState(() {
           reversedInventoryInformation.reverseResult = false;
           reversedInventoryInformation.reverseInProgress = false;
-          reversedInventoryInformation.result = webAPICallException.errMsg();
+          reversedInventoryInformation.result = webAPICallException.errMsg() ;
           _reversedInventories;
         });
       }
       else {
-        printLongLogMessage("get unknown error ${error.toString()}");
+
         setState(() {
           reversedInventoryInformation.reverseResult = false;
           reversedInventoryInformation.reverseInProgress = false;
-          reversedInventoryInformation.result = error.toString();
+          reversedInventoryInformation.result = err.toString();
           _reversedInventories;
         });
       }
     });
-
   }
 
   Widget _buildLPNController(BuildContext context) {
@@ -489,7 +482,6 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
     }
     else {
       double height = min(75 + (_reversedInventories[index].result.length / 50) * 15, 120);
-      printLongLogMessage("print with height $height");
       return
         SizedBox(
             height: height,
@@ -563,91 +555,8 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
 
     }
   }
-  /**
-  Widget _buildReverseInventoryInformationDisplay(BuildContext context) {
-    if (_reverseInProgress) {
 
-      return SizedBox(
-        height: 250,
-        child:  Stack(
-          alignment:Alignment.center ,
-          fit: StackFit.expand, //未定位widget占满Stack整个空间
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0, bottom: 10),
-              child: IntrinsicHeight(
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: Column(children: [
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
-                              _lpn),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                              _itemName),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).itemPackageType,
-                              _itemPackageTypeName),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).workOrderNumber,
-                              _workOrderNumber),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity, _quantity),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).location, _locationName),
-                        ]),
-                      ),
-                      // Expanded(child: Container(color: Colors.amber)),
-                    ]),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 100.0, bottom: 100),
-              child:  Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: Column(children: [
-                          CircularProgressIndicator()
-                        ]),
-                      ),
-                      // Expanded(child: Container(color: Colors.amber)),
-                    ]),
-            ),
-          ],
-        )
-      );
-    }
-    else {
 
-      return
-        SizedBox(
-          height: 250,
-          child:
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0, bottom: 10),
-              child: IntrinsicHeight(
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: Column(children: [
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
-                              _lpn),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                              _itemName),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).itemPackageType,
-                              _itemPackageTypeName),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).workOrderNumber,
-                              _workOrderNumber),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity, _quantity),
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).location, _locationName),
-                        ]),
-                      ),
-                      // Expanded(child: Container(color: Colors.amber)),
-                    ]),
-                ),
-              )
-        );
-    }
-  }
-      **/
   Widget _buildButtons(BuildContext context) {
     return buildSingleButtonRow(context,
       ElevatedButton(

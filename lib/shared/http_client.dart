@@ -44,9 +44,9 @@ class CWMSHttpClient {
             "warehouseId": Global.currentWarehouse.id,
             "companyId": Global.lastLoginCompanyId
           },
-          connectTimeout: 10000,
-          receiveTimeout: 15000,
-          sendTimeout: 15000,
+          // connectTimeout: 10000,
+          // receiveTimeout: 15000,
+          // sendTimeout: 15000,
 
       ));
     }

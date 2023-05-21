@@ -61,6 +61,9 @@ class _LoginPageState extends State<LoginPage> {
       _processAutoLogin(Global.autoLoginUser);
     }
     _validWarehouses = [];
+    if (_companyCodeController.text.isNotEmpty) {
+      _loadWarehouses();
+    }
     _rfCodeController = TextEditingController(
         text: Global.getLastLoginRFCode());
 

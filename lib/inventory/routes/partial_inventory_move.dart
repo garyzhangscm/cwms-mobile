@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:badges/badges.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:dio/dio.dart';
@@ -55,6 +55,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   Timer _timer;  // timer to refresh inventory on RF every 2 second
 
 
+  List<InventoryDepositRequest> _inventoryDepositRequests = [];
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +66,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     _itemMap.clear();
     _itemQuantityMap.clear();
     _selectedItemName = "";
+    _inventoryDepositRequests = [];
 
     _lpnFocusNode.addListener(() {
       print("lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
@@ -156,6 +159,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     });
 
     _lpnFocusNode.requestFocus();
+    _inventoryDepositRequests = [];
   }
   Widget _buildItemInformation(BuildContext context, String itemName) {
     return buildTwoSectionInformationRow(
@@ -261,9 +265,26 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         child: Text(item.defaultItemPackageType.itemUnitOfMeasures[i].unitOfMeasure.name),
       ));
     }
+
+    // we may have _selectedItemUnitOfMeasure setup by previous item package type.
+    // or manually by user. If it is setup by the user, then we won't refresh it
+    // otherwise, we will reload the default receiving uom
+    // if _selectedItemPackageType.itemUnitOfMeasures doesn't containers the _selectedItemUnitOfMeasure
+    // then we know that we just changed the item package type or item, so we will need
+    // to refresh the _selectedItemUnitOfMeasure to the default inbound receiving uom as well
+    if (_selectedItemUnitOfMeasure == null ||
+        !item.defaultItemPackageType.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
+      // if the user has not select any item unit of measure yet, then
+      // default the value to the one marked as 'default for inbound receiving'
+
+      _selectedItemUnitOfMeasure = item.defaultItemPackageType.itemUnitOfMeasures
+          .firstWhere((element) => element.id == item.defaultItemPackageType.defaultInboundReceivingUOM.id);
+    }
+/**
     if (item.defaultItemPackageType.itemUnitOfMeasures.length == 1) {
       _selectedItemUnitOfMeasure = item.defaultItemPackageType.itemUnitOfMeasures[0];
     }
+    **/
     return dropdownMenuItems;
   }
 
@@ -432,12 +453,14 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     // 3 times as the deposit happens async so when we return from
     // the deposit page, the last deposit may not be actually done yet
     _reloadInventoryOnRF(refreshCount: 3);
+    _inventoryDepositRequests = [];
   }
 
 
 
 
   Widget _buildDepositRequestList(BuildContext context) {
+    /**
     List<InventoryDepositRequest> inventoryDepositRequests =
         InventoryService.getInventoryDepositRequests(inventoryOnRF, true, true);
     return
@@ -452,9 +475,244 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
               );
             }),
       );
+**/
+    return
+      Expanded(
+          child: ListView.separated(
+            itemCount: _inventoryDepositRequests.length,
+            itemBuilder: (BuildContext context, int index) {
+
+              return _buildInventoryDepositRequestListTile(context, index);
+            },
+            separatorBuilder: (context, index) => Divider(
+              color: Colors.black,
+            ),
+          )
+      );
   }
 
 
+  Widget _buildInventoryDepositRequestListTile(BuildContext context, int index) {
+
+    printLongLogMessage("index ${index}");
+    printLongLogMessage("_reversedInventories[index].reverseInProgress: ${_inventoryDepositRequests[index].requestInProcess}");
+    printLongLogMessage("_reversedInventories[index].reverseInProgress: ${_inventoryDepositRequests[index].requestResult}");
+
+    if (_inventoryDepositRequests[index].requestInProcess == true) {
+      // show loading indicator if the inventory still reverse in progress
+      printLongLogMessage("show loading for index $index / ${_inventoryDepositRequests[index].lpn}");
+      return SizedBox(
+          height: 75,
+          child:  Stack(
+            alignment:Alignment.center ,
+            fit: StackFit.expand, //未定位widget占满Stack整个空间
+            children: <Widget>[
+              ListTile(
+                title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn),
+                subtitle:
+                Column(
+                    children: <Widget>[
+                      Row(
+                          children: <Widget>[
+                            Text(
+                                CWMSLocalizations.of(context).item + ": ",
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                            Text(
+                                _inventoryDepositRequests[index].itemName,
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                          ]
+                      ),
+                      Row(
+                          children: <Widget>[
+                            Text(
+                                CWMSLocalizations.of(context).quantity + ": ",
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                            Text(
+                                _inventoryDepositRequests[index].quantity.toString(),
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                          ]
+                      ),
+                    ]
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 5, bottom: 5),
+                child:  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Column(children: [
+                          CircularProgressIndicator()
+                        ]),
+                      ),
+                      // Expanded(child: Container(color: Colors.amber)),
+                    ]),
+              ),
+            ],
+          )
+      );
+    }
+    else if(_inventoryDepositRequests[index].requestResult == true) {
+      return
+        SizedBox(
+            height: 75,
+            child:
+            ListTile(
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn),
+              subtitle:
+              Column(
+                  children: <Widget>[
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              CWMSLocalizations.of(context).item + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[index].itemName,
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              CWMSLocalizations.of(context).quantity + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[index].quantity.toString(),
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+
+                  ]
+              ),
+
+              tileColor: Colors.lightGreen,
+            )
+        );
+    }
+    else {
+      double height = min(75 + (_inventoryDepositRequests[index].result.length / 50) * 15, 120);
+      return
+        SizedBox(
+            height: height,
+            child:
+            ListTile(
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn),
+              subtitle:
+              Column(
+                  children: <Widget>[
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              CWMSLocalizations.of(context).item + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[index].itemName,
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              CWMSLocalizations.of(context).quantity + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[index].quantity.toString(),
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+                    Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(CWMSLocalizations.of(context).result + ": " + _inventoryDepositRequests[index].result.toString(),
+                                maxLines: 3,
+                                style: TextStyle(
+                                    color: Colors.lightBlue,
+                                    fontWeight: FontWeight.normal)),
+                          ),
+                        ]
+                    ),
+                  ]
+              ),
+
+              tileColor: Colors.amberAccent,
+            )
+        );
+
+    }
+  }
 
   void _onAddingLPN() {
 
@@ -463,34 +721,61 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       printLongLogMessage("==>> Start to adding LPN for deposit");
       printLongLogMessage("quantity: ${_quantityController.text}");
 
-      int quantity = int.parse(_quantityController.text);
-      String lpn = _lpnController.text;
-      _moveInventoryAsync(lpn, quantity,
-          _selectedItemName,
+
+      InventoryDepositRequest inventoryDepositRequest =
+          new InventoryDepositRequest();
+      inventoryDepositRequest.lpn = _lpnController.text;
+      inventoryDepositRequest.quantity = int.parse(_quantityController.text);
+      inventoryDepositRequest.itemName = _selectedItemName;
+
+      inventoryDepositRequest.requestInProcess = true;
+      inventoryDepositRequest.requestResult = false;
+      inventoryDepositRequest.result = "";
+
+      _inventoryDepositRequests.insert(0, inventoryDepositRequest);
+
+      _moveInventoryAsync(inventoryDepositRequest,
           _selectedItemUnitOfMeasure.unitOfMeasure.name,
           retryTime: 0);
 
       // Navigator.of(context).pop();
-      _clearLPN();
-
       showToast("LPN putaway request sent");
+      setState(() {
+        _lpnController.text = "";
+        _itemNames = Set<String>();
+        _itemMap.clear();
+        _itemQuantityMap.clear();
+        _selectedItemName = "";
+      });
+
+      _lpnFocusNode.requestFocus();
+
       // showToast(CWMSLocalizations.of(context).actionComplete);
   }
 
 
-  void _moveInventoryAsync(String lpn, int quantity,
-      String itemName, String unitOfMeasure,  {int retryTime = 0}) {
+  void _moveInventoryAsync(InventoryDepositRequest inventoryDepositRequest, String unitOfMeasure,  {int retryTime = 0}) {
     WarehouseLocationService.getWarehouseLocationByName(
         Global.lastLoginRFCode
     ).then((rfLocation) async {
       await InventoryService.moveInventory(
-          lpn: lpn,
-          quantity: quantity,
-          itemName: itemName,
+          lpn: inventoryDepositRequest.lpn,
+          quantity: inventoryDepositRequest.quantity,
+          itemName: inventoryDepositRequest.itemName,
           unitOfMeasure: unitOfMeasure,
           destinationLocation: rfLocation
       );
+
+
       _reloadInventoryOnRF();
+
+      inventoryDepositRequest.requestInProcess = false;
+      inventoryDepositRequest.requestResult = true;
+      inventoryDepositRequest.result = "";
+
+      setState(() {
+        _inventoryDepositRequests;
+      });
     }).catchError((err) {
       printLongLogMessage("Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
       if (err is DioError &&
@@ -501,12 +786,16 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
 
           Future.delayed(const Duration(milliseconds: 2000),
-                  () => _moveInventoryAsync(lpn, quantity,
-                  itemName, unitOfMeasure, retryTime: retryTime + 1));
+                  () => _moveInventoryAsync(inventoryDepositRequest, unitOfMeasure, retryTime: retryTime + 1));
         }
         else {
-          // do nothing as we already running out of retry time
-          showErrorDialog(context, "Fail to move LPN: " + lpn + " after trying ${CWMSHttpClient.timeoutRetryTime}  times");
+          inventoryDepositRequest.requestInProcess = false;
+          inventoryDepositRequest.requestResult = false;
+          inventoryDepositRequest.result = "Fail to move LPN: " + inventoryDepositRequest.lpn + " after trying ${CWMSHttpClient.timeoutRetryTime}  times";
+
+          setState(() {
+            _inventoryDepositRequests;
+          });
         }
 
 
@@ -514,11 +803,24 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       else if (err is WebAPICallException){
         // for any other error display it
         final webAPICallException = err as WebAPICallException;
-        showErrorDialog(context, webAPICallException.errMsg() + ", LPN: " + lpn);
+
+        inventoryDepositRequest.requestInProcess = false;
+        inventoryDepositRequest.requestResult = false;
+        inventoryDepositRequest.result = webAPICallException.errMsg() + ", LPN: " + inventoryDepositRequest.lpn;
+
+        setState(() {
+          _inventoryDepositRequests;
+        });
       }
       else {
 
-        showErrorDialog(context, err.toString() + ", LPN: " + lpn);
+        inventoryDepositRequest.requestInProcess = false;
+        inventoryDepositRequest.requestResult = false;
+        inventoryDepositRequest.result =err.toString() + ", LPN: " + inventoryDepositRequest.lpn;
+
+        setState(() {
+          _inventoryDepositRequests;
+        });
       }
     });
   }

@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/inbound/models/receipt_line.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
@@ -5,6 +6,7 @@ import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:cwms_mobile/common/models/client.dart';
 
+import '../../inbound/models/receipt.dart';
 import 'inventory_movement.dart';
 import 'inventory_status.dart';
 import 'item.dart';
@@ -33,7 +35,9 @@ class Inventory{
   // setup when the inventory is received from
   // receipt or work order
   int receiptId;
+  Receipt receipt;
   int receiptLineId;
+  ReceiptLine receiptLine;
   int workOrderId;
   WorkOrder workOrder;
   int workOrderLineId;

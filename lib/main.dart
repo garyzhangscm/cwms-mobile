@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cwms_mobile/inbound/routes/barcode_receiving.dart';
+import 'package:cwms_mobile/inbound/routes/reverse_receiving.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_batch.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_request.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_lost_and_found.dart';
@@ -158,6 +159,7 @@ class MyApp extends StatelessWidget {
               "bulk_pick":(context) => BulkPickPage(),
               "partial_inventory_move":(context) => PartialInventoryMovePage(),
               "work_order_reverse_production":(context) => ReverseProductionPage(),
+              "reverse_receiving":(context) => ReverseReceivingPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

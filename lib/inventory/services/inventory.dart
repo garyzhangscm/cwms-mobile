@@ -486,4 +486,36 @@ class InventoryService {
     return qcInspectionRequests;
   }
 
+
+  static Future<Inventory> reverseReceivedInventory(int inventoryId,
+      {bool reverseQCQuantity = false, bool allowReuseLPN = true}) async {
+
+    // send the receiving request to the server
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.delete(
+        "inventory/inventory/$inventoryId/reverse-receiving",
+        queryParameters: {
+          "reverseQCQuantity": reverseQCQuantity,
+          "allowReuseLPN": allowReuseLPN,
+          'warehouseId': Global.currentWarehouse.id,
+        }
+    );
+
+    // printLongLogMessage("response from receiving: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return Inventory.fromJson(responseString["data"]);
+
+
+
+
+
+  }
+
 }

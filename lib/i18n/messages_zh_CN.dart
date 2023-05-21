@@ -248,6 +248,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "reverseErrorMixedWithItem" : MessageLookupByLibrary.simpleMessage("该LPN包含多个商品，无法冲消"),
     "reverseErrorNoWorkOrder" : MessageLookupByLibrary.simpleMessage("该LPN包含非工单生成的商品，无法冲消"),
     "reverseErrorMixedWorkOrder" : MessageLookupByLibrary.simpleMessage("该LPN包含多个工单，无法冲消"),
+    "reverseErrorNoReceipt" : MessageLookupByLibrary.simpleMessage("该LPN包含非入库单生成的商品，无法冲消"),
+    "reverseErrorMixedReceipt" : MessageLookupByLibrary.simpleMessage("该LPN包含多个入库单，无法冲消"),
 
 
     'greetingMessage':greetingMessage,

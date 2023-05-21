@@ -20,7 +20,13 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
         ? null
         : Pick.fromJson(json['pick'] as Map<String, dynamic>)
     ..receiptId = json['receiptId'] as int
+    ..receipt = json['receipt'] == null
+        ? null
+        : Receipt.fromJson(json['receipt'] as Map<String, dynamic>)
     ..receiptLineId = json['receiptLineId'] as int
+    ..receiptLine = json['receiptLine'] == null
+        ? null
+        : ReceiptLine.fromJson(json['receiptLine'] as Map<String, dynamic>)
     ..workOrderId = json['workOrderId'] as int
     ..workOrder = json['workOrder'] == null
         ? null

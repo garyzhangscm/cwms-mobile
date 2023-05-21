@@ -259,6 +259,8 @@ class CWMSLocalizations {
   String get reverseErrorMixedWithItem  => Intl.message("Can't reverse inventory when it is mixed with different Item", name: 'reverseErrorMixedWithItem');
   String get reverseErrorNoWorkOrder  => Intl.message("Can't reverse inventory as it has inventory that is not from work order", name: 'reverseErrorNoWorkOrder');
   String get reverseErrorMixedWorkOrder  => Intl.message("Can't reverse inventory when it is mixed with different Work Order", name: 'reverseErrorMixedWorkOrder');
+  String get reverseErrorNoReceipt  => Intl.message("Can't reverse inventory as it has inventory that is not from receipt", name: 'reverseErrorNoReceipt');
+  String get reverseErrorMixedReceipt  => Intl.message("Can't reverse inventory when it is mixed with different Receipt", name: 'reverseErrorMixedReceipt');
 
 
 
