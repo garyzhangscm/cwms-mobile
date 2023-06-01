@@ -251,6 +251,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "reverseErrorNoReceipt" : MessageLookupByLibrary.simpleMessage("该LPN包含非入库单生成的商品，无法冲消"),
     "reverseErrorMixedReceipt" : MessageLookupByLibrary.simpleMessage("该LPN包含多个入库单，无法冲消"),
 
+    "version" : MessageLookupByLibrary.simpleMessage("版本"),
+    "warehouse" : MessageLookupByLibrary.simpleMessage("仓库"),
+    "rfCode" : MessageLookupByLibrary.simpleMessage("RF 代码"),
+
+    "bulkPick" : MessageLookupByLibrary.simpleMessage("组合拣货"),
+    "listPick" : MessageLookupByLibrary.simpleMessage("列表拣货"),
+    "pickList" : MessageLookupByLibrary.simpleMessage("拣货列表"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

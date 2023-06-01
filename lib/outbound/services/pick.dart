@@ -94,6 +94,13 @@ class PickService {
       // the picks either forward, or backward
       if (isMovingForward) {
         picks.sort((pickA, pickB)   {
+          if (pickA.skipCount > pickB.skipCount) {
+            return 1;
+          }
+          else if (pickA.skipCount < pickB.skipCount) {
+            return -1;
+          }
+
           if (pickB.sourceLocation.pickSequence == null) {
             return -1;
           }
@@ -109,6 +116,13 @@ class PickService {
       }
       else {
         picks.sort((pickA, pickB) {
+
+          if (pickA.skipCount > pickB.skipCount) {
+            return 1;
+          }
+          else if (pickA.skipCount < pickB.skipCount) {
+            return -1;
+          }
 
           if (pickA.sourceLocation.pickSequence == null) {
             return -1;
@@ -131,6 +145,14 @@ class PickService {
       // the closed one.
       // otherwise, return the one in the right direction first
         picks.sort((pickA, pickB) {
+
+          if (pickA.skipCount > pickB.skipCount) {
+            return 1;
+          }
+          else if (pickA.skipCount < pickB.skipCount) {
+            return -1;
+          }
+
           int pickASourceLocationPickSequence = pickA.sourceLocation.pickSequence == null ?
               0: pickA.sourceLocation.pickSequence;
           int pickBSourceLocationPickSequence = pickB.sourceLocation.pickSequence == null ?

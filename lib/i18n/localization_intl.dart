@@ -262,6 +262,15 @@ class CWMSLocalizations {
   String get reverseErrorNoReceipt  => Intl.message("Can't reverse inventory as it has inventory that is not from receipt", name: 'reverseErrorNoReceipt');
   String get reverseErrorMixedReceipt  => Intl.message("Can't reverse inventory when it is mixed with different Receipt", name: 'reverseErrorMixedReceipt');
 
+  String get version  => Intl.message("Version", name: 'version');
+  String get warehouse  => Intl.message("Warehouse", name: 'warehouse');
+  String get rfCode  => Intl.message("RF Code", name: 'rfCode');
+
+
+
+  String get bulkPick  => Intl.message("Bulk Pick", name: 'bulkPick');
+  String get listPick  => Intl.message("List Pick", name: 'listPick');
+  String get pickList  => Intl.message("Pick List", name: 'pickList');
 
 
 

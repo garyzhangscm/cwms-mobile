@@ -9,6 +9,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'http_client.dart';
@@ -49,6 +50,8 @@ class Global {
   static String lastLoginCompanyCode;
 
   static int lastLoginCompanyId;
+
+  static String currentAPPVersion;
 
   static Profile profile = Profile();
 
@@ -115,6 +118,10 @@ class Global {
     // default configuration
     _rfConfiguration = RFConfiguration();
     printLongLogMessage("setup the default _rfConfiguration");
+
+    PackageInfo.fromPlatform().then((packageInfo) =>
+        currentAPPVersion = packageInfo.version
+    );
   }
   static _initServers() {
     var _servers = _prefs.getString("servers");

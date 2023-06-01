@@ -19,6 +19,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../outbound/models/pick.dart';
+import '../../outbound/models/pick_list.dart';
+import '../../outbound/services/pick_list.dart';
 
 
 class SystemDrivenWork extends StatefulWidget{
@@ -240,6 +242,11 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
       _startBulkPick(_currentWorkTask);
 
     }
+    else if (_currentWorkTask.type == WorkTaskType.LIST_PICK) {
+
+      _startListPick(_currentWorkTask);
+
+    }
     else if (_currentWorkTask.type == WorkTaskType.PICK) {
 
       _startSinglePick(_currentWorkTask);
@@ -278,9 +285,49 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     argumentMap['bulkPick'] = bulkPick;
     argumentMap['pickMode'] = PickMode.SYSTEM_DRIVEN;
 
-    printLongLogMessage("flow to produce inventory page");
+    printLongLogMessage("flow to bulk pick page");
 
     await Navigator.of(context).pushNamed("bulk_pick", arguments: argumentMap);
+
+
+    // get the next work task
+    _refresh();
+  }
+
+  Future<void> _startListPick(WorkTask workTask) async {
+    PickList pickList;
+    showLoading(context);
+    try {
+      pickList = await PickListService.getPickListByNumber(workTask.referenceNumber);
+    }
+    on WebAPICallException catch(ex) {
+      // ok it is possible that the actual work is already cancelled but the work task is still present,
+      // let's cancel the work task as it is no long valid
+
+      Navigator.of(context).pop();
+      printLongLogMessage("start to cancel the work task ${workTask.number} as there's no pick list attached");
+
+      await _cancelWorkTask(workTask);
+      _refresh();
+      return;
+    }
+
+    Navigator.of(context).pop();
+    // if all the picks in the list are already done, then complate the work task
+    if (!pickList.picks.any((pick) => pick.pickedQuantity < pick.quantity)) {
+      _completeWorkTask(_currentWorkTask);
+      _refresh();
+      return;
+    }
+    printLongLogMessage("pick list: ${pickList.number}");
+
+    Map argumentMap = new HashMap();
+    argumentMap['pickList'] = pickList;
+    argumentMap['pickMode'] = PickMode.SYSTEM_DRIVEN;
+
+    printLongLogMessage("flow to list pick page");
+
+    await Navigator.of(context).pushNamed("list_pick", arguments: argumentMap);
 
 
     // get the next work task

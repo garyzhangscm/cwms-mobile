@@ -14,28 +14,33 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../shared/global.dart';
 import '../models/bulk_pick.dart';
+import '../models/pick_list.dart';
 import '../models/pick_mode.dart';
 
 
-class BulkPickPage extends StatefulWidget{
+class ListPickPage extends StatefulWidget{
 
-  BulkPickPage({Key key}) : super(key: key);
+  ListPickPage({Key key}) : super(key: key);
 
 
   @override
-  State<StatefulWidget> createState() => _BulkPickPageState();
+  State<StatefulWidget> createState() => _ListPickPageState();
 
 }
 
-class _BulkPickPageState extends State<BulkPickPage> {
+class _ListPickPageState extends State<ListPickPage> {
 
   // input batch id
   TextEditingController _itemController = new TextEditingController();
   TextEditingController _sourceLocationController = new TextEditingController();
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
-  BulkPick _currentBulkPick;
+
+  PickList _currentPickList;
+  Pick _currentPick;
+
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
   FocusNode _sourceLocationFocusNode = FocusNode();
@@ -87,26 +92,73 @@ class _BulkPickPageState extends State<BulkPickPage> {
     Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
     _pickMode = arguments['pickMode'];
 
-    _currentBulkPick = arguments['bulkPick'];
+    _currentPickList = arguments['pickList'];
+    // get the next pick from the list
+    getNextPick();
 
   }
+
+  /**
+   * Get the next pick from the list
+   */
+  Future<Pick> getNextPick() async {
+    if (_currentPickList == null) {
+      return null;
+    }
+    if (_currentPickList.picks.isEmpty) {
+      return null;
+    }
+
+    // sort the picks
+    PickService.sortPicks(_currentPickList.picks, Global.getLastActivityLocation(), Global.isMovingForward());
+
+    setState(() {
+
+      // return the first pick that has open quantity
+      _currentPick = _currentPickList.picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity);
+    });
+    if (_currentPick == null) {
+      // there's no available pick in the list, show message and return
+      await showDialog(
+            context: context,
+            builder: (context) {
+          return
+            AlertDialog(
+              title: Text(""),
+              content: Text("No more inventory on the RF"),
+              actions: <Widget>[
+
+                ElevatedButton(
+                  child: Text("Confirm"),
+                  onPressed: () {
+                    Navigator.of(context).pop(true); //关闭对话框
+                  },
+                ),
+              ],
+            );
+        }
+      );
+    }
+    return _currentPick;
+  }
+
 
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).bulkPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).listPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
             children: <Widget>[
-              buildTwoSectionInformationRow("Work Number:", _currentBulkPick.number),
-              buildTwoSectionInformationRow("Location:", _currentBulkPick.sourceLocation.name),
+              buildTwoSectionInformationRow("Work Number:", _currentPickList.number),
+              buildTwoSectionInformationRow("Location:", _currentPick == null ? "" : _currentPick.sourceLocation.name),
               _buildLocationInput(context),
               _buildLPNInput(context),
-              buildTwoSectionInformationRow("Item Number:", _currentBulkPick.item.name),
-              buildTwoSectionInformationRow("Pick Quantity:", _currentBulkPick.quantity.toString()),
+              buildTwoSectionInformationRow("Item Number:", _currentPick == null ? "" : _currentPick.item.name),
+              buildTwoSectionInformationRow("Pick Quantity:", _currentPick == null ? "" : _currentPick.quantity.toString()),
               _buildQuantityInput(context),
               _buildButtons(context),
             ],
@@ -118,7 +170,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(
         CWMSLocalizations.of(context).location,
-      _currentBulkPick.confirmLocationFlag == true || _currentBulkPick.confirmLocationCodeFlag == true ?
+      _currentPick.confirmLocationFlag == true || _currentPick.confirmLocationCodeFlag == true ?
           Focus(
               focusNode: _sourceLocationFocusNode,
               child:
@@ -146,7 +198,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
           :
           Padding(
             padding: EdgeInsets.only(right: 10),
-            child: Text(_currentBulkPick.item.name, textAlign: TextAlign.left ),
+            child: Text(_currentPick.item.name, textAlign: TextAlign.left ),
           ),
     );
   }
@@ -155,7 +207,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
   Widget _buildLPNInput(BuildContext context) {
     return buildTwoSectionInputRow(
       CWMSLocalizations.of(context).lpn,
-        _currentBulkPick.confirmLpnFlag == true ?
+        _currentPick.confirmLpnFlag == true ?
       Focus(
           focusNode: _lpnFocusNode,
           child:
@@ -221,7 +273,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
         ElevatedButton(
             onPressed: () async {
 
-              _onPickConfirm(_currentBulkPick, int.parse(_quantityController.text));
+              _onPickConfirm(_currentPick, int.parse(_quantityController.text));
             },
             child: Text(CWMSLocalizations.of(context).confirm)
         ),
@@ -332,42 +384,13 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
   }
 
-  void _enterOnQuantityController(int tryTime) async {
-
-    // if the location is empty, then ask the user to input the
-    // right location
-    if (_quantityController.text.isEmpty) {
-      showErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).quantity));
-      _quantityControllerFocusNode.requestFocus();
-      return;
-    }
-    printLongLogMessage("_enterOnQuantityController: Start to validate quantity, tryTime = $tryTime");
-    if (tryTime <= 0) {
-      // do nothing as we run out of try time
-      return;
-    }
-    printLongLogMessage("_enterOnQuantityController / _quantityControllerFocusNode.hasFocus:   ${_quantityControllerFocusNode.hasFocus}");
-    if (_quantityControllerFocusNode.hasFocus) {
-      // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
-      Future.delayed(const Duration(milliseconds: 100),
-              () => _enterOnQuantityController(tryTime - 1));
-
-      return;
-
-    }
-
-
-    _onPickConfirm(_currentBulkPick, int.parse(_quantityController.text));
-
-  }
 
   Future<int> validateLPNByQuantity(String lpn) async{
     List<Inventory> inventories = [];
     try {
       inventories = await InventoryService.findInventory(
           lpn: lpn,
-          locationName: _currentBulkPick.sourceLocation.name
+          locationName: _currentPick.sourceLocation.name
       );
     }
     on WebAPICallException catch(ex) {
@@ -382,16 +405,16 @@ class _BulkPickPageState extends State<BulkPickPage> {
     return inventories.map((inventory) => inventory.quantity).reduce((a, b) => a + b);
   }
 
-  void _onPickConfirm(BulkPick bulkPick, int confirmedQuantity) async {
+  void _onPickConfirm(Pick pick, int confirmedQuantity) async {
 
     // over pick for bulk pick is not allowed
-    if (confirmedQuantity > _currentBulkPick.quantity - _currentBulkPick.pickedQuantity) {
+    if (confirmedQuantity > pick.quantity - pick.pickedQuantity) {
       showErrorDialog(context,
         CWMSLocalizations.of(context).overPickNotAllowed);
       return;
     }
     // partial pick for bulk pick is not allowed
-    if (confirmedQuantity < _currentBulkPick.quantity) {
+    if (confirmedQuantity < pick.quantity) {
       showErrorDialog(context,
           CWMSLocalizations.of(context).partailBulkPickNotAllowed);
       return;
@@ -400,16 +423,16 @@ class _BulkPickPageState extends State<BulkPickPage> {
     showLoading(context);
 
     try {
-      if (bulkPick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
+      if (pick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
         printLongLogMessage(
             "We will confirm the pick with LPN ${_lpnController.text}");
-        await BulkPickService.confirmBulkPick(
-            bulkPick, confirmedQuantity, _lpnController.text);
+        await PickService.confirmPick(
+            pick, confirmedQuantity, _lpnController.text);
       }
       else {
         printLongLogMessage("We will confirm the pick with specify the LPN");
-        await BulkPickService.confirmBulkPick(
-            bulkPick, confirmedQuantity);
+        await PickService.confirmPick(
+            pick, confirmedQuantity);
       }
     }
     on WebAPICallException catch(ex) {
@@ -447,11 +470,11 @@ class _BulkPickPageState extends State<BulkPickPage> {
   }
 
   void _skipCurrentPick() {
-    _currentBulkPick.skipCount++;
+    _currentPick.skipCount++;
     var pickResult = PickResult.fromJson(
         {'result': true, 'confirmedQuantity': 0});
 
-    Navigator.pop(context, pickResult);
+    getNextPick();
 
   }
 
@@ -490,7 +513,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
     showLoading(context);
     WarehouseLocation warehouseLocation;
     try {
-      if (_currentBulkPick.confirmLocationCodeFlag) {
+      if (_currentPick.confirmLocationCodeFlag) {
         // ok, the pick is required to verify by location code, make sure
         // the user in put a location code
         warehouseLocation =
@@ -518,7 +541,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
       showErrorDialog(context, "can't find location by input value ${_sourceLocationController.text}");
       return false;
     }
-    else if (warehouseLocation.id != _currentBulkPick.sourceLocationId) {
+    else if (warehouseLocation.id != _currentPick.sourceLocationId) {
       showErrorDialog(context, "Location ${_sourceLocationController.text} is not the right location for pick");
       return false;
 

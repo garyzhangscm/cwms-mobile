@@ -10,6 +10,7 @@ import 'package:cwms_mobile/inventory/routes/item_sampling.dart';
 import 'package:cwms_mobile/inventory/routes/lpn_capture.dart';
 import 'package:cwms_mobile/outbound/models/bulk_pick.dart';
 import 'package:cwms_mobile/outbound/routes/bulk_pick.dart';
+import 'package:cwms_mobile/outbound/routes/list_pick.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/language.dart';
@@ -160,6 +161,7 @@ class MyApp extends StatelessWidget {
               "partial_inventory_move":(context) => PartialInventoryMovePage(),
               "work_order_reverse_production":(context) => ReverseProductionPage(),
               "reverse_receiving":(context) => ReverseReceivingPage(),
+              "list_pick":(context) => ListPickPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

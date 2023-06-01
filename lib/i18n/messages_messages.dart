@@ -259,6 +259,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "reverseErrorNoReceipt" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory as it has inventory that is not from Receipt"),
     "reverseErrorMixedReceipt" : MessageLookupByLibrary.simpleMessage("Can't reverse inventory when it is mixed with different Receipt"),
 
+    "version" : MessageLookupByLibrary.simpleMessage("Version"),
+    "warehouse" : MessageLookupByLibrary.simpleMessage("Warehouse"),
+    "rfCode" : MessageLookupByLibrary.simpleMessage("RF Code"),
+
+    "bulkPick" : MessageLookupByLibrary.simpleMessage("Bulk Pick"),
+    "listPick" : MessageLookupByLibrary.simpleMessage("List Pick"),
+    "pickList" : MessageLookupByLibrary.simpleMessage("Pick List"),
+
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,
