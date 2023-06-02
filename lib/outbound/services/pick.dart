@@ -233,6 +233,44 @@ class PickService {
 
   }
 
+  // check if the 2 picks pick inventory
+  // 1. from same location
+  // 2. for the same item
+  // 3. with same inventory attirbute
+  // 3.1 inventory status
+  // 3.2 color / product size / style / etc.
+  static bool pickInventoryWithSameAttribute(Pick pickA, Pick pickB) {
+    if (pickA.sourceLocationId != pickB.sourceLocationId) {
+      return false;
+    }
+    if (pickA.itemId != pickB.itemId) {
+      return false;
+    }
+    if (pickA.inventoryStatusId != pickB.inventoryStatusId) {
+      return false;
+    }
+    if (pickA.color != null && pickA.color.isNotEmpty &&
+        pickB.color != null && pickB.color.isNotEmpty &&
+        pickA.color != pickB.color) {
+      return false;
+    }
+    if (pickA.productSize != null && pickA.productSize.isNotEmpty &&
+        pickB.productSize != null && pickB.productSize.isNotEmpty &&
+        pickA.productSize != pickB.productSize) {
+      return false;
+    }
+    if (pickA.style != null && pickA.style.isNotEmpty &&
+        pickB.style != null && pickB.style.isNotEmpty &&
+        pickA.style != pickB.style) {
+      return false;
+    }
+    if (pickA.allocateByReceiptNumber != null && pickA.allocateByReceiptNumber.isNotEmpty &&
+        pickB.allocateByReceiptNumber != null && pickB.allocateByReceiptNumber.isNotEmpty &&
+        pickA.allocateByReceiptNumber != pickB.allocateByReceiptNumber) {
+      return false;
+    }
+    return true;
+  }
 }
 
 

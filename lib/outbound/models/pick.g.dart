@@ -14,9 +14,11 @@ Pick _$PickFromJson(Map<String, dynamic> json) {
     ..sourceLocation = json['sourceLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['sourceLocation'] as Map<String, dynamic>)
+    ..destinationLocationId = json['destinationLocationId'] as int
     ..destinationLocation = json['destinationLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['destinationLocation'] as Map<String, dynamic>)
+    ..itemId = json['itemId'] as int
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
@@ -27,6 +29,11 @@ Pick _$PickFromJson(Map<String, dynamic> json) {
     ..confirmLocationFlag = json['confirmLocationFlag'] as bool
     ..confirmLocationCodeFlag = json['confirmLocationCodeFlag'] as bool
     ..confirmLpnFlag = json['confirmLpnFlag'] as bool
+    ..color = json['color'] as String
+    ..productSize = json['productSize'] as String
+    ..style = json['style'] as String
+    ..allocateByReceiptNumber = json['allocateByReceiptNumber'] as String
+    ..inventoryStatusId = json['inventoryStatusId'] as int
     ..inventoryStatus = json['inventoryStatus'] == null
         ? null
         : InventoryStatus.fromJson(json['inventoryStatus'] as Map<String, dynamic>);
@@ -37,7 +44,9 @@ Map<String, dynamic> _$PickToJson(Pick instance) => <String, dynamic>{
   'number': instance.number,
   'sourceLocationId': instance.sourceLocationId,
   'sourceLocation': instance.sourceLocation,
+  'destinationLocationId': instance.destinationLocationId,
   'destinationLocation': instance.destinationLocation,
+  'itemId': instance.itemId,
   'item': instance.item,
   'quantity': instance.quantity,
   'pickedQuantity': instance.pickedQuantity,
@@ -46,5 +55,10 @@ Map<String, dynamic> _$PickToJson(Pick instance) => <String, dynamic>{
   'confirmLocationFlag': instance.confirmLocationFlag,
   'confirmLocationCodeFlag': instance.confirmLocationCodeFlag,
   'confirmLpnFlag': instance.confirmLpnFlag,
+  'color': instance.color,
+  'productSize': instance.productSize,
+  'style': instance.style,
+  'allocateByReceiptNumber': instance.allocateByReceiptNumber,
+  'inventoryStatusId': instance.inventoryStatusId,
   'inventoryStatus': instance.inventoryStatus,
 };

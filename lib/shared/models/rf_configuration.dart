@@ -16,12 +16,14 @@ class RFConfiguration {
     validatePartialLPNPick = false;
     pickToProductionLineInStage = true;
     receiveToStage = false;
+    listPickBatchPicking = true;
 
   }
 
   bool validatePartialLPNPick;
   bool pickToProductionLineInStage;
   bool receiveToStage;
+  bool listPickBatchPicking;
 
 
 

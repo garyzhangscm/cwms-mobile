@@ -11,15 +11,42 @@ part 'pick.g.dart';
 class Pick{
   Pick();
 
+  Pick.clone(Pick anotherPick) {
+    // this.id = anotherPick.id;
+    this.number = anotherPick.number;
+    this.sourceLocationId = anotherPick.sourceLocationId;
+    this.sourceLocation = anotherPick.sourceLocation;
+    this.destinationLocationId = anotherPick.destinationLocationId;
+    this.destinationLocation = anotherPick.destinationLocation;
+    this.itemId = anotherPick.itemId;
+    this.item = anotherPick.item;
+    this.quantity = anotherPick.quantity;
+    this.pickedQuantity = anotherPick.pickedQuantity;
+    this.warehouseId = anotherPick.warehouseId;
+    this.inventoryStatusId = anotherPick.inventoryStatusId;
+    this.inventoryStatus = anotherPick.inventoryStatus;
+    this.confirmItemFlag = anotherPick.confirmItemFlag;
+    this.confirmLocationFlag = anotherPick.confirmLocationFlag;
+    this.confirmLocationCodeFlag = anotherPick.confirmLocationCodeFlag;
+    this.confirmLpnFlag = anotherPick.confirmLpnFlag;
+    this.color = anotherPick.color;
+    this.productSize = anotherPick.productSize;
+    this.style = anotherPick.style;
+    this.allocateByReceiptNumber = anotherPick.allocateByReceiptNumber;
+  }
+
   int id;
   String number;
   int sourceLocationId;
   WarehouseLocation sourceLocation;
+  int destinationLocationId;
   WarehouseLocation destinationLocation;
+  int itemId;
   Item item;
   int quantity;
   int pickedQuantity;
   int warehouseId;
+  int inventoryStatusId;
   InventoryStatus inventoryStatus;
   bool confirmItemFlag;
   bool confirmLocationFlag;
@@ -28,10 +55,10 @@ class Pick{
 
   int skipCount = 0;
 
-
-
-
-
+  String color;
+  String productSize;
+  String style;
+  String allocateByReceiptNumber;
 
   //不同的类使用不同的mixin即可
   factory Pick.fromJson(Map<String, dynamic> json) => _$PickFromJson(json);

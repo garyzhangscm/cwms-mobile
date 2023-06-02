@@ -11,6 +11,7 @@ RFConfiguration _$RFConfigurationFromJson(Map<String, dynamic> json) {
     ..validatePartialLPNPick = json['validatePartialLPNPick'] == null ? false : json['validatePartialLPNPick'] as bool
     ..pickToProductionLineInStage = json['pickToProductionLineInStage'] == null ? false : json['pickToProductionLineInStage'] as bool
     ..receiveToStage = json['receiveToStage'] == null ? false : json['receiveToStage'] as bool
+    ..listPickBatchPicking = json['listPickBatchPicking'] == null ? false : json['listPickBatchPicking'] as bool
   ;
 }
 
@@ -18,5 +19,6 @@ Map<String, dynamic> _$RFConfigurationToJson(RFConfiguration instance) =>
     <String, dynamic>{
       'validatePartialLPNPick': instance.validatePartialLPNPick,
       'pickToProductionLineInStage': instance.pickToProductionLineInStage,
-      'receiveToStage': instance.receiveToStage
+      'receiveToStage': instance.receiveToStage,
+      'listPickBatchPicking': instance.listPickBatchPicking
     };

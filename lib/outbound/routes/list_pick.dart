@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:badges/badges.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -48,7 +50,6 @@ class _ListPickPageState extends State<ListPickPage> {
   FocusNode _quantityFocusNode = FocusNode();
   FocusNode _quantityControllerFocusNode = FocusNode();
 
-
   PickMode _pickMode;
 
   List<Inventory>  inventoryOnRF;
@@ -98,9 +99,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
   }
 
-  /**
-   * Get the next pick from the list
-   */
+  /// Get the next pick from the list
   Future<Pick> getNextPick() async {
     if (_currentPickList == null) {
       return null;
@@ -112,6 +111,7 @@ class _ListPickPageState extends State<ListPickPage> {
     // sort the picks
     PickService.sortPicks(_currentPickList.picks, Global.getLastActivityLocation(), Global.isMovingForward());
 
+    printLongLogMessage("Global.getRFConfiguration.listPickBatchPicking? : ${Global.getRFConfiguration.listPickBatchPicking}");
     setState(() {
 
       // return the first pick that has open quantity
@@ -139,7 +139,67 @@ class _ListPickPageState extends State<ListPickPage> {
         }
       );
     }
+    else if (Global.getRFConfiguration.listPickBatchPicking) {
+      // if we will need to batch picking, then combine the picks with
+      // same attribute into one and allow the user to batch picking
+      setState(() {
+
+        _currentPick = getPickBatch(_currentPick, _currentPickList);
+      });
+    }
     return _currentPick;
+  }
+
+  // get picking batch from the list, with picks that
+  // similar to the current pick
+  Pick getPickBatch(Pick pick, PickList pickList) {
+    // get all the pick that has same inventory attribute as the
+    // current pick
+    List<Pick> similarPicks = pickList.picks.where((anotherPick) {
+        // skip the current pick
+        if (anotherPick.id == pick.id) {
+          return false;
+        }
+        // skip the fully picked pick
+        if (anotherPick.pickedQuantity >= anotherPick.quantity) {
+          return false;
+        }
+        if (PickService.pickInventoryWithSameAttribute(pick, anotherPick)) {
+          return true;
+        }
+        return false;
+    });
+    if (similarPicks.isEmpty) {
+      // ok, we didn't find any pick that can be combined , let's return the
+      // original pick
+      return pick;
+    }
+    // ok, we find some picks that we can combine into the original pick
+    // let's create a new pick structure
+    Pick combinedPick = Pick.clone(pick);
+    // set the pick's number to empty
+    combinedPick.number = "**MIX**";
+    combinedPick.destinationLocationId = null;
+    combinedPick.destinationLocation = null;
+    similarPicks.forEach((similarPick) {
+      combinedPick.pickedQuantity += similarPick.pickedQuantity;
+      combinedPick.quantity += similarPick.quantity;
+      // set the inventory attribute to be the most specific one
+      if (combinedPick.color == null || combinedPick.color.isNotEmpty) {
+        combinedPick.color = similarPick.color;
+      }
+      if (combinedPick.productSize == null || combinedPick.productSize.isNotEmpty) {
+        combinedPick.productSize = similarPick.productSize;
+      }
+      if (combinedPick.style == null || combinedPick.style.isNotEmpty) {
+        combinedPick.style = similarPick.style;
+      }
+      if (combinedPick.allocateByReceiptNumber == null || combinedPick.allocateByReceiptNumber.isNotEmpty) {
+        combinedPick.allocateByReceiptNumber = similarPick.allocateByReceiptNumber;
+      }
+    });
+    return combinedPick;
+
   }
 
 
@@ -153,7 +213,8 @@ class _ListPickPageState extends State<ListPickPage> {
       body:
           Column(
             children: <Widget>[
-              buildTwoSectionInformationRow("Work Number:", _currentPickList.number),
+              buildTwoSectionInformationRow("List Number:", _currentPickList.number),
+              buildTwoSectionInformationRow("Pick Number:", _currentPick == null ? "" : _currentPick.number),
               buildTwoSectionInformationRow("Location:", _currentPick == null ? "" : _currentPick.sourceLocation.name),
               _buildLocationInput(context),
               _buildLPNInput(context),
