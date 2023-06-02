@@ -41,6 +41,8 @@ class _ListPickPageState extends State<ListPickPage> {
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
 
+  int _totalConfirmedQuantity = 0;
+
   PickList _currentPickList;
   Pick _currentPick;
 
@@ -63,7 +65,7 @@ class _ListPickPageState extends State<ListPickPage> {
     _sourceLocationController.clear();
     _quantityController.clear();
     _lpnController.clear();
-
+    _totalConfirmedQuantity = 0;
 
     inventoryOnRF = [];
 
@@ -85,19 +87,47 @@ class _ListPickPageState extends State<ListPickPage> {
 
       }});
 
-  }
 
+    Future.delayed(Duration.zero, () {
+      // extract the argument
+      printLongLogMessage("=========== initState ==========");
+      Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
+
+      _pickMode = arguments['pickMode'];
+
+      _currentPickList = arguments['pickList'];
+      _totalConfirmedQuantity = 0;
+      // get the next pick from the list
+      getNextPick();
+    });
+  }
+/**
   @override
   void didChangeDependencies() {
+    super.didChangeDependencies();
 
     // extract the argument
+    printLongLogMessage("=========== didChangeDependencies ==========");
     Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
     _pickMode = arguments['pickMode'];
 
     _currentPickList = arguments['pickList'];
+    _totalConfirmedQuantity = 0;
     // get the next pick from the list
     getNextPick();
 
+  }
+**/
+  void returnToPreviewPage() {
+
+    var pickResult = PickResult.fromJson(
+        {'result': true, 'confirmedQuantity': _totalConfirmedQuantity});
+
+    // refresh the pick on the RF
+    // _reloadInventoryOnRF();
+
+
+    Navigator.pop(context, pickResult);
   }
 
   /// Get the next pick from the list
@@ -108,15 +138,23 @@ class _ListPickPageState extends State<ListPickPage> {
     if (_currentPickList.picks.isEmpty) {
       return null;
     }
+    /**
+    printLongLogMessage("_currentPickList.picks.length? : ${_currentPickList.picks.length}");
+    _currentPickList.picks.forEach((pick) {
+
+      printLongLogMessage(">> pick ${pick.number}, pick quantity： ${pick.quantity}, picked quantity: ${pick.pickedQuantity}");
+    });
+        **/
 
     // sort the picks
     PickService.sortPicks(_currentPickList.picks, Global.getLastActivityLocation(), Global.isMovingForward());
 
-    printLongLogMessage("Global.getRFConfiguration.listPickBatchPicking? : ${Global.getRFConfiguration.listPickBatchPicking}");
+
     setState(() {
 
       // return the first pick that has open quantity
-      _currentPick = _currentPickList.picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity);
+      _currentPick = _currentPickList.picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity,
+        orElse: () => null);
     });
     if (_currentPick == null) {
       // there's no available pick in the list, show message and return
@@ -126,13 +164,14 @@ class _ListPickPageState extends State<ListPickPage> {
           return
             AlertDialog(
               title: Text(""),
-              content: Text("No more inventory on the RF"),
+              content: Text("current list ${_currentPickList.number} is done"),
               actions: <Widget>[
 
                 ElevatedButton(
                   child: Text("Confirm"),
                   onPressed: () {
                     Navigator.of(context).pop(true); //关闭对话框
+                    returnToPreviewPage();
                   },
                 ),
               ],
@@ -148,6 +187,9 @@ class _ListPickPageState extends State<ListPickPage> {
         _currentPick = getPickBatch(_currentPick, _currentPickList);
       });
     }
+    
+    // printLongLogMessage("_currentPick: ${_currentPick.toJson()}");
+    // _lpnControllerFocusNode.requestFocus();
     return _currentPick;
   }
 
@@ -217,11 +259,11 @@ class _ListPickPageState extends State<ListPickPage> {
               buildTwoSectionInformationRow("List Number:", _currentPickList.number),
               buildTwoSectionInformationRow("Pick Number:", _currentPick == null ? "" : _currentPick.number),
               buildTwoSectionInformationRow("Location:", _currentPick == null ? "" : _currentPick.sourceLocation.name),
-              _buildLocationInput(context),
-              _buildLPNInput(context),
+              _currentPick == null ? Container() : _buildLocationInput(context),
+              _currentPick == null ? Container() : _buildLPNInput(context),
               buildTwoSectionInformationRow("Item Number:", _currentPick == null ? "" : _currentPick.item.name),
               buildTwoSectionInformationRow("Pick Quantity:", _currentPick == null ? "" : _currentPick.quantity.toString()),
-              _buildQuantityInput(context),
+              _currentPick == null ? Container() : _buildQuantityInput(context),
               _buildButtons(context),
             ],
           ),
@@ -285,7 +327,13 @@ class _ListPickPageState extends State<ListPickPage> {
                   mainAxisSize: MainAxisSize.min, // added line
                   children: <Widget>[
                     IconButton(
-                      onPressed: () => _lpnController.text = "",
+                      onPressed: () {
+                        _itemController.clear();
+                        _sourceLocationController.clear();
+                        _quantityController.clear();
+                        _lpnController.clear();
+                        _lpnControllerFocusNode.requestFocus();
+                      },
                       icon: Icon(Icons.close),
                     ),
                   ],
@@ -440,7 +488,8 @@ class _ListPickPageState extends State<ListPickPage> {
 
     }
     else {
-      await showBlockedErrorDialog(context, "lpn " + _lpnController.text + " is not pickable");
+      await showBlockedErrorDialog(context, "lpn " + _lpnController.text + " is not pickable, "
+          "please make sure the LPN is in the right place");
       _lpnControllerFocusNode.requestFocus();
       return;
     }
@@ -457,7 +506,8 @@ class _ListPickPageState extends State<ListPickPage> {
           color: _currentPick.color == null ? "" :  _currentPick.color,
         productSize: _currentPick.productSize == null ? "" :  _currentPick.productSize,
         style: _currentPick.style == null ? "" :  _currentPick.style,
-        receiptNumber: _currentPick.allocateByReceiptNumber == null ? "" :  _currentPick.allocateByReceiptNumber
+        receiptNumber: _currentPick.allocateByReceiptNumber == null ? "" :  _currentPick.allocateByReceiptNumber,
+          locationId: _currentPick.sourceLocationId
       );
     }
     on WebAPICallException catch(ex) {
@@ -491,29 +541,45 @@ class _ListPickPageState extends State<ListPickPage> {
     try {
       if (_lpnController.text.isNotEmpty) {
         _currentPickList = await PickListService.confirmPickList(
-            pickList, confirmedQuantity, _lpnController.text);
+            pickList, confirmedQuantity, _currentPick.sourceLocationId,  _lpnController.text);
       }
       else {
         printLongLogMessage("We will confirm the pick with specify the LPN");
         _currentPickList = await PickListService.confirmPickList(
-            pickList, confirmedQuantity);
+            pickList, confirmedQuantity, _currentPick.sourceLocationId);
       }
     }
     on WebAPICallException catch(ex) {
 
       Navigator.of(context).pop();
       showErrorDialog(context, ex.errMsg());
+
       return;
 
     }
+    _totalConfirmedQuantity += confirmedQuantity;
 
     print("pick confirmed");
+    /**
+    _currentPickList.picks.forEach((pick) {
+
+      printLongLogMessage(">> 2. pick ${pick.number}, pick quantity： ${pick.quantity}, picked quantity: ${pick.pickedQuantity}");
+    });
+        **/
 
     Navigator.of(context).pop();
     showToast("pick confirmed");
+
+    // clear the input
+    _lpnController.clear();
+    _quantityController.clear();
+
+
     // refresh the display after we complete one location / LPN
     // their may be more locations / LPN to pick from
     getNextPick();
+
+    _lpnControllerFocusNode.requestFocus();
 
     /**
     var pickResult = PickResult.fromJson(
@@ -557,8 +623,8 @@ class _ListPickPageState extends State<ListPickPage> {
     if(pick.confirmItemFlag == false) {
       _itemController.text = pick.item.name;
     }
-    printLongLogMessage("pick.confirmLocationFlag: ${pick.confirmLocationFlag}");
-    printLongLogMessage("pick.confirmLocationCodeFlag: ${pick.confirmLocationCodeFlag}");
+    // printLongLogMessage("pick.confirmLocationFlag: ${pick.confirmLocationFlag}");
+    // printLongLogMessage("pick.confirmLocationCodeFlag: ${pick.confirmLocationCodeFlag}");
     if (pick.confirmLocationFlag == false &&
         pick.confirmLocationCodeFlag == false) {
       _sourceLocationController.text = pick.sourceLocation.name;

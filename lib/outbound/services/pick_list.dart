@@ -56,7 +56,8 @@ class PickListService {
 
 
   // Confirm pick, with picking quantity
-  static Future<PickList> confirmPickList(PickList pickList, int confirmQuantity, [String lpn, String nextLocationName = ""]) async{
+  static Future<PickList> confirmPickList(PickList pickList, int confirmQuantity,
+      int sourceLocationId, [String lpn, String nextLocationName = ""]) async{
 
     printLongLogMessage("start to confirm pick list ${pickList.number}, confirmQuantity: $confirmQuantity, lpn: $lpn");
 
@@ -76,6 +77,7 @@ class PickListService {
         queryParameters: {
           "warehouseId": Global.currentWarehouse.id,
           "quantity": confirmQuantity,
+          "sourceLocationId": sourceLocationId,
           "nextLocationName": nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName,
           "lpn": lpn}
     );

@@ -15,12 +15,12 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/work/models/work-task-type.dart';
 import 'package:cwms_mobile/work/models/work_task.dart';
 import 'package:cwms_mobile/work/services/work_task_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../outbound/models/pick.dart';
 import '../../outbound/models/pick_list.dart';
 import '../../outbound/services/pick_list.dart';
+import '../../shared/global.dart';
 
 
 class SystemDrivenWork extends StatefulWidget{
@@ -39,6 +39,8 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
   List<Inventory>  _inventoryOnRF = [];
 
   Timer _timer;  // timer to load the next work every 10 second
+
+  String _currentWorkTaskSourceLocationName = "";
 
   @override
   void dispose() {
@@ -65,6 +67,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     _reloadInventoryOnRF();
 
     _currentWorkTask = null;
+    _currentWorkTaskSourceLocationName = "";
     _timer = Timer(Duration.zero, () {
       this._getNextWorkTask();
     });
@@ -78,7 +81,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
   _getNextWorkTask() {
     printLongLogMessage("Start to get the next work");
-    showLoading(context);
+    // showLoading(context);
     printLongLogMessage("SHOWN loading");
 
     try {
@@ -88,7 +91,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
         if (nextWorkTask == null) {
           printLongLogMessage("there's no available work task, let's try again every 10 second");
           _timer = Timer(new Duration(seconds: 10), () {
-            Navigator.of(context).pop();
+            // Navigator.of(context).pop();
             this._getNextWorkTask();
           });
           /**
@@ -100,11 +103,12 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
         }
         else {
           printLongLogMessage("start to work on the task ${nextWorkTask.number}");
-          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
           setState(() {
 
             _currentWorkTask = nextWorkTask;
           });
+          _setupWorkTaskSourceLocationName();
         }
       });
     }
@@ -139,6 +143,51 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
   }
 
   Widget _buildDisplay(BuildContext context) {
+
+    return SizedBox(
+        height: 105,
+        child:  Stack(
+          alignment:Alignment.center ,
+          fit: StackFit.expand, //未定位widget占满Stack整个空间
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+                child: IntrinsicHeight(
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Column(children: [
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).number,
+                                _currentWorkTask == null ? "" : _currentWorkTask.number),
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).type,
+                                _currentWorkTask == null ? "" : _currentWorkTask.type.name),
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).sourceLocation, _currentWorkTaskSourceLocationName),
+                          ]),
+                        ),
+                        // Expanded(child: Container(color: Colors.amber)),
+                      ]),
+              ),
+            ),
+            _currentWorkTask != null ?
+                Container() :
+                Padding(
+                  padding: const EdgeInsets.only(top: 15, bottom: 15),
+                  child:  Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: Column(children: [
+                            CircularProgressIndicator()
+                          ]),
+                        ),
+                        // Expanded(child: Container(color: Colors.amber)),
+                      ]),
+                ),
+          ],
+        )
+    );
+/**
     return Padding(
       padding: const EdgeInsets.only(top: 10.0, bottom: 10),
       child: IntrinsicHeight(
@@ -159,7 +208,53 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
             ]),
       ),
     );
+**/
+  }
 
+  void _setupWorkTaskSourceLocationName() async {
+    if (_currentWorkTask == null) {
+      setState(() {
+
+        _currentWorkTaskSourceLocationName = "";
+      });
+    }
+    else if(_currentWorkTask.type == WorkTaskType.LIST_PICK) {
+      // list pick may have multiple source location, let's get the
+      // first location of the pick in the list
+      PickListService.getPickListByNumber(_currentWorkTask.referenceNumber).then((pickList) {
+
+        if (pickList.picks.isEmpty) {
+          _currentWorkTaskSourceLocationName = "";
+        }
+
+        // sort the picks
+        PickService.sortPicks(pickList.picks, Global.getLastActivityLocation(), Global.isMovingForward());
+        Pick nextPick = pickList.picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity,
+            orElse: () => null);
+        if (nextPick == null) {
+          setState(() {
+
+            _currentWorkTaskSourceLocationName  = "";
+          });
+        }
+        else {
+          setState(() {
+
+            _currentWorkTaskSourceLocationName  = nextPick.sourceLocation.name;
+          });
+        }
+
+
+      });
+
+
+    }
+    else {
+      setState(() {
+
+        _currentWorkTaskSourceLocationName = _currentWorkTask.sourceLocation.name;
+      });
+    }
   }
   Widget _buildButtons(BuildContext context) {
     return buildThreeButtonRow(
