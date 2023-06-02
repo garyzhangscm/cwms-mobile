@@ -490,12 +490,12 @@ class _ListPickPageState extends State<ListPickPage> {
 
     try {
       if (_lpnController.text.isNotEmpty) {
-        await PickListService.confirmPickList(
+        _currentPickList = await PickListService.confirmPickList(
             pickList, confirmedQuantity, _lpnController.text);
       }
       else {
         printLongLogMessage("We will confirm the pick with specify the LPN");
-        await PickListService.confirmPickList(
+        _currentPickList = await PickListService.confirmPickList(
             pickList, confirmedQuantity);
       }
     }
@@ -511,7 +511,11 @@ class _ListPickPageState extends State<ListPickPage> {
 
     Navigator.of(context).pop();
     showToast("pick confirmed");
+    // refresh the display after we complete one location / LPN
+    // their may be more locations / LPN to pick from
+    getNextPick();
 
+    /**
     var pickResult = PickResult.fromJson(
         {'result': true, 'confirmedQuantity': confirmedQuantity});
 
@@ -520,6 +524,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
 
     Navigator.pop(context, pickResult);
+        **/
   }
 
   void _reloadInventoryOnRF() {
@@ -535,8 +540,6 @@ class _ListPickPageState extends State<ListPickPage> {
 
   void _skipCurrentPick() {
     _currentPick.skipCount++;
-    var pickResult = PickResult.fromJson(
-        {'result': true, 'confirmedQuantity': 0});
 
     getNextPick();
 

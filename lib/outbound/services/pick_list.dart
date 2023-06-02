@@ -56,13 +56,13 @@ class PickListService {
 
 
   // Confirm pick, with picking quantity
-  static Future<void> confirmPickList(PickList pickList, int confirmQuantity, [String lpn, String nextLocationName = ""]) async{
+  static Future<PickList> confirmPickList(PickList pickList, int confirmQuantity, [String lpn, String nextLocationName = ""]) async{
 
     printLongLogMessage("start to confirm pick list ${pickList.number}, confirmQuantity: $confirmQuantity, lpn: $lpn");
 
     // only continue when the confirmed quantity is bigger than 0
     if (confirmQuantity <= 0) {
-      return;
+      return null;
     }
 
     Dio httpClient = CWMSHttpClient.getDio();
@@ -89,6 +89,7 @@ class PickListService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
+    return PickList.fromJson(responseString["data"]);
 
   }
 }
