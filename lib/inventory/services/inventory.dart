@@ -511,11 +511,69 @@ class InventoryService {
     }
 
     return Inventory.fromJson(responseString["data"]);
-
-
-
-
-
   }
 
+
+  static Future<List<Inventory>> findPickableInventory(
+      int itemId,
+      int inventoryStatusId,
+      {String lpn = "", String color = "", String productSize = "",
+        String style = "",String receiptNumber = "", int locationId}
+      )  async {
+
+    printLongLogMessage("will find pickable inventory by ");
+    printLongLogMessage("item id : $itemId");
+    printLongLogMessage("inventory status id : $inventoryStatusId");
+    printLongLogMessage("lpn : $lpn");
+    printLongLogMessage("color : $color");
+    printLongLogMessage("productSize : $productSize");
+    printLongLogMessage("style : $style");
+    printLongLogMessage("receiptNumber : $receiptNumber");
+    printLongLogMessage("locationId : $locationId");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+    Map<String, dynamic> queryParameters = new Map<String, dynamic>();
+
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+
+    queryParameters["itemId"] = itemId;
+    queryParameters["inventoryStatusId"] = inventoryStatusId;
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+
+    if (lpn.isNotEmpty) {
+      queryParameters["lpn"] = lpn;
+    }
+    if (color.isNotEmpty) {
+      queryParameters["color"] = color;
+    }
+    if (productSize.isNotEmpty) {
+      queryParameters["productSize"] = productSize;
+    }
+    if (style.isNotEmpty) {
+      queryParameters["style"] = style;
+    }
+    if (receiptNumber.isNotEmpty) {
+      queryParameters["receiptNumber"] = receiptNumber;
+    }
+    if (locationId != null) {
+      queryParameters["locationId"] = locationId;
+    }
+
+    Response response = await httpClient.get(
+        "/inventory/inventories/pickable",
+        queryParameters: queryParameters
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage("get response from findInventory ${response.toString()}");
+
+    List<Inventory> inventories
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+
+    return inventories;
+  }
 }

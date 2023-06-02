@@ -9,6 +9,7 @@ import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
 import 'package:cwms_mobile/outbound/services/bulk_pick.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
+import 'package:cwms_mobile/outbound/services/pick_list.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
@@ -168,7 +169,7 @@ class _ListPickPageState extends State<ListPickPage> {
           return true;
         }
         return false;
-    });
+    }).toList();
     if (similarPicks.isEmpty) {
       // ok, we didn't find any pick that can be combined , let's return the
       // original pick
@@ -334,7 +335,7 @@ class _ListPickPageState extends State<ListPickPage> {
         ElevatedButton(
             onPressed: () async {
 
-              _onPickConfirm(_currentPick, int.parse(_quantityController.text));
+              _onPickConfirm(_currentPickList, int.parse(_quantityController.text));
             },
             child: Text(CWMSLocalizations.of(context).confirm)
         ),
@@ -429,6 +430,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
     showLoading(context);
     int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
+    pickableQuantity = min(pickableQuantity, _currentPick.quantity - _currentPick.pickedQuantity);
 
     Navigator.of(context).pop();
     if (pickableQuantity > 0) {
@@ -449,9 +451,13 @@ class _ListPickPageState extends State<ListPickPage> {
   Future<int> validateLPNByQuantity(String lpn) async{
     List<Inventory> inventories = [];
     try {
-      inventories = await InventoryService.findInventory(
+      inventories = await InventoryService.findPickableInventory(
+        _currentPick.itemId, _currentPick.inventoryStatusId,
           lpn: lpn,
-          locationName: _currentPick.sourceLocation.name
+          color: _currentPick.color == null ? "" :  _currentPick.color,
+        productSize: _currentPick.productSize == null ? "" :  _currentPick.productSize,
+        style: _currentPick.style == null ? "" :  _currentPick.style,
+        receiptNumber: _currentPick.allocateByReceiptNumber == null ? "" :  _currentPick.allocateByReceiptNumber
       );
     }
     on WebAPICallException catch(ex) {
@@ -466,34 +472,31 @@ class _ListPickPageState extends State<ListPickPage> {
     return inventories.map((inventory) => inventory.quantity).reduce((a, b) => a + b);
   }
 
-  void _onPickConfirm(Pick pick, int confirmedQuantity) async {
+  void _onPickConfirm(PickList pickList, int confirmedQuantity) async {
+
+    int totalPickableQuantity = 0 ;
+    pickList.picks.forEach((pick) {
+      totalPickableQuantity += (pick.quantity - pick.pickedQuantity);
+    });
 
     // over pick for bulk pick is not allowed
-    if (confirmedQuantity > pick.quantity - pick.pickedQuantity) {
+    if (confirmedQuantity > totalPickableQuantity) {
       showErrorDialog(context,
         CWMSLocalizations.of(context).overPickNotAllowed);
-      return;
-    }
-    // partial pick for bulk pick is not allowed
-    if (confirmedQuantity < pick.quantity) {
-      showErrorDialog(context,
-          CWMSLocalizations.of(context).partailBulkPickNotAllowed);
       return;
     }
 
     showLoading(context);
 
     try {
-      if (pick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
-        printLongLogMessage(
-            "We will confirm the pick with LPN ${_lpnController.text}");
-        await PickService.confirmPick(
-            pick, confirmedQuantity, _lpnController.text);
+      if (_lpnController.text.isNotEmpty) {
+        await PickListService.confirmPickList(
+            pickList, confirmedQuantity, _lpnController.text);
       }
       else {
         printLongLogMessage("We will confirm the pick with specify the LPN");
-        await PickService.confirmPick(
-            pick, confirmedQuantity);
+        await PickListService.confirmPickList(
+            pickList, confirmedQuantity);
       }
     }
     on WebAPICallException catch(ex) {

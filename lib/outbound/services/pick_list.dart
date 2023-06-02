@@ -54,6 +54,43 @@ class PickListService {
 
   }
 
+
+  // Confirm pick, with picking quantity
+  static Future<void> confirmPickList(PickList pickList, int confirmQuantity, [String lpn, String nextLocationName = ""]) async{
+
+    printLongLogMessage("start to confirm pick list ${pickList.number}, confirmQuantity: $confirmQuantity, lpn: $lpn");
+
+    // only continue when the confirmed quantity is bigger than 0
+    if (confirmQuantity <= 0) {
+      return;
+    }
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    // pick to RF
+    // if the user specify the next location, then pick to the next location
+    // otherwise  pick to the RF
+    printLongLogMessage("start to pick to ${nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName}");
+    Response response = await httpClient.post(
+        "outbound/pick-lists/${pickList.id}/confirm",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id,
+          "quantity": confirmQuantity,
+          "nextLocationName": nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName,
+          "lpn": lpn}
+    );
+
+    print("response from confirm pick: $response");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+
+  }
 }
 
 
