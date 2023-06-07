@@ -9,6 +9,7 @@ import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/rf_app_version.dart';
 import 'package:cwms_mobile/shared/services/rf_app_version.dart';
 import 'package:cwms_mobile/shared/services/rf_configuration.dart';
+import 'package:cwms_mobile/shared/services/warehouse_configuration.dart';
 
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
@@ -396,6 +397,10 @@ class _LoginPageState extends State<LoginPage> {
         Global.lastLoginCompanyId = companyId;
         Global.lastLoginCompanyCode = _companyCodeController.text;
         Global.setLastLoginRFCode(_rfCodeController.text);
+
+        // setup the http client with auth information
+        Global.setupHttpClient();
+
         // setup the RF as we would like to get the default printer that associated with
         // the RF
         RFService.getRFByCode(_rfCodeController.text).then((rf) =>
@@ -404,9 +409,6 @@ class _LoginPageState extends State<LoginPage> {
           printLongLogMessage("error while getting RF from code ${_rfCodeController.text}");
           printLongLogMessage(err.toString());
         });
-
-        // setup the http client with auth information
-        Global.setupHttpClient();
 
 
         // Setup auto login user
@@ -453,6 +455,23 @@ class _LoginPageState extends State<LoginPage> {
           // ignore the except and continue with the default configuration
 
         }
+        // load the warehouse configuration
+        try {
+
+          WarehouseConfigurationService.getWarehouseConfiguration().then((warehouseConfiguration) {
+            // if the configuration is not setup yet, use the default one
+            // which should be already setup when we launch the app
+            if (warehouseConfiguration != null) {
+
+              Global.setWarehouseConfiguration(warehouseConfiguration);
+            }
+          });
+        }
+        on WebAPICallException catch(ex) {
+          // ignore the except and continue with the default configuration
+
+        }
+
         RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
 
         printLongLogMessage("latestRFAppVersion: ${latestRFAppVersion == null ? "N/A" : latestRFAppVersion.versionNumber}");

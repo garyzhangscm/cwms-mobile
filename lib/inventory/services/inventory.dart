@@ -11,6 +11,8 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_response.dart';
+import 'package:cwms_mobile/shared/models/report_history.dart';
+import 'package:cwms_mobile/shared/services/printing.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
 
@@ -337,35 +339,8 @@ class InventoryService {
 
     printLongLogMessage("get response from printLPNLabel ${response.toString()}");
 
+    // printLongLogMessage("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
-
-    Map<String, dynamic> reportHistory = responseString["data"] as Map<String, dynamic>;
-    String fileName = reportHistory["fileName"];
-    printLongLogMessage("start sending printing request with file: $fileName, findPrinterBy: $findPrinterByValue");
-
-
-    queryParameters = new Map<String, dynamic>();
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
-
-    if (findPrinterByValue != null) {
-      queryParameters["findPrinterBy"] = findPrinterByValue;
-    }
-    if (printerName.isNotEmpty) {
-
-      queryParameters["printerName"] = printerName;
-    }
-
-
-    printLongLogMessage("will print from ${queryParameters["printerName"]}");
-
-    response = await httpClient.post(
-        "/resource/report-histories/print/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/LPN_REPORT/$fileName",
-        queryParameters: queryParameters
-    );
-
-    printLongLogMessage("get response from printLPNLabel ${response.toString()}");
-
-    responseString = json.decode(response.toString());
 
 
     if (responseString["result"] as int != 0) {
@@ -373,8 +348,11 @@ class InventoryService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
-    printLongLogMessage("LPN Label $lpn is printed");
+    ReportHistory reportHistory = ReportHistory.fromJson(responseString["data"]);
 
+    printLongLogMessage("start printing inventory LPN Label with file: ${reportHistory.fileName}, findPrinterBy: $findPrinterByValue");
+
+    await PrintingService.printFile(reportHistory, printerName);
   }
 
   static Future<Inventory> addInventory(Inventory inventory,

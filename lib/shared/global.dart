@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/rf_configuration.dart';
+import 'package:cwms_mobile/shared/models/warehouse_configuration.dart';
 import 'package:cwms_mobile/warehouse_layout/models/company.dart';
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
@@ -58,6 +59,7 @@ class Global {
   static Profile profile = Profile();
 
   static RFConfiguration _rfConfiguration = RFConfiguration();
+  static WarehouseConfiguration _warehouseConfiguration = WarehouseConfiguration();
 
   // 可选的主题列表
   static List<MaterialColor> get themes => _themes;
@@ -76,6 +78,8 @@ class Global {
   static bool get isRelease => bool.fromEnvironment("dart.vm.product");
 
   static RFConfiguration get getRFConfiguration => _rfConfiguration;
+
+  static WarehouseConfiguration get warehouseConfiguration => _warehouseConfiguration;
 
   //初始化全局信息
   static Future init() async {
@@ -121,6 +125,8 @@ class Global {
     // default configuration
     _rfConfiguration = RFConfiguration();
     printLongLogMessage("setup the default _rfConfiguration");
+    _warehouseConfiguration = WarehouseConfiguration();
+    printLongLogMessage("setup the default warehouse configuration");
 
     PackageInfo.fromPlatform().then((packageInfo) =>
         currentAPPVersion = packageInfo.version
@@ -380,6 +386,10 @@ class Global {
 
   static void setRFConfiguration(RFConfiguration rfConfiguration) {
     _rfConfiguration = rfConfiguration;
+  }
+
+  static void setWarehouseConfiguration(WarehouseConfiguration warehouseConfiguration) {
+    _warehouseConfiguration = warehouseConfiguration;
   }
 
   static bool getConfigurationAsBoolean(String key) {

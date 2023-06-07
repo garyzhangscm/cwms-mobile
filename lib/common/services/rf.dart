@@ -7,6 +7,7 @@ import 'package:cwms_mobile/shared/models/rf.dart';
 import 'package:dio/dio.dart';
 
 import '../../exception/WebAPICallException.dart';
+import '../../shared/http_client.dart';
 
 class RFService {
 
@@ -37,12 +38,14 @@ class RFService {
 
   static Future<RF> getRFByCode(String rfCode) async {
 
+    Dio httpClient = CWMSHttpClient.getDio();
+
     // we will need to use the standard dio instead because
     // 1. we will validate the RF code before we log in so we probably don't have the
     //   auth token yet
     // 2. we don't have to have the auth token. all the */validate/** endpoint won't
     //    probably requires auth info
-    Response response = await Dio().get(
+    Response response = await httpClient.get(
         Global.currentServer.url + "resource/rfs",
         queryParameters: {
           "warehouseId": Global.currentWarehouse.id,
