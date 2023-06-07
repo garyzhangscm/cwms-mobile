@@ -579,13 +579,35 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     else if(_inventoryDepositRequests[index].requestResult == true) {
       return
         SizedBox(
-            height: 75,
+            height: 95,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].newLpn),
               subtitle:
-              Column(
+                Column(
                   children: <Widget>[
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              "From LPN: ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[index].lpn,
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
                     Row(
                         children: <Widget>[
                           Text(
@@ -635,6 +657,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
               ),
 
               tileColor: Colors.lightGreen,
+              trailing:
+                IconButton(
+                    icon: new Icon(Icons.print_rounded),
+                    onPressed: () => _printLPNLabel(_inventoryDepositRequests[index].newLpn))
             )
         );
     }
@@ -714,6 +740,19 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     }
   }
 
+  void _printLPNLabel(String lpn) {
+    showLoading(context);
+    InventoryService.printLPNLabel(lpn).then(
+            (value) =>
+                Navigator.of(context).pop()
+    ).catchError((err) {
+
+      Navigator.of(context).pop();
+      printLongLogMessage("error while print LPN label, error message: \n ${err.toString()}");
+      showErrorDialog(context, "error while print LPN label, error message: \n ${err.toString()}");
+    });
+  }
+
   void _onAddingLPN() {
 
       // showLoading(context);
@@ -758,7 +797,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     WarehouseLocationService.getWarehouseLocationByName(
         Global.lastLoginRFCode
     ).then((rfLocation) async {
-      await InventoryService.moveInventory(
+      List<Inventory> resultInventories = await InventoryService.moveInventory(
           lpn: inventoryDepositRequest.lpn,
           quantity: inventoryDepositRequest.quantity,
           itemName: inventoryDepositRequest.itemName,
@@ -769,6 +808,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
       _reloadInventoryOnRF();
 
+      inventoryDepositRequest.newLpn = resultInventories[0].lpn;
       inventoryDepositRequest.requestInProcess = false;
       inventoryDepositRequest.requestResult = true;
       inventoryDepositRequest.result = "";

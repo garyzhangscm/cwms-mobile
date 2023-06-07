@@ -306,13 +306,33 @@ class InventoryService {
   }
 
 
-  static Future<void> printLPNLabel(String lpn, String findPrinterByValue) async {
+  static Future<void> printLPNLabel(String lpn, [String findPrinterByValue]) async {
     printLongLogMessage("Start calling printLPNLabel with lpn $lpn");
+    // get the printer for printing LPN
+    String printerName = "";
+
+    if (Global.getLastLoginRF() != null && Global.getLastLoginRF().printerName != null &&
+        Global.getLastLoginRF().printerName.isNotEmpty) {
+      printerName = Global.getLastLoginRF().printerName;
+    }
+    else if (Global.getRFConfiguration.printerName  != null &&
+        Global.getRFConfiguration.printerName.isNotEmpty)  {
+      // if the RF doesn't have the default printer, then check if we can get one from the RF configuration
+      printerName = Global.getRFConfiguration.printerName;
+    }
 
     Dio httpClient = CWMSHttpClient.getDio();
 
+    Map<String, dynamic> queryParameters = new Map<String, dynamic>();
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    if (printerName.isNotEmpty) {
+
+      queryParameters["printerName"] = printerName;
+    }
+
     Response response = await httpClient.post(
-        "/inventory/inventories/${Global.lastLoginCompanyId}/$lpn/lpn-label/ecotech"
+        "/inventory/inventories/${Global.lastLoginCompanyId}/$lpn/lpn-label",
+      queryParameters: queryParameters
     );
 
     printLongLogMessage("get response from printLPNLabel ${response.toString()}");
@@ -323,13 +343,37 @@ class InventoryService {
     String fileName = reportHistory["fileName"];
     printLongLogMessage("start sending printing request with file: $fileName, findPrinterBy: $findPrinterByValue");
 
+
+    queryParameters = new Map<String, dynamic>();
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+
+    if (findPrinterByValue != null) {
+      queryParameters["findPrinterBy"] = findPrinterByValue;
+    }
+    if (printerName.isNotEmpty) {
+
+      queryParameters["printerName"] = printerName;
+    }
+
+
+    printLongLogMessage("will print from ${queryParameters["printerName"]}");
+
     response = await httpClient.post(
         "/resource/report-histories/print/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/LPN_REPORT/$fileName",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id,
-           'findPrinterBy': findPrinterByValue}
+        queryParameters: queryParameters
     );
 
-    printLongLogMessage("get response from LPN Printing request ${response.toString()}");
+    printLongLogMessage("get response from printLPNLabel ${response.toString()}");
+
+    responseString = json.decode(response.toString());
+
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    printLongLogMessage("LPN Label $lpn is printed");
 
   }
 

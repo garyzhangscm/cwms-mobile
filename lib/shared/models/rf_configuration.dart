@@ -24,7 +24,7 @@ class RFConfiguration {
   bool pickToProductionLineInStage;
   bool receiveToStage;
   bool listPickBatchPicking;
-
+  String printerName;
 
 
 

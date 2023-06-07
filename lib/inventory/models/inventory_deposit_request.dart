@@ -24,6 +24,7 @@ class InventoryDepositRequest{
   InventoryDepositRequest() {
 
     lpn = "";
+    newLpn = "";
 
     nextLocation = null;
     nextLocationId = -1;
@@ -48,6 +49,7 @@ class InventoryDepositRequest{
 
   InventoryDepositRequest.fromInventory(Inventory inventory) {
     lpn = inventory.lpn;
+    newLpn = inventory.lpn;
     if (inventory.inventoryMovements != null &&
         inventory.inventoryMovements.isNotEmpty) {
       nextLocation = inventory.inventoryMovements[0].location;
@@ -97,6 +99,7 @@ class InventoryDepositRequest{
   }
 
   String lpn;
+  String newLpn;
 
   int nextLocationId;
   WarehouseLocation nextLocation;

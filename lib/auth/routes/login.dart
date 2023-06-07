@@ -353,6 +353,7 @@ class _LoginPageState extends State<LoginPage> {
         // make sure the rf code is still valid
         bool isRFCodeValid = await
             RFService.valdiateRFCode(selectedWarehouse.id, _rfCodeController.text);
+
         if (!isRFCodeValid) {
 
           print("auto login fail as rf code ${_rfCodeController.text} is not valid");
@@ -395,6 +396,14 @@ class _LoginPageState extends State<LoginPage> {
         Global.lastLoginCompanyId = companyId;
         Global.lastLoginCompanyCode = _companyCodeController.text;
         Global.setLastLoginRFCode(_rfCodeController.text);
+        // setup the RF as we would like to get the default printer that associated with
+        // the RF
+        RFService.getRFByCode(_rfCodeController.text).then((rf) =>
+            Global.setLastLoginRF(rf)
+        ).catchError((err) {
+          printLongLogMessage("error while getting RF from code ${_rfCodeController.text}");
+          printLongLogMessage(err.toString());
+        });
 
         // setup the http client with auth information
         Global.setupHttpClient();

@@ -19,6 +19,7 @@ import 'models/cwms_http_client_wrapper.dart';
 import 'models/cwms_http_config.dart';
 import 'models/cwms_site_information.dart';
 import 'models/profile.dart';
+import 'models/rf.dart';
 
 // 提供四套可选主题色
 const _themes = <MaterialColor>[
@@ -39,6 +40,7 @@ class Global {
   static User autoLoginUser;
 
   static String lastLoginRFCode;
+  static RF lastLoginRF;
 
   static Warehouse currentWarehouse;
   static Warehouse autoLoginWarehouse;
@@ -84,6 +86,7 @@ class Global {
     _initAutoLoginWarehouse();
     _initAutoLoginCompany();
     _initLastLoginRFCode();
+    _initLastLoginRF();
 
     // initial profile
     var _profile = _prefs.getString("profile");
@@ -196,6 +199,18 @@ class Global {
   static _initLastLoginRFCode(){
     lastLoginRFCode = _prefs.getString("last_login_rf_code");
   }
+  static _initLastLoginRF(){
+    var _lastLoginRF = _prefs.getString("last_login_rf");
+    if (_lastLoginRF != null) {
+      try {
+        lastLoginRF = RF.fromJson(jsonDecode(_lastLoginRF));
+      } catch (e) {
+        print(e);
+      }
+    }
+
+  }
+
   static String getLastLoginRFCode(){
     return lastLoginRFCode;
   }
@@ -203,6 +218,14 @@ class Global {
     lastLoginRFCode = rfCode;
 
     _prefs.setString("last_login_rf_code", lastLoginRFCode);
+  }
+  static RF getLastLoginRF(){
+    return lastLoginRF;
+  }
+  static setLastLoginRF(RF rf){
+    rf = lastLoginRF;
+
+    _prefs.setString("last_login_rf", jsonEncode(rf.toJson()));
   }
 
   static Warehouse getAutoLoginWarehouse(){

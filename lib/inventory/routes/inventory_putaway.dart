@@ -228,6 +228,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
               );
               printLongLogMessage("==>> GOT RF location ");
 
+              int totalInventoryQuantity = 0;
               for(Inventory inventory in inventories) {
                 printLongLogMessage("==>> start to move invenotry with id ${inventory.id} lpn ${inventory.lpn}");
 
@@ -235,6 +236,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                       inventoryId: inventory.id,
                       destinationLocation: rfLocation
                   );
+                totalInventoryQuantity += inventory.quantity;
 
                 printLongLogMessage("==>> finish moving invenotry with id ${inventory.id} lpn ${inventory.lpn}");
               }
@@ -245,6 +247,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
               printLongLogMessage("==>> start to reload inventory after adding the lpn ${_lpnController.text}");
               _reloadInventoryOnRF();
               printLongLogMessage("==>> inventory loaded");
+              inventoryDepositRequest.quantity = totalInventoryQuantity;
 
               inventoryDepositRequest.requestInProcess = false;
               inventoryDepositRequest.requestResult = true;
