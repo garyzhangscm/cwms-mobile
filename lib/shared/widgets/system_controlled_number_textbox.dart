@@ -33,6 +33,21 @@ class SystemControllerNumberTextBox extends StatefulWidget {
 
 class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTextBox> {
 
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.focusNode.addListener(() {
+      print("widget.focusNode.hasFocus: ${widget.focusNode.hasFocus}");
+      if (widget.focusNode.hasFocus) {
+        // if we tab out, then add the LPN to the list
+        _showKeyBoard(widget.showKeyboard);
+        // _itemFocusNode.requestFocus();
+
+      }
+    });
+  }
   _generateNextAvailableNumber() {
     SystemControlledNumberService
         .getNextAvailableId(widget.type)
@@ -45,18 +60,45 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
   _clearField() {
 
     widget.controller.clear();
+
+    _showKeyBoard(false);
   }
-  _showKeyBoard() {
-    printLongLogMessage("Start to show keyboard");
+  _changeKeyboardType() {
+
+    _showKeyBoard(!widget.showKeyboard);
+  }
+
+  _showKeyBoard(bool showKeyboard) {
     setState(() {
-      widget.showKeyboard = true;
+      widget.showKeyboard = showKeyboard;
     });
-    // SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+/**
+    widget.focusNode.unfocus();
+    Future.delayed(Duration(milliseconds:1), (){
+      FocusScope.of(context).requestFocus(widget.focusNode);
+    });
+    **/
+    if (widget.showKeyboard) {
+      printLongLogMessage("start to show keyboard");
+      Future.delayed(
+        Duration(),
+            () => SystemChannels.textInput.invokeMethod('TextInput.show'),
+      );
+      // SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+    }
+    else {
+      printLongLogMessage("start to HIDE keyboard");
+      Future.delayed(
+        Duration(),
+            () => SystemChannels.textInput.invokeMethod('TextInput.hide'),
+      );
+      // SystemChannels.textInput.invokeMethod('TextInput.hide');
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
-    // print("system_controlled_number_textbox: widget.showKeyboard: ${widget.showKeyboard}");
     return TextFormField(
               controller: widget.controller,
               validator: widget.validator,
@@ -82,6 +124,13 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
                         onPressed: () => _clearField(),
                         icon: Icon(Icons.close),
                       ),
+                      IconButton(
+                        onPressed: () => _changeKeyboardType(),
+                        icon: Icon(
+                          Icons.keyboard_alt,
+                        ),
+                      ),
+                      /**
                       widget.showKeyboard ?
                           Container() :
                           IconButton(
@@ -90,6 +139,7 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
                               Icons.keyboard_alt,
                             ),
                           ),
+                          **/
                     ],
                   ),
               )

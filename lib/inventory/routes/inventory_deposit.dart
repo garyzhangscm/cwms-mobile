@@ -271,6 +271,10 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                           onPressed: _singleLPNDeposit() ? null : _showLPNDialog,
                           icon: Icon(Icons.list),
                         ),
+                        IconButton(
+                            icon: new Icon(Icons.print),
+                            onPressed: () => _printLPNLabel()
+                        ),
                       ],
                     ),
                   )
@@ -316,6 +320,13 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
              ]
           )
       );
+  }
+
+  void _printLPNLabel() {
+    if (_lpnController.text.isNotEmpty) {
+
+      InventoryService.printLPNLabel(_lpnController.text);
+    }
   }
 
   _clearField() {
