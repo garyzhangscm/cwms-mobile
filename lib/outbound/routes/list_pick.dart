@@ -7,7 +7,6 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
-import 'package:cwms_mobile/outbound/services/bulk_pick.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/services/pick_list.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
@@ -18,7 +17,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../shared/global.dart';
-import '../models/bulk_pick.dart';
 import '../models/pick_list.dart';
 import '../models/pick_mode.dart';
 
