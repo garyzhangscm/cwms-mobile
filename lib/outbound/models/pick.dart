@@ -46,6 +46,7 @@ class Pick{
   Item item;
   int quantity;
   int batchPickQuantity;     // used by the client only when we want to batch pick from the same location.
+  List<Pick> batchedPicks;   // picks from same location with same item and inventory attribute that can be complete together
   int pickedQuantity;
   int warehouseId;
   int inventoryStatusId;

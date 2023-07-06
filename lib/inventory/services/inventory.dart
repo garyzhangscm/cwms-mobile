@@ -108,7 +108,8 @@ class InventoryService {
   ) {
 
     printLongLogMessage("getNextInventoryDepositRequest with inventory list ");
-    inventories.forEach((element) {printLongLogMessage(element.toJson().toString());
+    inventories.forEach((element) {
+      printLongLogMessage(element.toJson().toString());
     });
 
     if (inventories.isEmpty) {

@@ -129,7 +129,7 @@ class _PickByListPageState extends State<PickByListPage> {
                         autofocus: true,
                         focusNode: _pickListNumberFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context).orderNumber,
+                          labelText: CWMSLocalizations.of(context).pickList,
                           hintText: "please input pick list",
                           suffixIcon:
                           Row(
@@ -219,6 +219,7 @@ class _PickByListPageState extends State<PickByListPage> {
   void _clear() {
     _newLPNNumberController.clear();
     _pickListNumberController.clear();
+    _pickListNumberFocusNode.requestFocus();
   }
 
   void _onAddingPickList() async {
@@ -236,7 +237,10 @@ class _PickByListPageState extends State<PickByListPage> {
           await PickListService.acknowledgePickList(_currentPickList.id);
         }
 
+        setState(() {
+        });
         Navigator.of(context).pop();
+        _newLPNNumberFocusNode.requestFocus();
       }
       on WebAPICallException catch(ex) {
 
@@ -273,7 +277,13 @@ class _PickByListPageState extends State<PickByListPage> {
           _currentDestinationLPN = _newLPNNumberController.text;
 
         }
+        else {
 
+          _currentDestinationLPN = _newLPNNumberController.text;
+        }
+
+        setState(() {
+        });
         Navigator.of(context).pop();
       }
       on WebAPICallException catch(ex) {
@@ -299,6 +309,7 @@ class _PickByListPageState extends State<PickByListPage> {
       Map argumentMap = new HashMap();
       argumentMap['pick'] = _currentPick;
       argumentMap['pickMode'] = PickMode.BY_LIST;
+      argumentMap['destinationLPN'] = _currentDestinationLPN;
 
       final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
       if (result == null) {
@@ -334,6 +345,7 @@ class _PickByListPageState extends State<PickByListPage> {
     }
     else {
       showErrorDialog(context, "No more picks left in the list");
+      _clear();
     }
   }
 
@@ -365,13 +377,16 @@ class _PickByListPageState extends State<PickByListPage> {
       // inventory
       _currentPick = _currentPickList.picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity, orElse: () => null);
       if (_currentPick != null) {
-        int batchPickQuantity = 0;
+        _currentPick.batchPickQuantity = 0;
+        _currentPick.batchedPicks = [];
         _currentPickList.picks.forEach((pick) {
           if (pick.quantity > pick.pickedQuantity && PickService.pickInventoryWithSameAttribute(pick, _currentPick)) {
-            batchPickQuantity += (pick.quantity - pick.pickedQuantity);
+            _currentPick.batchPickQuantity += (pick.quantity - pick.pickedQuantity);
+            if (pick.id != _currentPick.id) {
+              _currentPick.batchedPicks.add(pick);
+            }
           }
         });
-        _currentPick.batchPickQuantity = batchPickQuantity;
       }
       return _currentPick;
     }

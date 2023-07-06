@@ -55,6 +55,8 @@ import 'outbound/routes/pick.dart';
 
 import 'package:flutter/rendering.dart';
 
+import 'outbound/routes/pick_by_list.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
@@ -160,7 +162,7 @@ class MyApp extends StatelessWidget {
               "partial_inventory_move":(context) => PartialInventoryMovePage(),
               "work_order_reverse_production":(context) => ReverseProductionPage(),
               "reverse_receiving":(context) => ReverseReceivingPage(),
-              "pick_by_list":(context) => ListPickPage(),
+              "pick_by_list":(context) => PickByListPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

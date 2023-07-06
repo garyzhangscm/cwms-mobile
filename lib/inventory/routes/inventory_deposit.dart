@@ -128,6 +128,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
         inventoryDepositRequest = _getNextInventoryToDeposit();
         _lpnController.text = inventoryDepositRequest.lpn;
+        // see if we will need to
       // _locationController.text = "";
       });
     }
@@ -393,12 +394,53 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   InventoryDepositRequest _getNextInventoryToDeposit([String lpn]) {
 
     printLongLogMessage("_getNextInventoryToDeposit with lpn ${lpn}");
-
+    InventoryDepositRequest inventoryDepositRequest;
     if (lpn != null && lpn.isNotEmpty) {
-      return InventoryService.getNextInventoryDepositRequest(
+      inventoryDepositRequest = InventoryService.getNextInventoryDepositRequest(
           inventoryOnRF.where((inventory) => inventory.lpn == lpn).toList(), true, true);
     }
-    return InventoryService.getNextInventoryDepositRequest(inventoryOnRF, true, true);
+    inventoryDepositRequest = InventoryService.getNextInventoryDepositRequest(inventoryOnRF, true, true);
+    // see if we will need to split the inventory
+    if (inventoryDepositRequest == null) {
+      return null;
+    }
+    List<Inventory> inventorySameLPNDifferentDestinationLocation =
+        inventoryOnRF.where((inventory) {
+          if (inventory.lpn != inventoryDepositRequest.lpn) {
+            // inventory has a different LPN return false;
+            return false;
+          }
+          // make sure the inventory goes to the same destination
+          if (inventoryDepositRequest.nextLocationId == null &&
+              inventory.getNextDepositLocaiton() != null) {
+            return true;
+          }
+          else if (inventoryDepositRequest.nextLocationId != null &&
+              inventory.getNextDepositLocaiton() == null) {
+            return true;
+          }
+          else if (inventoryDepositRequest.nextLocationId != null &&
+              inventory.getNextDepositLocaiton() != null &&
+              inventoryDepositRequest.nextLocationId !=
+                  inventory.getNextDepositLocaiton().id) {
+            return true;
+          }
+          // inventory has the same LPN and same destination
+          return false;
+        });
+    if (inventorySameLPNDifferentDestinationLocation.isEmpty) {
+      // all inventory in the LPN has the same destination
+      printLongLogMessage("all ${inventoryDepositRequest.inventoryIdList.length} inventory in LPN ${inventoryDepositRequest.lpn} has the same destination");
+      return inventoryDepositRequest;
+    }
+    printLongLogMessage("we found ${inventorySameLPNDifferentDestinationLocation.length} inventory out of " +
+        " ${inventoryDepositRequest.inventoryIdList.length} inventory in LPN ${inventoryDepositRequest.lpn} has different destination");
+    // we will ask the user to relabel the inventory that already in the inventory deposit request and then
+    // deposit the relabeled one.
+    return inventoryDepositRequest;
+
+
+
 
   }
 

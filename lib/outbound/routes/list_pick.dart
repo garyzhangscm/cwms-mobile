@@ -20,7 +20,9 @@ import '../../shared/global.dart';
 import '../models/pick_list.dart';
 import '../models/pick_mode.dart';
 
-
+/**
+ * Obsoleted! please use PickByListPage for list pick
+ */
 class ListPickPage extends StatefulWidget{
 
   ListPickPage({Key key}) : super(key: key);

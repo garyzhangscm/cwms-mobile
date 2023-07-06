@@ -49,6 +49,9 @@ class _PickPageState extends State<PickPage> {
 
   List<Inventory>  inventoryOnRF;
 
+  // if pick to a specific destination LPN
+  String _destinationLPN;
+
   @override
   void initState() {
     super.initState();
@@ -57,9 +60,10 @@ class _PickPageState extends State<PickPage> {
     _sourceLocationController.clear();
     _quantityController.clear();
     _lpnController.clear();
+    _destinationLPN = "";
 
 
-    inventoryOnRF = new List<Inventory>();
+    inventoryOnRF = [];
 
     _reloadInventoryOnRF();
 
@@ -99,6 +103,7 @@ class _PickPageState extends State<PickPage> {
     _pickMode = arguments['pickMode'];
 
     _currentPick = arguments['pick'];
+    _destinationLPN  = arguments['destinationLPN'] == null ? "" : arguments['destinationLPN'];
 
   }
 
@@ -199,7 +204,11 @@ class _PickPageState extends State<PickPage> {
                   mainAxisSize: MainAxisSize.min, // added line
                   children: <Widget>[
                     IconButton(
-                      onPressed: () => _lpnController.text = "",
+                      onPressed: () {
+                        _lpnController.clear();
+                        _quantityController.clear();
+                        _lpnControllerFocusNode.requestFocus();
+                      },
                       icon: Icon(Icons.close),
                     ),
                   ],
@@ -407,14 +416,29 @@ class _PickPageState extends State<PickPage> {
     if (inventories.isEmpty) {
       return 0;
     }
-    return inventories.map((inventory) => inventory.quantity).reduce((a, b) => a + b);
+    // over pick is not allowed so only return the pickable quantity
+    int inventoryQuantity = inventories.map((inventory) => inventory.quantity).reduce((a, b) => a + b);
+    int openPickQuanity = _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
+        _currentPick.batchPickQuantity : _currentPick.quantity - _currentPick.pickedQuantity;
+    return inventoryQuantity > openPickQuanity ? openPickQuanity : inventoryQuantity;
   }
 
   void _onPickConfirm(Pick pick, int confirmedQuantity) async {
 
-    // over pick is not allowed at this moment
-    int totalOpenQuantity = _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
-        _currentPick.batchPickQuantity : _currentPick.quantity - _currentPick.pickedQuantity;
+    // add the current pick to the top of the batched pick and
+    // then loop through each batched pick and process accordingly
+    if (pick.batchedPicks == null) {
+      pick.batchedPicks = [pick];
+    }
+    else {
+      pick.batchedPicks.insert(0, pick);
+    }
+
+
+    int totalOpenQuantity =
+        pick.batchedPicks.map((e) => (e.quantity - e.pickedQuantity) > 0 ? e.quantity - e.pickedQuantity : 0)
+            .reduce((a, b) => a + b);
+
     if (confirmedQuantity > totalOpenQuantity) {
       showErrorDialog(context,
         CWMSLocalizations.of(context).overPickNotAllowed);
@@ -422,25 +446,36 @@ class _PickPageState extends State<PickPage> {
     }
 
     showLoading(context);
+    Iterator<Pick> pickIterator = pick.batchedPicks.iterator;
+    Pick currentConfirmedPick;
+    int currentConfirmedPickConfirmedQuantity;
+    while (confirmedQuantity > 0 && pickIterator.moveNext()) {
+      currentConfirmedPick = pickIterator.current;
+      currentConfirmedPickConfirmedQuantity = confirmedQuantity > (currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity) ?
+          currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity : confirmedQuantity;
+      printLongLogMessage("start to confirm pick ${currentConfirmedPick.number} with quantity ${currentConfirmedPickConfirmedQuantity}");
 
-    try {
-      if (pick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
-        printLongLogMessage(
-            "We will confirm the pick with LPN ${_lpnController.text}");
-        await PickService.confirmPick(
-            pick, confirmedQuantity, _lpnController.text);
+      try {
+        if (currentConfirmedPick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
+          printLongLogMessage(
+              "We will confirm the pick with LPN ${_lpnController.text}");
+          await PickService.confirmPick(
+              currentConfirmedPick, currentConfirmedPickConfirmedQuantity, lpn: _lpnController.text,
+              destinationLpn: _destinationLPN);
+        }
+        else {
+          printLongLogMessage("We will NOT confirm the pick with specify the LPN");
+          await PickService.confirmPick(
+              currentConfirmedPick, currentConfirmedPickConfirmedQuantity,
+              destinationLpn: _destinationLPN);
+        }
+        confirmedQuantity = confirmedQuantity - currentConfirmedPickConfirmedQuantity;
       }
-      else {
-        printLongLogMessage("We will confirm the pick with specify the LPN");
-        await PickService.confirmPick(
-            pick, confirmedQuantity);
+      on WebAPICallException catch(ex) {
+        Navigator.of(context).pop();
+        showErrorDialog(context, ex.errMsg());
+        return;
       }
-    }
-    on WebAPICallException catch(ex) {
-
-      Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
-      return;
 
     }
 

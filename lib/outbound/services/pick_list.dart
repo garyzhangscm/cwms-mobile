@@ -102,7 +102,7 @@ class PickListService {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
-    Response response = await httpClient.get(
+    Response response = await httpClient.post(
         "outbound/pick-lists/${id}/acknowledge",
         queryParameters: {
           "warehouseId": Global.currentWarehouse.id
@@ -128,7 +128,7 @@ class PickListService {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
-    Response response = await httpClient.get(
+    Response response = await httpClient.post(
         "outbound/pick-lists/${id}/unacknowledge",
         queryParameters: {
           "warehouseId": Global.currentWarehouse.id

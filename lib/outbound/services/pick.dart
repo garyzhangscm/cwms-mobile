@@ -197,7 +197,8 @@ class PickService {
 
   }
   // Confirm pick, with picking quantity
-  static Future<void> confirmPick(Pick pick, int confirmQuantity, [String lpn, String nextLocationName = "", PickMode pickMode]) async{
+  static Future<void> confirmPick(Pick pick, int confirmQuantity,
+  {String lpn = "", String nextLocationName = "", String destinationLpn = ""}) async{
 
     printLongLogMessage("start to confirm pick ${pick.number}, confirmQuantity: ${confirmQuantity}, lpn: ${lpn}");
 
@@ -221,8 +222,8 @@ class PickService {
       queryParameters["lpn"] = lpn;
 
     }
-    if (pickMode != null) {
-      queryParameters["pickMode"] = pickMode;
+    if (destinationLpn.isNotEmpty) {
+      queryParameters["destinationLpn"] = destinationLpn;
 
     }
 

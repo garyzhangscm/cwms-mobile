@@ -728,8 +728,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
             // Async confirmed the pick to increase the performance
             // await PickService.confirmPick(
             PickService.confirmPick(
-                picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text,
-                inboundStageLocation.name).then((value) {
+                picks[i], (picks[i].quantity - picks[i].pickedQuantity), lpn: _lpnController.text,
+                nextLocationName: inboundStageLocation.name).then((value) {
 
                   showToast("pick confirmed");
             } , onError: (e) {
@@ -742,8 +742,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
             // Async confirmed the pick to increase the performance
             // await PickService.confirmPick(
             PickService.confirmPick(
-                picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text,
-                productionLine.inboundStageLocation.name).then((value) {
+                picks[i], (picks[i].quantity - picks[i].pickedQuantity), lpn: _lpnController.text,
+                nextLocationName: productionLine.inboundStageLocation.name).then((value) {
 
               showToast("pick confirmed");
             } , onError: (e) {
@@ -757,7 +757,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
           // Async confirmed the pick to increase the performance
           // await PickService.confirmPick(
           PickService.confirmPick(
-              picks[i], (picks[i].quantity - picks[i].pickedQuantity), _lpnController.text).then((value) {
+              picks[i], (picks[i].quantity - picks[i].pickedQuantity), lpn: _lpnController.text).then((value) {
 
             showToast("pick confirmed");
           } , onError: (e) {
