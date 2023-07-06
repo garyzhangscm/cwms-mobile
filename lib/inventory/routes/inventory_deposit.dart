@@ -42,6 +42,9 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   FocusNode _lpnControllerFocusNode = FocusNode();
 
 
+  // The user will need to relabel the LPN if there're multiple destination
+  // from the inventory list from the same LPN
+  TextEditingController _relabelLPNController = new TextEditingController();
 
   @override
   void initState() {
@@ -58,22 +61,22 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       }
     });
 
-    _lpnFocusNode.addListener(() {
+    _lpnFocusNode.addListener(() async {
       print("_lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
 
+        inventoryDepositRequest = await _getNextInventoryToDeposit(_lpnController.text);
+        if (inventoryDepositRequest == null) {
+          showErrorDialog(context, "can't find inventory with lpn ${_lpnController.text} to deposit");
+
+        }
+        else {
+          // move focus to the location
+          _locationFocusNode.requestFocus();
+        }
         setState(() {
 
-          inventoryDepositRequest = _getNextInventoryToDeposit(_lpnController.text);
-          if (inventoryDepositRequest == null) {
-            showErrorDialog(context, "can't find inventory with lpn ${_lpnController.text} to deposit");
-
-          }
-          else {
-            // move focus to the location
-            _locationFocusNode.requestFocus();
-          }
         });
 
       }
@@ -124,10 +127,12 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       Navigator.of(context).pop();
     }
     else {
+
+      inventoryDepositRequest = await _getNextInventoryToDeposit();
+      _lpnController.text = inventoryDepositRequest.lpn;
+
       setState(() {
 
-        inventoryDepositRequest = _getNextInventoryToDeposit();
-        _lpnController.text = inventoryDepositRequest.lpn;
         // see if we will need to
       // _locationController.text = "";
       });
@@ -391,7 +396,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       );
   }
 
-  InventoryDepositRequest _getNextInventoryToDeposit([String lpn]) {
+  Future<InventoryDepositRequest> _getNextInventoryToDeposit([String lpn]) async {
 
     printLongLogMessage("_getNextInventoryToDeposit with lpn ${lpn}");
     InventoryDepositRequest inventoryDepositRequest;
@@ -427,7 +432,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
           }
           // inventory has the same LPN and same destination
           return false;
-        });
+        }).toList();
+
     if (inventorySameLPNDifferentDestinationLocation.isEmpty) {
       // all inventory in the LPN has the same destination
       printLongLogMessage("all ${inventoryDepositRequest.inventoryIdList.length} inventory in LPN ${inventoryDepositRequest.lpn} has the same destination");
@@ -437,13 +443,105 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         " ${inventoryDepositRequest.inventoryIdList.length} inventory in LPN ${inventoryDepositRequest.lpn} has different destination");
     // we will ask the user to relabel the inventory that already in the inventory deposit request and then
     // deposit the relabeled one.
+
+    String newLPN = await splitDepositInventory(inventoryDepositRequest);
+
+    inventoryDepositRequest.lpn = newLPN;
     return inventoryDepositRequest;
-
-
 
 
   }
 
+  Future<String> splitDepositInventory(InventoryDepositRequest inventoryDepositRequest) async {
+    // prompt a dialog and ask the user to input a new LPN
+    String newLPN = "";
+    // map of item and quantity that needs to be split
+    Map<String, int> itemQuantityMap = new Map<String, int>();
+    inventoryDepositRequest.inventoryIdList.forEach((inventoryId) {
+      // find the inventory from inventory on the RF
+      Inventory inventory = inventoryOnRF.where((element) => element.id == inventoryId).first;
+      if (inventory != null) {
+        if (itemQuantityMap[inventory.item.name] == null) {
+          itemQuantityMap[inventory.item.name] = inventory.quantity;
+        }
+        else {
+          itemQuantityMap[inventory.item.name] = itemQuantityMap[inventory.item.name] + inventory.quantity;
+        }
+      }
+
+    });
+
+    printLongLogMessage("itemQuantityMap.length: ${itemQuantityMap.length}");
+
+
+    while(newLPN.isEmpty) {
+
+      await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Split'),
+              content:
+              Column(
+                children: [
+                  Text("Please split the following inventory into a new LPN"),
+                  Expanded(
+                    child: ListView.builder(
+                        itemCount: itemQuantityMap.length,
+                        itemBuilder: (BuildContext context, int index) {
+
+                          String itemName = itemQuantityMap.keys.elementAt(index);
+                          return ListTile(
+                              title: Text(itemName + "(quantity: " + itemQuantityMap[itemName].toString() + ")")
+                          );
+                        }),
+                  ),
+                  TextField(
+                    controller: _relabelLPNController,
+                    decoration: InputDecoration(hintText: "New LPN"),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                MaterialButton(
+                  color: Colors.green,
+                  textColor: Colors.white,
+                  child: Text(CWMSLocalizations.of(context).confirm),
+                  onPressed: _relabelLPNController.text.isEmpty ? null :
+                      () async {
+
+                        try {
+                          // make sure it is a valid new LPN
+                          bool validLPN = await InventoryService.validateNewLpn(_relabelLPNController.text);
+                          if (!validLPN) {
+                            newLPN = "";
+                            showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+                          }
+                          else {
+                            String inventoryIds = inventoryDepositRequest.inventoryIdList.join(",");
+                            await InventoryService.relabelInventories(inventoryIds, newLPN, mergeWithExistingInventory: true);
+                            newLPN = _relabelLPNController.text;
+
+                            // relabel is done
+                            Navigator.pop(context);
+
+                          }
+                        }
+                        on WebAPICallException catch(ex) {
+
+                          newLPN = "";
+                          showErrorDialog(context, ex.errMsg());
+                          return;
+
+                        }
+                  },
+                ),
+              ],
+            );
+          });
+    }
+    return newLPN;
+  }
   void _startLPNBarcodeScanner() async  {
     String lpnScanned = await _startBarcodeScanner();
     if (lpnScanned != "-1") {
@@ -532,22 +630,23 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       );
   }
 
-  void _onSelecteInventoryDepositRequest(bool selected, InventoryDepositRequest selectedInventoryDepositRequest) {
+  Future<void> _onSelecteInventoryDepositRequest(bool selected, InventoryDepositRequest selectedInventoryDepositRequest) async {
 
-    setState(() {
-      if (selected) {
-        inventoryDepositRequest = selectedInventoryDepositRequest;
-        print("inventory to be deposit: $inventoryDepositRequest");
-        _lpnController.text = inventoryDepositRequest.lpn;
-        _locationController.text = "";
-        _locationFocusNode.requestFocus();
-      }
-      else {
-        inventoryDepositRequest = _getNextInventoryToDeposit();
-        _lpnController.text = inventoryDepositRequest.lpn;
-        _locationController.text = "";
-        _locationFocusNode.requestFocus();
-      }
+    if (selected) {
+      inventoryDepositRequest = selectedInventoryDepositRequest;
+      print("inventory to be deposit: $inventoryDepositRequest");
+      _lpnController.text = inventoryDepositRequest.lpn;
+      _locationController.text = "";
+      _locationFocusNode.requestFocus();
+    }
+    else {
+      inventoryDepositRequest = await _getNextInventoryToDeposit();
+      _lpnController.text = inventoryDepositRequest.lpn;
+      _locationController.text = "";
+      _locationFocusNode.requestFocus();
+    }
+
+    setState(()  {
     });
 
   }

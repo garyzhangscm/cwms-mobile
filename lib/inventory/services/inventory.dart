@@ -591,10 +591,85 @@ class InventoryService {
     Map<String, dynamic> responseString = json.decode(response.toString());
     printLongLogMessage("get response from findInventory ${response.toString()}");
 
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
     List<Inventory> inventories
     = (responseString["data"] as List)?.map((e) =>
     e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
         ?.toList();
+
+
+    return inventories;
+  }
+
+
+
+  static Future<Inventory> relabelInventory(
+      int inventoryId, String newLPN, {bool mergeWithExistingInventory = true} )  async {
+
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+    Map<String, dynamic> queryParameters = new Map<String, dynamic>();
+
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+
+    queryParameters["newLPN"] = newLPN;
+    queryParameters["mergeWithExistingInventory"] = mergeWithExistingInventory;
+
+    Response response = await httpClient.get(
+        "/inventory/inventories/${inventoryId}/relabel",
+        queryParameters: queryParameters
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage("get response from relabelInventory ${response.toString()}");
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+
+    return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
+  }
+
+
+  static Future<List<Inventory>> relabelInventories(
+      String inventoryIds, String newLPN, {bool mergeWithExistingInventory = true} )  async {
+
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+    Map<String, dynamic> queryParameters = new Map<String, dynamic>();
+
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+
+    queryParameters["ids"] = newLPN;
+    queryParameters["newLPN"] = inventoryIds;
+    queryParameters["mergeWithExistingInventory"] = mergeWithExistingInventory;
+
+    Response response = await httpClient.get(
+        "/inventory/inventories/relabel",
+        queryParameters: queryParameters
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage("get response from relabelInventory ${response.toString()}");
+
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    List<Inventory> inventories
+    = (responseString["data"] as List)?.map((e) =>
+      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+          ?.toList();
 
 
     return inventories;

@@ -43,6 +43,7 @@ class _PickPageState extends State<PickPage> {
 
 
   PickMode _pickMode;
+  String _workNumber;
 
 
   final  _formKey = GlobalKey<FormState>();
@@ -61,6 +62,7 @@ class _PickPageState extends State<PickPage> {
     _quantityController.clear();
     _lpnController.clear();
     _destinationLPN = "";
+    _workNumber = "";
 
 
     inventoryOnRF = [];
@@ -102,8 +104,10 @@ class _PickPageState extends State<PickPage> {
     Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
     _pickMode = arguments['pickMode'];
 
+
     _currentPick = arguments['pick'];
     _destinationLPN  = arguments['destinationLPN'] == null ? "" : arguments['destinationLPN'];
+    _workNumber = arguments['workNumber'] == null || arguments['workNumber'].toString().isEmpty ? _currentPick.number : arguments['workNumber'];
 
   }
 
@@ -118,16 +122,15 @@ class _PickPageState extends State<PickPage> {
       body:
           Column(
             children: <Widget>[
-              buildTwoSectionInformationRow("Work Number:", _getWorkNumber()),
+              buildTwoSectionInformationRow("Work Number:", _workNumber),
               buildTwoSectionInformationRow("Location:", _currentPick.sourceLocation.name),
               _buildLocationInput(context),
               _buildLPNInput(context),
               buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
-              buildTwoSectionInformationRow("Pick Quantity:", _currentPick.quantity.toString()),
               // add the batch pick quantity only if the quantity to be picked is more than the single pick
               _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
                   buildTwoSectionInformationRow("Batch Pick Quantity:", _currentPick.batchPickQuantity.toString()) :
-                  Container(),
+                  buildTwoSectionInformationRow("Pick Quantity:", _currentPick.quantity.toString()),
               buildTwoSectionInformationRow("Picked Quantity:", _currentPick.pickedQuantity.toString()),
               _buildQuantityInput(context),
               _buildButtons(context),
@@ -136,17 +139,7 @@ class _PickPageState extends State<PickPage> {
       endDrawer: MyDrawer(),
     );
   }
-  String _getWorkNumber() {
-    if (_currentPick == null) {
-      return "";
-    }
-    else if (_pickMode == PickMode.SYSTEM_DRIVEN) {
-      return _currentPick.workTask.number;
-    }
-    else {
-      return _currentPick.number;
-    }
-  }
+
 
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(

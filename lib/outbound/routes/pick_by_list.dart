@@ -308,6 +308,7 @@ class _PickByListPageState extends State<PickByListPage> {
       printLongLogMessage("start to pick for ${_currentPick.number} with batch quantity ${_currentPick.batchPickQuantity}");
       Map argumentMap = new HashMap();
       argumentMap['pick'] = _currentPick;
+      argumentMap['workNumber'] = _currentPickList.number;
       argumentMap['pickMode'] = PickMode.BY_LIST;
       argumentMap['destinationLPN'] = _currentDestinationLPN;
 
