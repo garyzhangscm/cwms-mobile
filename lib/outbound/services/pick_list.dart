@@ -94,6 +94,59 @@ class PickListService {
     return PickList.fromJson(responseString["data"]);
 
   }
+
+  static Future<PickList> acknowledgePickList(int id) async{
+
+    printLongLogMessage("start to acknowledge pick list by id $id");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "outbound/pick-lists/${id}/acknowledge",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id
+        }
+    );
+
+    // print("response from confirm pick: $response");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return PickList.fromJson(responseString["data"] as Map<String, dynamic>) ;
+
+  }
+  static Future<PickList> unacknowledgePickList(int id) async{
+
+    printLongLogMessage("start to unacknowledgePickList pick list by id $id");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "outbound/pick-lists/${id}/unacknowledge",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id
+        }
+    );
+
+    // print("response from confirm pick: $response");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return PickList.fromJson(responseString["data"] as Map<String, dynamic>) ;
+
+  }
 }
 
 

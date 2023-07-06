@@ -22,6 +22,12 @@ Pick _$PickFromJson(Map<String, dynamic> json) {
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
+    ..workTaskId = json['workTaskId'] == null
+        ? null
+        : json['workTaskId'] as int
+    ..workTask = json['workTask'] == null
+        ? null
+        : WorkTask.fromJson(json['workTask'] as Map<String, dynamic>)
     ..quantity = json['quantity'] as int
     ..pickedQuantity = json['pickedQuantity'] as int
     ..warehouseId = json['warehouseId'] as int

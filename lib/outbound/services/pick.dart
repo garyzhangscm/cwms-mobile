@@ -10,6 +10,8 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:dio/dio.dart';
 
+import '../models/pick_mode.dart';
+
 class PickService {
   static Future<Pick> getPicksByNumber(String number) async {
     Dio httpClient = CWMSHttpClient.getDio();
@@ -195,7 +197,7 @@ class PickService {
 
   }
   // Confirm pick, with picking quantity
-  static Future<void> confirmPick(Pick pick, int confirmQuantity, [String lpn, String nextLocationName = ""]) async{
+  static Future<void> confirmPick(Pick pick, int confirmQuantity, [String lpn, String nextLocationName = "", PickMode pickMode]) async{
 
     printLongLogMessage("start to confirm pick ${pick.number}, confirmQuantity: ${confirmQuantity}, lpn: ${lpn}");
 
@@ -210,15 +212,27 @@ class PickService {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
+    Map<String, dynamic> queryParameters = new Map<String, dynamic>();
+
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["quantity"] = confirmQuantity;
+    queryParameters["nextLocationName"] = nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName;
+    if (lpn.isNotEmpty) {
+      queryParameters["lpn"] = lpn;
+
+    }
+    if (pickMode != null) {
+      queryParameters["pickMode"] = pickMode;
+
+    }
+
     // pick to RF
     // if the user specify the next location, then pick to the next location
     // otherwise  pick to the RF
     printLongLogMessage("start to pick to ${nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName}");
     Response response = await httpClient.post(
         "outbound/picks/${pick.id}/confirm",
-        queryParameters: {"quantity": confirmQuantity,
-          "nextLocationName": nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName,
-        "lpn": lpn}
+        queryParameters: queryParameters
     );
 
     // print("response from confirm pick: $response");

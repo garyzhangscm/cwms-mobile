@@ -1,6 +1,7 @@
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
+import 'package:cwms_mobile/work/models/work_task.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'pick.g.dart';
@@ -44,6 +45,7 @@ class Pick{
   int itemId;
   Item item;
   int quantity;
+  int batchPickQuantity;     // used by the client only when we want to batch pick from the same location.
   int pickedQuantity;
   int warehouseId;
   int inventoryStatusId;
@@ -54,6 +56,9 @@ class Pick{
   bool confirmLpnFlag;
 
   int skipCount = 0;
+
+  int workTaskId;
+  WorkTask workTask;
 
   String color;
   String productSize;
