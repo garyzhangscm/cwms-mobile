@@ -620,7 +620,7 @@ class InventoryService {
     queryParameters["newLPN"] = newLPN;
     queryParameters["mergeWithExistingInventory"] = mergeWithExistingInventory;
 
-    Response response = await httpClient.get(
+    Response response = await httpClient.post(
         "/inventory/inventories/${inventoryId}/relabel",
         queryParameters: queryParameters
     );
@@ -648,17 +648,17 @@ class InventoryService {
 
     queryParameters["warehouseId"] = Global.currentWarehouse.id;
 
-    queryParameters["ids"] = newLPN;
-    queryParameters["newLPN"] = inventoryIds;
+    queryParameters["ids"] = inventoryIds;
+    queryParameters["newLPN"] = newLPN;
     queryParameters["mergeWithExistingInventory"] = mergeWithExistingInventory;
 
-    Response response = await httpClient.get(
+    Response response = await httpClient.post(
         "/inventory/inventories/relabel",
         queryParameters: queryParameters
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from relabelInventory ${response.toString()}");
+    printLongLogMessage("get response from relabelInventories ${response.toString()}");
 
 
     if (responseString["result"] as int != 0) {

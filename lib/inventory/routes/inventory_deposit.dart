@@ -479,69 +479,91 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       await showDialog(
           context: context,
           builder: (context) {
-            return AlertDialog(
-              title: Text('Split'),
-              content:
-              Column(
-                children: [
-                  Text("Please split the following inventory into a new LPN"),
-                  Expanded(
-                    child: ListView.builder(
-                        itemCount: itemQuantityMap.length,
-                        itemBuilder: (BuildContext context, int index) {
+            return
+                  AlertDialog(
+                    scrollable: true,
+                    title: Text('Split'),
+                    content:
+                      Column(
+                      children: [
+                        Text("Please split the following inventory into a new LPN"),
+                        SizedBox(
+                          height: 100,
+                          child: ListView.builder(
+                              itemCount: itemQuantityMap.length,
+                              itemBuilder: (BuildContext context, int index) {
 
-                          String itemName = itemQuantityMap.keys.elementAt(index);
-                          return ListTile(
-                              title: Text(itemName + "(quantity: " + itemQuantityMap[itemName].toString() + ")")
-                          );
-                        }),
-                  ),
-                  TextField(
-                    controller: _relabelLPNController,
-                    decoration: InputDecoration(hintText: "New LPN"),
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                MaterialButton(
-                  color: Colors.green,
-                  textColor: Colors.white,
-                  child: Text(CWMSLocalizations.of(context).confirm),
-                  onPressed: _relabelLPNController.text.isEmpty ? null :
-                      () async {
+                                String itemName = itemQuantityMap.keys.elementAt(index);
+                                return ListTile(
+                                  title: Text(itemName),
+                                  subtitle: Text("quantity: " + itemQuantityMap[itemName].toString()),
+                                );
+                              }),
+                        ),
+                        TextField(
+                          controller: _relabelLPNController,
+                          decoration: InputDecoration(
+                            hintText: "New LPN",
+                            suffixIcon:
+                              IconButton(
+                                onPressed: () {
+                                  _relabelLPNController.clear();
+                                },
+                                icon: Icon(Icons.close),
+                              ),
+                          ),
+                        ),
+                        ElevatedButton(
+                            onPressed: () async {
+                              showLoading(context);
+                              if (_relabelLPNController.text.isEmpty) {
+                                Navigator.pop(context);
+                                newLPN = "";
+                                return;
+                              }
+                              try {
+                                // make sure it is a valid new LPN
+                                bool validLPN = await InventoryService.validateNewLpn(_relabelLPNController.text);
+                                if (!validLPN) {
+                                  Navigator.pop(context);
+                                  newLPN = "";
+                                  showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+                                  return;
+                                }
+                                else {
+                                  String inventoryIds = inventoryDepositRequest.inventoryIdList.join(",");
+                                  await InventoryService.relabelInventories(inventoryIds, _relabelLPNController.text, mergeWithExistingInventory: true);
 
-                        try {
-                          // make sure it is a valid new LPN
-                          bool validLPN = await InventoryService.validateNewLpn(_relabelLPNController.text);
-                          if (!validLPN) {
-                            newLPN = "";
-                            showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
-                          }
-                          else {
-                            String inventoryIds = inventoryDepositRequest.inventoryIdList.join(",");
-                            await InventoryService.relabelInventories(inventoryIds, newLPN, mergeWithExistingInventory: true);
-                            newLPN = _relabelLPNController.text;
+                                  Navigator.pop(context);
+                                  newLPN = _relabelLPNController.text;
 
-                            // relabel is done
-                            Navigator.pop(context);
+                                  // relabel is done
+                                  Navigator.pop(context);
 
-                          }
-                        }
-                        on WebAPICallException catch(ex) {
+                                }
+                              }
+                              on WebAPICallException catch(ex) {
+                                Navigator.pop(context);
 
-                          newLPN = "";
-                          showErrorDialog(context, ex.errMsg());
-                          return;
+                                newLPN = "";
+                                showErrorDialog(context, ex.errMsg());
+                                return;
 
-                        }
-                  },
-                ),
-              ],
-            );
-          });
+                              }
+                            },
+                            child: Text(CWMSLocalizations
+                                .of(context).confirm),
+                          ),
+
+                      ],
+                    ),
+                  );
+
+         });
     }
     return newLPN;
   }
+
   void _startLPNBarcodeScanner() async  {
     String lpnScanned = await _startBarcodeScanner();
     if (lpnScanned != "-1") {
