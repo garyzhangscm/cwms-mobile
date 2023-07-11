@@ -89,6 +89,59 @@ class BulkPickService {
 
   }
 
+
+  static Future<BulkPick> acknowledgeBulkPick(int id) async{
+
+    printLongLogMessage("start to acknowledge bulk pick by id $id");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "outbound/bulk-picks/${id}/acknowledge",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id
+        }
+    );
+
+    // print("response from confirm pick: $response");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return BulkPick.fromJson(responseString["data"] as Map<String, dynamic>) ;
+
+  }
+  static Future<BulkPick> unacknowledgeBulkPick(int id) async{
+
+    printLongLogMessage("start to unacknowledge bulk pick  by id $id");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "outbound/bulk-picks/${id}/unacknowledge",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id
+        }
+    );
+
+    // print("response from confirm pick: $response");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return BulkPick.fromJson(responseString["data"] as Map<String, dynamic>) ;
+
+  }
 }
 
 

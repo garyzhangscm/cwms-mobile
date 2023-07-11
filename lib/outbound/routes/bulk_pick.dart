@@ -171,7 +171,11 @@ class _BulkPickPageState extends State<BulkPickPage> {
                   mainAxisSize: MainAxisSize.min, // added line
                   children: <Widget>[
                     IconButton(
-                      onPressed: () => _lpnController.text = "",
+                      onPressed: ()  {
+                        _lpnController.clear();
+                        _quantityController.clear();
+                        _lpnControllerFocusNode.requestFocus();
+                      },
                       icon: Icon(Icons.close),
                     ),
                   ],
@@ -318,16 +322,23 @@ class _BulkPickPageState extends State<BulkPickPage> {
     int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
 
     Navigator.of(context).pop();
-    if (pickableQuantity > 0) {
-      // lpn is valid, go to next control
-      _quantityController.text = pickableQuantity.toString();
-      _quantityFocusNode.requestFocus();
-
-    }
-    else {
+    if (pickableQuantity == 0) {
       await showBlockedErrorDialog(context, "lpn " + _lpnController.text + " is not pickable");
       _lpnControllerFocusNode.requestFocus();
       return;
+
+    }
+    else if (pickableQuantity != _currentBulkPick.quantity - _currentBulkPick.pickedQuantity){
+
+      await showBlockedErrorDialog(context, "lpn " + _lpnController.text + "'s quantity is ${pickableQuantity}," +
+          " doesn't match with the picks quantity ${_currentBulkPick.quantity - _currentBulkPick.pickedQuantity}");
+      _lpnControllerFocusNode.requestFocus();
+      return;
+    }
+    else {
+      // lpn is valid, go to next control
+      _quantityController.text = pickableQuantity.toString();
+      _quantityFocusNode.requestFocus();
     }
 
   }
@@ -398,6 +409,35 @@ class _BulkPickPageState extends State<BulkPickPage> {
     }
 
     showLoading(context);
+    List<Inventory> pickableInventory = [];
+    try {
+      pickableInventory = await InventoryService.findPickableInventory(
+        _currentBulkPick.item.id,
+          _currentBulkPick.inventoryStatus.id,
+          lpn: _lpnController.text.isNotEmpty ? _lpnController.text : "",
+          color: _currentBulkPick.color != null &&  _currentBulkPick.color.isNotEmpty ? _currentBulkPick.color : "",
+          productSize: _currentBulkPick.productSize != null && _currentBulkPick.productSize.isNotEmpty ? _currentBulkPick.productSize : "",
+          style: _currentBulkPick.style != null && _currentBulkPick.style.isNotEmpty ? _currentBulkPick.style : "",
+          locationId: _currentBulkPick.sourceLocationId
+      );
+      printLongLogMessage("get ${pickableInventory.length} pickable inventory from lpn ${_lpnController.text.isNotEmpty ? _lpnController.text : ""}");
+    }
+    on WebAPICallException catch(ex) {
+      pickableInventory = [];
+    }
+    if (pickableInventory.isEmpty) {
+
+      Navigator.of(context).pop();
+      if (_lpnController.text.isNotEmpty) {
+
+        showErrorDialog(context, "Can't pick from lpn ${_lpnController.text} ");
+      }
+      else {
+        showErrorDialog(context, "fail to pick. please verify the input");
+      }
+      return;
+    }
+
 
     try {
       if (bulkPick.confirmLpnFlag && _lpnController.text.isNotEmpty) {

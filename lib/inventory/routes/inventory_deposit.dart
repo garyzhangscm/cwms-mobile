@@ -56,7 +56,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     _locationFocusNode.addListener(() {
       if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
-        _onDepositConfirmAsync(inventoryDepositRequest);
+        // _onDepositConfirmAsync(inventoryDepositRequest);
+        _onDepositConfirm(inventoryDepositRequest);
 
       }
     });
@@ -196,7 +197,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                        () {
                          if (_formKey.currentState.validate()) {
                            print("form validation passed");
-                           _onDepositConfirmAsync(inventoryDepositRequest);
+                           // _onDepositConfirmAsync(inventoryDepositRequest);
+                           _onDepositConfirm(inventoryDepositRequest);
                          }
 
                       },
@@ -673,7 +675,6 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   }
 
-/**
   void _onDepositConfirm(InventoryDepositRequest inventoryDepositRequest) async {
 
 
@@ -750,7 +751,6 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
 
   }
-**/
 
   Future<void> _onDepositConfirmAsync(InventoryDepositRequest inventoryDepositRequest,
     {int retryTime = 0}) async {

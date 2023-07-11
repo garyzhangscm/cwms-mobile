@@ -3,5 +3,6 @@ enum PickMode {
   BY_WAVE,
   BY_LIST,
   BY_BATCH,
+  BY_BULK,
   SYSTEM_DRIVEN
 }

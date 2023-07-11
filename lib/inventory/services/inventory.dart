@@ -674,4 +674,6 @@ class InventoryService {
 
     return inventories;
   }
+
+
 }

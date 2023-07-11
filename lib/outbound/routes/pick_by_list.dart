@@ -101,7 +101,7 @@ class _PickByListPageState extends State<PickByListPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).listPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -217,6 +217,13 @@ class _PickByListPageState extends State<PickByListPage> {
 
   }
   void _clear() {
+
+    if (_currentPickList != null) {
+
+      PickListService.unacknowledgePickList(_currentPickList.id);
+      _currentPickList = null;
+    }
+
     _newLPNNumberController.clear();
     _pickListNumberController.clear();
     _pickListNumberFocusNode.requestFocus();
