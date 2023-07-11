@@ -44,6 +44,7 @@ class _PickPageState extends State<PickPage> {
 
   PickMode _pickMode;
   String _workNumber;
+  int _lpnQuantity = 0;
 
 
   final  _formKey = GlobalKey<FormState>();
@@ -63,6 +64,7 @@ class _PickPageState extends State<PickPage> {
     _lpnController.clear();
     _destinationLPN = "";
     _workNumber = "";
+    _lpnQuantity = 0;
 
 
     inventoryOnRF = [];
@@ -132,6 +134,7 @@ class _PickPageState extends State<PickPage> {
                   buildTwoSectionInformationRow("Batch Pick Quantity:", _currentPick.batchPickQuantity.toString()) :
                   buildTwoSectionInformationRow("Pick Quantity:", _currentPick.quantity.toString()),
               buildTwoSectionInformationRow("Picked Quantity:", _currentPick.pickedQuantity.toString()),
+              buildTwoSectionInformationRow("Inventory Quantity:", _lpnQuantity.toString()),
               _buildQuantityInput(context),
               _buildButtons(context),
             ],
@@ -199,6 +202,10 @@ class _PickPageState extends State<PickPage> {
                     IconButton(
                       onPressed: () {
                         _lpnController.clear();
+                        setState(() {
+
+                          _lpnQuantity = 0;
+                        });
                         _quantityController.clear();
                         _lpnControllerFocusNode.requestFocus();
                       },
@@ -410,14 +417,21 @@ class _PickPageState extends State<PickPage> {
       return 0;
     }
     // over pick is not allowed so only return the pickable quantity
-    int inventoryQuantity = inventories.map((inventory) => inventory.quantity).reduce((a, b) => a + b);
+    setState(() {
+      _lpnQuantity = inventories.map((inventory) => inventory.quantity).reduce((a, b) => a + b);
+    });
     int openPickQuanity = _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
         _currentPick.batchPickQuantity : _currentPick.quantity - _currentPick.pickedQuantity;
-    return inventoryQuantity > openPickQuanity ? openPickQuanity : inventoryQuantity;
+    return _lpnQuantity > openPickQuanity ? openPickQuanity : _lpnQuantity;
   }
 
   void _onPickConfirm(Pick pick, int confirmedQuantity) async {
 
+    // save the result into a local variable as the confirmed quantity
+    // will need to be returned.
+    // the confirmedQuantity will be split into multiple picks in case of
+    // batch pick
+    int totalConfirmedQuantity = confirmedQuantity;
     // add the current pick to the top of the batched pick and
     // then loop through each batched pick and process accordingly
     if (pick.batchedPicks == null) {
@@ -472,13 +486,13 @@ class _PickPageState extends State<PickPage> {
 
     }
 
-    print("pick confirmed");
+    print("pick confirmed with total quantity $totalConfirmedQuantity");
 
     Navigator.of(context).pop();
     showToast("pick confirmed");
 
     var pickResult = PickResult.fromJson(
-        {'result': true, 'confirmedQuantity': confirmedQuantity});
+        {'result': true, 'confirmedQuantity': totalConfirmedQuantity});
 
     // refresh the pick on the RF
     // _reloadInventoryOnRF();

@@ -39,7 +39,7 @@ class InventoryDepositRequest{
     multipleInventoryStatusFlag = false;
 
     quantity = 0;
-    inventoryIdList = [];
+    inventoryIdList = {};
 
     requestInProcess = false;
     requestResult = false;
@@ -67,7 +67,7 @@ class InventoryDepositRequest{
     quantity = inventory.quantity;
 
 
-    inventoryIdList = [];
+    inventoryIdList = {};
     inventoryIdList.add(inventory.id);
 
 
@@ -114,7 +114,7 @@ class InventoryDepositRequest{
 
   int quantity;
 
-  List<int> inventoryIdList;
+  Set<int> inventoryIdList;
 
   bool requestInProcess;
   bool requestResult;

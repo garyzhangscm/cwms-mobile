@@ -266,6 +266,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "bulkPick" : MessageLookupByLibrary.simpleMessage("Bulk Pick"),
     "listPick" : MessageLookupByLibrary.simpleMessage("List Pick"),
     "pickList" : MessageLookupByLibrary.simpleMessage("Pick List"),
+    "pick" : MessageLookupByLibrary.simpleMessage("Pick"),
 
 
     'greetingMessage':greetingMessage,

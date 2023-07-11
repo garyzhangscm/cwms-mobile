@@ -271,6 +271,7 @@ class CWMSLocalizations {
   String get bulkPick  => Intl.message("Bulk Pick", name: 'bulkPick');
   String get listPick  => Intl.message("List Pick", name: 'listPick');
   String get pickList  => Intl.message("Pick List", name: 'pickList');
+  String get pick  => Intl.message("Pick", name: 'pick');
 
 
 

@@ -40,6 +40,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   FocusNode _locationFocusNode = FocusNode();
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
+  bool _depositInProcess = false;
 
 
   // The user will need to relabel the LPN if there're multiple destination
@@ -52,11 +53,16 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     print("Start to get inventory on RF");
     inventoryDepositRequest = new InventoryDepositRequest();
     inventoryOnRF = [];
+    _depositInProcess = false;
 
     _locationFocusNode.addListener(() {
-      if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty) {
+      if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty && !_depositInProcess) {
         // if we tab out, then add the LPN to the list
         // _onDepositConfirmAsync(inventoryDepositRequest);
+        setState(() {
+          _depositInProcess = true;
+        });
+        printLongLogMessage("start to deposit LPN when confirm in the location field");
         _onDepositConfirm(inventoryDepositRequest);
 
       }
@@ -192,10 +198,13 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                       foregroundColor: Colors.white,
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
-                    onPressed: inventoryDepositRequest == null || inventoryDepositRequest.lpn == null || inventoryDepositRequest.lpn.isEmpty ?
+                    onPressed: inventoryDepositRequest == null || inventoryDepositRequest.lpn == null || inventoryDepositRequest.lpn.isEmpty || _depositInProcess?
                        null :
                        () {
-                         if (_formKey.currentState.validate()) {
+                         if (_formKey.currentState.validate() && !_depositInProcess) {
+                           setState(() {
+                             _depositInProcess = true;
+                           });
                            print("form validation passed");
                            // _onDepositConfirmAsync(inventoryDepositRequest);
                            _onDepositConfirm(inventoryDepositRequest);
@@ -276,6 +285,10 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                           icon: Icon(Icons.close),
                         ),
                         IconButton(
+                          onPressed: () => _relabelCurrentLPN(),
+                          icon: Icon(Icons.library_books_outlined),
+                        ),
+                        IconButton(
                           onPressed: _singleLPNDeposit() ? null : _showLPNDialog,
                           icon: Icon(Icons.list),
                         ),
@@ -330,6 +343,21 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       );
   }
 
+  _relabelCurrentLPN() {
+
+    if (_lpnController.text.isNotEmpty) {
+
+      setState(() async {
+
+        String newLPN = await splitDepositInventory(inventoryDepositRequest);
+
+        inventoryDepositRequest.lpn = newLPN;
+        _lpnController.text = inventoryDepositRequest.lpn;
+        printLongLogMessage("relabeld current inventory deposit request to lpn ${inventoryDepositRequest.lpn}");
+
+      });
+    }
+  }
   void _printLPNLabel() {
     if (_lpnController.text.isNotEmpty) {
 
@@ -351,7 +379,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     // already has a location , reallocate the inventory
     showLoading(context);
     InventoryService.findInventory(lpn: inventoryDepositRequest.lpn)
-        .then((inventoryList) {
+        .then((inventoryList) async {
           inventoryList.forEach((inventory) async {
             printLongLogMessage("will allocate location for lpn ${inventory.lpn}");
             printLongLogMessage("item family: ${inventory.item.toJson()}");
@@ -360,7 +388,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
           // refresh to show the destination location
           _refreshInventoryOnRF();
-          _getNextInventoryToDeposit(inventoryDepositRequest.lpn);
+          inventoryDepositRequest = await _getNextInventoryToDeposit(inventoryDepositRequest.lpn);
           Navigator.of(context).pop();
 
     });
@@ -457,6 +485,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   Future<String> splitDepositInventory(InventoryDepositRequest inventoryDepositRequest) async {
     // prompt a dialog and ask the user to input a new LPN
     String newLPN = "";
+    _relabelLPNController.clear();
     // map of item and quantity that needs to be split
     Map<String, int> itemQuantityMap = new Map<String, int>();
     inventoryDepositRequest.inventoryIdList.forEach((inventoryId) {
@@ -484,11 +513,11 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
             return
                   AlertDialog(
                     scrollable: true,
-                    title: Text('Split'),
+                    title: Text('Relabel'),
                     content:
                       Column(
                       children: [
-                        Text("Please split the following inventory into a new LPN"),
+                        Text("Please relabel the following inventory into a new LPN"),
                         SizedBox(
                           height: 100,
                           child: ListView.builder(
@@ -498,12 +527,13 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                                 String itemName = itemQuantityMap.keys.elementAt(index);
                                 return ListTile(
                                   title: Text(itemName),
-                                  subtitle: Text("quantity: " + itemQuantityMap[itemName].toString()),
+                                  subtitle: Text("quantity: " + itemQuantityMap[itemName].toString() + ", LPN: " + inventoryDepositRequest.lpn),
                                 );
                               }),
                         ),
-                        TextField(
+                        TextFormField(
                           controller: _relabelLPNController,
+                          autofocus: true,
                           decoration: InputDecoration(
                             hintText: "New LPN",
                             suffixIcon:
@@ -565,6 +595,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     }
     return newLPN;
   }
+
+
 
   void _startLPNBarcodeScanner() async  {
     String lpnScanned = await _startBarcodeScanner();
@@ -711,6 +743,9 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       showErrorDialog(context, ex.errMsg());
       _locationController.selection = TextSelection(baseOffset: 0,
           extentOffset: _locationController.text.length);
+      setState(() {
+        _depositInProcess = false;
+      });
       return;
 
     }
@@ -719,8 +754,9 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
     printLongLogMessage("location ${destinationLocation.name} verified!");
 
+    printLongLogMessage("start to move inventories ${inventoryDepositRequest.inventoryIdList}");
     for (int i = 0; i < inventoryDepositRequest.inventoryIdList.length; i++) {
-      int inventoryId = inventoryDepositRequest.inventoryIdList[i];
+      int inventoryId = inventoryDepositRequest.inventoryIdList.elementAt(i);
 
       try {
 
@@ -735,6 +771,9 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         showErrorDialog(context, ex.errMsg());
         _locationController.selection = TextSelection(baseOffset: 0,
           extentOffset: _locationController.text.length);
+        setState(() {
+          _depositInProcess = false;
+        });
         return;
       }
     }
@@ -746,6 +785,9 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     _locationController.clear();
     _locationFocusNode.requestFocus();
 
+    setState(() {
+      _depositInProcess = false;
+    });
     // let's get next inventory to be deposit
     _refreshInventoryOnRF();
 
@@ -769,8 +811,10 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
       }
 
+      printLongLogMessage("start to move inventory with ids ${inventoryDepositRequest.inventoryIdList}");
+
       for (int i = 0; i < inventoryDepositRequest.inventoryIdList.length; i++) {
-        int inventoryId = inventoryDepositRequest.inventoryIdList[i];
+        int inventoryId = inventoryDepositRequest.inventoryIdList.elementAt(i);
           await InventoryService.moveInventory(
               inventoryId: inventoryId,
               destinationLocation: destinationLocation

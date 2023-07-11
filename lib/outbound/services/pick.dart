@@ -15,10 +15,13 @@ import '../models/pick_mode.dart';
 class PickService {
   static Future<Pick> getPicksByNumber(String number) async {
     Dio httpClient = CWMSHttpClient.getDio();
+    printLongLogMessage("start to find pick by number $number");
+
 
     Response response = await httpClient.get(
         "outbound/picks",
-        queryParameters: {"number": number, "warehouseId": Global.currentWarehouse.id}
+        queryParameters: {
+          "number": number, "warehouseId": Global.currentWarehouse.id}
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());
@@ -286,6 +289,61 @@ class PickService {
     }
     return true;
   }
+
+
+  static Future<Pick> acknowledgePick(int id) async{
+
+    printLongLogMessage("start to acknowledge pick  by id $id");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "outbound/pick/${id}/acknowledge",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id
+        }
+    );
+
+    // print("response from confirm pick: $response");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return Pick.fromJson(responseString["data"] as Map<String, dynamic>) ;
+
+  }
+  static Future<Pick> unacknowledgePick(int id) async{
+
+    printLongLogMessage("start to unacknowledge pick  by id $id");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "outbound/pick/${id}/unacknowledge",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id
+        }
+    );
+
+    // print("response from confirm pick: $response");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return Pick.fromJson(responseString["data"] as Map<String, dynamic>) ;
+
+  }
+
 }
 
 

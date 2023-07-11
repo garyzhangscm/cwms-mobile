@@ -258,6 +258,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "bulkPick" : MessageLookupByLibrary.simpleMessage("组合拣货"),
     "listPick" : MessageLookupByLibrary.simpleMessage("列表拣货"),
     "pickList" : MessageLookupByLibrary.simpleMessage("拣货列表"),
+    "pick" : MessageLookupByLibrary.simpleMessage("拣货"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,
