@@ -1,5 +1,7 @@
 
-import 'package:cwms_mobile/common/models/unit_of_measure.dart';
+import 'package:cwms_mobile/common/models/reason_code.dart';
+import 'package:cwms_mobile/common/models/reason_code_type.dart';
+import 'package:cwms_mobile/common/services/reason_code.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
@@ -62,6 +64,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   bool _readyToConfirm = true; // whether we can confirm the produced inventory
 
 
+  List<ReasonCode> _validReasonCodes;
+  ReasonCode _selectedReasonCode;
+
   // we will force the user to receive by LPN quantity
   bool _forceLPNReceiving = true;
 
@@ -79,11 +84,23 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         .then((value) {
           setState(() {
             _validInventoryStatus = value;
+            _selectedInventoryStatus = InventoryStatusService.getDefaultInventoryStatusForNewInventory(_validInventoryStatus);
+            /**
             if (_validInventoryStatus.length > 0) {
               _selectedInventoryStatus = _validInventoryStatus[0];
             }
+                **/
           });
     });
+
+    ReasonCodeService.getReasonCodes(ReasonCodeType.Inventory_Status.name)
+        .then((value) {
+      setState(() {
+        _validReasonCodes = value;
+        _selectedReasonCode = null;
+      });
+    });
+
 
     quantityFocusNode.requestFocus();
     // default quantity to 1
@@ -193,6 +210,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     },
                   )
               ),
+              _selectedInventoryStatus != null &&
+                  (_selectedInventoryStatus.reasonRequiredWhenProducing == true ||  _selectedInventoryStatus.reasonOptionalWhenProducing) ?
+                  _buildReasonCodeDropdown() : Container(),
               /***
                *
                   buildTwoSectionInputRow(
@@ -374,6 +394,32 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   }
 
+  Widget _buildReasonCodeDropdown() {
+    // Allow the user to choose inventory status
+    return buildTwoSectionInputRow(
+        CWMSLocalizations.of(context).reason,
+        DropdownButton(
+          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+          items: _getReasonCodeItems(),
+          value: _selectedReasonCode,
+          elevation: 1,
+          isExpanded: true,
+          icon: Icon(
+            Icons.list,
+            size: 20,
+          ),
+          onChanged: (T) {
+            //下拉菜单item点击之后的回调
+            setState(() {
+              _selectedReasonCode = T;
+            });
+          },
+        )
+    );
+
+  }
+
+
   String _getLPNUOMName() {
 
     ItemUnitOfMeasure lpnUOM = _getLPNUOM();
@@ -489,6 +535,23 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
 
 
+  List<DropdownMenuItem> _getReasonCodeItems() {
+
+    List<DropdownMenuItem> items = [];
+    if (_validReasonCodes == null || _validReasonCodes.length == 0) {
+      _selectedReasonCode = null;
+      return items;
+    }
+
+    // _selectedInventoryStatus = _validInventoryStatus[0];
+    for (int i = 0; i < _validReasonCodes.length; i++) {
+      items.add(DropdownMenuItem(
+        value: _validReasonCodes[i],
+        child: Text(_validReasonCodes[i].name),
+      ));
+    }
+    return items;
+  }
 
 
   List<DropdownMenuItem> _getInventoryStatusItems() {
@@ -553,7 +616,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     WorkOrderProduceTransaction workOrderProduceTransaction =
         await generateWorkOrderProduceTransaction(
         _lpnController.text, _selectedInventoryStatus,
-        _selectedItemPackageType, int.parse(_quantityController.text)
+        _selectedItemPackageType, int.parse(_quantityController.text),
+            _getReasonCodeForProducingInventory()
     );
 
     Navigator.of(context).pop();
@@ -667,6 +731,18 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       inventoryQuantity = int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity;
     }
 
+    // if the inventory status requires reason, then make sure the user input one
+    if (_selectedInventoryStatus != null && _selectedInventoryStatus.reasonRequiredWhenProducing == true &&
+        _selectedReasonCode == null) {
+
+      showErrorDialog(context, "Reason for the inventory " +
+          (_selectedInventoryStatus != null ? _selectedInventoryStatus.name : "") +
+          " is required, please choose the reason!");
+      // reset ready to confirm flag so the operators can confirm the produce again
+      _readyToConfirm = true;
+      return;
+
+    }
 
     try {
 
@@ -793,9 +869,13 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     WorkOrderProduceTransaction workOrderProduceTransaction =
         generateWorkOrderProduceTransaction(
             lpn, _selectedInventoryStatus,
-            _selectedItemPackageType, inventoryQuantity
+            _selectedItemPackageType, inventoryQuantity,
+            _getReasonCodeForProducingInventory()
         );
 
+    printLongLogMessage("start to save work order produce transaction");
+    printLongLogMessage("===========================================");
+    printLongLogMessage(workOrderProduceTransaction.toJson().toString());
     try {
       await WorkOrderService.saveWorkOrderProduceTransaction(
           workOrderProduceTransaction
@@ -815,6 +895,17 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     _refreshScreenAfterProducing();
 
 
+  }
+
+  ReasonCode _getReasonCodeForProducingInventory() {
+    if (_selectedInventoryStatus != null && (
+        _selectedInventoryStatus.reasonRequiredWhenProducing == true || _selectedInventoryStatus.reasonOptionalWhenProducing
+    )) {
+      return _selectedReasonCode;
+    }
+    else {
+      return null;
+    }
   }
 
   _onWorkOrderProduceMiltipleLPNConfirm(WorkOrder workOrder, int inventoryQuantity,
@@ -924,7 +1015,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         WorkOrderProduceTransaction workOrderProduceTransaction =
             generateWorkOrderProduceTransaction(
                 lpn, _selectedInventoryStatus,
-              _selectedItemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity
+              _selectedItemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity,
+                _getReasonCodeForProducingInventory()
           );
 
         await WorkOrderService.saveWorkOrderProduceTransaction(
@@ -1030,7 +1122,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
   WorkOrderProduceTransaction generateWorkOrderProduceTransaction(
       String lpn, InventoryStatus selectedInventoryStatus,
-      ItemPackageType selectedItemPackageType, int quantity)   {
+      ItemPackageType selectedItemPackageType, int quantity, ReasonCode reasonCode)   {
     WorkOrderProduceTransaction workOrderProduceTransaction = new WorkOrderProduceTransaction();
     workOrderProduceTransaction.workOrder = _currentWorkOrder;
     workOrderProduceTransaction.productionLine = _currentProductionLine;
@@ -1096,7 +1188,16 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     printLongLogMessage("workOrderLineConsumeTransactions.length: ${workOrderLineConsumeTransactions.length}");
     workOrderProduceTransaction.workOrderLineConsumeTransactions =
         workOrderLineConsumeTransactions;
-    
+
+    if (reasonCode != null) {
+      workOrderProduceTransaction.reasonCodeId = reasonCode.id;
+      workOrderProduceTransaction.reasonCode = reasonCode;
+    }
+    else {
+      workOrderProduceTransaction.reasonCodeId = null;
+      workOrderProduceTransaction.reasonCode = null;
+
+    }
     
 
     return workOrderProduceTransaction;

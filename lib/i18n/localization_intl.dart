@@ -273,6 +273,8 @@ class CWMSLocalizations {
   String get pickList  => Intl.message("Pick List", name: 'pickList');
   String get pick  => Intl.message("Pick", name: 'pick');
 
+  String get reason  => Intl.message("Reason", name: 'reason');
+
 
 
 

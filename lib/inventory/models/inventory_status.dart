@@ -21,6 +21,15 @@ class InventoryStatus{
 
   int warehouseId;
 
+  bool availableStatusFlag;
+
+  bool reasonRequiredWhenReceiving;
+  bool reasonRequiredWhenProducing;
+  bool reasonRequiredWhenAdjusting;
+
+  bool reasonOptionalWhenReceiving;
+  bool reasonOptionalWhenProducing;
+  bool reasonOptionalWhenAdjusting;
 
 
 

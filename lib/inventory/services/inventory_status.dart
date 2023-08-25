@@ -116,4 +116,20 @@ class InventoryStatusService {
     return InventoryStatus.fromJson(responseString["data"]);
   }
 
+
+  // get default inventory status for new inventory, from a list of inventory status
+  // 1. available inventory
+  // 2. first inventory status in the list
+  static InventoryStatus getDefaultInventoryStatusForNewInventory(List<InventoryStatus> inventoryStatuses) {
+    if (inventoryStatuses.isEmpty) {
+      return null;
+    }
+    Iterable<InventoryStatus> inventoryStatusIterable = inventoryStatuses.where(((element) => element.availableStatusFlag == true));
+    if (inventoryStatusIterable.isEmpty) {
+      return inventoryStatuses.first;
+    }
+    return inventoryStatusIterable.first;
+
+
+  }
 }

@@ -11,6 +11,13 @@ InventoryStatus _$InventoryStatusFromJson(Map<String, dynamic> json) {
     ..id = json['id'] as int
     ..name = json['name'] as String
     ..description = json['description'] as String
+    ..availableStatusFlag = json['availableStatusFlag'] == null ? false : json['availableStatusFlag'] as bool
+    ..reasonRequiredWhenReceiving = json['reasonRequiredWhenReceiving'] == null ? false : json['reasonRequiredWhenReceiving'] as bool
+    ..reasonRequiredWhenProducing = json['reasonRequiredWhenProducing'] == null ? false : json['reasonRequiredWhenProducing'] as bool
+    ..reasonRequiredWhenAdjusting = json['reasonRequiredWhenAdjusting'] == null ? false : json['reasonRequiredWhenAdjusting'] as bool
+    ..reasonOptionalWhenReceiving = json['reasonOptionalWhenReceiving'] == null ? false : json['reasonOptionalWhenReceiving'] as bool
+    ..reasonOptionalWhenProducing = json['reasonOptionalWhenProducing'] == null ? false : json['reasonOptionalWhenProducing'] as bool
+    ..reasonOptionalWhenAdjusting = json['reasonOptionalWhenAdjusting'] == null ? false : json['reasonOptionalWhenAdjusting'] as bool
     ..warehouseId = json['warehouseId'] as int;
 }
 
@@ -19,4 +26,10 @@ Map<String, dynamic> _$InventoryStatusToJson(InventoryStatus instance) => <Strin
   'name': instance.name,
   'description': instance.description,
   'warehouseId': instance.warehouseId,
+  'reasonRequiredWhenReceiving': instance.reasonRequiredWhenReceiving,
+  'reasonRequiredWhenProducing': instance.reasonRequiredWhenProducing,
+  'reasonRequiredWhenAdjusting': instance.reasonRequiredWhenAdjusting,
+  'reasonOptionalWhenReceiving': instance.reasonOptionalWhenReceiving,
+  'reasonOptionalWhenProducing': instance.reasonOptionalWhenProducing,
+  'reasonOptionalWhenAdjusting': instance.reasonOptionalWhenAdjusting,
 };
