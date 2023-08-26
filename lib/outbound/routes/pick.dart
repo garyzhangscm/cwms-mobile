@@ -103,13 +103,18 @@ class _PickPageState extends State<PickPage> {
   void didChangeDependencies() {
 
     // extract the argument
+    printLongLogMessage("start to get picks and related mode");
     Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
     _pickMode = arguments['pickMode'];
+    printLongLogMessage("_pickMode: $_pickMode");
 
 
     _currentPick = arguments['pick'];
+    printLongLogMessage("_currentPick: ${_currentPick.toJson()}");
     _destinationLPN  = arguments['destinationLPN'] == null ? "" : arguments['destinationLPN'];
+    printLongLogMessage("_destinationLPN: $_destinationLPN");
     _workNumber = arguments['workNumber'] == null || arguments['workNumber'].toString().isEmpty ? _currentPick.number : arguments['workNumber'];
+    printLongLogMessage("_workNumber: $_workNumber");
 
   }
 

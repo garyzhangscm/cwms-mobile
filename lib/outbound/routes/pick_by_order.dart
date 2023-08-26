@@ -384,11 +384,15 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
     if (currentPick != null) {
 
+      // setup the batch picked quantity to be the same as pick quantity
+      // since we are working on a single pick. In the next pick page,
+      // we will use the same logic to handle the batch picking and single pick
+      currentPick.batchPickQuantity = currentPick.quantity - currentPick.pickedQuantity;
       Map argumentMap = new HashMap();
       argumentMap['pick'] = currentPick;
       argumentMap['pickMode'] = PickMode.BY_ORDER;
 
-      final result = await Navigator.of(context).pushNamed("pick", arguments: currentPick);
+      final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
       if (result == null) {
         // if the user click the return button instead of confirming
         // let's do nothing
