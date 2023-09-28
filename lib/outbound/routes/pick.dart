@@ -180,7 +180,7 @@ class _PickPageState extends State<PickPage> {
           :
           Padding(
             padding: EdgeInsets.only(right: 10),
-            child: Text(_currentPick.item.name, textAlign: TextAlign.left ),
+            child: Text(_currentPick.sourceLocation.name, textAlign: TextAlign.left ),
           ),
     );
   }

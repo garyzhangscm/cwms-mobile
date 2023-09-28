@@ -330,7 +330,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                       focusNode: lpnFocusNode,
                       onKey: (event) {
 
-                        if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                        if (event.isKeyPressed(LogicalKeyboardKey.enter) && _readyToConfirm) {
                           // Do something
 
                           setState(() {
@@ -373,10 +373,13 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     return buildSingleButtonRow(context,
       ElevatedButton(
         onPressed: !_readyToConfirm ? null : () {
+
+          _readyToConfirm = false;
           printLongLogMessage("confirm button click!");
           print("1. _formKey.currentState.validate()? ${_formKey.currentState.validate()}");
           if (_formKey.currentState.validate()) {
-
+            _onWorkOrderProduceConfirm();
+/**
             print("1. _readyToConfirm? $_readyToConfirm");
             if (_readyToConfirm == true) {
               _readyToConfirm = false;
@@ -384,6 +387,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               print("1. set _readyToConfirm to false");
               _onWorkOrderProduceConfirm();
             }
+    **/
           }
         },
         child: Text(CWMSLocalizations
@@ -654,6 +658,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // we may come here when the user scan / press
     // enter in the LPN controller. In either case, we will need to make sure
     // the lpn doesn't have focus before we start confirm
+
+
 
     printLongLogMessage("_enterOnLPNController: Start to confirm work order produced inventory, tryTime = $tryTime");
     if (tryTime <= 0) {
