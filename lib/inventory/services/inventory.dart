@@ -287,13 +287,25 @@ class InventoryService {
     printLongLogMessage("will find inventory by lpn $lpn");
     Dio httpClient = CWMSHttpClient.getDio();
 
+
+    Map<String, dynamic> queryParameters = new Map<String, dynamic>();
+
+    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+
+    if (locationName.isNotEmpty) {
+      queryParameters["location"] = locationName;
+    }
+    if (itemName.isNotEmpty) {
+      queryParameters["itemName"] = itemName;
+    }
+    if (lpn.isNotEmpty) {
+      queryParameters["lpn"] = lpn;
+    }
+    queryParameters["includeDetails"] = includeDetails;
+
     Response response = await httpClient.get(
           "/inventory/inventories",
-          queryParameters: {'warehouseId': Global.currentWarehouse.id,
-            'location': locationName,
-            'lpn': lpn,
-            'itemName': itemName,
-          'includeDetails': includeDetails}
+          queryParameters: queryParameters
       );
 
       Map<String, dynamic> responseString = json.decode(response.toString());

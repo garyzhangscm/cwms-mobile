@@ -427,6 +427,13 @@ class _PickPageState extends State<PickPage> {
     });
     int openPickQuanity = _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
         _currentPick.batchPickQuantity : _currentPick.quantity - _currentPick.pickedQuantity;
+
+    printLongLogMessage("validateLPNByQuantity: _currentPick.batchPickQuantity = ${_currentPick.batchPickQuantity}");
+    printLongLogMessage("validateLPNByQuantity: _currentPick.quantity = ${_currentPick.quantity}");
+    printLongLogMessage("validateLPNByQuantity: _currentPick.pickedQuantity = ${_currentPick.pickedQuantity}");
+    printLongLogMessage("validateLPNByQuantity: openPickQuanity = ${openPickQuanity}");
+    printLongLogMessage("validateLPNByQuantity: _lpnQuantity = ${_lpnQuantity}");
+
     return _lpnQuantity > openPickQuanity ? openPickQuanity : _lpnQuantity;
   }
 
