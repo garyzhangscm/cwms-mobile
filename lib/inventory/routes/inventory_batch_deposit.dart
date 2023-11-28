@@ -117,7 +117,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         foregroundColor: Colors.white,
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      onPressed: _depositAll,
+      onPressed: _isThereAvailableInventoryForDeposit() ? _depositAll : null,
       child: Text("Deposit All"),
     );
   }
@@ -127,7 +127,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         foregroundColor: Colors.white,
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      onPressed: _depositSelectedLPN,
+      onPressed: _isThereAvailableInventoryForDeposit() ? _depositSelectedLPN  : null,
       child: Text("Deposit Selected LPN"),
     );
   }
@@ -163,14 +163,26 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
     ).toList();
   }
 
-
   void _depositAll() {
 
     printLongLogMessage("start to deposit all LPNs that is still on the RF");
+    List<InventoryDepositRequest> nonProcessedInventoryDepositRequest =
+      _getAllNonProcessedInventoryDepositRequests();
+
+    if (nonProcessedInventoryDepositRequest.isEmpty) {
+      showErrorToast("No more inventory to be deposit");
+      return;
+    }
+
+
+    _deposit(nonProcessedInventoryDepositRequest);
+
+    // clear the selection
+    _selectedLPNMap.clear();
   }
   Future<void> _depositSelectedLPN() async {
-
-    printLongLogMessage("start to deposit selected LPNs that is still on the RF");
+    printLongLogMessage(
+        "start to deposit selected LPNs that is still on the RF");
     List<InventoryDepositRequest> selectedInventoryDepositRequest =
         _getSelectedInventoryDepositRequests();
 
@@ -179,8 +191,16 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
       return;
     }
 
+
+    _deposit(selectedInventoryDepositRequest);
+
+    // clear the selection
+    _selectedLPNMap.clear();
+  }
+
+  Future<void> _deposit(List<InventoryDepositRequest> inventoryDepositRequests) async {
     List<InventoryDepositRequest> _inventoryDepositRequestWithoutDestination
-        = _getInventoryDepositRequestWithoutDestination(selectedInventoryDepositRequest);
+        = _getInventoryDepositRequestWithoutDestination(inventoryDepositRequests);
 
     if (_inventoryDepositRequestWithoutDestination != null && _inventoryDepositRequestWithoutDestination.isNotEmpty) {
 
@@ -213,7 +233,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
     }
 
     // start to deposit any inventory that already have a destination
-    selectedInventoryDepositRequest.where((inventoryDepositRequest) =>
+    inventoryDepositRequests.where((inventoryDepositRequest) =>
         !_inventoryDepositRequestWithoutDestination.any(
                 (inventoryDepositRequestWithoutDestination) => inventoryDepositRequestWithoutDestination.lpn == inventoryDepositRequest.lpn))
     .forEach((inventoryDepositRequest) {
@@ -313,6 +333,28 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                             ),
                           ]
                       ),
+                      Row(
+                          children: <Widget>[
+                            Text(
+                                CWMSLocalizations.of(context).location + ": ",
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                            Text(
+                                _inventoryDepositRequests[key].currentLocationName,
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                          ]
+                      ),
                     ]
                 ),
               ),
@@ -378,6 +420,28 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                           ),
                           Text(
                               _inventoryDepositRequests[key].quantity.toString(),
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              CWMSLocalizations.of(context).location + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[key].currentLocationName,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -453,13 +517,34 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).nextLocation + ": ",
+                            CWMSLocalizations.of(context).location + ": ",
+                            textScaleFactor: .9,
+                            style: TextStyle(
+                              height: 1.15,
+                              color: Colors.blueGrey[700],
+                              fontSize: 17,
+                            )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[key].currentLocationName,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
                                 color: Colors.blueGrey[700],
                                 fontSize: 17,
                               )
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 26.0),
+                            child:  Text(
+                                CWMSLocalizations.of(context).nextLocation + ": ",
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
                           ),
                           Text(
                               _inventoryDepositRequests[key].nextLocationName,
@@ -474,7 +559,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     ),
                   ]
               ),
-              value: _selectedLPNMap[key],
+              value: _selectedLPNMap.containsKey(key) ? _selectedLPNMap[key] : false,
               onChanged: (bool selected) {
                 setState(() {
                   _selectedLPNMap[key] = selected;
@@ -552,8 +637,25 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   }
 
   List<InventoryDepositRequest> _getSelectedInventoryDepositRequests() {
-    return _inventoryDepositRequests.entries.where((element) => _selectedLPNMap[element.key])
+    return _inventoryDepositRequests.entries.where((element) =>
+              _selectedLPNMap[element.key] && !isRequestProcessed(element.value))
         .map((e) => e.value).toList();
+  }
+  List<InventoryDepositRequest> _getAllNonProcessedInventoryDepositRequests() {
+    return _inventoryDepositRequests.entries.where((element) => !isRequestProcessed(element.value))
+        .map((e) => e.value).toList();
+  }
+
+  // check if there's still inventory waiting for deposit. If not, then we will disable the deposit buttons.
+  bool  _isThereAvailableInventoryForDeposit() {
+    return _inventoryDepositRequests.entries.any((element) => !isRequestProcessed(element.value));
+  }
+
+
+  bool isRequestProcessed(InventoryDepositRequest inventoryDepositRequest) {
+    return inventoryDepositRequest.requestInProcess != false ||
+        inventoryDepositRequest.requestResult != false ||
+        inventoryDepositRequest.result.isNotEmpty;
   }
 
   // check if all the inventory deposit request has destination. If not,
@@ -572,6 +674,8 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   }
 
   Future<WarehouseLocation> _showDestinationLocationDialog(BuildContext context) async {
+    _destinationLocationFieldController.clear();
+
     return showDialog(
         context: context,
         builder: (context) {
@@ -593,15 +697,22 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                   }
                   else {
 
-                    WarehouseLocation destinationLocation = await WarehouseLocationService.getWarehouseLocationByName( _destinationLocationFieldController.text);
-                    if (destinationLocation != null) {
+                    try {
+                      WarehouseLocation destinationLocation =
+                          await WarehouseLocationService.getWarehouseLocationByName( _destinationLocationFieldController.text);
+                      if (destinationLocation != null) {
 
-                      Navigator.pop(context, destinationLocation);
-                    }
-                    else {
+                        Navigator.pop(context, destinationLocation);
+                      }
+                      else {
 
-                      showErrorToast("can't find location with name ${_destinationLocationFieldController.text}");
+                        showErrorToast("can't find location with name ${_destinationLocationFieldController.text}");
+                      }
                     }
+                    on WebAPICallException catch (ex) {
+                      showErrorToast(ex.errMsg());
+                    }
+
                   }
                 }
               ),
@@ -621,6 +732,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
               inventoryId: inventoryId,
               destinationLocation: destinationLocation
           );
+          inventoryDepositRequest.currentLocationName = destinationLocation.name;
         }
         on WebAPICallException catch(ex) {
           return Tuple2<bool, String>(false, ex.errMsg());
@@ -636,6 +748,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
        // we will need to get the destination for the inventory from the inventory itself
       // if there're multiple destination for this LPN
       if (inventoryDepositRequest.multipleNextLocationFlag) {
+        inventoryDepositRequest.currentLocationName = "=== Multiple Locations ===";
         Inventory inventory = inventoryOnRF.firstWhere((inventory) => inventory.id == inventoryId );
         if (inventory != null &&
             inventory.inventoryMovements != null &&
@@ -660,6 +773,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
               inventoryId: inventoryId,
               destinationLocation: inventoryDepositRequest.nextLocation
           );
+          inventoryDepositRequest.currentLocationName = inventoryDepositRequest.nextLocation.name;
         }
         on WebAPICallException catch (ex) {
           return Tuple2<bool, String>(false, ex.errMsg());

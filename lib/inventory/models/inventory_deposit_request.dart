@@ -31,6 +31,8 @@ class InventoryDepositRequest{
     nextLocationName = "";
     multipleNextLocationFlag = false;
 
+    currentLocationName = "";
+
     itemName = "";
     itemDescription = "";
 
@@ -65,6 +67,9 @@ class InventoryDepositRequest{
       nextLocationId = -1;
     }
     multipleNextLocationFlag = false;
+
+
+    currentLocationName = inventory.location?.name;
 
     itemName = inventory.item.name;
     itemDescription = inventory.item.description;
@@ -117,6 +122,10 @@ class InventoryDepositRequest{
       nextLocationId = -1;
       nextLocation = null;
     }
+    if (currentLocationName != inventory.location?.name) {
+
+      nextLocationName = "==MIXED Location==";
+    }
 
     quantity += inventory.quantity;
     inventoryIdList.add(inventory.id);
@@ -132,6 +141,8 @@ class InventoryDepositRequest{
   WarehouseLocation nextLocation;
   String nextLocationName;
   bool multipleNextLocationFlag;
+
+  String currentLocationName;
 
   String itemName;
   String itemDescription;
