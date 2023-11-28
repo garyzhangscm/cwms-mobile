@@ -274,6 +274,12 @@ class CWMSLocalizations {
   String get pick  => Intl.message("Pick", name: 'pick');
 
   String get reason  => Intl.message("Reason", name: 'reason');
+  String get batchDepositInventory  => Intl.message("Batch Deposit", name: 'batchDepositInventory');
+  String get nextLocation  => Intl.message("Next Location", name: 'nextLocation');
+  String get allocateLocation  => Intl.message("Allocate Location", name: 'allocateLocation');
+  String get sortBy  => Intl.message("Sort By", name: 'sortBy');
+
+
 
 
 

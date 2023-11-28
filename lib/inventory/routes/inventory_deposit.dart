@@ -107,6 +107,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   }
   Future<void> _displayInventoryForDeposit() async {
 
+    printLongLogMessage("inventory_deposit / _displayInventoryForDeposit: start to display the ${inventoryOnRF.length} inventory on the RF for deposit");
+
     if (inventoryOnRF.isEmpty) {
       // no inventory on the RF yet
       // return to the previous page
@@ -134,7 +136,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       Navigator.of(context).pop();
     }
     else {
-
+      printLongLogMessage("inventory_deposit / _displayInventoryForDeposit: start to get next deposit inventory");
       inventoryDepositRequest = await _getNextInventoryToDeposit();
       _lpnController.text = inventoryDepositRequest.lpn;
 
@@ -148,7 +150,11 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   void _refreshInventoryOnRF() {
     showLoading(context);
 
+    printLongLogMessage("inventory_deposit / _refreshInventoryOnRF: start to load inventory on the RF");
+
     InventoryService.getInventoryOnCurrentRF().then((value)  async {
+
+      printLongLogMessage("inventory_deposit / _refreshInventoryOnRF: get ${value.length} inventory");
       inventoryOnRF = value;
       Navigator.of(context).pop();
 
@@ -428,9 +434,10 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   Future<InventoryDepositRequest> _getNextInventoryToDeposit([String lpn]) async {
 
-    printLongLogMessage("_getNextInventoryToDeposit with lpn ${lpn}");
+    printLongLogMessage("inventory_deposit / _getNextInventoryToDeposit with lpn ${lpn}");
     InventoryDepositRequest inventoryDepositRequest;
     if (lpn != null && lpn.isNotEmpty) {
+      printLongLogMessage(" inventory_deposit / _getNextInventoryToDeposit: LPN is passed in, will just return this LPN");
       inventoryDepositRequest = InventoryService.getNextInventoryDepositRequest(
           inventoryOnRF.where((inventory) => inventory.lpn == lpn).toList(), true, true);
     }
@@ -439,6 +446,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     if (inventoryDepositRequest == null) {
       return null;
     }
+    printLongLogMessage(" inventory_deposit / _getNextInventoryToDeposit: we are going to deposit LPN ${inventoryDepositRequest.lpn}");
+    printLongLogMessage(" inventory_deposit / _getNextInventoryToDeposit: let's see if we will need to split the LPN due to different destination on the same LPN");
     List<Inventory> inventorySameLPNDifferentDestinationLocation =
         inventoryOnRF.where((inventory) {
           if (inventory.lpn != inventoryDepositRequest.lpn) {
@@ -475,6 +484,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     // deposit the relabeled one.
 
     String newLPN = await splitDepositInventory(inventoryDepositRequest);
+    printLongLogMessage("after split, we will deposit the LPN ${newLPN} first");
 
     inventoryDepositRequest.lpn = newLPN;
     return inventoryDepositRequest;
@@ -487,6 +497,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     String newLPN = "";
     _relabelLPNController.clear();
     // map of item and quantity that needs to be split
+    printLongLogMessage("setup itemQuantityMap with item and quantity");
     Map<String, int> itemQuantityMap = new Map<String, int>();
     inventoryDepositRequest.inventoryIdList.forEach((inventoryId) {
       // find the inventory from inventory on the RF
@@ -710,13 +721,15 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   void _onDepositConfirm(InventoryDepositRequest inventoryDepositRequest) async {
 
 
-    printLongLogMessage("start to deposit invenotry ${inventoryDepositRequest.lpn}");
+    printLongLogMessage("start to deposit inventory ${inventoryDepositRequest.lpn}");
 
     showLoading(context);
     // Let's get the location first
 
     WarehouseLocation destinationLocation;
     try {
+      printLongLogMessage("start to get destination location by name ${_locationController.text}");
+
       destinationLocation =
           await WarehouseLocationService.getWarehouseLocationByName(
               _locationController.text

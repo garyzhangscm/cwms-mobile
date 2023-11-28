@@ -260,6 +260,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "pickList" : MessageLookupByLibrary.simpleMessage("拣货列表"),
     "pick" : MessageLookupByLibrary.simpleMessage("拣货"),
     "reason" : MessageLookupByLibrary.simpleMessage("理由"),
+    "batchDepositInventory" : MessageLookupByLibrary.simpleMessage("批量放置确认"),
+    "nextLocation" : MessageLookupByLibrary.simpleMessage("目标位置"),
+    "allocateLocation" : MessageLookupByLibrary.simpleMessage("分配目标位置"),
+    "sortBy" : MessageLookupByLibrary.simpleMessage("排序"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

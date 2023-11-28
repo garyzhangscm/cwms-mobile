@@ -4,6 +4,7 @@ import 'package:cwms_mobile/inbound/routes/barcode_receiving.dart';
 import 'package:cwms_mobile/inbound/routes/reverse_receiving.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_batch.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_request.dart';
+import 'package:cwms_mobile/inventory/routes/inventory_batch_deposit.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_lost_and_found.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_detail.dart';
 import 'package:cwms_mobile/inventory/routes/item_sampling.dart';
@@ -167,6 +168,7 @@ class MyApp extends StatelessWidget {
               "reverse_receiving":(context) => ReverseReceivingPage(),
               "pick_by_list":(context) => PickByListPage(),
               "pick_by_number":(context) => PickByBatchPage(),
+              "inventory_batch_deposit":(context) => InventoryBatchDepositPage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

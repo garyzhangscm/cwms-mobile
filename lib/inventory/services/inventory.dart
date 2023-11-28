@@ -469,6 +469,7 @@ class InventoryService {
 
   static Future<Inventory> allocateLocation(Inventory inventory) async {
     printLongLogMessage("start to allocate location for lpn ${inventory.lpn}");
+    printLongLogMessage("start to allocate location for lpn ${inventory.toJson()}");
 
     Dio httpClient = CWMSHttpClient.getDio();
 

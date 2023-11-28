@@ -127,7 +127,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
   Widget _buildButtons(BuildContext context) {
 
-    return buildTwoButtonRow(context,
+    return buildThreeButtonRow(context,
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.white,
@@ -151,6 +151,23 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             child: ElevatedButton(
               onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
               child: Text(CWMSLocalizations.of(context).depositInventory),
+            ),
+          ),
+        ),
+        Badge(
+          showBadge: true,
+          padding: EdgeInsets.all(8),
+          badgeColor: Colors.deepPurple,
+          badgeContent: Text(
+            inventoryOnRF.length.toString(),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          child:
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: ElevatedButton(
+              onPressed: inventoryOnRF.length == 0 ? null : _startBatchDeposit,
+              child: Text(CWMSLocalizations.of(context).batchDepositInventory),
             ),
           ),
         )
@@ -336,6 +353,19 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
     _inventoryDepositRequests = [];
   }
 
+  // call the batch deposit form to batch deposit the inventory on the RF
+  Future<void> _startBatchDeposit() async {
+    _timer?.cancel();
+    await Navigator.of(context).pushNamed("inventory_batch_deposit");
+
+    // refresh the inventory on the RF
+    // when we come back from the deposit page, we will refresh
+    // 3 times as the deposit happens async so when we return from
+    // the deposit page, the last deposit may not be actually done yet
+    _reloadInventoryOnRF(refreshCount: 3);
+    _inventoryDepositRequests = [];
+  }
+
 
 
 
@@ -373,9 +403,6 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
   Widget _buildInventoryDepositRequestListTile(BuildContext context, int index) {
 
-    printLongLogMessage("index ${index}");
-    printLongLogMessage("_reversedInventories[index].reverseInProgress: ${_inventoryDepositRequests[index].requestInProcess}");
-    printLongLogMessage("_reversedInventories[index].reverseInProgress: ${_inventoryDepositRequests[index].requestResult}");
 
     if (_inventoryDepositRequests[index].requestInProcess == true) {
       // show loading indicator if the inventory still reverse in progress

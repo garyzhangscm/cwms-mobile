@@ -268,6 +268,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "pickList" : MessageLookupByLibrary.simpleMessage("Pick List"),
     "pick" : MessageLookupByLibrary.simpleMessage("Pick"),
     "reason" : MessageLookupByLibrary.simpleMessage("Reason"),
+    "batchDepositInventory" : MessageLookupByLibrary.simpleMessage("Batch Deposit"),
+    "nextLocation" : MessageLookupByLibrary.simpleMessage("Next Location"),
+    "allocateLocation" : MessageLookupByLibrary.simpleMessage("Allocate Location"),
+    "sortBy" : MessageLookupByLibrary.simpleMessage("Sort By"),
 
 
     'greetingMessage':greetingMessage,
