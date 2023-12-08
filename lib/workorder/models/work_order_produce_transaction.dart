@@ -31,6 +31,7 @@ class WorkOrderProduceTransaction{
   // defective product being produced
   int reasonCodeId;
   ReasonCode reasonCode;
+  String rfCode;
 
 
 

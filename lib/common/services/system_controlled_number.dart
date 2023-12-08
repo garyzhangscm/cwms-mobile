@@ -21,7 +21,9 @@ class SystemControlledNumberService {
     Response response = await httpClient.get(
         "common/system-controlled-number/$type/next",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse.id,
+          "rfCode": Global.getLastLoginRFCode()
+        }
     );
 
     // print("response from receipt: $response");

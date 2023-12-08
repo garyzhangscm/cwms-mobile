@@ -30,6 +30,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
+import '../../shared/global.dart';
+
 
 class WorkOrderProduceInventoryPage extends StatefulWidget{
 
@@ -1132,6 +1134,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     WorkOrderProduceTransaction workOrderProduceTransaction = new WorkOrderProduceTransaction();
     workOrderProduceTransaction.workOrder = _currentWorkOrder;
     workOrderProduceTransaction.productionLine = _currentProductionLine;
+
+    workOrderProduceTransaction.rfCode = Global.getLastLoginRFCode();
 
     workOrderProduceTransaction.workOrderKPITransactions = [];
 

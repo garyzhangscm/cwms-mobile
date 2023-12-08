@@ -355,7 +355,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
       setState(() async {
 
-        String newLPN = await splitDepositInventory(inventoryDepositRequest);
+        String newLPN = await splitDepositInventory(inventoryDepositRequest, true);
 
         inventoryDepositRequest.lpn = newLPN;
         _lpnController.text = inventoryDepositRequest.lpn;
@@ -457,18 +457,29 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
           // make sure the inventory goes to the same destination
           if (inventoryDepositRequest.nextLocationId == null &&
               inventory.getNextDepositLocaiton() != null) {
+            printLongLogMessage(" lpn ${inventoryDepositRequest.lpn}'s next location id is null " +
+                " but current inventory ${inventory.id} / ${inventory.lpn}'s next location is ${inventory.getNextDepositLocaiton().name}, "
+                    " will need to SPLIT");
             return true;
           }
           else if (inventoryDepositRequest.nextLocationId != null &&
               inventory.getNextDepositLocaiton() == null) {
+            printLongLogMessage(" lpn ${inventoryDepositRequest.lpn}'s next location id is NOT null(${inventoryDepositRequest.nextLocationId}) " +
+                " but current inventory ${inventory.id} / ${inventory.lpn}'s next location NULL, "
+                    " will need to SPLIT");
             return true;
           }
           else if (inventoryDepositRequest.nextLocationId != null &&
               inventory.getNextDepositLocaiton() != null &&
               inventoryDepositRequest.nextLocationId !=
                   inventory.getNextDepositLocaiton().id) {
+            printLongLogMessage(" lpn ${inventoryDepositRequest.lpn}'s next location id is ${inventoryDepositRequest.nextLocationId} " +
+                " but current inventory ${inventory.id} / ${inventory.lpn}'s next location ID is ${inventory.getNextDepositLocaiton().id}, "
+                    " will need to SPLIT");
             return true;
           }
+          printLongLogMessage("current inventory ${inventory.id} / ${inventory.lpn} has the same next location as the other inventory in the same LPN ${inventoryDepositRequest.lpn}, "
+                  " no need to SPLIT");
           // inventory has the same LPN and same destination
           return false;
         }).toList();
@@ -483,7 +494,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     // we will ask the user to relabel the inventory that already in the inventory deposit request and then
     // deposit the relabeled one.
 
-    String newLPN = await splitDepositInventory(inventoryDepositRequest);
+    String newLPN = await splitDepositInventory(inventoryDepositRequest, false);
     printLongLogMessage("after split, we will deposit the LPN ${newLPN} first");
 
     inventoryDepositRequest.lpn = newLPN;
@@ -492,7 +503,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   }
 
-  Future<String> splitDepositInventory(InventoryDepositRequest inventoryDepositRequest) async {
+  Future<String> splitDepositInventory(InventoryDepositRequest inventoryDepositRequest, bool allowCancellation) async {
     // prompt a dialog and ask the user to input a new LPN
     String newLPN = "";
     _relabelLPNController.clear();
@@ -524,81 +535,107 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
             return
                   AlertDialog(
                     scrollable: true,
+
                     title: Text('Relabel'),
                     content:
                       Column(
-                      children: [
-                        Text("Please relabel the following inventory into a new LPN"),
-                        SizedBox(
-                          height: 100,
-                          child: ListView.builder(
-                              itemCount: itemQuantityMap.length,
-                              itemBuilder: (BuildContext context, int index) {
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("Please relabel the following inventory into a new LPN"),
+                          SizedBox(
+                            height: 100,
+                            width: MediaQuery.of(context).size.width,
+                            child: ListView.builder(
+                                itemCount: itemQuantityMap.length,
+                                shrinkWrap: true,
+                                itemBuilder: (BuildContext context, int index) {
 
-                                String itemName = itemQuantityMap.keys.elementAt(index);
-                                return ListTile(
-                                  title: Text(itemName),
-                                  subtitle: Text("quantity: " + itemQuantityMap[itemName].toString() + ", LPN: " + inventoryDepositRequest.lpn),
-                                );
-                              }),
-                        ),
-                        TextFormField(
-                          controller: _relabelLPNController,
-                          autofocus: true,
-                          decoration: InputDecoration(
-                            hintText: "New LPN",
-                            suffixIcon:
-                              IconButton(
-                                onPressed: () {
-                                  _relabelLPNController.clear();
-                                },
-                                icon: Icon(Icons.close),
+                                  String itemName = itemQuantityMap.keys.elementAt(index);
+                                  return ListTile(
+                                    title: Text(itemName),
+                                    subtitle: Text("quantity: " + itemQuantityMap[itemName].toString() + ", LPN: " + inventoryDepositRequest.lpn),
+                                  );
+                                }),
+                          ),
+                          TextFormField(
+                            controller: _relabelLPNController,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              hintText: "New LPN",
+                              suffixIcon:
+                                IconButton(
+                                  onPressed: () {
+                                    _relabelLPNController.clear();
+                                  },
+                                  icon: Icon(Icons.close),
+                                ),
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child:
+                                  ElevatedButton(
+                                  onPressed: () async {
+                                    showLoading(context);
+                                    if (_relabelLPNController.text.isEmpty) {
+                                      Navigator.pop(context);
+                                      newLPN = "";
+                                      return;
+                                    }
+                                    try {
+                                      // make sure it is a valid new LPN
+                                      bool validLPN = await InventoryService.validateNewLpn(_relabelLPNController.text);
+                                      if (!validLPN) {
+                                        Navigator.pop(context);
+                                        newLPN = "";
+                                        showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+                                        return;
+                                      }
+                                      else {
+                                        String inventoryIds = inventoryDepositRequest.inventoryIdList.join(",");
+                                        await InventoryService.relabelInventories(inventoryIds, _relabelLPNController.text, mergeWithExistingInventory: true);
+
+                                        Navigator.pop(context);
+                                        newLPN = _relabelLPNController.text;
+
+                                        // relabel is done
+                                        Navigator.pop(context);
+
+                                      }
+                                    }
+                                    on WebAPICallException catch(ex) {
+                                      Navigator.pop(context);
+
+                                      newLPN = "";
+                                      showErrorDialog(context, ex.errMsg());
+                                      return;
+
+                                    }
+                                  },
+                                  child: Text(CWMSLocalizations
+                                      .of(context).confirm),
+                                ),
                               ),
-                          ),
-                        ),
-                        ElevatedButton(
-                            onPressed: () async {
-                              showLoading(context);
-                              if (_relabelLPNController.text.isEmpty) {
-                                Navigator.pop(context);
-                                newLPN = "";
-                                return;
-                              }
-                              try {
-                                // make sure it is a valid new LPN
-                                bool validLPN = await InventoryService.validateNewLpn(_relabelLPNController.text);
-                                if (!validLPN) {
-                                  Navigator.pop(context);
-                                  newLPN = "";
-                                  showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
-                                  return;
-                                }
-                                else {
-                                  String inventoryIds = inventoryDepositRequest.inventoryIdList.join(",");
-                                  await InventoryService.relabelInventories(inventoryIds, _relabelLPNController.text, mergeWithExistingInventory: true);
-
-                                  Navigator.pop(context);
-                                  newLPN = _relabelLPNController.text;
-
-                                  // relabel is done
-                                  Navigator.pop(context);
-
-                                }
-                              }
-                              on WebAPICallException catch(ex) {
-                                Navigator.pop(context);
-
-                                newLPN = "";
-                                showErrorDialog(context, ex.errMsg());
-                                return;
-
-                              }
-                            },
-                            child: Text(CWMSLocalizations
-                                .of(context).confirm),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child:
+                                    ElevatedButton(
+                                      onPressed: allowCancellation ? () {
+                                        // the user cancelled the relabel, we will assigned the
+                                        // new lpn with the original LPN so no relabel will happen
+                                        newLPN = inventoryDepositRequest.lpn;
+                                        Navigator.of(context).pop();
+                                      } : null,
+                                      child: Text(CWMSLocalizations
+                                          .of(context).cancel),
+                                  ),
+                              ),
+                            ],
                           ),
 
-                      ],
+                        ],
                     ),
                   );
 

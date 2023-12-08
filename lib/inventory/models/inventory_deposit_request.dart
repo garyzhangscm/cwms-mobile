@@ -27,7 +27,7 @@ class InventoryDepositRequest{
     newLpn = "";
 
     nextLocation = null;
-    nextLocationId = -1;
+    nextLocationId = null;
     nextLocationName = "";
     multipleNextLocationFlag = false;
 
@@ -64,7 +64,7 @@ class InventoryDepositRequest{
 
       nextLocation = null;
       nextLocationName = "";
-      nextLocationId = -1;
+      nextLocationId = null;
     }
     multipleNextLocationFlag = false;
 
@@ -110,7 +110,7 @@ class InventoryDepositRequest{
 
     // see if we have multiple locations
 
-    int newInventoryNextLocationId = -1;
+    int newInventoryNextLocationId = null;
     if (inventory.inventoryMovements != null &&
         inventory.inventoryMovements.isNotEmpty) {
       newInventoryNextLocationId = nextLocation.id;
@@ -119,7 +119,7 @@ class InventoryDepositRequest{
 
       nextLocationName = "==MIXED Destination==";
       multipleNextLocationFlag = true;
-      nextLocationId = -1;
+      nextLocationId = null;
       nextLocation = null;
     }
     if (currentLocationName != inventory.location?.name) {
