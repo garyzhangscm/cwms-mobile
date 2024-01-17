@@ -329,11 +329,19 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
 
     try {
+      printLongLogMessage("start to get the production line by name ${_productionLineController.text}");
       _scannedProductionLine =
-      await ProductionLineService.getProductionLineByNumber(_productionLineController.text);
+          await ProductionLineService.getProductionLineByNumber(_productionLineController.text, loadDetails : false, loadWorkOrderDetails: false);
 
+      printLongLogMessage("## Production line ${_productionLineController.text} found!");
     }
     on WebAPICallException catch(ex) {
+      Navigator.of(context).pop();
+      showErrorDialog(context, "can't find production line by name ${_productionLineController.text}");
+      return;
+    }
+    if(_scannedProductionLine == null) {
+
       Navigator.of(context).pop();
       showErrorDialog(context, "can't find production line by name ${_productionLineController.text}");
       return;

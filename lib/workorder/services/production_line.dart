@@ -17,13 +17,16 @@ import 'package:dio/dio.dart';
 
 class ProductionLineService {
   // Get all cycle count requests by batch id
-  static Future<ProductionLine> getProductionLineByNumber(String productionLineName) async {
+  static Future<ProductionLine> getProductionLineByNumber(String productionLineName,
+      {bool loadDetails = true, bool loadWorkOrderDetails = true}) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
         "workorder/production-lines",
         queryParameters: {"name": productionLineName,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse.id,
+        'loadDetails' : loadDetails,
+        'loadWorkOrderDetails': loadWorkOrderDetails}
     );
 
     // printLongLogMessage("response from getProductionLineByNumber: $response");
