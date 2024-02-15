@@ -1,17 +1,10 @@
-import 'package:cwms_mobile/exception/WebAPICallException.dart';
+
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
-import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dart';
-import 'package:cwms_mobile/inventory/widgets/inventory_list_item.dart';
-import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
-import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -168,10 +161,10 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
     if (_lpnCaptureRequest.newLPNOnly) {
       showLoading(context);
       try {
-        bool validLpn = await InventoryService.validateNewLpn(_lpnController.text);
-        if (!validLpn) {
+        String errorMessage = await InventoryService.validateNewLpn(_lpnController.text);
+        if (errorMessage.isNotEmpty) {
           Navigator.of(context).pop();
-          showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+          showErrorDialog(context, errorMessage);
           return;
         }
       }

@@ -422,7 +422,7 @@ class InventoryService {
   }
 
 
-  static Future<bool> validateNewLpn(String lpn) async {
+  static Future<String> validateNewLpn(String lpn) async {
     /**
      *
         printLongLogMessage("start to validate new lpn ${lpn}");
@@ -456,11 +456,13 @@ class InventoryService {
 
     printLongLogMessage("validate LPN result: ${response.data}");
     if (response.data != null && response.data.toString().isNotEmpty) {
-      return false;
+      // return error message
+      return response.data.toString();
     }
 
 
-    return true;
+    // return empty string if there's no error
+    return "";
 
 
 

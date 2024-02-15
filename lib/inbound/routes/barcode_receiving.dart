@@ -4,13 +4,10 @@ import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inbound/models/receipt.dart';
 import 'package:cwms_mobile/inbound/models/receipt_line.dart';
 import 'package:cwms_mobile/inbound/services/receipt.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_line_list_item.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_list_item.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
 import 'package:cwms_mobile/inventory/models/item_unit_of_measure.dart';
-import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/item_package_type.dart';
@@ -18,10 +15,8 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/services/qr_code_service.dart';
-import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class BarcodeReceivingPage extends StatefulWidget{
@@ -276,10 +271,10 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     printLongLogMessage("1. _onRecevingSingleLpnConfirm / showLoading");
     // make sure the user input a valid LPN
     try {
-      bool validLpn = await InventoryService.validateNewLpn(lpn);
-      if (!validLpn) {
+      String errorMessage = await InventoryService.validateNewLpn(lpn);
+      if (errorMessage.isNotEmpty) {
         Navigator.of(context).pop();
-        showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+        showErrorDialog(context, errorMessage);
         return;
       }
       printLongLogMessage("LPN ${lpn} passed the validation");

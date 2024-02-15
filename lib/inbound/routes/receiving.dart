@@ -578,10 +578,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
     showLoading(context);
     // make sure the user input a valid LPN
     try {
-      bool validLpn = await InventoryService.validateNewLpn(lpn);
-      if (!validLpn) {
+      String errorMessage = await InventoryService.validateNewLpn(lpn);
+      if (errorMessage.isNotEmpty) {
         Navigator.of(context).pop();
-        showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+        showErrorDialog(context, errorMessage);
         return;
       }
       printLongLogMessage("LPN ${lpn} passed the validation");
@@ -640,7 +640,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
     }
     else if (_selectedItemUnitOfMeasure.quantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
       // we are receiving at some higher level, see how many LPN uom we will need
-      lpnCount = (totalQuantity * _selectedItemUnitOfMeasure.quantity / _selectedItemPackageType.trackingLpnUOM.quantity) as int;
+      printLongLogMessage("totalQuantity: ${totalQuantity}, _selectedItemUnitOfMeasure.quantity: ${_selectedItemUnitOfMeasure.quantity}");
+      printLongLogMessage("_selectedItemPackageType.trackingLpnUOM.quantity: ${_selectedItemPackageType.trackingLpnUOM.quantity}");
+      lpnCount = totalQuantity * _selectedItemUnitOfMeasure.quantity ~/ _selectedItemPackageType.trackingLpnUOM.quantity;
     }
     else{
       // we are receiving at some lower level than the tracking LPN UOM,
@@ -730,10 +732,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
       Iterator<String> lpnIterator = lpnCaptureRequest.capturedLpn.iterator;
       while(lpnIterator.moveNext()) {
 
-        bool validLpn = await InventoryService.validateNewLpn(lpnIterator.current);
-        if (!validLpn) {
+        String errorMessage = await InventoryService.validateNewLpn(lpnIterator.current);
+        if (errorMessage.isNotEmpty) {
           Navigator.of(context).pop();
-          showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+          showErrorDialog(context, errorMessage);
           return;
         }
         printLongLogMessage("LPN ${lpnIterator.current} passed the validation");
@@ -847,11 +849,53 @@ class _ReceivingPageState extends State<ReceivingPage> {
       return;
     }
     ReceiptService.getReceiptByNumber(receiptNumber)
-        .then((receipt) {
-           setState(() {
-             _currentReceipt = receipt;
-          });
+        .then((receipt) async {
+          if (receipt == null) {
+            await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text(CWMSLocalizations.of(context).error),
+                    content: Text("Can't find receipt by number ${receiptNumber}"),
+                    actions: [
+                      ElevatedButton(
+                        child: Text("OK"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      )
+                    ],
+                  );
+                },
+            );
+            // await showErrorDialog(context, "Can't find receipt by number ${receiptNumber}");
+
+            setState(() {
+              _currentReceipt = null;
+              _clearReceiptLineInformation();
+            });
+            _receiptNumberFocusNode.requestFocus();
+          }
+          else {
+
+            if (_currentReceipt != null && _currentReceipt.id != receipt.id) {
+              // the user scan in a new receipt, let's clear all the fields if needed
+              _clearReceiptLineInformation();
+            }
+            setState(() {
+              _currentReceipt = receipt;
+            });
+          }
     });
+  }
+
+  _clearReceiptLineInformation() {
+
+    _currentReceiptLine = new ReceiptLine();
+
+    _itemController.clear();
+    _lpnController.clear();
+    _quantityController.clear();
   }
   _startReceiptBarcodeScanner() async {
     /*

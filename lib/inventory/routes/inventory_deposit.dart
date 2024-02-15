@@ -586,11 +586,11 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                                     }
                                     try {
                                       // make sure it is a valid new LPN
-                                      bool validLPN = await InventoryService.validateNewLpn(_relabelLPNController.text);
-                                      if (!validLPN) {
+                                      String errorMessage = await InventoryService.validateNewLpn(_relabelLPNController.text);
+                                      if (errorMessage.isNotEmpty) {
                                         Navigator.pop(context);
                                         newLPN = "";
-                                        showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+                                        showErrorDialog(context, errorMessage);
                                         return;
                                       }
                                       else {

@@ -773,10 +773,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       showLoading(context);
       // first of all, validate the LPN
       try {
-        bool validLpn = await InventoryService.validateNewLpn(lpn);
-        if (!validLpn) {
+        String errorMessage = await InventoryService.validateNewLpn(lpn);
+        if (errorMessage.isNotEmpty) {
           Navigator.of(context).pop();
-          showErrorDialog(context, "LPN is not valid, please make sure it is a new LPN and follow the right format");
+          showErrorDialog(context, errorMessage);
 
           return;
         }
@@ -856,10 +856,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     // make sure the user input a valid LPN
     try {
-      bool validLpn = await InventoryService.validateNewLpn(lpn);
-      if (!validLpn) {
+      String errorMessage = await InventoryService.validateNewLpn(lpn);
+      if (errorMessage.isNotEmpty) {
         Navigator.of(context).pop();
-        showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+        showErrorDialog(context, errorMessage);
         _lpnControllerFocusNode.requestFocus();
         return;
       }
@@ -989,10 +989,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       Iterator<String> lpnIterator = lpnCaptureRequest.capturedLpn.iterator;
       while(lpnIterator.moveNext()) {
 
-        bool validLpn = await InventoryService.validateNewLpn(lpnIterator.current);
-        if (!validLpn) {
+        String errorMessage = await InventoryService.validateNewLpn(lpnIterator.current);
+        if (errorMessage.isNotEmpty) {
           Navigator.of(context).pop();
-          showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+          showErrorDialog(context, errorMessage);
           return;
         }
         printLongLogMessage("LPN ${lpnIterator.current} passed the validation");

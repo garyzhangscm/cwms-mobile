@@ -275,10 +275,10 @@ class _PickByListPageState extends State<PickByListPage> {
 
         if (inventoryList == null || inventoryList.isEmpty) {
           // OK, this LPN is a new LPN, we will still need to make sure the new LPN has the right format
-          bool validLpn = await InventoryService.validateNewLpn(_newLPNNumberController.text);
-          if (!validLpn) {
+          String errorMessage = await InventoryService.validateNewLpn(_newLPNNumberController.text);
+          if (errorMessage.isNotEmpty) {
             Navigator.of(context).pop();
-            showErrorDialog(context, "LPN is not valid, please make sure it follow the right format");
+            showErrorDialog(context, errorMessage);
             return;
           }
           _currentDestinationLPN = _newLPNNumberController.text;
