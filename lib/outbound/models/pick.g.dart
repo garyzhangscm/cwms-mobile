@@ -38,6 +38,7 @@ Pick _$PickFromJson(Map<String, dynamic> json) {
     ..color = json['color'] as String
     ..productSize = json['productSize'] as String
     ..style = json['style'] as String
+    ..wholeLPNPick = json['wholeLPNPick'] as bool
     ..allocateByReceiptNumber = json['allocateByReceiptNumber'] as String
     ..inventoryStatusId = json['inventoryStatusId'] as int
     ..inventoryStatus = json['inventoryStatus'] == null
@@ -61,6 +62,7 @@ Map<String, dynamic> _$PickToJson(Pick instance) => <String, dynamic>{
   'confirmLocationFlag': instance.confirmLocationFlag,
   'confirmLocationCodeFlag': instance.confirmLocationCodeFlag,
   'confirmLpnFlag': instance.confirmLpnFlag,
+  'wholeLPNPick': instance.wholeLPNPick,
   'color': instance.color,
   'productSize': instance.productSize,
   'style': instance.style,

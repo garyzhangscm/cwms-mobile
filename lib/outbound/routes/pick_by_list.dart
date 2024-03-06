@@ -47,6 +47,13 @@ class _PickByListPageState extends State<PickByListPage> {
 
   PickList _currentPickList;
   String _currentDestinationLPN;
+  // if the list contains partial LPN pick, then we will require the
+  // user to input a new LPN so that the partial LPN picks can pick into
+  // this new LPN
+  bool _requireNewLPN;
+
+  // whether we retain the LPN for a whole LPN pick
+  bool _retainLPNForLPNPick;
 
   Pick _currentPick;
 
@@ -60,6 +67,8 @@ class _PickByListPageState extends State<PickByListPage> {
     _currentPickList = null;
     _currentPick = null;
     _currentDestinationLPN = "";
+    _requireNewLPN = true;
+    _retainLPNForLPNPick = true;
 
     _pickListNumberFocusNode.addListener(() {
       print("_pickListNumberFocusNode.hasFocus: ${_pickListNumberFocusNode.hasFocus}");
@@ -108,6 +117,7 @@ class _PickByListPageState extends State<PickByListPage> {
             children: [
               _buildPickListNumberScanner(context),
               _buildLPNNumberScanner(context),
+              _buildRetainLPNCheckBox(context),
               _buildButtons(context),
             ],
           ),
@@ -115,6 +125,8 @@ class _PickByListPageState extends State<PickByListPage> {
       endDrawer: MyDrawer(),
     );
   }
+
+
 
   Widget _buildPickListNumberScanner(BuildContext context) {
     return
@@ -184,13 +196,44 @@ class _PickByListPageState extends State<PickByListPage> {
       );
 
   }
+
+  Widget _buildRetainLPNCheckBox(BuildContext context) {
+    return
+      Padding(
+          padding: const EdgeInsets.all(16.0),
+          child:
+          Column(
+              children: <Widget>[Row(
+                  children: <Widget>[
+
+                    Checkbox(
+                      value: _retainLPNForLPNPick,
+                      activeColor: Colors.blue, //选中时的颜色
+                      onChanged:(value){
+                        //重新构建页面
+                        setState(() {
+                          _retainLPNForLPNPick=value;
+                        });
+                      },
+
+                    ),
+                    Text("Retain LPN for LPN Pick"),
+
+                  ]
+              ),
+              ]
+          )
+      );
+
+  }
+
   Widget _buildButtons(BuildContext context) {
 
     return Column(
       children: [
         buildTwoButtonRow(context,
             ElevatedButton(
-                onPressed: _currentPickList != null && _currentDestinationLPN.isNotEmpty ? _startPickingForPick : null,
+                onPressed: _currentPickList != null && (!_requireNewLPN || _currentDestinationLPN.isNotEmpty) ? _startPickingForPick : null,
                 child: Text(CWMSLocalizations.of(context).start)
             ),
             Badge(
@@ -243,6 +286,7 @@ class _PickByListPageState extends State<PickByListPage> {
           // acknowledge the pick list so that no one else can work on the same list
           await PickListService.acknowledgePickList(_currentPickList.id);
         }
+        _requireNewLPN = _checkNewLPNRequirement(_currentPickList);
 
         setState(() {
         });
@@ -259,6 +303,14 @@ class _PickByListPageState extends State<PickByListPage> {
 
       }
     }
+  }
+
+  // check if the pick list requires a new LPN
+  // if the pick list contains any non whole LPN pick,
+  // then we will requires a new LPN so that the partail LPN
+  // pick can pick into this new LPN
+  bool _checkNewLPNRequirement(PickList pickList) {
+    return pickList.picks.any((pick) => !pick.wholeLPNPick);
   }
 
   void _onAddingNewLPN() async {

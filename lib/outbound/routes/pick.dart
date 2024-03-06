@@ -53,6 +53,7 @@ class _PickPageState extends State<PickPage> {
 
   // if pick to a specific destination LPN
   String _destinationLPN;
+  bool _retainLPNForLPNPick;
 
   @override
   void initState() {
@@ -113,6 +114,9 @@ class _PickPageState extends State<PickPage> {
     printLongLogMessage("_currentPick: ${_currentPick.toJson()}");
     _destinationLPN  = arguments['destinationLPN'] == null ? "" : arguments['destinationLPN'];
     printLongLogMessage("_destinationLPN: $_destinationLPN");
+    // when pick a LPN in a batch, whether we want to keep the original LPN
+    // or pick into the destination(only if _destinationLPN is passed in)
+    _retainLPNForLPNPick  = arguments['retainLPNForLPNPick'] == null ? true : arguments['retainLPNForLPNPick'] as bool;
     _workNumber = arguments['workNumber'] == null || arguments['workNumber'].toString().isEmpty ? _currentPick.number : arguments['workNumber'];
     printLongLogMessage("_workNumber: $_workNumber");
 
@@ -140,6 +144,7 @@ class _PickPageState extends State<PickPage> {
                   buildTwoSectionInformationRow("Pick Quantity:", _currentPick.quantity.toString()),
               buildTwoSectionInformationRow("Picked Quantity:", _currentPick.pickedQuantity.toString()),
               buildTwoSectionInformationRow("Inventory Quantity:", _lpnQuantity.toString()),
+              _destinationLPN.isEmpty? Container() : buildTwoSectionInformationRow("Destination LPN:", _destinationLPN),
               _buildQuantityInput(context),
               _buildButtons(context),
             ],
@@ -469,6 +474,7 @@ class _PickPageState extends State<PickPage> {
     Pick currentConfirmedPick;
     int currentConfirmedPickConfirmedQuantity;
     while (confirmedQuantity > 0 && pickIterator.moveNext()) {
+      // confirm each pick in the batch only we consume the whole quantity
       currentConfirmedPick = pickIterator.current;
       currentConfirmedPickConfirmedQuantity = confirmedQuantity > (currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity) ?
           currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity : confirmedQuantity;

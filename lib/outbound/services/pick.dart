@@ -201,7 +201,8 @@ class PickService {
   }
   // Confirm pick, with picking quantity
   static Future<void> confirmPick(Pick pick, int confirmQuantity,
-  {String lpn = "", String nextLocationName = "", String destinationLpn = ""}) async{
+  {String lpn = "", String nextLocationName = "", String destinationLpn = "",
+      bool retainLPNForLPNPick = true}) async{
 
     printLongLogMessage("start to confirm pick ${pick.number}, confirmQuantity: ${confirmQuantity}, lpn: ${lpn}");
 
@@ -225,7 +226,13 @@ class PickService {
       queryParameters["lpn"] = lpn;
 
     }
-    if (destinationLpn.isNotEmpty) {
+    // we will pick into a new destination only if
+    // 1. if the pick is a whole LPN pick but the user choose to pick into a new LPN(retainLPNForLPNPick = false)
+    // 2. or the pick is not a whole LPN pick
+    bool pickToNewLPN = !pick.wholeLPNPick || !retainLPNForLPNPick;
+    if (pickToNewLPN && destinationLpn.isNotEmpty) {
+      printLongLogMessage("the pick is a whole LPN pick? ${pick.wholeLPNPick}, user choose to retain LPN? ${retainLPNForLPNPick}");
+      printLongLogMessage("we will pick into a new LPN ${destinationLpn}");
       queryParameters["destinationLpn"] = destinationLpn;
 
     }
