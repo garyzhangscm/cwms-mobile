@@ -37,6 +37,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
   Inventory _lastReceivedInventory;
   Receipt _lastReceivedReceipt;
 
+  TextEditingController _barcodeController = new TextEditingController();
+  FocusNode _barcodeFocusNode = FocusNode();
 
   ProgressDialog pr;
 
@@ -50,6 +52,13 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     _lastReceivedInventory = null;
     _lastReceivedReceipt = null;
 
+    _barcodeFocusNode.addListener(() {
+      print("_barcodeFocusNode.hasFocus: ${_barcodeFocusNode.hasFocus}");
+      if (!_barcodeFocusNode.hasFocus && _barcodeController.text.isNotEmpty) {
+        // if we tab out, then add the LPN to the list
+        _enterOnBarcodeController();
+      }
+    });
 
     _reloadInventoryOnRF();
   }
@@ -85,6 +94,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
                       style: TextStyle(fontWeight: FontWeight.bold))
                 ],
               ),
+              _buildBarcodeTextInput(context),
               _buildButtons(context)
             ],
           ),
@@ -145,6 +155,17 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     );
 
   }
+  Widget _buildBarcodeTextInput(BuildContext context) {
+    return TextFormField(
+        controller: _barcodeController,
+        showCursor: true,
+        // showKeyboard: widget.showKeyboard,
+        autofocus: true,
+        focusNode: _barcodeFocusNode,
+
+
+    );
+  }
   Widget _buildButtons(BuildContext context) {
     return buildTwoButtonRow(
       context,
@@ -175,6 +196,24 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
   }
 
+
+
+  void _enterOnBarcodeController({int tryTime = 10}) async {
+
+    if (_barcodeFocusNode.hasFocus) {
+      printLongLogMessage("barcode controller still have focus, will wait for 100 ms and try again");
+      Future.delayed(const Duration(milliseconds: 100),
+              () => _enterOnBarcodeController(tryTime: tryTime - 1));
+
+      return;
+
+    }
+
+
+    _processBarcode(_barcodeController.text);
+
+  }
+
   // call the deposit form to deposit the inventory on the RF
   Future<void> _startDeposit() async {
     await Navigator.of(context).pushNamed("inventory_deposit");
@@ -183,15 +222,19 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     _reloadInventoryOnRF();
   }
   _showQRCodeView() async {
-
     final result = await Navigator.of(context)
         .pushNamed("qr_code_view");
 
     printLongLogMessage("capture the QR CODE: " + result);
+    _processBarcode(result);
 
-    var parameters = QRCodeService.parseQRCode(result);
+  }
 
-    printLongLogMessage("resutl after parse the code code: \n ${parameters}");
+  _processBarcode(String barcode) async {
+
+    var parameters = QRCodeService.parseQRCode(barcode);
+
+    printLongLogMessage("result after parse the code code: \n ${parameters}");
 
     String receiptIdString = parameters["receiptId"];
     String receiptLineIdString = parameters["receiptLineId"];
@@ -200,6 +243,17 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     String inventoryStatusString = parameters["inventoryStatus"];
     String itemPackageTypeString = parameters["itemPackageType"];
     String lpn = parameters["lpn"];
+    //inventory attribute
+
+    String color = parameters.containsKey("color") ? parameters["color"]:"";
+    String productSize = parameters.containsKey("productSize") ? parameters["productSize"]:"";
+    String style = parameters.containsKey("style") ? parameters["style"]:"";
+
+    String inventoryAttribute1 = parameters.containsKey("inventoryAttribute1") ? parameters["inventoryAttribute1"]:"";
+    String inventoryAttribute2 = parameters.containsKey("inventoryAttribute2") ? parameters["inventoryAttribute2"]:"";
+    String inventoryAttribute3 = parameters.containsKey("inventoryAttribute3") ? parameters["inventoryAttribute3"]:"";
+    String inventoryAttribute4 = parameters.containsKey("inventoryAttribute4") ? parameters["inventoryAttribute4"]:"";
+    String inventoryAttribute5 = parameters.containsKey("inventoryAttribute5") ? parameters["inventoryAttribute5"]:"";
 
     // validate the barcode
     // we will need to pass in either
@@ -253,16 +307,37 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
       return;
     }
 
-    _onRecevingSingleLpnConfirm(receipt, receiptLine, int.parse(quantityString),
-        inventoryStatus, itemPackageType, lpn);
+    printLongLogMessage("start to receive inventory with attribute:");
+    printLongLogMessage("color: $color" );
+    printLongLogMessage("productSize: $productSize" );
+    printLongLogMessage("style: $style" );
+    printLongLogMessage("inventoryAttribute1: $inventoryAttribute1" );
+    printLongLogMessage("inventoryAttribute2: $inventoryAttribute2" );
+    printLongLogMessage("inventoryAttribute3: $inventoryAttribute3" );
+    printLongLogMessage("inventoryAttribute4: $inventoryAttribute4" );
+    printLongLogMessage("inventoryAttribute5: $inventoryAttribute5" );
+    _onReceivingSingleLpnConfirm(receipt, receiptLine, int.parse(quantityString),
+        inventoryStatus, itemPackageType, lpn,
+    color, productSize, style,
+    inventoryAttribute1,
+      inventoryAttribute2,
+      inventoryAttribute3,
+      inventoryAttribute4,
+      inventoryAttribute5);
 
   }
 
-  void _onRecevingSingleLpnConfirm(Receipt receipt,
+  void _onReceivingSingleLpnConfirm(Receipt receipt,
       ReceiptLine receiptLine, int quantity,
       InventoryStatus inventoryStatus,
       ItemPackageType itemPackageType,
-      String lpn) async {
+      String lpn,
+      String color, String productSize, String style,
+      String inventoryAttribute1,
+      String inventoryAttribute2,
+      String inventoryAttribute3,
+      String inventoryAttribute4,
+      String inventoryAttribute5) async {
     // TO-DO:Current we don't support the location code. Will add
     //      it later
 
@@ -290,7 +365,13 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
       Inventory inventory = await ReceiptService.receiveInventory(
           receipt, receiptLine,
           lpn, inventoryStatus,
-          itemPackageType, quantity
+          itemPackageType, quantity,
+          color, productSize, style,
+          inventoryAttribute1,
+          inventoryAttribute2,
+          inventoryAttribute3,
+          inventoryAttribute4,
+          inventoryAttribute5
       );
       qcRequired = inventory.inboundQCRequired;
       printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");

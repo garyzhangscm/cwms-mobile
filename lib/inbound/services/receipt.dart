@@ -10,12 +10,9 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
 import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:dio/dio.dart';
 
@@ -128,7 +125,13 @@ class ReceiptService {
 
   static Future<Inventory> receiveInventory(Receipt receipt, ReceiptLine receiptLine,
       String lpn, InventoryStatus inventoryStatus,
-      ItemPackageType itemPackageType, int quantity) async {
+      ItemPackageType itemPackageType, int quantity,
+        String color, String productSize, String style,
+        String inventoryAttribute1,
+        String inventoryAttribute2,
+        String inventoryAttribute3,
+        String inventoryAttribute4,
+        String inventoryAttribute5 ) async {
 
     printLongLogMessage("start to receiving inventory from receiptLine: ${receiptLine.item.toJson()}");
     if (lpn.isEmpty) {
@@ -137,7 +140,13 @@ class ReceiptService {
 
     Inventory inventory = await _generateReceivedInventory(
       receipt, receiptLine, lpn, inventoryStatus,
-      itemPackageType, quantity
+      itemPackageType, quantity,
+        color, productSize, style,
+        inventoryAttribute1,
+        inventoryAttribute2,
+        inventoryAttribute3,
+        inventoryAttribute4,
+        inventoryAttribute5
     );
 
     // send the receiving request to the server
@@ -169,7 +178,13 @@ class ReceiptService {
 
   static Future<Inventory> _generateReceivedInventory(Receipt receipt, ReceiptLine receiptLine,
       String lpn, InventoryStatus inventoryStatus,
-      ItemPackageType itemPackageType, int quantity) async {
+      ItemPackageType itemPackageType, int quantity,
+      String color, String productSize, String style,
+      String inventoryAttribute1,
+      String inventoryAttribute2,
+      String inventoryAttribute3,
+      String inventoryAttribute4,
+      String inventoryAttribute5 ) async {
 
     Inventory inventory = new Inventory();
     inventory.lpn = lpn;
@@ -187,6 +202,14 @@ class ReceiptService {
     inventory.receiptId = receipt.id;
     inventory.receiptLineId = receiptLine.id;
     inventory.inventoryMovements = [];
+    inventory.color = color;
+    inventory.productSize = productSize;
+    inventory.style = style;
+    inventory.attribute1 = inventoryAttribute1;
+    inventory.attribute2 = inventoryAttribute2;
+    inventory.attribute3 = inventoryAttribute3;
+    inventory.attribute4 = inventoryAttribute4;
+    inventory.attribute5 = inventoryAttribute5;
     return inventory;
   }
 
@@ -231,7 +254,9 @@ class ReceiptService {
     List<Inventory> inventoryList = [];
     await lpnCaptureRequest.capturedLpn.forEach((element) async {
       Inventory inventory = await _generateReceivedInventory(receipt, receiptLine,
-          element, inventoryStatus, itemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity);
+          element, inventoryStatus, itemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity,
+          "", "", "",
+          "", "", "","", "");
     });
 
     return inventoryList;

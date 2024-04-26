@@ -597,7 +597,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
       Inventory inventory = await ReceiptService.receiveInventory(
           _currentReceipt, _currentReceiptLine,
           _lpnController.text, _selectedInventoryStatus,
-          _selectedItemPackageType, int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity
+          _selectedItemPackageType, int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity,
+        "", "", "",
+        "", "", "","", ""
       );
       qcRequired = inventory.inboundQCRequired;
       printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
@@ -765,7 +767,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
         Inventory inventory = await ReceiptService.receiveInventory(
             _currentReceipt, _currentReceiptLine,
             lpn, _selectedInventoryStatus,
-            _selectedItemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity
+            _selectedItemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity,
+            "", "", "",
+            "", "", "","", ""
         );
         if (inventory.inboundQCRequired == true) {
           // for any inventory that needs qc, let's allocate the location automatically

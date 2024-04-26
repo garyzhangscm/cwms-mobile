@@ -12,6 +12,14 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
     ..lpn = json['lpn'] as String
     ..locationId = json['locationId'] as int
     ..virtual = json['virtual'] as bool
+    ..color = json['color']  == null ? null : json['color'] as String
+    ..productSize = json['productSize']  == null ? null : json['productSize'] as String
+    ..style = json['style']  == null ? null : json['style'] as String
+    ..attribute1 = json['attribute1']  == null ? null : json['attribute1'] as String
+    ..attribute2 = json['attribute2']  == null ? null : json['attribute2'] as String
+    ..attribute3 = json['attribute3']  == null ? null : json['attribute3'] as String
+    ..attribute4 = json['attribute4']  == null ? null : json['attribute4'] as String
+    ..attribute5 = json['attribute5']  == null ? null : json['attribute5'] as String
     ..location = json['location'] == null
         ? null
         : WarehouseLocation.fromJson(json['location'] as Map<String, dynamic>)
@@ -76,5 +84,14 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'warehouse': instance.warehouse,
       'warehouseId': instance.warehouseId,
       'inventoryMovements': instance.inventoryMovements,
-      'inboundQCRequired': instance.inboundQCRequired
-    };
+      'inboundQCRequired': instance.inboundQCRequired,
+      'color': instance.color,
+      'productSize;': instance.productSize,
+      'style': instance.style,
+      'attribute1': instance.attribute1,
+      'attribute2': instance.attribute2,
+      'attribute3': instance.attribute3,
+      'attribute4': instance.attribute4,
+      'attribute5': instance.attribute5
+
+};

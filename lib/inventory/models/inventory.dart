@@ -62,6 +62,16 @@ class Inventory{
 
   Client client;
 
+  String color;
+  String productSize;
+  String style;
+  String attribute1;
+  String attribute2;
+  String attribute3;
+  String attribute4;
+  String attribute5;
+
+
   WarehouseLocation getNextDepositLocaiton() {
     if (inventoryMovements == null || inventoryMovements.isEmpty) {
       return null;
