@@ -53,7 +53,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     _lastReceivedReceipt = null;
 
     _barcodeFocusNode.addListener(() {
-      print("_barcodeFocusNode.hasFocus: ${_barcodeFocusNode.hasFocus}");
+      printLongLogMessage("_barcodeFocusNode.hasFocus: ${_barcodeFocusNode.hasFocus}");
       if (!_barcodeFocusNode.hasFocus && _barcodeController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
         _enterOnBarcodeController();
@@ -200,6 +200,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
   void _enterOnBarcodeController({int tryTime = 10}) async {
 
+
     if (_barcodeFocusNode.hasFocus) {
       printLongLogMessage("barcode controller still have focus, will wait for 100 ms and try again");
       Future.delayed(const Duration(milliseconds: 100),
@@ -209,8 +210,15 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
     }
 
+    String barcode = _barcodeController.text.trim();
 
-    _processBarcode(_barcodeController.text);
+    bool result = await _processBarcode(barcode);
+
+    if (result == true) {
+      _barcodeController.clear();
+    }
+
+    _barcodeFocusNode.requestFocus();
 
   }
 
@@ -222,19 +230,38 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     _reloadInventoryOnRF();
   }
   _showQRCodeView() async {
-    final result = await Navigator.of(context)
+    final barcode = await Navigator.of(context)
         .pushNamed("qr_code_view");
 
-    printLongLogMessage("capture the QR CODE: " + result);
-    _processBarcode(result);
+    bool result = await _processBarcode(barcode);
 
+    if (result == true) {
+      _barcodeController.clear();
+      _barcodeFocusNode.requestFocus();
+    }
   }
 
-  _processBarcode(String barcode) async {
+  Future<bool> _processBarcode(String barcode) async {
 
-    var parameters = QRCodeService.parseQRCode(barcode);
+    var parameters =  new Map();
 
-    printLongLogMessage("result after parse the code code: \n ${parameters}");
+    try {
+
+      parameters = QRCodeService.parseQRCode(barcode);
+      if (parameters.isEmpty) {
+        Navigator.of(context).pop();
+        await showBlockedErrorDialog(context, "Can't parse the barcode " + barcode);
+        return false;
+      }
+    }
+    on Exception catch(ex) {
+
+      Navigator.of(context).pop();
+      await showBlockedErrorDialog(context, "Can't parse the barcode " + barcode);
+      return false;
+
+    }
+
 
     String receiptIdString = parameters["receiptId"];
     String receiptLineIdString = parameters["receiptLineId"];
@@ -263,8 +290,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
         quantityString == null || quantityString.isEmpty ||
         lpn == null || lpn.isEmpty) {
 
-      showErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
-      return;
+      await showBlockedErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
+      return false;
     }
     showLoading(context);
 
@@ -279,8 +306,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     if (inventoryStatus == null) {
 
       Navigator.of(context).pop();
-      showErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
-      return;
+      await showBlockedErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
+      return false;
     }
 
     Receipt receipt = await ReceiptService.getReceiptById(int.parse(receiptIdString));
@@ -303,8 +330,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     if (itemPackageType == null) {
 
       Navigator.of(context).pop();
-      showErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
-      return;
+      await showBlockedErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
+      return false;
     }
 
     printLongLogMessage("start to receive inventory with attribute:");
@@ -316,7 +343,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     printLongLogMessage("inventoryAttribute3: $inventoryAttribute3" );
     printLongLogMessage("inventoryAttribute4: $inventoryAttribute4" );
     printLongLogMessage("inventoryAttribute5: $inventoryAttribute5" );
-    _onReceivingSingleLpnConfirm(receipt, receiptLine, int.parse(quantityString),
+    return _onReceivingSingleLpnConfirm(receipt, receiptLine, int.parse(quantityString),
         inventoryStatus, itemPackageType, lpn,
     color, productSize, style,
     inventoryAttribute1,
@@ -327,7 +354,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
   }
 
-  void _onReceivingSingleLpnConfirm(Receipt receipt,
+  Future<bool> _onReceivingSingleLpnConfirm(Receipt receipt,
       ReceiptLine receiptLine, int quantity,
       InventoryStatus inventoryStatus,
       ItemPackageType itemPackageType,
@@ -343,22 +370,20 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
     bool qcRequired = false;
 
-    printLongLogMessage("1. _onRecevingSingleLpnConfirm / showLoading");
     // make sure the user input a valid LPN
     try {
       String errorMessage = await InventoryService.validateNewLpn(lpn);
       if (errorMessage.isNotEmpty) {
         Navigator.of(context).pop();
-        showErrorDialog(context, errorMessage);
-        return;
+        await showBlockedErrorDialog(context, errorMessage);
+        return false;
       }
-      printLongLogMessage("LPN ${lpn} passed the validation");
     }
     on CWMSHttpException catch(ex) {
 
       Navigator.of(context).pop();
-      showErrorDialog(context, "${ex.code} - ${ex.message}");
-      return;
+      await showBlockedErrorDialog(context, "${ex.code} - ${ex.message}");
+      return false;
 
     }
     try {
@@ -396,13 +421,14 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
 
       Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
-      return;
+      await showBlockedErrorDialog(context, ex.errMsg());
+      return false;
 
     }
 
     _refreshScreenAfterReceive(qcRequired);
 
+    return true;
 
   }
 
@@ -490,7 +516,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     on WebAPICallException catch(ex) {
 
       Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
+      showBlockedErrorDialog(context, ex.errMsg());
       return;
 
     }

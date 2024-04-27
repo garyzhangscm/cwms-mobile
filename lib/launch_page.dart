@@ -45,7 +45,7 @@ class _LaunchPageState extends State<LaunchPage> {
     print("get auto connect server? ${server == null? '' : server.url}");
 
     if (kDebugMode) {
-      String url = 'https://staging.claytechsuite.com/api/';
+      String url = 'https://prod.claytechsuite.com/api/';
 
       // in debug mode
       _serverURLController =  TextEditingController(
