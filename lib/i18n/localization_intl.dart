@@ -278,6 +278,7 @@ class CWMSLocalizations {
   String get nextLocation  => Intl.message("Next Location", name: 'nextLocation');
   String get allocateLocation  => Intl.message("Allocate Location", name: 'allocateLocation');
   String get sortBy  => Intl.message("Sort By", name: 'sortBy');
+  String get captureInventoryAttribute  => Intl.message("Capture Inventory Attribute", name: 'captureInventoryAttribute');
 
 
 

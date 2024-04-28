@@ -401,6 +401,9 @@ class _LoginPageState extends State<LoginPage> {
         // setup the http client with auth information
         Global.setupHttpClient();
 
+        // load the configuration and cache
+        Global.initInventoryConfiguration();
+
         // setup the RF as we would like to get the default printer that associated with
         // the RF
         RFService.getRFByCode(_rfCodeController.text).then((rf) =>

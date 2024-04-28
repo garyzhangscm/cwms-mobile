@@ -39,6 +39,30 @@ class Item{
   ItemPackageType defaultItemPackageType;
 
 
+  bool trackingColorFlag;
+  String defaultColor;
+
+  bool trackingProductSizeFlag;
+  String defaultProductSize;
+
+  bool trackingStyleFlag;
+  String defaultStyle;
+
+  bool trackingInventoryAttribute1Flag;
+  String defaultInventoryAttribute1;
+
+  bool trackingInventoryAttribute2Flag;
+  String defaultInventoryAttribute2;
+
+  bool trackingInventoryAttribute3Flag;
+  String defaultInventoryAttribute3;
+
+  bool trackingInventoryAttribute4Flag;
+  String defaultInventoryAttribute4;
+
+  bool trackingInventoryAttribute5Flag;
+  String defaultInventoryAttribute5;
+
   //不同的类使用不同的mixin即可
   factory Item.fromJson(Map<String, dynamic> json) => _$ItemFromJson(json);
   Map<String, dynamic> toJson() => _$ItemToJson(this);

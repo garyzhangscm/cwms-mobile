@@ -272,6 +272,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "nextLocation" : MessageLookupByLibrary.simpleMessage("Next Location"),
     "allocateLocation" : MessageLookupByLibrary.simpleMessage("Allocate Location"),
     "sortBy" : MessageLookupByLibrary.simpleMessage("Sort By"),
+    "captureInventoryAttribute" : MessageLookupByLibrary.simpleMessage("Capture Inventory Attribute"),
 
 
     'greetingMessage':greetingMessage,

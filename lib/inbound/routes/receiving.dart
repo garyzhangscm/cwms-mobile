@@ -22,6 +22,8 @@ import 'package:cwms_mobile/shared/services/qr_code_service.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
+
+import '../../inventory/models/item.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -58,7 +60,6 @@ class _ReceivingPageState extends State<ReceivingPage> {
   FocusNode _lpnFocusNode = FocusNode();
   bool _readyToConfirm = true; // whether we can confirm the received inventory
 
-  Map<int, List<DropdownMenuItem>> _itemPackageTypeDropdownItemMap = new Map();
 
   ProgressDialog pr;
 
@@ -69,7 +70,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _currentReceiptLine = new ReceiptLine();
     _selectedInventoryStatus = new InventoryStatus();
     _selectedItemPackageType = new ItemPackageType();
-    _itemPackageTypeDropdownItemMap = new Map();
+
 
 
 
@@ -597,13 +598,28 @@ class _ReceivingPageState extends State<ReceivingPage> {
       return;
 
     }
+    Map<String, String> inventoryAttributes = new Map();
+    if (_needCaptureInventoryAttribute(_currentReceiptLine.item)) {
+
+
+      final result = await Navigator.of(context)
+          .pushNamed("inventory_attribute_capture", arguments: _currentReceiptLine.item);
+
+      inventoryAttributes = result as Map<String, String>;
+    }
     try {
       Inventory inventory = await ReceiptService.receiveInventory(
           _currentReceipt, _currentReceiptLine,
           _lpnController.text, _selectedInventoryStatus,
           _selectedItemPackageType, int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity,
-        "", "", "",
-        "", "", "","", ""
+          inventoryAttributes.containsKey("color") ? inventoryAttributes["color"] : "",
+          inventoryAttributes.containsKey("productSize") ? inventoryAttributes["productSize"] : "",
+          inventoryAttributes.containsKey("style") ? inventoryAttributes["style"] : "",
+          inventoryAttributes.containsKey("attribute1") ? inventoryAttributes["attribute1"] : "",
+          inventoryAttributes.containsKey("attribute2") ? inventoryAttributes["attribute2"] : "",
+          inventoryAttributes.containsKey("attribute3") ? inventoryAttributes["attribute3"] : "",
+          inventoryAttributes.containsKey("attribute4") ? inventoryAttributes["attribute4"] : "",
+          inventoryAttributes.containsKey("attribute5") ? inventoryAttributes["attribute5"] : ""
       );
       qcRequired = inventory.inboundQCRequired;
       printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
@@ -629,6 +645,22 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   }
 
+  bool _needCaptureInventoryAttribute(Item item) {
+    printLongLogMessage("check if we need to capture inventory attribute for the item ${item.name}");
+
+    printLongLogMessage("item.trackingColorFlag ${item.trackingColorFlag}");
+    printLongLogMessage("item.trackingProductSizeFlag ${item.trackingProductSizeFlag}");
+    printLongLogMessage("item.trackingStyleFlag ${item.trackingStyleFlag}");
+
+    return item.trackingColorFlag == true ||
+        item.trackingProductSizeFlag  == true ||
+        item.trackingStyleFlag  == true ||
+        item.trackingInventoryAttribute1Flag  == true ||
+        item.trackingInventoryAttribute2Flag  == true ||
+        item.trackingInventoryAttribute3Flag  == true ||
+        item.trackingInventoryAttribute4Flag  == true ||
+        item.trackingInventoryAttribute5Flag == true ;
+  }
   // check how many LPNs we will need to receive
   // based on the quantity that the user input,
   // the UOM that the user select
@@ -904,6 +936,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _itemController.clear();
     _lpnController.clear();
     _quantityController.clear();
+    _selectedItemPackageType = new ItemPackageType();
+
   }
   _startReceiptBarcodeScanner() async {
     /*
@@ -1036,7 +1070,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
         print("set current receipt to ${receipt.number}");
         _currentReceipt = receipt;
         _currentReceiptLine = new ReceiptLine();
+
         _receiptNumberController.text = receipt.number;
+        _clearReceiptLineInformation();
       });
     }
     _itemFocusNode.requestFocus();

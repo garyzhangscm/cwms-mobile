@@ -4,13 +4,13 @@ import 'package:cwms_mobile/inbound/routes/barcode_receiving.dart';
 import 'package:cwms_mobile/inbound/routes/reverse_receiving.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_batch.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_request.dart';
+import 'package:cwms_mobile/inventory/routes/inventory_attribute_capture.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_batch_deposit.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_lost_and_found.dart';
 import 'package:cwms_mobile/inventory/routes/inventory_detail.dart';
 import 'package:cwms_mobile/inventory/routes/item_sampling.dart';
 import 'package:cwms_mobile/inventory/routes/lpn_capture.dart';
 import 'package:cwms_mobile/outbound/routes/bulk_pick.dart';
-import 'package:cwms_mobile/outbound/routes/list_pick.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_batch.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_bulk.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
@@ -155,6 +155,7 @@ class MyApp extends StatelessWidget {
               "inventory_qc":(context) => InventoryQCPage(),
               "app_upgrade":(context) => AppUpgradePage(),
               "lpn_capture":(context) => LpnCapturePage(),
+              "inventory_attribute_capture":(context) => InventoryAttributeCapturePage(),
               "work_order_qc_sampling":(context) => WorkOrderQCSamplingPage(),
               "item_sampling":(context) => ItemSamplingPage(),
               "work_order_manual_pick":(context) => WorkOrderManualPickPage(),

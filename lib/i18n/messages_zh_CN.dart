@@ -264,6 +264,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "nextLocation" : MessageLookupByLibrary.simpleMessage("目标位置"),
     "allocateLocation" : MessageLookupByLibrary.simpleMessage("分配目标位置"),
     "sortBy" : MessageLookupByLibrary.simpleMessage("排序"),
+    "captureInventoryAttribute" : MessageLookupByLibrary.simpleMessage("库存属性"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

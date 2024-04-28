@@ -9,10 +9,11 @@ import 'package:cwms_mobile/warehouse_layout/models/company.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../inventory/models/inventory_configuration.dart';
+import '../inventory/services/inventory_configuration.dart';
 import 'http_client.dart';
 import 'models/cacheConfig.dart';
 import 'models/cwms_application_information.dart';
@@ -56,6 +57,8 @@ class Global {
 
   static String currentAPPVersion;
 
+  static InventoryConfiguration currentInventoryConfiguration;
+
   static Profile profile = Profile();
 
   static RFConfiguration _rfConfiguration = RFConfiguration();
@@ -91,6 +94,7 @@ class Global {
     _initAutoLoginCompany();
     _initLastLoginRFCode();
     _initLastLoginRF();
+
 
     // initial profile
     var _profile = _prefs.getString("profile");
@@ -180,6 +184,12 @@ class Global {
         print(e);
       }
     }
+  }
+
+  static initInventoryConfiguration() {
+    InventoryConfigurationService.getInventoryConfiguration().then(
+            (inventoryConfiguration) => currentInventoryConfiguration = inventoryConfiguration
+    );
   }
 
   static _clearAutoLoginWarehouse() {
