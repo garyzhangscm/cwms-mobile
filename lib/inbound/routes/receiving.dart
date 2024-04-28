@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:badges/badges.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -56,6 +58,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
   FocusNode _lpnFocusNode = FocusNode();
   bool _readyToConfirm = true; // whether we can confirm the received inventory
 
+  Map<int, List<DropdownMenuItem>> _itemPackageTypeDropdownItemMap = new Map();
+
   ProgressDialog pr;
 
   @override
@@ -65,6 +69,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _currentReceiptLine = new ReceiptLine();
     _selectedInventoryStatus = new InventoryStatus();
     _selectedItemPackageType = new ItemPackageType();
+    _itemPackageTypeDropdownItemMap = new Map();
 
 
 
@@ -430,8 +435,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
 
   List<DropdownMenuItem> _getItemPackageTypeItems() {
-    List<DropdownMenuItem> items = [];
 
+
+    List<DropdownMenuItem> items = [];
 
     if (_currentReceiptLine.item.itemPackageTypes.length > 0) {
       // _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
@@ -443,21 +449,19 @@ class _ReceivingPageState extends State<ReceivingPage> {
           child: Text(_currentReceiptLine.item.itemPackageTypes[i].description),
         ));
       }
-
-
       if (_currentReceiptLine.item.itemPackageTypes.length == 1 ||
-          _selectedItemPackageType == null) {
+          (_selectedItemPackageType == null || _selectedItemPackageType.id == null)) {
         // if we only have one item package type for this item, then
         // default the selection to it
         // if the user has not select any item package type yet, then
         // default the value to the first option as well
+
         setState(() {
           _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
 
         });
       }
     }
-
     return items;
   }
 
