@@ -11,6 +11,7 @@ import 'package:cwms_mobile/inventory/routes/inventory_detail.dart';
 import 'package:cwms_mobile/inventory/routes/item_sampling.dart';
 import 'package:cwms_mobile/inventory/routes/lpn_capture.dart';
 import 'package:cwms_mobile/outbound/routes/bulk_pick.dart';
+import 'package:cwms_mobile/outbound/routes/order_manual_pick.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_batch.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_bulk.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
@@ -164,6 +165,7 @@ class MyApp extends StatelessWidget {
               "system_driven_work":(context) => SystemDrivenWork(),
               "bulk_pick":(context) => BulkPickPage(),
               "pick_by_bulk":(context) => PickByBulkPage(),
+              "order_manual_pick":(context) => OrderManualPickPage(),
               "partial_inventory_move":(context) => PartialInventoryMovePage(),
               "work_order_reverse_production":(context) => ReverseProductionPage(),
               "reverse_receiving":(context) => ReverseReceivingPage(),

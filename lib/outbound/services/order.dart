@@ -71,6 +71,69 @@ class OrderService {
 
   }
 
+
+  static Future<int> getPickableQuantityForManualPick(
+      int orderId, String lpn
+      ) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "outbound/orders/${orderId}/get-manual-pick-quantity",
+        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+          "lpn": lpn,  "rfCode":Global.getLastLoginRFCode()}
+    );
+
+    // printLongLogMessage("response from getPickableQuantityForManualPick: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    // List<dynamic> responseData = responseString["data"];
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    int pickableQuantity
+    = (responseString["data"] as int);
+
+
+    return pickableQuantity;
+
+  }
+
+
+  static Future<List<Pick>> generateManualPick(
+      int orderId, String lpn, bool pickWholeLPN
+      ) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+    printLongLogMessage("start to generate manual pick for lpn ${lpn}");
+
+    Response response = await httpClient.post(
+        "outbound/orders/${orderId}/generate-manual-pick",
+        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+          "lpn": lpn,
+          "rfCode":Global.getLastLoginRFCode(),
+          "pickWholeLPN": pickWholeLPN}
+    );
+
+    // printLongLogMessage("response from generateManualPick: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    // List<dynamic> responseData = responseString["data"];
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    List<Pick> picks
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+    print("get ${picks.length} picks by manual picking for order $orderId, lpn: $lpn");
+
+    return picks;
+
+  }
+
+
 }
 
 

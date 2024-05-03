@@ -72,8 +72,6 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _selectedItemPackageType = new ItemPackageType();
 
 
-
-
     InventoryStatusService.getAllInventoryStatus()
         .then((value) {
       _validInventoryStatus = value;
@@ -89,9 +87,17 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _receiptNumberFocusNode.addListener(() {
       print("_receiptFocusNode.hasFocus: ${_receiptNumberFocusNode.hasFocus}");
       if (!_receiptNumberFocusNode.hasFocus && _receiptNumberController.text.isNotEmpty) {
-        // if we tab out, then add the LPN to the list
-        _loadReceipt(_receiptNumberController.text);
-        // _itemFocusNode.requestFocus();
+        // first check if it is a barcode scanned in
+        if (_isReceivingBarcode(_receiptNumberController.text)) {
+
+          _processBarcode(_receiptNumberController.text);
+        }
+        else {
+
+          // if we tab out, then add the LPN to the list
+          _loadReceipt(_receiptNumberController.text);
+          // _itemFocusNode.requestFocus();
+        }
 
       }
     });
@@ -111,6 +117,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       print("_lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
+
         _enterOnLPNController();
       }
     });
@@ -120,6 +127,13 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
   final  _formKey = GlobalKey<FormState>();
 
+
+  _isReceivingBarcode(String value) {
+    return false;
+  }
+  _processBarcode(String barcode) {
+
+  }
   @override
   Widget build(BuildContext context) {
 

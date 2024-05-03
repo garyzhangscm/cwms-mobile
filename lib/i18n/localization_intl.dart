@@ -279,6 +279,9 @@ class CWMSLocalizations {
   String get allocateLocation  => Intl.message("Allocate Location", name: 'allocateLocation');
   String get sortBy  => Intl.message("Sort By", name: 'sortBy');
   String get captureInventoryAttribute  => Intl.message("Capture Inventory Attribute", name: 'captureInventoryAttribute');
+  String get manualPick  => Intl.message("Manual Pick", name: 'manualPick');
+
+  String get pickToShipStage => Intl.message("Pick To Ship Stage", name: 'pickToShipStage');
 
 
 

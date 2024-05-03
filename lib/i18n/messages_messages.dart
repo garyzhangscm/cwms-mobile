@@ -274,6 +274,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "sortBy" : MessageLookupByLibrary.simpleMessage("Sort By"),
     "captureInventoryAttribute" : MessageLookupByLibrary.simpleMessage("Capture Inventory Attribute"),
 
+    "manualPick" : MessageLookupByLibrary.simpleMessage("Manual Pick"),
+    "pickToShipStage" : MessageLookupByLibrary.simpleMessage("Pick To Ship Stage"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

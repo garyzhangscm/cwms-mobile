@@ -265,6 +265,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "allocateLocation" : MessageLookupByLibrary.simpleMessage("分配目标位置"),
     "sortBy" : MessageLookupByLibrary.simpleMessage("排序"),
     "captureInventoryAttribute" : MessageLookupByLibrary.simpleMessage("库存属性"),
+    "manualPick" : MessageLookupByLibrary.simpleMessage("手动分配拣货"),
+    "pickToShipStage" : MessageLookupByLibrary.simpleMessage("拣货到出库暂存区"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

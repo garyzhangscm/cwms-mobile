@@ -32,6 +32,7 @@ Order _$OrderFromJson(Map<String, dynamic> json) {
     ..billToAddressState = json['billToAddressState'] as String
     ..billToAddressCounty = json['billToAddressCounty'] as String
     ..billToAddressCity = json['billToAddressCity'] as String
+    ..allowForManualPick = json['allowForManualPick'] == null ? false : json['allowForManualPick'] as bool
     ..billToAddressDistrict = json['billToAddressDistrict'] as String
     ..billToAddressLine1 = json['billToAddressLine1'] as String
     ..billToAddressLine2 = json['billToAddressLine2'] as String
@@ -83,6 +84,7 @@ Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{
   'billToAddressLine2': instance.billToAddressLine2,
   'billToAddressPostcode': instance.billToAddressPostcode,
   'carrier': instance.carrier,
+  'allowForManualPick': instance.allowForManualPick,
   'carrierServiceLevel': instance.carrierServiceLevel,
   'orderLines': instance.orderLines,
   'totalLineCount': instance.totalLineCount,

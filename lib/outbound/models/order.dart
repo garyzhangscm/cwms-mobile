@@ -24,6 +24,7 @@ class Order{
   String shipToContactorFirstname;
   String shipToContactorLastname;
 
+  bool allowForManualPick;
 
   String shipToAddressCountry;
   String shipToAddressState;
