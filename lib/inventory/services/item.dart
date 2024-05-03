@@ -60,7 +60,7 @@ class ItemService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("queryItemByKeyword / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 

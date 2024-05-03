@@ -37,7 +37,7 @@ class InventoryService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${(responseString["message"] == null? "" : responseString["message"])}");
+      printLongLogMessage("getInventoryOnCurrentRF / Start to raise error with message: ${(responseString["message"] == null? "" : responseString["message"])}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + (responseString["message"] == null? "" : responseString["message"]));
     }
 
@@ -240,7 +240,7 @@ class InventoryService {
 
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("moveInventory / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -271,7 +271,7 @@ class InventoryService {
 
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getInventoryById / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -357,7 +357,7 @@ class InventoryService {
 
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("printLPNLabel / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -486,7 +486,7 @@ class InventoryService {
 
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("allocateLocation / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -511,7 +511,7 @@ class InventoryService {
 
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getPendingQCInspectionRequest / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -544,7 +544,7 @@ class InventoryService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("reverseReceivedInventory / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -607,7 +607,7 @@ class InventoryService {
     printLongLogMessage("get response from findInventory ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("findPickableInventory / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -644,7 +644,7 @@ class InventoryService {
     printLongLogMessage("get response from relabelInventory ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("relabelInventory / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -677,7 +677,7 @@ class InventoryService {
 
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("relabelInventories / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 

@@ -25,7 +25,7 @@ class OrderService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getOrderByNumber / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -87,7 +87,7 @@ class OrderService {
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getPickableQuantityForManualPick / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -118,7 +118,7 @@ class OrderService {
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("generateManualPick / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 

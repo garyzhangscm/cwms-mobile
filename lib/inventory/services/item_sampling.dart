@@ -29,7 +29,7 @@ class ItemSamplingService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getCurrentItemSamplingByItemName / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ItemSampling> itemSamplingList
@@ -64,7 +64,7 @@ class ItemSamplingService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getItemSamplingByNumber / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ItemSampling> itemSamplingList
@@ -97,7 +97,7 @@ class ItemSamplingService {
 
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("addItemSampling / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
@@ -121,7 +121,7 @@ class ItemSamplingService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("changeItemSampling / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     return ItemSampling.fromJson(responseString["data"] as Map<String, dynamic>);

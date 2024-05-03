@@ -30,7 +30,7 @@ class ProductionLineAssignmentService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getProductionLineAssignmentByProductionLine / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ProductionLineAssignment> productionLineAssignments
@@ -63,7 +63,7 @@ class ProductionLineAssignmentService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getProductionLineAssignmentByProductionLineName / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ProductionLineAssignment> productionLineAssignments
@@ -99,7 +99,7 @@ class ProductionLineAssignmentService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("Start to raise error with message: ${responseString["message"]}");
+      printLongLogMessage("getAssignedWorkOrderByProductionLine / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<WorkOrder> workOrders

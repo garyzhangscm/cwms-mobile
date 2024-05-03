@@ -45,7 +45,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   // validate partial LPN pick. Default to false to skip
   // the validation for performance seek, temporary. We may
   // need to convert to configuration!
-  bool _validatePartialLPNPick = false;
+  bool _validatePartialLPNPick = true;
   bool _pickToShipStage = true;
 
 
@@ -514,6 +514,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
     Navigator.of(context).pop();
     _readyToConfirm = true;
+    showToast("lpn ${_lpnController.text} is picked");
     _refreshScreenAfterPickConfirm();
 
   }
