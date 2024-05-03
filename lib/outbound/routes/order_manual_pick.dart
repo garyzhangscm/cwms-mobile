@@ -299,6 +299,9 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
             readOnly: false,
             showKeyboard: false,
             focusNode: _lpnFocusNode,
+            onClear: (value) {
+              _lpnControllerCleared();
+            },
             autofocus: true,
             validator: (v) {
               // if we only need one LPN, then make sure the user input the LPN in this form.
@@ -312,6 +315,10 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
             }),
       ),
     );
+  }
+
+  void _lpnControllerCleared() {
+    _lpnFocusNode.requestFocus();
   }
 
   void _enterOnLPNController(int tryTime) async {
