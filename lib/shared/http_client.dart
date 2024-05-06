@@ -35,24 +35,28 @@ class CWMSHttpClient {
 
   static Dio getDio() {
     if (_dioWithAuth == null) {
-      _dioWithAuth = new Dio(BaseOptions(
-          baseUrl: Global.currentServer.url,
-          headers: {
-            HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
-            "rfCode": Global.lastLoginRFCode,
-            "warehouseId": Global.currentWarehouse.id,
-            "companyId": Global.lastLoginCompanyId
-          },
-          // connectTimeout: 10000,
-          // receiveTimeout: 15000,
-          // sendTimeout: 15000,
-
-      ));
+      resetDio();
     }
     return _dioWithAuth;
   }
 
+  static void resetDio() {
+
+    _dioWithAuth = new Dio(BaseOptions(
+      baseUrl: Global.currentServer.url,
+      headers: {
+        HttpHeaders.acceptHeader: "application/json",
+        HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+        "rfCode": Global.lastLoginRFCode,
+        "warehouseId": Global.currentWarehouse.id,
+        "companyId": Global.lastLoginCompanyId
+      },
+      // connectTimeout: 10000,
+      // receiveTimeout: 15000,
+      // sendTimeout: 15000,
+
+    ));
+  }
   static void init() {
     // 添加缓存插件
     // dio.interceptors.add(Global.netCache);

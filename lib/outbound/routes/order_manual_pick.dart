@@ -460,6 +460,10 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
     Navigator.of(context).pop();
     if (!continuePicking) {
+      // the user choose not continue to pick. let's
+      // return and reset the ready for confirm to true
+
+      _readyToConfirm = true;
       return;
     }
 
