@@ -39,7 +39,7 @@ class ReceivingPage extends StatefulWidget{
 
 class _ReceivingPageState extends State<ReceivingPage> {
 
-  // input batch id
+  // receipt number control. We allow both receipt number and barcode for receiving
   TextEditingController _receiptNumberController = new TextEditingController();
   TextEditingController _itemController = new TextEditingController();
   TextEditingController _quantityController = new TextEditingController();
@@ -60,7 +60,17 @@ class _ReceivingPageState extends State<ReceivingPage> {
   FocusNode _lpnFocusNode = FocusNode();
   bool _readyToConfirm = true; // whether we can confirm the received inventory
 
+  // save the inventory attribute we got from barcode
+  Map<String, String> _inventoryAttributesFromBarcode = new Map();
+  // if we are in the barcode receiving mode, then after the user receive one LPN,
+  // we will clear everything and set focus back to receipt number, which allow the
+  // user to receive with second barcode.
+  // otherwise, we will keep the receipt and item so the user can continue with
+  // the same item but new LPN
+  bool _barcodeReceivingMode = false;
 
+
+  final  _formKey = GlobalKey<FormState>();
   ProgressDialog pr;
 
   @override
@@ -70,7 +80,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _currentReceiptLine = new ReceiptLine();
     _selectedInventoryStatus = new InventoryStatus();
     _selectedItemPackageType = new ItemPackageType();
-
+    _inventoryAttributesFromBarcode.clear();
+    _barcodeReceivingMode = false;
 
     InventoryStatusService.getAllInventoryStatus()
         .then((value) {
@@ -89,11 +100,26 @@ class _ReceivingPageState extends State<ReceivingPage> {
       if (!_receiptNumberFocusNode.hasFocus && _receiptNumberController.text.isNotEmpty) {
         // first check if it is a barcode scanned in
         if (_isReceivingBarcode(_receiptNumberController.text)) {
+          _barcodeReceivingMode = true;
+          _processBarcode(_receiptNumberController.text).then(
+                  (successful) {
 
-          _processBarcode(_receiptNumberController.text);
+                    if (successful) {
+
+                      printLongLogMessage("send focus to the quantity node");
+                      _quantityFocusNode.requestFocus();
+                    }
+                    else {
+
+                      _receiptNumberFocusNode.requestFocus();
+                    }
+                  }
+
+          );
         }
         else {
 
+          _barcodeReceivingMode = false;
           // if we tab out, then add the LPN to the list
           _loadReceipt(_receiptNumberController.text);
           // _itemFocusNode.requestFocus();
@@ -125,14 +151,82 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     _reloadInventoryOnRF();
   }
-  final  _formKey = GlobalKey<FormState>();
 
 
   _isReceivingBarcode(String value) {
-    return false;
+    return QRCodeService.validateQRCode(value);
   }
-  _processBarcode(String barcode) {
+  
+  // if the user scan in a barcode, then we will parse the barcode and
+  // automatically populate all the values
+  Future<bool> _processBarcode(String barcode) async {
 
+    Map<String, String> parameters = QRCodeService.parseQRCode(barcode);
+    // make sure we at least have receipt number
+
+    if (!parameters.containsKey("receiptId") ||
+        !parameters.containsKey("receiptLineId")) {
+      await showBlockedErrorDialog(context, "invalid barcode format");
+      return false;
+    }
+
+    String receiptIdString = parameters["receiptId"];
+    String receiptLineIdString = parameters["receiptLineId"];
+
+    bool loadReceiptAndLine = await _loadReceiptAndLineById(receiptIdString, receiptLineIdString);
+
+    if (!loadReceiptAndLine) {
+
+      await showBlockedErrorDialog(context, "invalid barcode. Can't find the receipt and line");
+      return false;
+    }
+
+    if (parameters.containsKey("inventoryStatusId")) {
+      setState(() {
+
+        _selectedInventoryStatus = _validInventoryStatus.firstWhere((inventoryStatus) => inventoryStatus.id.toString() == parameters["inventoryStatusId"]);
+      });
+    }
+
+    if (parameters.containsKey("quantity")) {
+      _quantityController.text = parameters["quantity"];
+    }
+
+
+    if (parameters.containsKey("lpn")) {
+      _lpnController.text = parameters["lpn"];
+    }
+
+
+    _inventoryAttributesFromBarcode.clear();
+
+    if (parameters.containsKey("color")) {
+      _inventoryAttributesFromBarcode["color"] = parameters["color"];
+    }
+    if (parameters.containsKey("productSize")) {
+      _inventoryAttributesFromBarcode["productSize"] = parameters["productSize"];
+    }
+    if (parameters.containsKey("style")) {
+      _inventoryAttributesFromBarcode["style"] = parameters["style"];
+    }
+
+    if (parameters.containsKey("inventoryAttribute1")) {
+      _inventoryAttributesFromBarcode["inventoryAttribute1"] = parameters["inventoryAttribute1"];
+    }
+    if (parameters.containsKey("inventoryAttribute2")) {
+      _inventoryAttributesFromBarcode["inventoryAttribute2"] = parameters["inventoryAttribute2"];
+    }
+    if (parameters.containsKey("inventoryAttribute3")) {
+      _inventoryAttributesFromBarcode["inventoryAttribute3"] = parameters["inventoryAttribute3"];
+    }
+    if (parameters.containsKey("inventoryAttribute4")) {
+      _inventoryAttributesFromBarcode["inventoryAttribute4"] = parameters["inventoryAttribute4"];
+    }
+    if (parameters.containsKey("inventoryAttribute5")) {
+      _inventoryAttributesFromBarcode["inventoryAttribute5"] = parameters["inventoryAttribute5"];
+    }
+
+    return true;
   }
   @override
   Widget build(BuildContext context) {
@@ -330,7 +424,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
               isDense: true,
               suffixIcon:
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                  mainAxisAlignment: MainAxisAlignment.end, // added line
                   mainAxisSize: MainAxisSize.min, // added line
                   children: <Widget>[
                     IconButton(
@@ -338,9 +432,15 @@ class _ReceivingPageState extends State<ReceivingPage> {
                       icon: Icon(Icons.list),
                     ),
                     IconButton(
+                      onPressed: _clearReceipt,
+                      icon: Icon(Icons.clear),
+                    ),
+                    /**
+                    IconButton(
                       onPressed: _showQRCodeView,
                       icon: Icon(Icons.camera),
                     ),
+                        **/
 
                   ],
               ),
@@ -359,6 +459,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
             }),
       );
   }
+
 
   Widget _buildButtons(BuildContext context) {
     return buildTwoButtonRow(
@@ -453,7 +554,6 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
 
     List<DropdownMenuItem> items = [];
-
     if (_currentReceiptLine.item.itemPackageTypes.length > 0) {
       // _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
 
@@ -475,6 +575,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
           _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
 
         });
+      }
+      else if (_selectedItemPackageType != null){
+          setState(() {
+            _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.id == _selectedItemPackageType.id);
+          });
       }
     }
     return items;
@@ -586,6 +691,55 @@ class _ReceivingPageState extends State<ReceivingPage> {
     return true;
   }
 
+  Future<bool> _loadReceiptAndLineById(String receiptId, String receiptLineId) async {
+
+
+    showLoading(context);
+      try {
+        _currentReceipt =
+        await ReceiptService.getReceiptById(int.parse(receiptId));
+
+        if (_currentReceipt == null) {
+          Navigator.of(context).pop();
+          return false;
+        }
+      }
+      on CWMSHttpException catch(ex) {
+
+        Navigator.of(context).pop();
+        return false;
+
+      }
+
+      try {
+          _currentReceiptLine = await ReceiptService.getReceiptLineById(int.parse(receiptLineId));
+
+          if (_currentReceiptLine == null) {
+            Navigator.of(context).pop();
+            return false;
+          }
+      }
+      on CWMSHttpException catch(ex) {
+
+        Navigator.of(context).pop();
+        return false;
+
+      }
+
+      setState(() {
+        _currentReceipt;
+        _currentReceiptLine;
+      });
+
+      _receiptNumberController.text = _currentReceipt.number;
+      printLongLogMessage("current receipt ${_currentReceipt.number}");
+
+      _itemController.text = _currentReceiptLine.item.name;
+      Navigator.of(context).pop();
+      return true;
+
+  }
+
   void _onRecevingSingleLpnConfirm(ReceiptLine receiptLine, int confirmedQuantity,
         String lpn) async {
     // TO-DO:Current we don't support the location code. Will add
@@ -615,11 +769,19 @@ class _ReceivingPageState extends State<ReceivingPage> {
     Map<String, String> inventoryAttributes = new Map();
     if (_needCaptureInventoryAttribute(_currentReceiptLine.item)) {
 
+      if (_inventoryAttributesFromBarcode.isNotEmpty) {
+        // the item needs certain attribute but we already parsed from the barcode
+        // we don't need to capture them manually
+        inventoryAttributes = _inventoryAttributesFromBarcode;
+      }
+      else {
 
-      final result = await Navigator.of(context)
-          .pushNamed("inventory_attribute_capture", arguments: _currentReceiptLine.item);
+        final result = await Navigator.of(context)
+            .pushNamed("inventory_attribute_capture", arguments: _currentReceiptLine.item);
 
-      inventoryAttributes = result as Map<String, String>;
+        inventoryAttributes = result as Map<String, String>;
+      }
+
     }
     try {
       Inventory inventory = await ReceiptService.receiveInventory(
@@ -644,6 +806,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         printLongLogMessage("allocate location for the QC needed inventory ${inventory.lpn}");
         InventoryService.allocateLocation(inventory);
       }
+      _inventoryAttributesFromBarcode.clear();
 
     }
     on WebAPICallException catch(ex) {
@@ -872,11 +1035,19 @@ class _ReceivingPageState extends State<ReceivingPage> {
        showWarningDialog(context, CWMSLocalizations.of(context).inventoryNeedQC);
     }
     showToast("inventory received");
-    // we will allow the user to continue receiving with the same
+    // in barcode receiving mode, let's clear everything so that the user can continue
+    // with new barcode.
+    // otherwise we will allow the user to continue receiving with the same
     // receipt and line
-    _lpnController.clear();
-    _quantityController.clear();
-    _quantityFocusNode.requestFocus();
+    if (_barcodeReceivingMode) {
+      _clearReceipt();
+    }
+    else {
+
+      _lpnController.clear();
+      _quantityController.clear();
+      _quantityFocusNode.requestFocus();
+    }
 
 
     // refresh the inventory on the RF
@@ -1032,6 +1203,17 @@ class _ReceivingPageState extends State<ReceivingPage> {
       },
     );
 
+  }
+
+  void _clearReceipt() {
+
+    setState(() {
+      _currentReceipt = null;
+      _clearReceiptLineInformation();
+
+    });
+    _receiptNumberController.clear();
+    _receiptNumberFocusNode.requestFocus();
   }
 
   void _setupTotalQuantity(List<Receipt> receipts) {

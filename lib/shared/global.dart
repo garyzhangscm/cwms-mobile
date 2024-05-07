@@ -378,6 +378,8 @@ class Global {
             "rfCode": Global.lastLoginRFCode
           },);
     httpClient = CWMSHttpClientAdapter(dioConfig: dioConfig);
+
+    CWMSHttpClient.resetDio();
   }
 
 // 持久化Profile信息
