@@ -305,7 +305,7 @@ class _PickPageState extends State<PickPage> {
     // if the location is empty, then ask the user to input the
     // right location
     if (_sourceLocationController.text.isEmpty) {
-      showErrorDialog(context,
+      await showBlockedErrorDialog(context,
           CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).location));
       _sourceLocationControllerFocusNode.requestFocus();
       return;
@@ -329,7 +329,7 @@ class _PickPageState extends State<PickPage> {
     if (!locationValid) {
       // validation fail, leave the user in the location control
 
-      showErrorDialog(context, "location " + _sourceLocationController.text + " is invalid");
+      await showBlockedErrorDialog(context, "location " + _sourceLocationController.text + " is invalid");
       _sourceLocationFocusNode.requestFocus();
       return;
     }
