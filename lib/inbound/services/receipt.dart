@@ -148,6 +148,7 @@ class ReceiptService {
         inventoryAttribute4,
         inventoryAttribute5
     );
+    printLongLogMessage("and inventory: ${inventory.toJson()}");
 
     // send the receiving request to the server
     Dio httpClient = CWMSHttpClient.getDio();

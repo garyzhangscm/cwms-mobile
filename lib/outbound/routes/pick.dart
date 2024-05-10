@@ -173,7 +173,10 @@ class _PickPageState extends State<PickPage> {
                       mainAxisSize: MainAxisSize.min, // added line
                       children: <Widget>[
                         IconButton(
-                          onPressed: () => _sourceLocationController.text = "",
+                          onPressed: () {
+                            _sourceLocationController.text = "";
+                            _sourceLocationControllerFocusNode.requestFocus();
+                          },
                           icon: Icon(Icons.close),
                         ),
                       ],
@@ -332,6 +335,14 @@ class _PickPageState extends State<PickPage> {
       await showBlockedErrorDialog(context, "location " + _sourceLocationController.text + " is invalid");
       _sourceLocationFocusNode.requestFocus();
       return;
+    }
+
+    printLongLogMessage("Move to the next focus node");
+    if (_currentPick.confirmLpnFlag) {
+      _lpnControllerFocusNode.requestFocus();
+    }
+    else {
+      _quantityFocusNode.requestFocus();
     }
 
   }

@@ -211,19 +211,19 @@ class _ReceivingPageState extends State<ReceivingPage> {
     }
 
     if (parameters.containsKey("inventoryAttribute1")) {
-      _inventoryAttributesFromBarcode["inventoryAttribute1"] = parameters["inventoryAttribute1"];
+      _inventoryAttributesFromBarcode["attribute1"] = parameters["inventoryAttribute1"];
     }
     if (parameters.containsKey("inventoryAttribute2")) {
-      _inventoryAttributesFromBarcode["inventoryAttribute2"] = parameters["inventoryAttribute2"];
+      _inventoryAttributesFromBarcode["attribute2"] = parameters["inventoryAttribute2"];
     }
     if (parameters.containsKey("inventoryAttribute3")) {
-      _inventoryAttributesFromBarcode["inventoryAttribute3"] = parameters["inventoryAttribute3"];
+      _inventoryAttributesFromBarcode["attribute3"] = parameters["inventoryAttribute3"];
     }
     if (parameters.containsKey("inventoryAttribute4")) {
-      _inventoryAttributesFromBarcode["inventoryAttribute4"] = parameters["inventoryAttribute4"];
+      _inventoryAttributesFromBarcode["attribute4"] = parameters["inventoryAttribute4"];
     }
     if (parameters.containsKey("inventoryAttribute5")) {
-      _inventoryAttributesFromBarcode["inventoryAttribute5"] = parameters["inventoryAttribute5"];
+      _inventoryAttributesFromBarcode["attribute5"] = parameters["inventoryAttribute5"];
     }
 
     return true;
@@ -769,9 +769,13 @@ class _ReceivingPageState extends State<ReceivingPage> {
     Map<String, String> inventoryAttributes = new Map();
     if (_needCaptureInventoryAttribute(_currentReceiptLine.item)) {
 
+      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentReceiptLine.item.name}");
+      printLongLogMessage("_inventoryAttributesFromBarcode.isNotEmpty? ${_inventoryAttributesFromBarcode.isNotEmpty}");
+
       if (_inventoryAttributesFromBarcode.isNotEmpty) {
         // the item needs certain attribute but we already parsed from the barcode
         // we don't need to capture them manually
+        printLongLogMessage("get inventory attribute from the barcode ${_inventoryAttributesFromBarcode}");
         inventoryAttributes = _inventoryAttributesFromBarcode;
       }
       else {
