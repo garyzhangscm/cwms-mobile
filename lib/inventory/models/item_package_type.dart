@@ -40,6 +40,7 @@ class ItemPackageType{
   Warehouse warehouse;
 
 
+  bool defaultFlag;
 
 
   //不同的类使用不同的mixin即可

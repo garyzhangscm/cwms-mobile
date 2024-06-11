@@ -28,6 +28,8 @@ class ReceiptLine{
   int overReceivingQuantity;
   double overReceivingPercent;
 
+  int itemPackageTypeId;
+
 
 
   //不同的类使用不同的mixin即可

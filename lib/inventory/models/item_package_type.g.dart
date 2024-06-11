@@ -32,7 +32,8 @@ ItemPackageType _$ItemPackageTypeFromJson(Map<String, dynamic> json) {
         ?.map(
             (e) => e == null ? null : ItemUnitOfMeasure.fromJson(e as Map<String, dynamic>))
         ?.toList()
-    ..warehouseId = json['warehouseId'] as int;
+    ..warehouseId = json['warehouseId'] as int
+    ..defaultFlag = json['defaultFlag'] == null ? null : json['defaultFlag'] as bool;
 }
 
 Map<String, dynamic> _$ItemPackageTypeToJson(ItemPackageType instance) => <String, dynamic>{
@@ -49,4 +50,5 @@ Map<String, dynamic> _$ItemPackageTypeToJson(ItemPackageType instance) => <Strin
       'itemUnitOfMeasures': instance.itemUnitOfMeasures,
       'warehouse': instance.warehouse,
       'warehouseId': instance.warehouseId,
+      'defaultFlag': instance.defaultFlag,
     };

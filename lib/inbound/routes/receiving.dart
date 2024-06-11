@@ -188,6 +188,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       });
     }
 
+
     if (parameters.containsKey("quantity")) {
       _quantityController.text = parameters["quantity"];
     }
@@ -571,8 +572,13 @@ class _ReceivingPageState extends State<ReceivingPage> {
         // if the user has not select any item package type yet, then
         // default the value to the first option as well
 
+        // get default item package type from the receipt line, if it is defined,
+        // or the first item package
+        ItemPackageType defaultItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
+
+        if (_currentReceiptLine.itemPackageTypeId != null)
         setState(() {
-          _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
+          _selectedItemPackageType = getDefaultItemPackageType(_currentReceiptLine);
 
         });
       }
@@ -583,6 +589,20 @@ class _ReceivingPageState extends State<ReceivingPage> {
       }
     }
     return items;
+  }
+
+  // get the default item package type for the receipt line based on the priority
+  // 1. item package type defined at the receipt line level
+  // 2. default item package type of the item
+  // 3. first item package type of the item
+  ItemPackageType getDefaultItemPackageType(ReceiptLine receiptLine) {
+      if (receiptLine.itemPackageTypeId != null) {
+        return _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.id == receiptLine.itemPackageTypeId);
+      }
+
+      ItemPackageType defaultItemPackageType =
+          _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.defaultFlag == true);
+      return defaultItemPackageType == null ? _currentReceiptLine.item.itemPackageTypes[0] : defaultItemPackageType;
   }
 
   List<DropdownMenuItem> _getItemUnitOfMeasures() {
