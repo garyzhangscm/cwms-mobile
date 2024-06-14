@@ -490,7 +490,10 @@ class _LoginPageState extends State<LoginPage> {
 
         Global.setLastActivityLocation(currentLocation);
         rf = await RFService.changeRFLocation(selectedWarehouse.id, rf.id, currentLocation.id);
+        print(">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation.name}");
+
         Global.setLastLoginRF(rf);
+
 
 
         // Setup auto login user

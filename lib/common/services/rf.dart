@@ -29,6 +29,11 @@ class RFService {
 
     printLongLogMessage("response from valdiateRFCode: $responseString");
 
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("isPickAcknowledgable / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
     bool isValid = responseString["data"];
 
     return isValid;
@@ -78,7 +83,6 @@ class RFService {
 
   }
 
-
   static Future<RF> changeCurrentRFLocation(int locationId) async {
     return changeRFLocation(Global.currentWarehouse.id,
         Global.getLastLoginRF().id, locationId);
@@ -102,7 +106,7 @@ class RFService {
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
-    print("response from changeCurrentRFLocation:");
+    print("response from changeCurrentRFLocation: ");
 
     printLongLogMessage(response.toString());
 

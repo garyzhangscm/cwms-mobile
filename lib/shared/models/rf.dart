@@ -1,7 +1,7 @@
 
 
+import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'cwms_application_information.dart';
 
 // server.g.dart 将在我们运行生成命令后自动生成
 part 'rf.g.dart';
@@ -22,6 +22,8 @@ class RF {
   int currentLocationId;
 
   String currentLocationName;
+
+  WarehouseLocation currentLocation;
 
   String printerName;
 

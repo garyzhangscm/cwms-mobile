@@ -166,10 +166,10 @@ class PickService {
               0: currentLocation.pickSequence;
 
            if (pickASourceLocationPickSequence == currentLocationPickSequence) {
-             return 1;
+             return -1;
            }
            else if (pickB.sourceLocation.pickSequence == currentLocationPickSequence) {
-             return -1;
+             return 1;
            }
            else if ((pickASourceLocationPickSequence - currentLocationPickSequence) *
                (pickBSourceLocationPickSequence - currentLocationPickSequence) > 0) {
@@ -350,6 +350,39 @@ class PickService {
     return Pick.fromJson(responseString["data"] as Map<String, dynamic>) ;
 
   }
+
+
+  // check the pick can be acknowledged by current user
+  static Future<bool> isPickAcknowledgable(int id) async{
+
+    printLongLogMessage("start to check if  pick   $id can be acknowleged by current user");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+        "outbound/pick/${id}/acknowledgeable-by-current-user",
+        queryParameters: {
+          "warehouseId": Global.currentWarehouse.id
+        }
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    printLongLogMessage("response from isPickAcknowledgable: $responseString");
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("isPickAcknowledgable / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return responseString["data"];
+
+
+
+
+  }
+
 
 }
 

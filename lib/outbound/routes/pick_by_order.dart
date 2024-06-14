@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart';
 
+import '../../shared/global.dart';
 import '../models/pick_mode.dart';
 
 
@@ -321,8 +322,10 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
 
   void _assignPickToUser(Order order) async {
+    print("start to get the picks from order ${order.number}");
     List<Pick> picksByOrder =  await PickService.getPicksByOrder(order.id);
 
+    printLongLogMessage("get ${picksByOrder.length} picks from the order ${order.number}");
     assignedPicks.addAll(picksByOrder);
 
     // save the relationship between the order and the picks so that
@@ -380,9 +383,11 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
 
     // flow to pick page with the first pick
-    currentPick = _getNextValidPick();
+    currentPick = await _getNextValidPick();
 
     if (currentPick != null) {
+      // acknowledge the pick so no one else can take it
+      await PickService.acknowledgePick(currentPick.id);
 
       // setup the batch picked quantity to be the same as pick quantity
       // since we are working on a single pick. In the next pick page,
@@ -393,6 +398,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
       argumentMap['pickMode'] = PickMode.BY_ORDER;
 
       final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+      await PickService.unacknowledgePick(currentPick.id);
       if (result == null) {
         // if the user click the return button instead of confirming
         // let's do nothing
@@ -474,25 +480,38 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 **/
   }
 
-  Pick _getNextValidPick() {
+  Future<Pick> _getNextValidPick() async {
     print(" =====   _getNextValidPick      =====");
     assignedPicks.forEach((pick) {
-      print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity} / ${pick.skipCount}");
+      printLongLogMessage(">> number: ${pick.number} / quantity: ${pick.quantity} / picked quantity: ${pick.pickedQuantity} / skip count: ${pick.skipCount} " +
+          "/ source location: ${pick.sourceLocation.name} / pick sequence: ${pick.sourceLocation.pickSequence}");
     });
     if (assignedPicks.isEmpty) {
        return null;
     }
     else {
       // sort the pick first so skipped pick will come last
-      assignedPicks.sort((a, b) => a.skipCount.compareTo(b.skipCount));
+      printLongLogMessage("start to sort the picks based on rf's current location ${Global.getLastLoginRF().currentLocation.name} with pick sequence ${Global.getLastLoginRF().currentLocation.pickSequence}");
+      PickService.sortPicks(assignedPicks, Global.getLastLoginRF().currentLocation, true);
 
       print(" =====   after sort, we have picks      =====");
       assignedPicks.forEach((pick) {
-        print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity} / ${pick.skipCount}");
+        printLongLogMessage(">> number: ${pick.number} / quantity: ${pick.quantity} / picked quantity: ${pick.pickedQuantity} / skip count: ${pick.skipCount} " +
+            "/ source location: ${pick.sourceLocation.name} / pick sequence: ${pick.sourceLocation.pickSequence}");
       });
-      return assignedPicks.firstWhere((pick) => pick.quantity > pick.pickedQuantity, orElse: () => null);
+      // return the first unacknowleged pick
+      for (var pick in assignedPicks.where((pick) => pick.quantity > pick.pickedQuantity)) {
+        bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id);
+        if (acknowledgeable) {
+          return pick;
+        }
+      }
+      // we have a list picks but none of them are available for pick
+      return null;
+
     }
   }
+
 
   // prompt a dialog for user to choose valid orders
   Future<void> _showOrdersWithOpenPickDialog() async {

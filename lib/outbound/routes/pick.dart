@@ -13,6 +13,7 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../common/services/rf.dart';
 import '../models/pick_mode.dart';
 
 
@@ -519,6 +520,10 @@ class _PickPageState extends State<PickPage> {
 
     Navigator.of(context).pop();
     showToast("pick confirmed");
+
+    // change the RF's current location to the current location as we know the user is already
+    // in the location
+    RFService.changeCurrentRFLocation(pick.sourceLocationId).then((value) => printLongLogMessage("current RF's location is changed to ${pick.sourceLocationId}"));
 
     var pickResult = PickResult.fromJson(
         {'result': true, 'confirmedQuantity': totalConfirmedQuantity});

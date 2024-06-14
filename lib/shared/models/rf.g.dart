@@ -13,6 +13,7 @@ RF _$RFFromJson(Map<String, dynamic> json) {
     ..rfCode = json['rfCode'] == null ? "" : json['rfCode'] as String
     ..currentLocationId = json['currentLocationId'] == null ? null : json['currentLocationId'] as int
     ..currentLocationName = json['currentLocationName'] == null ? "" : json['currentLocationName'] as String
+    ..currentLocation = json['currentLocation'] == null ? null : WarehouseLocation.fromJson(json['currentLocation'] as Map<String, dynamic>)
     ..printerName = json['printerName'] == null ? "" :  json['printerName'] as String
   ;
 }
@@ -24,5 +25,6 @@ Map<String, dynamic> _$RFToJson(RF instance) =>
       'rfCode': instance.rfCode,
       'currentLocationId': instance.currentLocationId,
       'currentLocationName': instance.currentLocationName,
+      'currentLocation': instance.currentLocation,
       'printerName': instance.printerName
     };

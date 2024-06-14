@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cwms_mobile/common/services/rf.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -832,6 +833,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     Navigator.of(context).pop();
 
     showToast("inventory deposit");
+    RFService.changeCurrentRFLocation(destinationLocation.id).then((value) => printLongLogMessage("current RF's location is changed to ${destinationLocation.name}"));
+
     _locationController.clear();
     _locationFocusNode.requestFocus();
 
@@ -840,6 +843,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     });
     // let's get next inventory to be deposit
     _refreshInventoryOnRF();
+    
 
 
   }
