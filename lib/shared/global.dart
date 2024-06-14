@@ -239,7 +239,7 @@ class Global {
     return lastLoginRF;
   }
   static setLastLoginRF(RF rf){
-    rf = lastLoginRF;
+    lastLoginRF = rf;
 
     _prefs.setString("last_login_rf", jsonEncode(rf.toJson()));
   }

@@ -1,10 +1,12 @@
+import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/states/profile_change_notifier.dart';
+import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 
+import '../warehouse_layout/services/warehouse_location.dart';
 import 'global.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -130,10 +132,14 @@ class MyDrawer extends StatelessWidget {
             ListTile(
               title: Text(CWMSLocalizations.of(context).rfCode + ": " + Global.getLastLoginRFCode()),
             ),
+            ListTile(
+              title: Text(CWMSLocalizations.of(context).currentLocation + ": " + Global.getLastLoginRF().currentLocationName),
+            ),
           ],
         );
       },
     );
 
   }
+
 }

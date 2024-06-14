@@ -13,11 +13,15 @@ class RF {
 
   RF();
 
+  int id;
+
   int warehouseId;
 
   String rfCode;
 
   int currentLocationId;
+
+  String currentLocationName;
 
   String printerName;
 

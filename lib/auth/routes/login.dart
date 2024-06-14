@@ -20,6 +20,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 
+import '../../shared/models/rf.dart';
+import '../../warehouse_layout/models/warehouse_location.dart';
+
 class LoginPage extends StatefulWidget{
 
   LoginPage({Key key}) : super(key: key);
@@ -36,6 +39,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController _unameController = new TextEditingController();
   TextEditingController _pwdController = new TextEditingController();
   TextEditingController _rfCodeController = new TextEditingController();
+  TextEditingController _currentLocationController = new TextEditingController();
   List<Warehouse> _validWarehouses = [];
   Warehouse selectedWarehouse;
   bool pwdShow = false;
@@ -84,124 +88,177 @@ class _LoginPageState extends State<LoginPage> {
           // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
           child: Column(
             children: <Widget>[
-              Focus(
-                child: TextFormField(
-                    controller: _companyCodeController,
-                    decoration: InputDecoration(
-                      labelText: "company code",
-                      hintText: "please input your company code",
-                      prefixIcon: Icon(Icons.person),
-                    ),
-                    // 校验company code（不能为空）
-                    validator: (v) {
-                      return v.trim().isNotEmpty ? null : "company code is required";
-                    }),
-                onFocusChange: (hasFocus) {
-                  if(!hasFocus) {
-                      print("V2. validate when leave companyID");
-                      _loadWarehouses();
-                    // do stuff
-                  }
-                },
-              ),
-              Focus(
-                child: TextFormField(
-                        controller: _unameController,
-                        decoration: InputDecoration(
-                          labelText: "username",
-                          hintText: "please input username",
-                          prefixIcon: Icon(Icons.person),
-                        ),
-                        // 校验用户名（不能为空）
-                        validator: (v) {
-                          return v.trim().isNotEmpty ? null : "username is required";
-                        }),
-                onFocusChange: (hasFocus) {
-                  if(!hasFocus) {
-                    print("V2. validate when leave username");
-                    _loadWarehouses();
-                    // do stuff
-                  }
-                },
-              ),
-              TextFormField(
-                controller: _pwdController,
-                decoration: InputDecoration(
-                    labelText: "password",
-                    hintText: "please input password",
-                    prefixIcon: Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                          pwdShow ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () {
-                        setState(() {
-                          pwdShow = !pwdShow;
-                        });
-                      },
-                    )),
-                obscureText: !pwdShow,
-                //校验密码（不能为空）
-                validator: (v) {
-                  return v.trim().isNotEmpty ? null : "password is required";
-                },
-              ),
-              TextFormField(
-                  controller: _rfCodeController, //设置controller
-                  decoration: InputDecoration(
-                      labelText: "RF code",
-                      hintText: "RF code",
-                      prefixIcon: Icon(Icons.web)
-                  ),
-                  //
-                  validator: (v) {
-                    return v
-                        .trim()
-                        .length > 0 ? null : "Please input a valid RF";
-                  }
-              ),
-              Row(
-                children: <Widget>[
-                  Text("Warehouse"),
-                  getDropDownButtonsColumnForWarehouse()
-                ]
-              ),
-              Row(
-                  children: <Widget>[
-
-                    Checkbox(
-                      value: _rememberMe,
-                      activeColor: Colors.blue, //选中时的颜色
-                      onChanged:(value){
-                        //重新构建页面
-                        setState(() {
-                          _rememberMe=value;
-                        });
-                      },
-
-                    ),
-                    Text("Remember Me"),
-
-                  ]
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 5),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints.expand(height: 55.0),
-                  child: ElevatedButton(
-
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Theme.of(context).primaryColor,
-                    ),
-                    onPressed: selectedWarehouse == null ?  null : _onLogin,
-                    child: Text("login"),
-                  ),
-                ),
-              ),
+              _buildCompanyCodeControl(context),
+              _buildUserNameControl(context),
+              _buildPasswordControl(context),
+              _buildRFCodeControl(context),
+              _buildWarehouseControl(context),
+              _buildCurrentLocationControl(context),
+              _buildRememberMeControl(context),
+              _buildButtons(context)
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildButtons(BuildContext context){
+    return
+      Padding(
+        padding: const EdgeInsets.only(top: 5),
+        child: ConstrainedBox(
+          constraints: BoxConstraints.expand(height: 55.0),
+          child: ElevatedButton(
+
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).primaryColor,
+            ),
+            onPressed: selectedWarehouse == null ?  null : _onLogin,
+            child: Text("login"),
+          ),
+        ),
+      );
+  }
+  Widget _buildRememberMeControl(BuildContext context){
+    return
+      Row(
+          children: <Widget>[
+
+            Checkbox(
+              value: _rememberMe,
+              activeColor: Colors.blue, //选中时的颜色
+              onChanged:(value){
+                //重新构建页面
+                setState(() {
+                  _rememberMe=value;
+                });
+              },
+
+            ),
+            Text("Remember Me"),
+
+          ]
+      );
+  }
+  Widget _buildWarehouseControl(BuildContext context){
+    return
+      Row(
+          children: <Widget>[
+            Text("Warehouse"),
+            getDropDownButtonsColumnForWarehouse()
+          ]
+      );
+  }
+  Widget _buildRFCodeControl(BuildContext context){
+
+    return
+      TextFormField(
+          controller: _rfCodeController, //设置controller
+          decoration: InputDecoration(
+              labelText: "RF code",
+              hintText: "RF code",
+              prefixIcon: Icon(Icons.web)
+          ),
+          //
+          validator: (v) {
+            return v
+                .trim()
+                .length > 0 ? null : "Please input a valid RF";
+          }
+      );
+  }
+  Widget _buildCurrentLocationControl(BuildContext context){
+
+    return
+      TextFormField(
+          controller: _currentLocationController, //设置controller
+          decoration: InputDecoration(
+              labelText: CWMSLocalizations
+                  .of(context)
+                  .currentLocation,
+              hintText: CWMSLocalizations
+                  .of(context)
+                  .inputLocationHint,
+              prefixIcon: Icon(Icons.web)
+          ),
+          //
+          validator: (v) {
+            return v
+                .trim()
+                .length > 0 ? null : "Please input a valid location";
+          }
+      );
+  }
+  Widget _buildPasswordControl(BuildContext context){
+
+    return TextFormField(
+      controller: _pwdController,
+      decoration: InputDecoration(
+          labelText: "password",
+          hintText: "please input password",
+          prefixIcon: Icon(Icons.lock),
+          suffixIcon: IconButton(
+            icon: Icon(
+                pwdShow ? Icons.visibility_off : Icons.visibility),
+            onPressed: () {
+              setState(() {
+                pwdShow = !pwdShow;
+              });
+            },
+          )),
+      obscureText: !pwdShow,
+      //校验密码（不能为空）
+      validator: (v) {
+        return v.trim().isNotEmpty ? null : "password is required";
+      },
+    );
+  }
+  Widget _buildUserNameControl(BuildContext context){
+    return
+      Focus(
+        child: TextFormField(
+            controller: _unameController,
+            decoration: InputDecoration(
+              labelText: "username",
+              hintText: "please input username",
+              prefixIcon: Icon(Icons.person),
+            ),
+            // 校验用户名（不能为空）
+            validator: (v) {
+              return v.trim().isNotEmpty ? null : "username is required";
+            }),
+        onFocusChange: (hasFocus) {
+          if(!hasFocus) {
+            print("V2. validate when leave username");
+            _loadWarehouses();
+            // do stuff
+          }
+        },
+      );
+  }
+
+  Widget _buildCompanyCodeControl(BuildContext context){
+    return Focus(
+      child: TextFormField(
+          controller: _companyCodeController,
+          decoration: InputDecoration(
+            labelText: "company code",
+            hintText: "please input your company code",
+            prefixIcon: Icon(Icons.person),
+          ),
+          // 校验company code（不能为空）
+          validator: (v) {
+            return v.trim().isNotEmpty ? null : "company code is required";
+          }),
+      onFocusChange: (hasFocus) {
+        if(!hasFocus) {
+          print("V2. validate when leave companyID");
+          _loadWarehouses();
+          // do stuff
+        }
+      },
     );
   }
 
@@ -349,17 +406,32 @@ class _LoginPageState extends State<LoginPage> {
       User user;
       int companyId;
 
-      try {
+      WarehouseLocation currentLocation;
 
+      try {
         // make sure the rf code is still valid
+
         bool isRFCodeValid = await
             RFService.valdiateRFCode(selectedWarehouse.id, _rfCodeController.text);
 
         if (!isRFCodeValid) {
 
-          print("auto login fail as rf code ${_rfCodeController.text} is not valid");
+          print("login fail as rf code ${_rfCodeController.text} is not valid");
 
           showToast("rf code ${_rfCodeController.text} is not valid ");
+          return;
+        }
+
+
+        print("start to validate the location ${_currentLocationController.text}");
+        bool isLocationValid = await
+            WarehouseLocationService.valdiateLocation(selectedWarehouse.id, _currentLocationController.text);
+
+        if (!isLocationValid) {
+
+          print("login fail as location  ${_currentLocationController.text} is not valid");
+
+          showToast("location ${_currentLocationController.text} is not valid ");
           return;
         }
 
@@ -386,6 +458,7 @@ class _LoginPageState extends State<LoginPage> {
       }
       if (user != null) {
         //
+        showLoading(context);
 
         // 返回
         print("_rememberMe? $_rememberMe");
@@ -396,6 +469,8 @@ class _LoginPageState extends State<LoginPage> {
         // setup current company
         Global.lastLoginCompanyId = companyId;
         Global.lastLoginCompanyCode = _companyCodeController.text;
+
+
         Global.setLastLoginRFCode(_rfCodeController.text);
 
         // setup the http client with auth information
@@ -404,14 +479,18 @@ class _LoginPageState extends State<LoginPage> {
         // load the configuration and cache
         Global.initInventoryConfiguration();
 
-        // setup the RF as we would like to get the default printer that associated with
-        // the RF
-        RFService.getRFByCode(_rfCodeController.text).then((rf) =>
-            Global.setLastLoginRF(rf)
-        ).catchError((err) {
-          printLongLogMessage("error while getting RF from code ${_rfCodeController.text}");
-          printLongLogMessage(err.toString());
-        });
+
+        // setup the rf and location
+
+        RF rf = await RFService.getRFByCodeAndWarehouseId(
+            selectedWarehouse.id, _rfCodeController.text);
+
+        WarehouseLocation currentLocation = await WarehouseLocationService.getWarehouseLocationByWarehouseIdAndName(
+                  selectedWarehouse.id, _currentLocationController.text);
+
+        Global.setLastActivityLocation(currentLocation);
+        rf = await RFService.changeRFLocation(selectedWarehouse.id, rf.id, currentLocation.id);
+        Global.setLastLoginRF(rf);
 
 
         // Setup auto login user
@@ -427,17 +506,6 @@ class _LoginPageState extends State<LoginPage> {
               });
 
         }
-
-
-        // TO-DO: as a temporary solution, we will init the
-        // start location as the RF. It will be changed when
-        // the user start any location based activity like
-        // count, deposit, pick, etc.
-        WarehouseLocationService.getWarehouseLocationByName(Global.lastLoginRFCode)
-            .then((rfLocation) {
-          print("start last activity location to ${rfLocation.name}");
-          Global.setLastActivityLocation(rfLocation);
-        });
 
 
         print("login with user: ${user.username}, token: ${user.token}. companyCode: ${Global.lastLoginCompanyId}, company Id: ${Global.lastLoginCompanyCode}");
@@ -486,6 +554,7 @@ class _LoginPageState extends State<LoginPage> {
         else {
           _appNeedUpdate = await _needUpdate(latestRFAppVersion);
         }
+        Navigator.of(context).pop();
 
         if (_appNeedUpdate) {
           Navigator.of(context).pushNamed("app_upgrade", arguments: latestRFAppVersion);

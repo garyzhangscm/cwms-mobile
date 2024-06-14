@@ -27,7 +27,7 @@ class RFService {
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
-    // printLongLogMessage("response from valdiateRFCode: $responseString");
+    printLongLogMessage("response from valdiateRFCode: $responseString");
 
     bool isValid = responseString["data"];
 
@@ -37,6 +37,9 @@ class RFService {
 
 
   static Future<RF> getRFByCode(String rfCode) async {
+    return getRFByCodeAndWarehouseId(Global.currentWarehouse.id, rfCode);
+  }
+  static Future<RF> getRFByCodeAndWarehouseId(int warehouseId, String rfCode) async {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
@@ -48,7 +51,7 @@ class RFService {
     Response response = await httpClient.get(
         Global.currentServer.url + "resource/rfs",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": warehouseId,
           "rfCode": rfCode}
     );
 
@@ -60,6 +63,7 @@ class RFService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
+    print("getRFByCodeAndWarehouseId returns: ${responseString["data"]}");
 
     List<RF> rfs
     = (responseString["data"] as List)?.map((e) =>
@@ -71,6 +75,49 @@ class RFService {
       throw new WebAPICallException("can't find RF by code $rfCode");
     }
     return rfs[0];
+
+  }
+
+
+  static Future<RF> changeCurrentRFLocation(int locationId) async {
+    return changeRFLocation(Global.currentWarehouse.id,
+        Global.getLastLoginRF().id, locationId);
+  }
+  static Future<RF> changeRFLocation(int warehouseId, int id, int locationId) async {
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    // we will need to use the standard dio instead because
+    // 1. we will validate the RF code before we log in so we probably don't have the
+    //   auth token yet
+    // 2. we don't have to have the auth token. all the */validate/** endpoint won't
+    //    probably requires auth info
+    Response response = await httpClient.post(
+        Global.currentServer.url + "resource/rfs/${id}/change-location",
+        queryParameters: {
+          "warehouseId": warehouseId,
+          "locationId": locationId,
+        }
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    print("response from changeCurrentRFLocation:");
+
+    printLongLogMessage(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("fail to change the location for current RF: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    Map<String, dynamic> responseData = responseString["data"] as Map<String, dynamic>;
+    if (responseData == null || responseData.isEmpty) {
+      throw new WebAPICallException("fail to change the location for current RF");
+    }
+    return RF.fromJson(responseData);
+
+
 
   }
 }

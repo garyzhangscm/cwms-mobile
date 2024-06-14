@@ -7,7 +7,6 @@ import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
 
@@ -36,20 +35,24 @@ class WarehouseLocationService {
     return WarehouseLocation.fromJson(responseString["data"] as Map<String, dynamic>);
 
   }
+
   static Future<WarehouseLocation> getWarehouseLocationByName(String locationName) async {
+    return getWarehouseLocationByWarehouseIdAndName(Global.currentWarehouse.id, locationName);
+  }
+  static Future<WarehouseLocation> getWarehouseLocationByWarehouseIdAndName(int warehouseId, String locationName) async {
 
 
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
         "/layout/locations",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id,
+        queryParameters: {'warehouseId': warehouseId,
           'name': locationName}
     );
 
-    // print("response from warehouse location:");
+    print("response from getWarehouseLocationByWarehouseIdAndName:");
 
-    // printLongLogMessage(response.toString());
+    printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
@@ -194,5 +197,30 @@ class WarehouseLocationService {
       }
 
     }
+  }
+
+
+  static Future<bool> valdiateLocation(int warehouseId, String locationName) async {
+
+    // we will need to use the standard dio instead because
+    // 1. we will validate the location before we log in so we probably don't have the
+    //   auth token yet
+    // 2. we don't have to have the auth token. all the */validate/** endpoint won't
+    //    probably requires auth info
+    Response response = await Dio().get(
+        Global.currentServer.url + "/layout/validate/locations",
+        queryParameters: {
+          "warehouseId": warehouseId,
+          "locationName": locationName}
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    // printLongLogMessage("response from valdiateRFCode: $responseString");
+
+    bool isValid = responseString["data"];
+
+    return isValid;
+
   }
 }
