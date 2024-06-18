@@ -18,6 +18,8 @@ import 'package:cwms_mobile/shared/services/qr_code_service.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
+import '../../shared/models/barcode.dart';
+
 
 class BarcodeReceivingPage extends StatefulWidget{
 
@@ -247,12 +249,13 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
     try {
 
-      parameters = QRCodeService.parseQRCode(barcode);
-      if (parameters.isEmpty) {
+      Barcode barcodeResult = QRCodeService.parseQRCode(barcode);
+      if (!barcodeResult.is_2d || barcodeResult.result.isEmpty) {
         Navigator.of(context).pop();
         await showBlockedErrorDialog(context, "Can't parse the barcode " + barcode);
         return false;
       }
+      parameters = barcodeResult.result;
     }
     on Exception catch(ex) {
 

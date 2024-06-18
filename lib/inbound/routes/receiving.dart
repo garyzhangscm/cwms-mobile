@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 import '../../inventory/models/item.dart';
+import '../../shared/models/barcode.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -98,10 +99,13 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _receiptNumberFocusNode.addListener(() {
       print("_receiptFocusNode.hasFocus: ${_receiptNumberFocusNode.hasFocus}");
       if (!_receiptNumberFocusNode.hasFocus && _receiptNumberController.text.isNotEmpty) {
+        Barcode barcode = QRCodeService.parseQRCode(_receiptNumberController.text);
+
+
         // first check if it is a barcode scanned in
-        if (_isReceivingBarcode(_receiptNumberController.text)) {
+        if (barcode.is_2d) {
           _barcodeReceivingMode = true;
-          _processBarcode(_receiptNumberController.text).then(
+          _processBarcode(barcode.result).then(
                   (successful) {
 
                     if (successful) {
@@ -153,15 +157,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
 
 
-  _isReceivingBarcode(String value) {
-    return QRCodeService.validateQRCode(value);
-  }
-  
   // if the user scan in a barcode, then we will parse the barcode and
   // automatically populate all the values
-  Future<bool> _processBarcode(String barcode) async {
+  Future<bool> _processBarcode(Map<String, String> parameters) async {
 
-    Map<String, String> parameters = QRCodeService.parseQRCode(barcode);
     // make sure we at least have receipt number
 
     if (!parameters.containsKey("receiptId") ||
@@ -1174,6 +1173,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
 
   }
+  /**
   _showQRCodeView() async {
 
     final result = await Navigator.of(context)
@@ -1186,6 +1186,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
     printLongLogMessage("resutl after parse the code code: \n ${parameters}");
 
   }
+      **/
+
   // show all open receipt that can be received
   _showChoosingReceiptDialog() async {
 

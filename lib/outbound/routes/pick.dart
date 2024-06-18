@@ -14,6 +14,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/services/rf.dart';
+import '../../shared/models/barcode.dart';
+import '../../shared/services/qr_code_service.dart';
 import '../models/pick_mode.dart';
 
 
@@ -85,6 +87,21 @@ class _PickPageState extends State<PickPage> {
       printLongLogMessage("_lpnFocusNode hasFocus?: ${_lpnFocusNode.hasFocus}");
       printLongLogMessage("_sourceLocationController text?: ${_lpnController.text}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
+        Barcode barcode = QRCodeService.parseQRCode(_lpnController.text);
+        printLongLogMessage("barcode.is_2d?: ${barcode.is_2d}");
+        if (barcode.is_2d) {
+          // for 2d barcode, let's get the result and set the LPN back to the text
+          String lpn = _getLPNFrom2DBarcode(barcode);
+          printLongLogMessage("get lpn from lpn?: ${lpn}");
+          if (lpn == "") {
+
+            showErrorDialog(context, "can't get LPN from the barcode");
+            return;
+          }
+          else {
+            _lpnController.text = lpn;
+          }
+        }
         _enterOnLPNController(10);
 
       }});
@@ -121,6 +138,16 @@ class _PickPageState extends State<PickPage> {
     _workNumber = arguments['workNumber'] == null || arguments['workNumber'].toString().isEmpty ? _currentPick.number : arguments['workNumber'];
     printLongLogMessage("_workNumber: $_workNumber");
 
+  }
+
+  String _getLPNFrom2DBarcode(Barcode barcode) {
+    String lpn = "";
+    barcode.result.forEach((k, v) {
+      if (k.toLowerCase() == "lpn" && v != "") {
+        lpn = v;
+      }
+    });
+    return lpn;
   }
 
   @override
@@ -332,12 +359,14 @@ class _PickPageState extends State<PickPage> {
     bool locationValid = await _validateSourceLocation();
     if (!locationValid) {
       // validation fail, leave the user in the location control
-
-      await showBlockedErrorDialog(context, "location " + _sourceLocationController.text + " is invalid");
+      // erorr message will be displayed in the _validateSourceLocation function
+      // await showBlockedErrorDialog(context, "location " + _sourceLocationController.text + " is invalid");
       _sourceLocationFocusNode.requestFocus();
       return;
     }
 
+    // when the user confirmed the location , we know that the user arrives at the location
+    RFService.changeCurrentRFLocation(_currentPick.sourceLocationId).then((value) => printLongLogMessage("RF location changed"));
     printLongLogMessage("Move to the next focus node");
     if (_currentPick.confirmLpnFlag) {
       _lpnControllerFocusNode.requestFocus();
@@ -629,18 +658,18 @@ class _PickPageState extends State<PickPage> {
     on WebAPICallException catch(ex) {
 
       Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
+      await showBlockedErrorDialog(context, ex.errMsg());
       return false;
 
     }
 
     Navigator.of(context).pop();
     if (warehouseLocation == null) {
-      showErrorDialog(context, "can't find location by input value ${_sourceLocationController.text}");
+      await showBlockedErrorDialog(context, "can't find location by input value ${_sourceLocationController.text}");
       return false;
     }
     else if (warehouseLocation.id != _currentPick.sourceLocationId) {
-      showErrorDialog(context, "Location ${_sourceLocationController.text} is not the right location for pick");
+      await showBlockedErrorDialog(context, "Location ${_sourceLocationController.text} is not the right location for pick");
       return false;
 
     }

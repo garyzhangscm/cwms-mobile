@@ -119,7 +119,11 @@ class RFService {
     if (responseData == null || responseData.isEmpty) {
       throw new WebAPICallException("fail to change the location for current RF");
     }
-    return RF.fromJson(responseData);
+
+    // refresh the RF with the new location
+    RF rf = RF.fromJson(responseData);
+    Global.setLastLoginRF(rf);
+    return rf;
 
 
 

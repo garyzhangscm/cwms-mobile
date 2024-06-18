@@ -19,15 +19,17 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:dio/dio.dart';
 
+import '../models/barcode.dart';
+
 class QRCodeService {
 
-  static Map<String, String> parseQRCode(String qrCode)  {
+
+  static Barcode parseQRCode(String qrCode)  {
 
     Map<String, String> result = new Map();
 
     if (!validateQRCode(qrCode)) {
-
-      throw new Exception("Can't parse the qr code " + qrCode);
+        return Barcode(false, null, qrCode);
     }
 
     // qc code should be in the format of
@@ -44,7 +46,7 @@ class QRCodeService {
 
     printLongLogMessage("get result after parse the qrCode ${qrCode} \n ${result}");
 
-    return result;
+    return Barcode(true, result, qrCode);
 
 
 
