@@ -6,16 +6,19 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
 import 'package:cwms_mobile/outbound/services/bulk_pick.dart';
-import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/bulk_pick.dart';
-import '../models/pick_mode.dart';
+
+import '../../shared/services/barcode_service.dart';
+import '../../shared/models/barcode.dart';
+
+
+
 
 
 class BulkPickPage extends StatefulWidget{
@@ -43,8 +46,6 @@ class _BulkPickPageState extends State<BulkPickPage> {
   FocusNode _quantityFocusNode = FocusNode();
   FocusNode _quantityControllerFocusNode = FocusNode();
 
-
-  PickMode _pickMode;
 
   List<Inventory>  inventoryOnRF;
 
@@ -74,6 +75,23 @@ class _BulkPickPageState extends State<BulkPickPage> {
       printLongLogMessage("_lpnFocusNode hasFocus?: ${_lpnFocusNode.hasFocus}");
       printLongLogMessage("_sourceLocationController text?: ${_lpnController.text}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
+
+
+        Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
+        if (barcode.is_2d) {
+          // for 2d barcode, let's get the result and set the LPN back to the text
+          String lpn = BarcodeService.getLPN(barcode);
+          printLongLogMessage("get lpn from lpn?: ${lpn}");
+          if (lpn == "") {
+
+            showErrorDialog(context, "can't get LPN from the barcode");
+            return;
+          }
+          else {
+            _lpnController.text = lpn;
+          }
+        }
+
         _enterOnLPNController(10);
 
       }});
@@ -85,8 +103,6 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
     // extract the argument
     Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
-    _pickMode = arguments['pickMode'];
-
     _currentBulkPick = arguments['bulkPick'];
 
   }

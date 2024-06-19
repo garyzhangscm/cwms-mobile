@@ -384,54 +384,56 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
     // flow to pick page with the first pick
     currentPick = await _getNextValidPick();
-
-    if (currentPick != null) {
-      // acknowledge the pick so no one else can take it
-      await PickService.acknowledgePick(currentPick.id);
-
-      // setup the batch picked quantity to be the same as pick quantity
-      // since we are working on a single pick. In the next pick page,
-      // we will use the same logic to handle the batch picking and single pick
-      currentPick.batchPickQuantity = currentPick.quantity - currentPick.pickedQuantity;
-      Map argumentMap = new HashMap();
-      argumentMap['pick'] = currentPick;
-      argumentMap['pickMode'] = PickMode.BY_ORDER;
-
-      final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
-      await PickService.unacknowledgePick(currentPick.id);
-      if (result == null) {
-        // if the user click the return button instead of confirming
-        // let's do nothing
-        return;
-      }
-      var pickResult = result as PickResult;
-      print("pick result: $pickResult for pick: ${currentPick.number}");
-
-      // refresh the orders
-      if (pickResult.result == true) {
-        // update the current pick
-        currentPick.pickedQuantity
-          = currentPick.pickedQuantity + pickResult.confirmedQuantity;
-        // update the order's open pick quantity to reflect the
-        // pick status
-        Order order = _getOrderByPick(currentPick);
-        if (order != null) {
-          setState(() {
-
-            order.totalOpenPickQuantity -= pickResult.confirmedQuantity;
-            order.totalPickedQuantity +=  pickResult.confirmedQuantity;
-          });
-        }
-
-        // refresh the pick on the RF
-        _reloadInventoryOnRF();
-
-
-        // continue with next available pick
-        _startPickingForOrder();
-      }
-
+    if (currentPick == null) {
+      await showBlockedErrorDialog(context, "all picks are done!");
+      return;
     }
+
+    // acknowledge the pick so no one else can take it
+    await PickService.acknowledgePick(currentPick.id);
+
+    // setup the batch picked quantity to be the same as pick quantity
+    // since we are working on a single pick. In the next pick page,
+    // we will use the same logic to handle the batch picking and single pick
+    currentPick.batchPickQuantity = currentPick.quantity - currentPick.pickedQuantity;
+    Map argumentMap = new HashMap();
+    argumentMap['pick'] = currentPick;
+    argumentMap['pickMode'] = PickMode.BY_ORDER;
+
+    final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+    await PickService.unacknowledgePick(currentPick.id);
+    if (result == null) {
+      // if the user click the return button instead of confirming
+      // let's do nothing
+      return;
+    }
+    var pickResult = result as PickResult;
+    print("pick result: $pickResult for pick: ${currentPick.number}");
+
+    // refresh the orders
+    if (pickResult.result == true) {
+      // update the current pick
+      currentPick.pickedQuantity
+        = currentPick.pickedQuantity + pickResult.confirmedQuantity;
+      // update the order's open pick quantity to reflect the
+      // pick status
+      Order order = _getOrderByPick(currentPick);
+      if (order != null) {
+        setState(() {
+
+          order.totalOpenPickQuantity -= pickResult.confirmedQuantity;
+          order.totalPickedQuantity +=  pickResult.confirmedQuantity;
+        });
+      }
+
+      // refresh the pick on the RF
+      _reloadInventoryOnRF();
+
+
+      // continue with next available pick
+      _startPickingForOrder();
+    }
+
   }
 
   void _reloadInventoryOnRF() {

@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:badges/badges.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
+import 'package:cwms_mobile/inventory/models/item_package_type.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
@@ -10,13 +13,12 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/services/rf.dart';
+import '../../inventory/models/item_unit_of_measure.dart';
 import '../../shared/models/barcode.dart';
-import '../../shared/services/qr_code_service.dart';
-import '../models/pick_mode.dart';
+import '../../shared/services/barcode_service.dart';
 
 
 class PickPage extends StatefulWidget{
@@ -45,9 +47,15 @@ class _PickPageState extends State<PickPage> {
   FocusNode _quantityControllerFocusNode = FocusNode();
 
 
-  PickMode _pickMode;
   String _workNumber;
   int _lpnQuantity = 0;
+
+  // pickable inveotory's item package type. Used to show how to pick
+  // if the source location is mixed of item package types, then
+  // show (Mixed Item Package Type)
+  // if the source location is not mixed of item package type,
+  // then show (X case, Y package, Z Each)
+  ItemPackageType _pickableInventoryItemPackageType = null;
 
 
   final  _formKey = GlobalKey<FormState>();
@@ -69,7 +77,7 @@ class _PickPageState extends State<PickPage> {
     _destinationLPN = "";
     _workNumber = "";
     _lpnQuantity = 0;
-
+    _pickableInventoryItemPackageType = null;
 
     inventoryOnRF = [];
 
@@ -87,7 +95,7 @@ class _PickPageState extends State<PickPage> {
       printLongLogMessage("_lpnFocusNode hasFocus?: ${_lpnFocusNode.hasFocus}");
       printLongLogMessage("_sourceLocationController text?: ${_lpnController.text}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
-        Barcode barcode = QRCodeService.parseQRCode(_lpnController.text);
+        Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
         printLongLogMessage("barcode.is_2d?: ${barcode.is_2d}");
         if (barcode.is_2d) {
           // for 2d barcode, let's get the result and set the LPN back to the text
@@ -119,16 +127,15 @@ class _PickPageState extends State<PickPage> {
   }
 
   @override
-  void didChangeDependencies() {
+  Future<void> didChangeDependencies() async {
 
     // extract the argument
     printLongLogMessage("start to get picks and related mode");
     Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
-    _pickMode = arguments['pickMode'];
-    printLongLogMessage("_pickMode: $_pickMode");
 
 
     _currentPick = arguments['pick'];
+    _setupPickableInventoryItemPackageType(_currentPick);
     printLongLogMessage("_currentPick: ${_currentPick.toJson()}");
     _destinationLPN  = arguments['destinationLPN'] == null ? "" : arguments['destinationLPN'];
     printLongLogMessage("_destinationLPN: $_destinationLPN");
@@ -168,10 +175,27 @@ class _PickPageState extends State<PickPage> {
               buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
               // add the batch pick quantity only if the quantity to be picked is more than the single pick
               _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
-                  buildTwoSectionInformationRow("Batch Pick Quantity:", _currentPick.batchPickQuantity.toString()) :
-                  buildTwoSectionInformationRow("Pick Quantity:", _currentPick.quantity.toString()),
-              buildTwoSectionInformationRow("Picked Quantity:", _currentPick.pickedQuantity.toString()),
-              buildTwoSectionInformationRow("Inventory Quantity:", _lpnQuantity.toString()),
+                  buildTwoSectionInformationRow("Batch Pick Quantity:",
+                      _currentPick.batchPickQuantity.toString() +
+                          (_pickableInventoryItemPackageType == null ? "" :
+                              _getPickQuantityIndicator(_currentPick.batchPickQuantity)))
+                  :
+                  buildTwoSectionInformationRow("Pick Quantity:",
+                      _currentPick.quantity.toString() +
+                      (_pickableInventoryItemPackageType == null ? "" :
+                      _getPickQuantityIndicator(_currentPick.quantity))) ,
+              buildTwoSectionInformationRow("Picked Quantity:",
+                  _currentPick.pickedQuantity.toString() +
+                      (_pickableInventoryItemPackageType == null ? "" :
+                      _getPickQuantityIndicator(_currentPick.pickedQuantity))),
+              buildTwoSectionInformationRow("Remaining Quantity:",
+                  (_currentPick.quantity - _currentPick.pickedQuantity).toString() +
+                      (_pickableInventoryItemPackageType == null ? "" :
+                      _getPickQuantityIndicator(_currentPick.quantity - _currentPick.pickedQuantity))),
+              buildTwoSectionInformationRow("Inventory Quantity:",
+                      _lpnQuantity.toString() +
+                      (_pickableInventoryItemPackageType == null ? "" :
+                      _getPickQuantityIndicator(_lpnQuantity))),
               _destinationLPN.isEmpty? Container() : buildTwoSectionInformationRow("Destination LPN:", _destinationLPN),
               _buildQuantityInput(context),
               _buildButtons(context),
@@ -582,6 +606,75 @@ class _PickPageState extends State<PickPage> {
 
     Navigator.pop(context, pickResult);
 
+  }
+
+  void _setupPickableInventoryItemPackageType(Pick pick) {
+    // get all the inventory from the pick's source location
+    int pickableQuantity = max(0, pick.quantity - pick.pickedQuantity);
+    printLongLogMessage("start to get pickable inventory item package type for pick ${pick.number} with pickable quantity: ${pickableQuantity}");
+    if (pickableQuantity > 0) {
+      InventoryService.findPickableInventory(
+          pick.item.id,
+          pick.inventoryStatus.id,
+          color: pick.color != null &&  pick.color.isNotEmpty ? pick.color : "",
+          productSize: pick.productSize != null && pick.productSize.isNotEmpty ? pick.productSize : "",
+          style: pick.style != null && pick.style.isNotEmpty ? pick.style : "",
+          locationId: pick.sourceLocationId).then((inventoryInLocation){
+         // for the pickable inventory , let's get the biggest possible
+        // item unit of measure for each item package type(if mixed)
+        // if the biggest item unit of measures from different item package types
+        // matches with name and quantity, then we will show it.
+            Map<int, ItemPackageType> itemPackageTypeMap = new Map();
+            inventoryInLocation.forEach((inventory) => itemPackageTypeMap.putIfAbsent(
+                inventory.itemPackageType.id, () => inventory.itemPackageType));
+            printLongLogMessage(">> itemPackageTypeMap.isEmpty : ${itemPackageTypeMap.isEmpty} , itemPackageTypeMap.length  : ${itemPackageTypeMap.length}");
+            if (itemPackageTypeMap.isEmpty || itemPackageTypeMap.length > 1) {
+              _pickableInventoryItemPackageType = null;
+            }
+            else {
+              // there's only one item package type in the map
+              _pickableInventoryItemPackageType = itemPackageTypeMap.values.toList().first;
+              printLongLogMessage("_pickableInventoryItemPackageType is setup to ${_pickableInventoryItemPackageType.name}");
+
+
+            }
+            setState(() {
+              _pickableInventoryItemPackageType;
+            });
+      });
+    }
+
+  }
+
+  String _getPickQuantityIndicator(int quantity) {
+    if (_pickableInventoryItemPackageType == null || quantity == 0) {
+      return "";
+    }
+
+    // save the quantity of each unit of measure  so we can
+    // calculate how many of each unit of measure needed for the pick
+    Map<int, ItemUnitOfMeasure> itemUnitOfMeasureMap = new Map();
+    _pickableInventoryItemPackageType.itemUnitOfMeasures.forEach((itemUnitOfMeasure) =>
+        itemUnitOfMeasureMap.putIfAbsent(itemUnitOfMeasure.quantity, () => itemUnitOfMeasure)
+    );
+    List<int> itemUnitOfMeasureQuantityList = itemUnitOfMeasureMap.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    String pickByUnitOfMeasureIndicator = "";
+    itemUnitOfMeasureQuantityList.forEach((itemUnitOfMeasureQuantity) {
+      if (quantity > 0 && itemUnitOfMeasureMap[itemUnitOfMeasureQuantity].quantity <= quantity) {
+        // continue if we can pick at this item unit of measure
+        int pickQuantityAtUnitOfMeasure = (quantity ~/ itemUnitOfMeasureMap[itemUnitOfMeasureQuantity].quantity);
+
+        pickByUnitOfMeasureIndicator += pickQuantityAtUnitOfMeasure.toString() + " " + itemUnitOfMeasureMap[itemUnitOfMeasureQuantity].unitOfMeasure.name + ", ";
+        quantity = quantity % itemUnitOfMeasureMap[itemUnitOfMeasureQuantity].quantity;
+      }
+    });
+    pickByUnitOfMeasureIndicator = pickByUnitOfMeasureIndicator.trim();
+    if (pickByUnitOfMeasureIndicator.endsWith(",")) {
+      pickByUnitOfMeasureIndicator = pickByUnitOfMeasureIndicator.substring(0, pickByUnitOfMeasureIndicator.length - 1);
+    }
+
+    return " (" + pickByUnitOfMeasureIndicator + ")";
   }
 
   Future<void> _startDeposit() async {

@@ -18,7 +18,7 @@ import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
-import 'package:cwms_mobile/shared/services/qr_code_service.dart';
+import 'package:cwms_mobile/shared/services/barcode_service.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -99,7 +99,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _receiptNumberFocusNode.addListener(() {
       print("_receiptFocusNode.hasFocus: ${_receiptNumberFocusNode.hasFocus}");
       if (!_receiptNumberFocusNode.hasFocus && _receiptNumberController.text.isNotEmpty) {
-        Barcode barcode = QRCodeService.parseQRCode(_receiptNumberController.text);
+        Barcode barcode = BarcodeService.parseBarcode(_receiptNumberController.text);
 
 
         // first check if it is a barcode scanned in
@@ -148,6 +148,20 @@ class _ReceivingPageState extends State<ReceivingPage> {
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
 
+        Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
+        if (barcode.is_2d) {
+          // for 2d barcode, let's get the result and set the LPN back to the text
+          String lpn = BarcodeService.getLPN(barcode);
+          printLongLogMessage("get lpn from lpn?: ${lpn}");
+          if (lpn == "") {
+
+            showErrorDialog(context, "can't get LPN from the barcode");
+            return;
+          }
+          else {
+            _lpnController.text = lpn;
+          }
+        }
         _enterOnLPNController();
       }
     });

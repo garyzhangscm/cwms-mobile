@@ -1,26 +1,15 @@
-import 'package:badges/badges.dart';
+
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_request_action.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
-import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
-import 'package:cwms_mobile/inventory/services/cycle_count_batch.dart';
-import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/inventory/widgets/count_batch_list_item.dart';
-import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:cwms_mobile/shared/global.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
-import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import '../../shared/services/barcode_service.dart';
+import '../../shared/models/barcode.dart';
 
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
@@ -64,6 +53,23 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
       print("lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
+        // allow the user to input barcode
+
+        Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
+        if (barcode.is_2d) {
+          // for 2d barcode, let's get the result and set the LPN back to the text
+          String lpn = BarcodeService.getLPN(barcode);
+          printLongLogMessage("get lpn from lpn?: ${lpn}");
+          if (lpn == "") {
+
+            showErrorDialog(context, "can't get LPN from the barcode");
+            return;
+          }
+          else {
+            _lpnController.text = lpn;
+          }
+        }
+
         _onLPNScanned();
 
       }

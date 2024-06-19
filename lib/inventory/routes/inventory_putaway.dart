@@ -16,6 +16,8 @@ import 'package:flutter/material.dart';
 
 import '../../exception/WebAPICallException.dart';
 import '../../shared/http_client.dart';
+import '../../shared/services/barcode_service.dart';
+import '../../shared/models/barcode.dart';
 
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
@@ -58,6 +60,20 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
       print("lpnFocusNode.hasFocus: ${lpnFocusNode.hasFocus}");
       if (!lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
+        Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
+        if (barcode.is_2d) {
+          // for 2d barcode, let's get the result and set the LPN back to the text
+          String lpn = BarcodeService.getLPN(barcode);
+          printLongLogMessage("get lpn from lpn?: ${lpn}");
+          if (lpn == "") {
+
+            showErrorDialog(context, "can't get LPN from the barcode");
+            return;
+          }
+          else {
+            _lpnController.text = lpn;
+          }
+        }
         _onAddingLPN();
 
       }

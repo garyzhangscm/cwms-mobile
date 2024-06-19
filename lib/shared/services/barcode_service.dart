@@ -21,21 +21,24 @@ import 'package:dio/dio.dart';
 
 import '../models/barcode.dart';
 
-class QRCodeService {
+class BarcodeService {
 
 
-  static Barcode parseQRCode(String qrCode)  {
+  /**
+   * Parse 1-d or 2-d barcode
+   */
+  static Barcode parseBarcode(String barcodeValue)  {
 
     Map<String, String> result = new Map();
 
-    if (!validateQRCode(qrCode)) {
-        return Barcode(false, null, qrCode);
+    if (!is2DBarcode(barcodeValue)) {
+        return Barcode(false, null, barcodeValue);
     }
 
     // qc code should be in the format of
     // qcCode:foo=bar;x=y;
-    qrCode = qrCode.substring(7);
-    var parameters = qrCode.split(";");
+    barcodeValue = barcodeValue.substring(7);
+    var parameters = barcodeValue.split(";");
     parameters.forEach((parameter) {
       var keyValue = parameter.split("=");
 
@@ -44,28 +47,41 @@ class QRCodeService {
       }
     });
 
-    printLongLogMessage("get result after parse the qrCode ${qrCode} \n ${result}");
+    printLongLogMessage("get result after parse the qrCode ${barcodeValue} \n ${result}");
 
-    return Barcode(true, result, qrCode);
+    return Barcode(true, result, barcodeValue);
 
 
 
 
   }
 
-  static bool validateQRCode(String qrCode) {
+  static bool is2DBarcode(String barcode) {
 
     // qc code should be in the format of
     // qcCode:foo=bar;x=y;
     // printLongLogMessage("qrCode.length <= 7? ${qrCode.length <= 7}");
     // printLongLogMessage("qrCode.substring(0, 7): ${qrCode.substring(0, 7)}");
     // printLongLogMessage("qrCode.substring(0, 7).compareTo(qrcode) ${qrCode.substring(0, 7).toLowerCase().compareTo("qrcode:")}");
-    if (qrCode.length <= 7 || qrCode.substring(0, 7).toLowerCase().compareTo("qrcode:") != 0) {
+    if (barcode.length <= 7 || barcode.substring(0, 7).toLowerCase().compareTo("qrcode:") != 0) {
       return false;
     }
     return true;
   }
 
+  static String getValueFrom2DBarcode(Barcode barcode, String fieldName) {
+
+    // for non 2d barcode, let's get just the value
+    // which is the value that the user scan in
+    if(!barcode.is_2d || barcode.result == null || !barcode.result.containsKey(fieldName)) {
+      return barcode.value;
+    }
+    return barcode.result[fieldName];
+  }
+
+  static String getLPN(Barcode barcode) {
+    return getValueFrom2DBarcode(barcode, "lpn");
+  }
 
 
 

@@ -14,7 +14,7 @@ import 'package:cwms_mobile/inventory/services/item_package_type.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
-import 'package:cwms_mobile/shared/services/qr_code_service.dart';
+import 'package:cwms_mobile/shared/services/barcode_service.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
@@ -249,7 +249,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
     try {
 
-      Barcode barcodeResult = QRCodeService.parseQRCode(barcode);
+      Barcode barcodeResult = BarcodeService.parseBarcode(barcode);
       if (!barcodeResult.is_2d || barcodeResult.result.isEmpty) {
         Navigator.of(context).pop();
         await showBlockedErrorDialog(context, "Can't parse the barcode " + barcode);

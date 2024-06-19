@@ -19,6 +19,9 @@ import '../../warehouse_layout/services/warehouse_location.dart';
 import '../models/item.dart';
 import '../models/item_unit_of_measure.dart';
 
+import '../../shared/services/barcode_service.dart';
+import '../../shared/models/barcode.dart';
+
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
 // with or without any pre-assigned destination
@@ -71,6 +74,23 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     _lpnFocusNode.addListener(() {
       print("lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
+        // allow the user to input barcode
+
+        Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
+        if (barcode.is_2d) {
+          // for 2d barcode, let's get the result and set the LPN back to the text
+          String lpn = BarcodeService.getLPN(barcode);
+          printLongLogMessage("get lpn from lpn?: ${lpn}");
+          if (lpn == "") {
+
+            showErrorDialog(context, "can't get LPN from the barcode");
+            return;
+          }
+          else {
+            _lpnController.text = lpn;
+          }
+        }
+
         _onLoadingLPNInformation();
       }
     });
