@@ -276,6 +276,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
     "manualPick" : MessageLookupByLibrary.simpleMessage("Manual Pick"),
     "pickToShipStage" : MessageLookupByLibrary.simpleMessage("Pick To Ship Stage"),
+    "waveNumber" : MessageLookupByLibrary.simpleMessage("Wave Number"),
+    "addWave" : MessageLookupByLibrary.simpleMessage("Add Wave"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

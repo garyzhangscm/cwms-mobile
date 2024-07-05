@@ -92,6 +92,29 @@ class PickService {
   }
 
 
+  static Future<List<Pick>> getPicksByWave(int waveId) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "outbound/picks",
+        queryParameters: {"waveId": waveId, "warehouseId": Global.currentWarehouse.id}
+    );
+
+    // print("response from Pick by Order: $response");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    List<Pick> picks
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+    // Sort the picks according to the current location. We
+    // will assign the closed pick to the user
+    sortPicks(picks, Global.getLastActivityLocation(), Global.isMovingForward());
+
+    return picks;
+  }
+
   static void sortPicks(List<Pick> picks, WarehouseLocation currentLocation,
       bool isMovingForward) {
     if (currentLocation == null) {

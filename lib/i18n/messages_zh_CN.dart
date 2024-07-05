@@ -267,6 +267,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "captureInventoryAttribute" : MessageLookupByLibrary.simpleMessage("库存属性"),
     "manualPick" : MessageLookupByLibrary.simpleMessage("手动分配拣货"),
     "pickToShipStage" : MessageLookupByLibrary.simpleMessage("拣货到出库暂存区"),
+    "waveNumber" : MessageLookupByLibrary.simpleMessage("波次号"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

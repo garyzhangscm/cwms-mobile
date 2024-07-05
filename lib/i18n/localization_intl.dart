@@ -282,6 +282,8 @@ class CWMSLocalizations {
   String get manualPick  => Intl.message("Manual Pick", name: 'manualPick');
 
   String get pickToShipStage => Intl.message("Pick To Ship Stage", name: 'pickToShipStage');
+  String get waveNumber => Intl.message("Wave Number", name: 'waveNumber');
+  String get addWave => Intl.message("Add Wave", name: 'addWave');
 
 
 
