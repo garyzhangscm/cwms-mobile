@@ -114,7 +114,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
                         focusNode: _waveNumberFocusNode,
                         decoration: InputDecoration(
                           labelText: CWMSLocalizations.of(context).waveNumber,
-                          hintText: "please input order number",
+                          hintText: "please input wave number",
                           suffixIcon:
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
@@ -337,16 +337,46 @@ class _PickByWavePageState extends State<PickByWavePage> {
     // acknowledge the pick so no one else can take it
     await PickService.acknowledgePick(currentPick.id);
 
+    // let's find picks from the same wave from same location with same attribute
+    // and not assigned or aknowledged yet so that we can assign to the same user
+    // for batch pick
+    currentPick.batchPickQuantity = 0;
+    currentPick.batchedPicks = [];
+    assignedPicks.forEach((pick) async {
+      if (pick.quantity > pick.pickedQuantity &&
+          PickService.pickInventoryWithSameAttribute(pick, currentPick)) {
+        if (pick.id != currentPick.id) {
+          currentPick.batchPickQuantity += (pick.quantity - pick.pickedQuantity);
+          bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id);
+          if (acknowledgeable) {
+            currentPick.batchedPicks.add(pick);
+            await PickService.acknowledgePick(currentPick.id);
+          }
+        }
+      }
+    });
+    // add the main pick if there're other picks can be batched together
+    if (currentPick.batchPickQuantity > 0) {
+      currentPick.batchPickQuantity += currentPick.quantity;
+      currentPick.batchedPicks.add(currentPick);
+    }
+
     // setup the batch picked quantity to be the same as pick quantity
     // since we are working on a single pick. In the next pick page,
     // we will use the same logic to handle the batch picking and single pick
-    currentPick.batchPickQuantity = currentPick.quantity - currentPick.pickedQuantity;
     Map argumentMap = new HashMap();
     argumentMap['pick'] = currentPick;
-    argumentMap['pickMode'] = PickMode.BY_ORDER;
+    argumentMap['pickMode'] = PickMode.BY_WAVE;
 
     final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
     await PickService.unacknowledgePick(currentPick.id);
+    if (currentPick.batchedPicks.length > 0) {
+      // assigned the batch picks as well
+      currentPick.batchedPicks.forEach((pick) async {
+        await PickService.unacknowledgePick(pick.id);
+      });
+    }
+
     if (result == null) {
       // if the user click the return button instead of confirming
       // let's do nothing

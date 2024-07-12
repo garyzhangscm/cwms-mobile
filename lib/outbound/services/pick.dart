@@ -312,6 +312,37 @@ class PickService {
         pickA.style != pickB.style) {
       return false;
     }
+
+    if (pickA.inventoryAttribute1 != null && pickA.inventoryAttribute1.isNotEmpty &&
+        pickB.inventoryAttribute1 != null && pickB.inventoryAttribute1.isNotEmpty &&
+        pickA.inventoryAttribute1 != pickB.inventoryAttribute1) {
+      return false;
+    }
+
+    if (pickA.inventoryAttribute2 != null && pickA.inventoryAttribute2.isNotEmpty &&
+        pickB.inventoryAttribute2 != null && pickB.inventoryAttribute2.isNotEmpty &&
+        pickA.inventoryAttribute2 != pickB.inventoryAttribute2) {
+      return false;
+    }
+
+    if (pickA.inventoryAttribute3 != null && pickA.inventoryAttribute3.isNotEmpty &&
+        pickB.inventoryAttribute3 != null && pickB.inventoryAttribute3.isNotEmpty &&
+        pickA.inventoryAttribute3 != pickB.inventoryAttribute3) {
+      return false;
+    }
+
+    if (pickA.inventoryAttribute4 != null && pickA.inventoryAttribute4.isNotEmpty &&
+        pickB.inventoryAttribute4 != null && pickB.inventoryAttribute4.isNotEmpty &&
+        pickA.inventoryAttribute4 != pickB.inventoryAttribute4) {
+      return false;
+    }
+
+    if (pickA.inventoryAttribute5 != null && pickA.inventoryAttribute5.isNotEmpty &&
+        pickB.inventoryAttribute5 != null && pickB.inventoryAttribute5.isNotEmpty &&
+        pickA.inventoryAttribute5 != pickB.inventoryAttribute5) {
+      return false;
+    }
+
     if (pickA.allocateByReceiptNumber != null && pickA.allocateByReceiptNumber.isNotEmpty &&
         pickB.allocateByReceiptNumber != null && pickB.allocateByReceiptNumber.isNotEmpty &&
         pickA.allocateByReceiptNumber != pickB.allocateByReceiptNumber) {

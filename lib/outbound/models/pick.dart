@@ -33,6 +33,13 @@ class Pick{
     this.color = anotherPick.color;
     this.productSize = anotherPick.productSize;
     this.style = anotherPick.style;
+
+    this.inventoryAttribute1 = anotherPick.inventoryAttribute1;
+    this.inventoryAttribute2 = anotherPick.inventoryAttribute2;
+    this.inventoryAttribute3 = anotherPick.inventoryAttribute3;
+    this.inventoryAttribute4 = anotherPick.inventoryAttribute4;
+    this.inventoryAttribute5 = anotherPick.inventoryAttribute5;
+
     this.allocateByReceiptNumber = anotherPick.allocateByReceiptNumber;
   }
 
@@ -57,6 +64,8 @@ class Pick{
   bool confirmLpnFlag;
   bool wholeLPNPick;
 
+
+
   int skipCount = 0;
 
   int workTaskId;
@@ -66,6 +75,12 @@ class Pick{
   String productSize;
   String style;
   String allocateByReceiptNumber;
+
+  String inventoryAttribute1;
+  String inventoryAttribute2;
+  String inventoryAttribute3;
+  String inventoryAttribute4;
+  String inventoryAttribute5;
 
   //不同的类使用不同的mixin即可
   factory Pick.fromJson(Map<String, dynamic> json) => _$PickFromJson(json);

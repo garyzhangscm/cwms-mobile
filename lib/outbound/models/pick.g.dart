@@ -38,6 +38,11 @@ Pick _$PickFromJson(Map<String, dynamic> json) {
     ..color = json['color'] as String
     ..productSize = json['productSize'] as String
     ..style = json['style'] as String
+    ..inventoryAttribute1 = json['inventoryAttribute1'] as String
+    ..inventoryAttribute2 = json['inventoryAttribute2'] as String
+    ..inventoryAttribute3 = json['inventoryAttribute3'] as String
+    ..inventoryAttribute4 = json['inventoryAttribute4'] as String
+    ..inventoryAttribute5 = json['inventoryAttribute5'] as String
     ..wholeLPNPick = json['wholeLPNPick'] as bool
     ..allocateByReceiptNumber = json['allocateByReceiptNumber'] as String
     ..inventoryStatusId = json['inventoryStatusId'] as int
@@ -66,6 +71,11 @@ Map<String, dynamic> _$PickToJson(Pick instance) => <String, dynamic>{
   'color': instance.color,
   'productSize': instance.productSize,
   'style': instance.style,
+  'inventoryAttribute1': instance.inventoryAttribute1,
+  'inventoryAttribute2': instance.inventoryAttribute2,
+  'inventoryAttribute3': instance.inventoryAttribute3,
+  'inventoryAttribute4': instance.inventoryAttribute4,
+  'inventoryAttribute5': instance.inventoryAttribute5,
   'allocateByReceiptNumber': instance.allocateByReceiptNumber,
   'inventoryStatusId': instance.inventoryStatusId,
   'inventoryStatus': instance.inventoryStatus,

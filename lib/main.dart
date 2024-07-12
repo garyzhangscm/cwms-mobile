@@ -15,6 +15,7 @@ import 'package:cwms_mobile/outbound/routes/order_manual_pick.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_batch.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_bulk.dart';
 import 'package:cwms_mobile/outbound/routes/pick_by_order.dart';
+import 'package:cwms_mobile/outbound/routes/pick_by_wave.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/language.dart';
 import 'package:cwms_mobile/shared/routes/app_upgrade.dart';
@@ -172,6 +173,7 @@ class MyApp extends StatelessWidget {
               "pick_by_list":(context) => PickByListPage(),
               "pick_by_number":(context) => PickByBatchPage(),
               "inventory_batch_deposit":(context) => InventoryBatchDepositPage(),
+              "pick_by_wave":(context) => PickByWavePage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

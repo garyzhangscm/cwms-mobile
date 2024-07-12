@@ -62,9 +62,13 @@ class _WaveListItemState extends State<WaveListItem> {
                   ),
 
                 ),
-                subtitle: Text(widget.wave.totalOpenPickQuantity.toString()),
+                trailing: IconButton(
+                  onPressed: () => _removeWaveFromlist(),
+                  icon: Icon(Icons.delete),
+                ),
+                // subtitle: Text(widget.wave.totalOpenPickQuantity.toString()),
               ),
-              _buildBottom(),
+              // _buildBottom(),
             ],
           ),
         ),
