@@ -174,7 +174,8 @@ class _PickPageState extends State<PickPage> {
               _buildLPNInput(context),
               buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
               // add the batch pick quantity only if the quantity to be picked is more than the single pick
-              _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
+              // _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
+              _currentPick.batchPickQuantity > 0 ?
                   buildTwoSectionInformationRow("Batch Pick Quantity:",
                       _currentPick.batchPickQuantity.toString() +
                           (_pickableInventoryItemPackageType == null ? "" :
@@ -188,10 +189,17 @@ class _PickPageState extends State<PickPage> {
                   _currentPick.pickedQuantity.toString() +
                       (_pickableInventoryItemPackageType == null ? "" :
                       _getPickQuantityIndicator(_currentPick.pickedQuantity))),
-              buildTwoSectionInformationRow("Remaining Quantity:",
-                  (_currentPick.quantity - _currentPick.pickedQuantity).toString() +
-                      (_pickableInventoryItemPackageType == null ? "" :
-                      _getPickQuantityIndicator(_currentPick.quantity - _currentPick.pickedQuantity))),
+
+              _currentPick.batchPickQuantity > 0 ?
+                  buildTwoSectionInformationRow("Remaining Quantity:",
+                      _currentPick.batchPickQuantity.toString() +
+                          (_pickableInventoryItemPackageType == null ? "" :
+                          _getPickQuantityIndicator(_currentPick.quantity - _currentPick.pickedQuantity)))
+                  :
+                  buildTwoSectionInformationRow("Remaining Quantity:",
+                      (_currentPick.quantity - _currentPick.pickedQuantity).toString() +
+                          (_pickableInventoryItemPackageType == null ? "" :
+                          _getPickQuantityIndicator(_currentPick.quantity - _currentPick.pickedQuantity))),
               buildTwoSectionInformationRow("Inventory Quantity:",
                       _lpnQuantity.toString() +
                       (_pickableInventoryItemPackageType == null ? "" :
@@ -519,9 +527,7 @@ class _PickPageState extends State<PickPage> {
     if (pick.batchedPicks == null) {
       pick.batchedPicks = [pick];
     }
-    else {
-      pick.batchedPicks.insert(0, pick);
-    }
+
 
 
     int totalOpenQuantity =
@@ -534,12 +540,24 @@ class _PickPageState extends State<PickPage> {
       return;
     }
 
+    // sort the picks so that in case of batch pick,
+    // if we can find a perfect match between the quantity and one pick, we will
+    // complete the pick first
+    pick.batchedPicks.sort((pickA, pickB)   {
+      // if the second pick's quantity is perfect match, then sort the second
+      // pick first, otherwise we will keep the same sequence
+      if (pickB.quantity - pickB.pickedQuantity == confirmedQuantity) {
+        return 1;
+      }
+      return -1;
+    });
+
     showLoading(context);
     Iterator<Pick> pickIterator = pick.batchedPicks.iterator;
     Pick currentConfirmedPick;
     int currentConfirmedPickConfirmedQuantity;
     while (confirmedQuantity > 0 && pickIterator.moveNext()) {
-      // confirm each pick in the batch only we consume the whole quantity
+      // confirm each pick in the batch until we consume the whole quantity
       currentConfirmedPick = pickIterator.current;
       currentConfirmedPickConfirmedQuantity = confirmedQuantity > (currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity) ?
           currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity : confirmedQuantity;

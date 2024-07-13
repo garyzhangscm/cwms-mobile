@@ -342,19 +342,40 @@ class _PickByWavePageState extends State<PickByWavePage> {
     // for batch pick
     currentPick.batchPickQuantity = 0;
     currentPick.batchedPicks = [];
+    for(int index = 0; index < assignedPicks.length; index++) {
+      if (assignedPicks[index].quantity > assignedPicks[index].pickedQuantity &&
+          PickService.pickInventoryWithSameAttribute(assignedPicks[index], currentPick)) {
+        if (assignedPicks[index].id != currentPick.id) {
+          bool acknowledgeable = await PickService.isPickAcknowledgable(assignedPicks[index].id);
+          printLongLogMessage("pick ${assignedPicks[index].number} is acknowledgeable? ${acknowledgeable}");
+
+          if (acknowledgeable) {
+            currentPick.batchedPicks.add(assignedPicks[index]);
+            await PickService.acknowledgePick(assignedPicks[index].id);
+            currentPick.batchPickQuantity += (assignedPicks[index].quantity - assignedPicks[index].pickedQuantity);
+          }
+        }
+      }
+    }
+    /**
     assignedPicks.forEach((pick) async {
       if (pick.quantity > pick.pickedQuantity &&
           PickService.pickInventoryWithSameAttribute(pick, currentPick)) {
         if (pick.id != currentPick.id) {
-          currentPick.batchPickQuantity += (pick.quantity - pick.pickedQuantity);
           bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id);
+          printLongLogMessage("pick ${pick.number} is acknowledgeable? ${acknowledgeable}");
+
           if (acknowledgeable) {
             currentPick.batchedPicks.add(pick);
-            await PickService.acknowledgePick(currentPick.id);
+            await PickService.acknowledgePick(pick.id);
+            currentPick.batchPickQuantity += (pick.quantity - pick.pickedQuantity);
           }
         }
       }
+
     });
+        **/
+
     // add the main pick if there're other picks can be batched together
     if (currentPick.batchPickQuantity > 0) {
       currentPick.batchPickQuantity += currentPick.quantity;

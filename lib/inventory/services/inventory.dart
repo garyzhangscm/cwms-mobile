@@ -604,7 +604,7 @@ class InventoryService {
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from findInventory ${response.toString()}");
+    printLongLogMessage("get response from findPickableInventory ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("findPickableInventory / Start to raise error with message: ${responseString["message"]}");

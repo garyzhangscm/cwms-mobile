@@ -362,7 +362,8 @@ class PickService {
     Response response = await httpClient.post(
         "outbound/pick/${id}/acknowledge",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse.id,
+          "rfCode": Global.lastLoginRFCode,
         }
     );
 
@@ -417,7 +418,8 @@ class PickService {
     Response response = await httpClient.post(
         "outbound/pick/${id}/acknowledgeable-by-current-user",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse.id,
+          "rfCode": Global.lastLoginRFCode,
         }
     );
 

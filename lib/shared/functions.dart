@@ -122,6 +122,9 @@ printLongLogMessage(String message) {
     print("${DateTime.now().toString()} : ${message.substring(start, end)}");
   }
     **/
+  if (message.length > 4000) {
+    message = message.substring(0, 4000);
+  }
 
   print(DateTime.now());
   final pattern = RegExp('.{1,800}'); // 800 is the size of each chunk
