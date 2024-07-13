@@ -524,12 +524,11 @@ class _PickPageState extends State<PickPage> {
     int totalConfirmedQuantity = confirmedQuantity;
     // add the current pick to the top of the batched pick and
     // then loop through each batched pick and process accordingly
-    if (pick.batchedPicks == null) {
+    if (pick.batchedPicks == null || pick.batchedPicks.length == 0) {
       pick.batchedPicks = [pick];
     }
 
-
-
+    print("pick.batchedPicks.size: ${pick.batchedPicks.length}");
     int totalOpenQuantity =
         pick.batchedPicks.map((e) => (e.quantity - e.pickedQuantity) > 0 ? e.quantity - e.pickedQuantity : 0)
             .reduce((a, b) => a + b);
@@ -552,6 +551,12 @@ class _PickPageState extends State<PickPage> {
       return -1;
     });
 
+    // save the confirmed pick id and its confirmed quantity
+    // as a list and returned to the previous page so the previous page
+    // (can be wave pick / order pick / list pick / etc) can handle the
+    // result in the local cache
+    Map<int, int> confirmedPickResultMap = new Map();
+
     showLoading(context);
     Iterator<Pick> pickIterator = pick.batchedPicks.iterator;
     Pick currentConfirmedPick;
@@ -559,6 +564,11 @@ class _PickPageState extends State<PickPage> {
     while (confirmedQuantity > 0 && pickIterator.moveNext()) {
       // confirm each pick in the batch until we consume the whole quantity
       currentConfirmedPick = pickIterator.current;
+
+      if (currentConfirmedPick.pickedQuantity >= currentConfirmedPick.quantity) {
+        // skip the pick if it is already confirmed
+        continue;
+      }
       currentConfirmedPickConfirmedQuantity = confirmedQuantity > (currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity) ?
           currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity : confirmedQuantity;
       printLongLogMessage("start to confirm pick ${currentConfirmedPick.number} with quantity ${currentConfirmedPickConfirmedQuantity}");
@@ -578,6 +588,8 @@ class _PickPageState extends State<PickPage> {
               destinationLpn: _destinationLPN);
         }
         confirmedQuantity = confirmedQuantity - currentConfirmedPickConfirmedQuantity;
+
+        confirmedPickResultMap[currentConfirmedPick.id] =  currentConfirmedPickConfirmedQuantity;
       }
       on WebAPICallException catch(ex) {
         Navigator.of(context).pop();
@@ -598,7 +610,7 @@ class _PickPageState extends State<PickPage> {
 
     var pickResult = PickResult.fromJson(
         {'result': true, 'confirmedQuantity': totalConfirmedQuantity});
-
+    pickResult.confirmedPickResult = confirmedPickResultMap;
     // refresh the pick on the RF
     // _reloadInventoryOnRF();
 

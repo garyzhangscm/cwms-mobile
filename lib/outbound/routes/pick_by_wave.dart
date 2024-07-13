@@ -6,18 +6,12 @@ import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
-import 'package:cwms_mobile/outbound/services/order.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
-import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart';
 
 import '../../shared/global.dart';
@@ -326,37 +320,57 @@ class _PickByWavePageState extends State<PickByWavePage> {
 
   _startPickingForWave() async {
 
+    showLoading(context);
 
     // flow to pick page with the first pick
     currentPick = await _getNextValidPick();
     if (currentPick == null) {
+
+      Navigator.of(context).pop();
       await showBlockedErrorDialog(context, "all picks are done!");
       return;
     }
 
     // acknowledge the pick so no one else can take it
-    await PickService.acknowledgePick(currentPick.id);
+    try {
+        await PickService.acknowledgePick(currentPick.id);
+    }
+    on WebAPICallException catch(ex) {
+        Navigator.of(context).pop();
+        showErrorDialog(context, ex.errMsg());
+        //_orderNumberFocusNode.requestFocus();
+        return;
+
+    }
 
     // let's find picks from the same wave from same location with same attribute
     // and not assigned or aknowledged yet so that we can assign to the same user
     // for batch pick
     currentPick.batchPickQuantity = 0;
     currentPick.batchedPicks = [];
-    for(int index = 0; index < assignedPicks.length; index++) {
-      if (assignedPicks[index].quantity > assignedPicks[index].pickedQuantity &&
-          PickService.pickInventoryWithSameAttribute(assignedPicks[index], currentPick)) {
-        if (assignedPicks[index].id != currentPick.id) {
-          bool acknowledgeable = await PickService.isPickAcknowledgable(assignedPicks[index].id);
-          printLongLogMessage("pick ${assignedPicks[index].number} is acknowledgeable? ${acknowledgeable}");
+    for(var pick in  assignedPicks) {
 
-          if (acknowledgeable) {
-            currentPick.batchedPicks.add(assignedPicks[index]);
-            await PickService.acknowledgePick(assignedPicks[index].id);
-            currentPick.batchPickQuantity += (assignedPicks[index].quantity - assignedPicks[index].pickedQuantity);
+      try {
+        // if we have error assign one valid pick, let's just ignore the pick
+        // and continue with others
+          if (pick.quantity > pick.pickedQuantity && pick.id != currentPick.id &&
+              PickService.pickInventoryWithSameAttribute(pick, currentPick)) {
+              bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id);
+              printLongLogMessage("pick ${pick.number} is acknowledgeable? ${acknowledgeable}");
+
+              if (acknowledgeable) {
+                await PickService.acknowledgePick(pick.id);
+                currentPick.batchedPicks.add(pick);
+                currentPick.batchPickQuantity += (pick.quantity - pick.pickedQuantity);
+              }
           }
-        }
+      }
+      on WebAPICallException catch(ex) {
+
       }
     }
+
+    Navigator.of(context).pop();
     /**
     assignedPicks.forEach((pick) async {
       if (pick.quantity > pick.pickedQuantity &&
@@ -378,7 +392,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
 
     // add the main pick if there're other picks can be batched together
     if (currentPick.batchPickQuantity > 0) {
-      currentPick.batchPickQuantity += currentPick.quantity;
+      currentPick.batchPickQuantity += (currentPick.quantity - currentPick.pickedQuantity);
       currentPick.batchedPicks.add(currentPick);
     }
 
@@ -390,13 +404,27 @@ class _PickByWavePageState extends State<PickByWavePage> {
     argumentMap['pickMode'] = PickMode.BY_WAVE;
 
     final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
-    await PickService.unacknowledgePick(currentPick.id);
-    if (currentPick.batchedPicks.length > 0) {
-      // assigned the batch picks as well
-      currentPick.batchedPicks.forEach((pick) async {
-        await PickService.unacknowledgePick(pick.id);
-      });
+
+    showLoading(context);
+
+    try {
+        await PickService.unacknowledgePick(currentPick.id);
+        if (currentPick.batchedPicks.length > 0) {
+          // assigned the batch picks as well
+          currentPick.batchedPicks.forEach((pick) async {
+            await PickService.unacknowledgePick(pick.id);
+          });
+        }
     }
+    on WebAPICallException catch(ex) {
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      //_orderNumberFocusNode.requestFocus();
+      return;
+
+    }
+
+    Navigator.of(context).pop();
 
     if (result == null) {
       // if the user click the return button instead of confirming
@@ -404,10 +432,11 @@ class _PickByWavePageState extends State<PickByWavePage> {
       return;
     }
     var pickResult = result as PickResult;
-    print("pick result: $pickResult for pick: ${currentPick.number}");
+    print("pick result: ${pickResult.toJson()} for pick: ${currentPick.number}");
 
     // refresh the orders
     if (pickResult.result == true) {
+      /**
       // update the current pick
       currentPick.pickedQuantity
         = currentPick.pickedQuantity + pickResult.confirmedQuantity;
@@ -421,16 +450,46 @@ class _PickByWavePageState extends State<PickByWavePage> {
           wave.totalPickedQuantity +=  pickResult.confirmedQuantity;
         });
       }
+          **/
 
       // refresh the pick on the RF
       _reloadInventoryOnRF();
+      printLongLogMessage(">> pick confirmed successfully, let's start refresh the local pick cache and get the next pick to continue");
 
 
-      // continue with next available pick
+      // refresh the pick information locally based on the pick result
+      showLoading(context);
+      _refreshPickInformation(pickResult);
+      Navigator.of(context).pop();
+      printLongLogMessage("we successfully loaded all the wave, let's continue picking");
       _startPickingForWave();
+    }
+    else {
+
+      _reloadInventoryOnRF();
     }
 
   }
+
+  void  _refreshPickInformation(PickResult pickResult) {
+
+    // refresh the assignedPicks list based on the pick result
+    // so that the next valid pick will be based off the latest result
+    if (pickResult.confirmedPickResult != null && pickResult.confirmedPickResult.length > 0) {
+      printLongLogMessage("We got ${pickResult.confirmedPickResult.length} pick confirm result. let's start to change the local cached pick's quantity");
+      for(var pickId in pickResult.confirmedPickResult.keys) {
+            var confirmedQuantity = pickResult.confirmedPickResult[pickId];
+            for (Pick pick in assignedPicks) {
+              if (pick.id == pickId) {
+                printLongLogMessage("found pick ${pick.number}, will add ${confirmedQuantity} to its current picked quantity ${pick.pickedQuantity}");
+                pick.pickedQuantity += confirmedQuantity;
+              }
+            }
+      }
+    }
+
+  }
+
 
   void _reloadInventoryOnRF() {
 

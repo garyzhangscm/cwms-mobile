@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
@@ -14,6 +16,9 @@ class PickResult{
   bool result;
   int confirmedQuantity;
 
+  // key: pick id
+  // value: confirmed quantity
+  Map<int, int> confirmedPickResult;
 
 
 
