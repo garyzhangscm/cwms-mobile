@@ -489,6 +489,7 @@ class _LoginPageState extends State<LoginPage> {
                   selectedWarehouse.id, _currentLocationController.text);
 
         Global.setLastActivityLocation(currentLocation);
+        printLongLogMessage("start to change rf ${rf.rfCode}'s current location to ${currentLocation.id} / ${currentLocation.name}");
         rf = await RFService.changeRFLocation(selectedWarehouse.id, rf.id, currentLocation.id);
         print(">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation.name}");
 
@@ -522,6 +523,7 @@ class _LoginPageState extends State<LoginPage> {
               if (rfConfiguration != null) {
 
                 Global.setRFConfiguration(rfConfiguration);
+                printLongLogMessage("rf configuration is setup to ${rfConfiguration.toJson()}");
               }
           });
         }

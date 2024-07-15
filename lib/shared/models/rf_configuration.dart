@@ -17,6 +17,7 @@ class RFConfiguration {
     pickToProductionLineInStage = true;
     receiveToStage = false;
     listPickBatchPicking = true;
+    autoDepositForLpnWithSameDestination = false;
 
   }
 
@@ -25,6 +26,8 @@ class RFConfiguration {
   bool receiveToStage;
   bool listPickBatchPicking;
   String printerName;
+
+  bool autoDepositForLpnWithSameDestination;
 
 
 

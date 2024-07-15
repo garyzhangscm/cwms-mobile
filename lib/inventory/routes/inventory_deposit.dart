@@ -13,6 +13,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import '../../shared/global.dart';
 import '../../shared/services/barcode_service.dart';
 import '../../shared/models/barcode.dart';
 
@@ -44,6 +45,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
   bool _depositInProcess = false;
+
 
 
   // The user will need to relabel the LPN if there're multiple destination
@@ -775,11 +777,92 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   }
 
   void _onDepositConfirm(InventoryDepositRequest inventoryDepositRequest) async {
+    // let's
+    bool result = await _confirmInventoryDepositRequest(inventoryDepositRequest);
+    // we will need to deposit all the LPNs with same destination
+    // if the system is setup to do so
+    if (result == true) {
+
+      printLongLogMessage("Global.getRFConfiguration.autoDepositForLpnWithSameDestination: ${Global.getRFConfiguration.autoDepositForLpnWithSameDestination}");
+      printLongLogMessage("current inventory's destination: ${inventoryDepositRequest.nextLocationId}");
+      if (Global.getRFConfiguration.autoDepositForLpnWithSameDestination == true &&
+          inventoryDepositRequest.nextLocationId != null) {
+          printLongLogMessage("the system is setup to auto deposit the same destination LPNs");
+          printLongLogMessage("let's see if we can deposit more into the same destination ${inventoryDepositRequest.nextLocationId}");
+
+          await _depositLPNsWithSameDestination(inventoryDepositRequest.nextLocationId);
+
+          _locationController.clear();
+          _locationFocusNode.requestFocus();
+
+          setState(() {
+            _depositInProcess = false;
+          });
+
+          _refreshInventoryOnRF();
+
+
+      }
+      else {
+
+        // the system is configured not to auto deposit LPNs with same destination
+        // let's refresh the inventory on the RF and continue with next inventory
+
+        _locationController.clear();
+        _locationFocusNode.requestFocus();
+
+        setState(() {
+          _depositInProcess = false;
+        });
+        _refreshInventoryOnRF();
+      }
+    }
+
+  }
+
+  Future<void> _depositLPNsWithSameDestination(int destinationLocationId) async {
+    printLongLogMessage("inventory_deposit / _refreshInventoryOnRF: start to load inventory on the RF");
+
+    showLoading(context);
+
+    inventoryOnRF = await InventoryService.getInventoryOnCurrentRF();
+
+    // get the inventory deposit request based on the current inventory on the RF
+
+    List<InventoryDepositRequest> inventoryDepositRequests =
+        InventoryService.getInventoryDepositRequests(
+            inventoryOnRF, true, true);
+
+    // get the sub list of inventory that has the same destination location
+    inventoryDepositRequests = inventoryDepositRequests.where(
+            (inventoryDepositRequest) => inventoryDepositRequest.nextLocationId != null
+                && inventoryDepositRequest.nextLocationId == destinationLocationId).toList();
+    if (inventoryDepositRequests.isEmpty) {
+      printLongLogMessage("there's no inventory on the RF that has the same destination as the current one's id ${destinationLocationId}");
+      return;
+    }
+
+    Navigator.of(context).pop();
+
+    // let's loop through each request and start to deposit each one
+    // _confirmInventoryDepositRequests(inventoryDepositRequests);
+    for (var inventoryDepositRequest in inventoryDepositRequests) {
+      setState(() {
+        _depositInProcess = true;
+      });
+      _lpnController.text = inventoryDepositRequest.lpn;
+      printLongLogMessage("we will automatically deposit inventory from request ${inventoryDepositRequest.inventoryIdList} to location ${inventoryDepositRequest.nextLocationId}");
+      await _confirmInventoryDepositRequest(inventoryDepositRequest);
+
+    }
+  }
+
+  Future<bool> _confirmInventoryDepositRequest(InventoryDepositRequest inventoryDepositRequest) async {
 
 
     printLongLogMessage("start to deposit inventory ${inventoryDepositRequest.lpn}");
 
-    showLoading(context);
+    showLoading(context, "Deposit LPN " + inventoryDepositRequest.lpn + "...");
     // Let's get the location first
 
     WarehouseLocation destinationLocation;
@@ -815,7 +898,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       setState(() {
         _depositInProcess = false;
       });
-      return;
+      return false;
 
     }
 
@@ -843,7 +926,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         setState(() {
           _depositInProcess = false;
         });
-        return;
+        return false;
       }
     }
 
@@ -853,14 +936,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     showToast("inventory deposit");
     RFService.changeCurrentRFLocation(destinationLocation.id).then((value) => printLongLogMessage("current RF's location is changed to ${destinationLocation.name}"));
 
-    _locationController.clear();
-    _locationFocusNode.requestFocus();
-
-    setState(() {
-      _depositInProcess = false;
-    });
-    // let's get next inventory to be deposit
-    _refreshInventoryOnRF();
+    return true;
     
 
 

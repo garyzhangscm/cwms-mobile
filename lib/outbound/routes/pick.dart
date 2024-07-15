@@ -194,7 +194,7 @@ class _PickPageState extends State<PickPage> {
                   buildTwoSectionInformationRow("Remaining Quantity:",
                       _currentPick.batchPickQuantity.toString() +
                           (_pickableInventoryItemPackageType == null ? "" :
-                          _getPickQuantityIndicator(_currentPick.quantity - _currentPick.pickedQuantity)))
+                          _getPickQuantityIndicator(_currentPick.batchPickQuantity)))
                   :
                   buildTwoSectionInformationRow("Remaining Quantity:",
                       (_currentPick.quantity - _currentPick.pickedQuantity).toString() +

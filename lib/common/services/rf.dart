@@ -96,6 +96,8 @@ class RFService {
     //   auth token yet
     // 2. we don't have to have the auth token. all the */validate/** endpoint won't
     //    probably requires auth info
+    printLongLogMessage("we will change the rf ${id}'s location to ${locationId}");
+
     Response response = await httpClient.post(
         Global.currentServer.url + "resource/rfs/${id}/change-location",
         queryParameters: {
