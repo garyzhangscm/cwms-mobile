@@ -146,6 +146,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                   ElevatedButton(
                     child: Text("Confirm"),
                     onPressed: () {
+                      _lpnController.clear();
+                      inventoryDepositRequest = null;
                       Navigator.of(context).pop(true); //关闭对话框
                     },
                   ),
