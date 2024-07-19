@@ -13,10 +13,13 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/services/rf.dart';
+import '../../inventory/models/item.dart';
 import '../../inventory/models/item_unit_of_measure.dart';
+import '../../shared/global.dart';
 import '../../shared/models/barcode.dart';
 import '../../shared/services/barcode_service.dart';
 
@@ -172,7 +175,10 @@ class _PickPageState extends State<PickPage> {
               buildTwoSectionInformationRow("Location:", _currentPick.sourceLocation.name),
               _buildLocationInput(context),
               _buildLPNInput(context),
-              buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
+              buildTwoSectionInformationRowWithWidget(
+                  CWMSLocalizations.of(context).item,
+                  _buildItemDisplayWidget(context, _currentPick)),
+              // buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
               // add the batch pick quantity only if the quantity to be picked is more than the single pick
               // _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
               _currentPick.batchPickQuantity > 0 ?
@@ -213,6 +219,63 @@ class _PickPageState extends State<PickPage> {
     );
   }
 
+  // allow the user to tap on the item name to see the inventory attribute
+  Widget _buildItemDisplayWidget(BuildContext context, Pick pick) {
+    return new RichText(
+        text: new TextSpan(
+          text: pick.item.name,
+          style: new TextStyle(color: Colors.blue),
+          recognizer: new TapGestureRecognizer()
+            ..onTap = () {
+              showInformationDialog(
+                  context, pick.item.name,
+                  Column(
+                      children: <Widget>[
+                        buildTwoSectionInformationRow(
+                            CWMSLocalizations.of(context).item,
+                            pick.item.name),
+                        buildTwoSectionInformationRow(
+                            CWMSLocalizations.of(context).item,
+                            pick.item.description),
+                        buildTwoSectionInformationRow(
+                            CWMSLocalizations.of(context).color,
+                            pick.color),
+                        buildTwoSectionInformationRow(
+                            CWMSLocalizations.of(context).style,
+                            pick.style),
+                        buildTwoSectionInformationRow(
+                            CWMSLocalizations.of(context).productSize,
+                            pick.productSize),
+                        Global.currentInventoryConfiguration.inventoryAttribute1Enabled ?
+                            buildTwoSectionInformationRow(
+                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute1"),
+                                pick.inventoryAttribute1) : Container(),
+                        Global.currentInventoryConfiguration.inventoryAttribute2Enabled ?
+                        buildTwoSectionInformationRow(
+                            Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute2"),
+                            pick.inventoryAttribute2) : Container(),
+                        Global.currentInventoryConfiguration.inventoryAttribute3Enabled ?
+                            buildTwoSectionInformationRow(
+                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute3"),
+                                pick.inventoryAttribute3) : Container(),
+                        Global.currentInventoryConfiguration.inventoryAttribute4Enabled ?
+                            buildTwoSectionInformationRow(
+                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute4"),
+                                pick.inventoryAttribute4) : Container(),
+                        Global.currentInventoryConfiguration.inventoryAttribute5Enabled ?
+                            buildTwoSectionInformationRow(
+                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute5"),
+                                pick.inventoryAttribute5) : Container(),
+                      ]
+                  ),
+                  verticalPadding: 25.0,
+                  horizontalPadding: 25.0
+
+              );
+            },
+        ));
+
+  }
 
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(

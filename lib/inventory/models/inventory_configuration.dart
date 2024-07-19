@@ -39,7 +39,28 @@ class InventoryConfiguration{
   String inventoryAttribute5DisplayName;
   bool inventoryAttribute5Enabled;
 
+  getInventoryAttributeDisplayName(String attributeName) {
 
+    String displayName = attributeName;
+    if (attributeName == "attribute1" && inventoryAttribute1DisplayName.isNotEmpty) {
+      displayName = inventoryAttribute1DisplayName;
+    }
+    else if (attributeName == "attribute2" && inventoryAttribute2DisplayName.isNotEmpty) {
+      displayName = inventoryAttribute2DisplayName;
+    }
+    else if (attributeName == "attribute3" && inventoryAttribute3DisplayName.isNotEmpty) {
+      displayName = inventoryAttribute3DisplayName;
+    }
+    else if (attributeName == "attribute4" && inventoryAttribute4DisplayName.isNotEmpty) {
+      displayName =  inventoryAttribute4DisplayName;
+    }
+    else if (attributeName == "attribute5" && inventoryAttribute5DisplayName.isNotEmpty) {
+      displayName = inventoryAttribute5DisplayName;
+    }
+    return displayName;
+
+
+  }
 
   //不同的类使用不同的mixin即可
   factory InventoryConfiguration.fromJson(Map<String, dynamic> json) => _$InventoryConfigurationFromJson(json);

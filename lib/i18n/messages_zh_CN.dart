@@ -269,6 +269,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "pickToShipStage" : MessageLookupByLibrary.simpleMessage("拣货到出库暂存区"),
     "waveNumber" : MessageLookupByLibrary.simpleMessage("波次号"),
 
+    "color" : MessageLookupByLibrary.simpleMessage("颜色"),
+    "style" : MessageLookupByLibrary.simpleMessage("样式"),
+    "productSize" : MessageLookupByLibrary.simpleMessage("尺寸"),
+
+    "inventoryAttribute1" : MessageLookupByLibrary.simpleMessage("库存属性 1"),
+    "inventoryAttribute2" : MessageLookupByLibrary.simpleMessage("库存属性 2"),
+    "inventoryAttribute3" : MessageLookupByLibrary.simpleMessage("库存属性 3"),
+    "inventoryAttribute4" : MessageLookupByLibrary.simpleMessage("库存属性 4"),
+    "inventoryAttribute5" : MessageLookupByLibrary.simpleMessage("库存属性 5"),
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,

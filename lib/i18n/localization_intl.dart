@@ -284,6 +284,15 @@ class CWMSLocalizations {
   String get pickToShipStage => Intl.message("Pick To Ship Stage", name: 'pickToShipStage');
   String get waveNumber => Intl.message("Wave Number", name: 'waveNumber');
   String get addWave => Intl.message("Add Wave", name: 'addWave');
+  String get color => Intl.message("Color", name: 'color');
+  String get style => Intl.message("Style", name: 'style');
+  String get productSize => Intl.message("Product Size", name: 'productSize');
+
+  String get inventoryAttribute1 => Intl.message("Inventory Attribute 1", name: 'inventoryAttribute1');
+  String get inventoryAttribute2 => Intl.message("Inventory Attribute 2", name: 'inventoryAttribute2');
+  String get inventoryAttribute3 => Intl.message("Inventory Attribute 3", name: 'inventoryAttribute3');
+  String get inventoryAttribute4 => Intl.message("Inventory Attribute 4", name: 'inventoryAttribute4');
+  String get inventoryAttribute5 => Intl.message("Inventory Attribute 5", name: 'inventoryAttribute5');
 
 
 

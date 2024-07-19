@@ -279,6 +279,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "waveNumber" : MessageLookupByLibrary.simpleMessage("Wave Number"),
     "addWave" : MessageLookupByLibrary.simpleMessage("Add Wave"),
 
+    "color" : MessageLookupByLibrary.simpleMessage("Color"),
+    "style" : MessageLookupByLibrary.simpleMessage("Style"),
+    "productSize" : MessageLookupByLibrary.simpleMessage("Product Size"),
+
+    "inventoryAttribute1" : MessageLookupByLibrary.simpleMessage("Inventory Attribute 1"),
+    "inventoryAttribute2" : MessageLookupByLibrary.simpleMessage("Inventory Attribute 2"),
+    "inventoryAttribute3" : MessageLookupByLibrary.simpleMessage("Inventory Attribute 3"),
+    "inventoryAttribute4" : MessageLookupByLibrary.simpleMessage("Inventory Attribute 4"),
+    "inventoryAttribute5" : MessageLookupByLibrary.simpleMessage("Inventory Attribute 5"),
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,
