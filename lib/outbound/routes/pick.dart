@@ -232,39 +232,39 @@ class _PickPageState extends State<PickPage> {
                   Column(
                       children: <Widget>[
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).item,
+                            CWMSLocalizations.of(context).item + ":",
                             pick.item.name),
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).item,
+                            CWMSLocalizations.of(context).item + ":",
                             pick.item.description),
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).color,
+                            CWMSLocalizations.of(context).color + ":",
                             pick.color),
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).style,
+                            CWMSLocalizations.of(context).style + ":",
                             pick.style),
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).productSize,
+                            CWMSLocalizations.of(context).productSize + ":",
                             pick.productSize),
                         Global.currentInventoryConfiguration.inventoryAttribute1Enabled ?
                             buildTwoSectionInformationRow(
-                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute1"),
+                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute1") + ":",
                                 pick.inventoryAttribute1) : Container(),
                         Global.currentInventoryConfiguration.inventoryAttribute2Enabled ?
                         buildTwoSectionInformationRow(
-                            Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute2"),
+                            Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute2") + ":",
                             pick.inventoryAttribute2) : Container(),
                         Global.currentInventoryConfiguration.inventoryAttribute3Enabled ?
                             buildTwoSectionInformationRow(
-                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute3"),
+                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute3") + ":",
                                 pick.inventoryAttribute3) : Container(),
                         Global.currentInventoryConfiguration.inventoryAttribute4Enabled ?
                             buildTwoSectionInformationRow(
-                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute4"),
+                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute4") + ":",
                                 pick.inventoryAttribute4) : Container(),
                         Global.currentInventoryConfiguration.inventoryAttribute5Enabled ?
                             buildTwoSectionInformationRow(
-                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute5"),
+                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute5") + ":",
                                 pick.inventoryAttribute5) : Container(),
                       ]
                   ),
