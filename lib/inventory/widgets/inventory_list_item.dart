@@ -15,6 +15,8 @@ import 'package:cwms_mobile/shared/functions.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../../shared/global.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class InventoryListItem extends StatefulWidget {
@@ -112,6 +114,46 @@ class _InventoryListItemState extends State<InventoryListItem> {
               _buildInformationRow(
                   CWMSLocalizations.of(context).quantity,
                   widget.inventory.quantity.toString()),
+              widget.inventory.item.trackingColorFlag == true?
+                  _buildInformationRow(
+                      CWMSLocalizations.of(context).color,
+                      widget.inventory.color) :
+                  Container(),
+              widget.inventory.item.trackingStyleFlag == true?
+                  _buildInformationRow(
+                      CWMSLocalizations.of(context).style,
+                      widget.inventory.style) :
+                  Container(),
+              widget.inventory.item.trackingProductSizeFlag == true?
+                  _buildInformationRow(
+                      CWMSLocalizations.of(context).productSize,
+                      widget.inventory.productSize) :
+                  Container(),
+              widget.inventory.item.trackingInventoryAttribute1Flag == true && Global.currentInventoryConfiguration.inventoryAttribute1Enabled == true?
+                  _buildInformationRow(
+                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute1") + ":",
+                      widget.inventory.attribute1) :
+                  Container(),
+              widget.inventory.item.trackingInventoryAttribute2Flag == true && Global.currentInventoryConfiguration.inventoryAttribute2Enabled == true?
+                  _buildInformationRow(
+                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute2") + ":",
+                      widget.inventory.attribute2) :
+                  Container(),
+              widget.inventory.item.trackingInventoryAttribute3Flag == true && Global.currentInventoryConfiguration.inventoryAttribute3Enabled == true?
+                  _buildInformationRow(
+                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute3") + ":",
+                      widget.inventory.attribute3) :
+                  Container(),
+              widget.inventory.item.trackingInventoryAttribute4Flag == true && Global.currentInventoryConfiguration.inventoryAttribute4Enabled == true?
+                  _buildInformationRow(
+                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute4") + ":",
+                      widget.inventory.attribute4) :
+                  Container(),
+              widget.inventory.item.trackingInventoryAttribute5Flag == true && Global.currentInventoryConfiguration.inventoryAttribute5Enabled == true?
+                  _buildInformationRow(
+                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute5") + ":",
+                      widget.inventory.attribute5) :
+                  Container(),
           ]
       ));
   }

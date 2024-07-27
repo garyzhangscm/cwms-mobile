@@ -784,7 +784,14 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       InventoryDepositRequest inventoryDepositRequest =
           new InventoryDepositRequest();
       inventoryDepositRequest.lpn = _lpnController.text;
-      inventoryDepositRequest.quantity = int.parse(_quantityController.text);
+      int quantity = int.parse(_quantityController.text);
+      if (_selectedItemUnitOfMeasure != null) {
+        quantity *= _selectedItemUnitOfMeasure.quantity;
+        printLongLogMessage("by considering the selected UOM, the final quantity is ${quantity}");
+      }
+
+
+      inventoryDepositRequest.quantity = quantity;
       inventoryDepositRequest.itemName = _selectedItemName;
 
       inventoryDepositRequest.requestInProcess = true;
