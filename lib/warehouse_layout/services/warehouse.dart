@@ -7,6 +7,9 @@ import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:dio/dio.dart';
 
+import '../../exception/WebAPICallException.dart';
+import '../../shared/functions.dart';
+
 class WarehouseService {
   // Get all cycle count requests by batch id
   static Future<List<Warehouse>> getWarehouseByUser(String companyCode, String username) async {
@@ -18,7 +21,11 @@ class WarehouseService {
 
     print("reponse from WAREHOUSE: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
-    List<dynamic> responseData = responseString["data"];
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("getWarehouseByUser / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
 
     List<Warehouse> _warehouses
     = (responseString["data"] as List)?.map((e) =>

@@ -15,9 +15,9 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 import '../../common/services/rf.dart';
-import '../../inventory/models/item.dart';
 import '../../inventory/models/item_unit_of_measure.dart';
 import '../../shared/global.dart';
 import '../../shared/models/barcode.dart';
@@ -69,9 +69,14 @@ class _PickPageState extends State<PickPage> {
   String _destinationLPN;
   bool _retainLPNForLPNPick;
 
+  List<String> _pickErrorOptions = [];
+  String _selectedPickErrorOption = "";
+
   @override
   void initState() {
     super.initState();
+
+    _selectedPickErrorOption = "";
 
     _itemController.clear();
     _sourceLocationController.clear();
@@ -388,6 +393,110 @@ class _PickPageState extends State<PickPage> {
     );
   }
 
+  Widget _buildPickErrorButtons(BuildContext context) {
+
+    _pickErrorOptions = [
+
+      CWMSLocalizations.of(context).skip,
+      CWMSLocalizations.of(context).cancelPickAndReallocate,
+    ];
+    _selectedPickErrorOption = null;
+
+    return DropdownButtonHideUnderline(
+      child: DropdownButton2<String>(
+        isExpanded: true,
+        hint: Row(
+          children: [
+            Icon(
+              Icons.list,
+              size: 12,
+              color: Colors.yellow,
+            ),
+            SizedBox(
+              width: 4,
+            ),
+            Expanded(
+              child: Text(
+                'Pick Error',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.yellow,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        items: _pickErrorOptions
+            .map((String pickErrorOption) => DropdownMenuItem<String>(
+          value: pickErrorOption,
+          child: Text(
+            pickErrorOption,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ))
+            .toList(),
+        value: _selectedPickErrorOption,
+        onChanged: (value) {
+          setState(() {
+            _selectedPickErrorOption = value;
+            _processPickError(value);
+          });
+        },
+        buttonStyleData: ButtonStyleData(
+          height: 35,
+          width: 300,
+          padding: const EdgeInsets.only(left: 5, right: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(
+              color: Colors.black26,
+            ),
+            color: Colors.redAccent,
+          ),
+          elevation: 2,
+        ),
+        iconStyleData: const IconStyleData(
+          icon: Icon(
+            Icons.arrow_forward_ios_outlined,
+          ),
+          iconSize: 14,
+          iconEnabledColor: Colors.yellow,
+          iconDisabledColor: Colors.grey,
+        ),
+        dropdownStyleData: DropdownStyleData(
+          maxHeight: 200,
+          width: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: Colors.redAccent,
+          ),
+          offset: const Offset(-20, 0),
+          scrollbarTheme: ScrollbarThemeData(
+            radius: const Radius.circular(40),
+            thickness: MaterialStateProperty.all(6),
+            thumbVisibility: MaterialStateProperty.all(true),
+          ),
+        ),
+        menuItemStyleData: const MenuItemStyleData(
+          height: 40,
+          padding: EdgeInsets.only(left: 14, right: 14),
+        ),
+      ),
+    );
+    /**
+    ElevatedButton(
+        onPressed: _skipCurrentPick,
+        child: Text(CWMSLocalizations.of(context).skip)
+    ),
+        */
+  }
   Widget _buildButtons(BuildContext context) {
 
     return buildThreeButtonRow(context,
@@ -398,10 +507,7 @@ class _PickPageState extends State<PickPage> {
             },
             child: Text(CWMSLocalizations.of(context).confirm)
         ),
-        ElevatedButton(
-            onPressed: _skipCurrentPick,
-            child: Text(CWMSLocalizations.of(context).skip)
-        ),
+        _buildPickErrorButtons(context),
         Badge(
             showBadge: true,
             padding: EdgeInsets.all(8),
@@ -425,6 +531,17 @@ class _PickPageState extends State<PickPage> {
 
   }
 
+  void _processPickError(String pickErrorOption) {
+    printLongLogMessage("start to process pick error ${pickErrorOption}");
+
+    if (pickErrorOption == CWMSLocalizations.of(context).skip) {
+      _skipCurrentPick();
+    }
+    else if (pickErrorOption == CWMSLocalizations.of(context).cancelPickAndReallocate) {
+      cancelPickAndReallocate();
+    }
+
+  }
 
   void _enterOnLocationController(int tryTime) async {
 
@@ -689,6 +806,44 @@ class _PickPageState extends State<PickPage> {
         inventoryOnRF = value;
       });
     });
+
+  }
+
+
+  Future<void> cancelPickAndReallocate() async {
+    printLongLogMessage("start to cancel and reallocate current pick");
+    showLoading(context);
+
+    Set<int> pickIds = new Set();
+    if (_currentPick.batchedPicks != null && _currentPick.batchedPicks.length > 0) {
+      pickIds = {..._currentPick.batchedPicks.map((pick) => pick.id)};
+    }
+    else {
+      pickIds.add(_currentPick.id);
+    }
+    // we will save the newly generated picks
+    // so that we can add it back to the list
+    // in case the user is picking by order /wave / list
+    List<Pick> newPicks = [];
+    try {
+
+      newPicks = await PickService.cancelPicks(pickIds.join(","));
+    }
+    on WebAPICallException catch(ex) {
+        Navigator.of(context).pop();
+        await showBlockedErrorDialog(context, ex.errMsg());
+        return false;
+    }
+
+    // once cancelled, we will return to the previous page
+    // with result = true but confirmed quantity 0
+    var pickResult = PickResult.fromJson(
+        {'result': true, 'confirmedQuantity': 0});
+
+    pickResult.cancelledPicks = pickIds;
+    pickResult.reallocatedPicks = newPicks;
+
+    Navigator.pop(context, pickResult);
 
   }
 

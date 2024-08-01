@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:cwms_mobile/auth/models/user.dart';
-import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 
-import 'package:cwms_mobile/shared/models/login_response_wrapper.dart';
 import 'package:dio/dio.dart';
+
+import '../../exception/WebAPICallException.dart';
+import '../../shared/functions.dart';
+
+
 
 class UserService {
   // 登录接口，登录成功后返回用户信息
@@ -21,6 +24,11 @@ class UserService {
     // print("response from findUser: $response");
 
     Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("findUser / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
 
     List<User> users
     = (responseString["data"] as List)?.map((e) =>

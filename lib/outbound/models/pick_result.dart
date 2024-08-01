@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
+import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -19,6 +20,11 @@ class PickResult{
   // key: pick id
   // value: confirmed quantity
   Map<int, int> confirmedPickResult;
+
+  // in case of pick cancellation
+  Set<int> cancelledPicks;
+
+  List<Pick> reallocatedPicks;
 
 
 

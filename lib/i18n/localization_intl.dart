@@ -294,6 +294,8 @@ class CWMSLocalizations {
   String get inventoryAttribute4 => Intl.message("Inventory Attribute 4", name: 'inventoryAttribute4');
   String get inventoryAttribute5 => Intl.message("Inventory Attribute 5", name: 'inventoryAttribute5');
 
+  String get cancelPickAndReallocate => Intl.message("Cancel And Reallocate", name: 'cancelPickAndReallocate');
+
 
 
 

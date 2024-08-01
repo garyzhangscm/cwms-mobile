@@ -434,7 +434,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
     var pickResult = result as PickResult;
     print("pick result: ${pickResult.toJson()} for pick: ${currentPick.number}");
 
-    // refresh the orders
+    // refresh the wave
     if (pickResult.result == true) {
       /**
       // update the current pick
@@ -487,6 +487,16 @@ class _PickByWavePageState extends State<PickByWavePage> {
             }
       }
     }
+    if (pickResult.cancelledPicks != null && pickResult.cancelledPicks.length > 0) {
+      printLongLogMessage("We got ${pickResult.cancelledPicks.length} pick cancelled, let's remove from the available list");
+      assignedPicks.removeWhere((pick) => pickResult.cancelledPicks.contains(pick.id));
+
+    }
+    if (pickResult.reallocatedPicks != null && pickResult.reallocatedPicks.length > 0) {
+      printLongLogMessage("We got ${pickResult.reallocatedPicks.length} new picks generated after reallocate, let's added to the list");
+      assignedPicks.addAll(pickResult.reallocatedPicks);
+    }
+
 
   }
 

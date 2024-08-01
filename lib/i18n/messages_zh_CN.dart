@@ -279,6 +279,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "inventoryAttribute4" : MessageLookupByLibrary.simpleMessage("库存属性 4"),
     "inventoryAttribute5" : MessageLookupByLibrary.simpleMessage("库存属性 5"),
 
+    "cancelPickAndReallocate" : MessageLookupByLibrary.simpleMessage("取消并重新分配"),
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,
