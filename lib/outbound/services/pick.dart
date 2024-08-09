@@ -440,7 +440,7 @@ class PickService {
   }
 
 
-  static Future<List<Pick>> cancelPicks(String pickIds, {bool reallocate = true}) async {
+  static Future<List<Pick>> cancelPicks(String pickIds, {bool reallocate = true, skipOriginalLocation = true}) async {
     Dio httpClient = CWMSHttpClient.getDio();
     printLongLogMessage("start to cancel picks $pickIds with reallocate? $reallocate");
 
@@ -450,7 +450,8 @@ class PickService {
         queryParameters: {
           "pickIds": pickIds,
           "warehouseId": Global.currentWarehouse.id,
-          "reallocate": Global.currentWarehouse.id}
+          "reallocate": reallocate,
+          "skipOriginalLocation": skipOriginalLocation}
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());
@@ -459,6 +460,7 @@ class PickService {
       printLongLogMessage("cancelPicks / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
+
 
     List<Pick> picks
     = (responseString["data"] as List)?.map((e) =>

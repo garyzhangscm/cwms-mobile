@@ -835,6 +835,13 @@ class _PickPageState extends State<PickPage> {
         return false;
     }
 
+    printLongLogMessage("after cancelled the original pick ${pickIds}, we get ${newPicks.length} new picks");
+    newPicks.forEach((newPick) {
+      printLongLogMessage("# new pick: ${newPick.number}, source location : ${newPick.sourceLocation.name}, quantity: ${newPick.quantity}");
+    });
+
+    Navigator.of(context).pop();
+
     // once cancelled, we will return to the previous page
     // with result = true but confirmed quantity 0
     var pickResult = PickResult.fromJson(

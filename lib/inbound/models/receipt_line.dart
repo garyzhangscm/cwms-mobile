@@ -25,6 +25,7 @@ class ReceiptLine{
   Item item;
   int expectedQuantity;
   int receivedQuantity;
+  int arrivedQuantity;
   int overReceivingQuantity;
   double overReceivingPercent;
 

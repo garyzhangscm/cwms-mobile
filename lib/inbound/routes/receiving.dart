@@ -529,7 +529,15 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   bool _validateOverReceiving(ReceiptLine receiptLine,
       int receivingQuantity) {
-    double openQuantity = (receiptLine.expectedQuantity - receiptLine.receivedQuantity) * 1.0;
+
+    // a rough estimation, since we don't know yet whether
+    // we will need to validate the over receiving against the
+    // expected quantity or the arrived quantity. It is based on configuraiton
+    // and we will postponed to the actual receiving web call to
+    // let the server decides whether it is a over receiving
+    int maxExpectedQuantity = receiptLine.arrivedQuantity > receiptLine.expectedQuantity ?
+        receiptLine.arrivedQuantity  : receiptLine.expectedQuantity ;
+    double openQuantity = (maxExpectedQuantity - receiptLine.receivedQuantity) * 1.0;
     if (receiptLine.overReceivingQuantity > 0) {
       openQuantity += receiptLine.overReceivingQuantity;
     }

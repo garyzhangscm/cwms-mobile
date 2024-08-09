@@ -417,10 +417,11 @@ class _PickByWavePageState extends State<PickByWavePage> {
         }
     }
     on WebAPICallException catch(ex) {
-      Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
+      // ignore the error when unackonwledge the orig picks
+      // Navigator.of(context).pop();
+      // showErrorDialog(context, ex.errMsg());
       //_orderNumberFocusNode.requestFocus();
-      return;
+      // return;
 
     }
 

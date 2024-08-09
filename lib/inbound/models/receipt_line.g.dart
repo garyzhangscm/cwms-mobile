@@ -14,6 +14,7 @@ ReceiptLine _$ReceiptLineFromJson(Map<String, dynamic> json) {
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
     ..expectedQuantity = json['expectedQuantity'] as int
+    ..arrivedQuantity = json['arrivedQuantity'] as int
     ..receivedQuantity = json['receivedQuantity'] as int
     ..itemPackageTypeId = json['itemPackageTypeId']  == null ?  null : json['itemPackageTypeId']  as int
     ..overReceivingQuantity = json['overReceivingQuantity'] as int
@@ -25,6 +26,7 @@ Map<String, dynamic> _$ReceiptLineToJson(ReceiptLine instance) => <String, dynam
   'number': instance.number,
   'item': instance.item,
   'expectedQuantity': instance.expectedQuantity,
+  'arrivedQuantity': instance.arrivedQuantity,
   'receivedQuantity': instance.receivedQuantity,
   'itemPackageTypeId': instance.itemPackageTypeId,
   'overReceivingQuantity': instance.overReceivingQuantity,
