@@ -69,7 +69,7 @@ class ReceiptService {
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    // printLongLogMessage("response from receipt: $response");
+    printLongLogMessage("response from getReceiptByNumber: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
 

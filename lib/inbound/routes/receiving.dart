@@ -98,9 +98,12 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     _receiptNumberFocusNode.addListener(() {
       print("_receiptFocusNode.hasFocus: ${_receiptNumberFocusNode.hasFocus}");
+      print("_receiptNumberController.text.isNotEmpty: ${_receiptNumberController.text.isNotEmpty}");
       if (!_receiptNumberFocusNode.hasFocus && _receiptNumberController.text.isNotEmpty) {
+        printLongLogMessage("start to parse the barcode ${_receiptNumberController.text}");
         Barcode barcode = BarcodeService.parseBarcode(_receiptNumberController.text);
 
+        print("barcode.is_2d? ${barcode.is_2d}");
 
         // first check if it is a barcode scanned in
         if (barcode.is_2d) {
@@ -125,6 +128,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
           _barcodeReceivingMode = false;
           // if we tab out, then add the LPN to the list
+          
           _loadReceipt(_receiptNumberController.text);
           // _itemFocusNode.requestFocus();
         }
@@ -595,9 +599,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
         // get default item package type from the receipt line, if it is defined,
         // or the first item package
-        ItemPackageType defaultItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
+        // ItemPackageType defaultItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
 
-        if (_currentReceiptLine.itemPackageTypeId != null)
+        // if (_currentReceiptLine.itemPackageTypeId != null)
         setState(() {
           _selectedItemPackageType = getDefaultItemPackageType(_currentReceiptLine);
 
@@ -621,8 +625,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
         return _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.id == receiptLine.itemPackageTypeId);
       }
 
+
       ItemPackageType defaultItemPackageType =
-          _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.defaultFlag == true);
+          _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.defaultFlag == true, orElse: () => null);
+
       return defaultItemPackageType == null ? _currentReceiptLine.item.itemPackageTypes[0] : defaultItemPackageType;
   }
 
@@ -1115,6 +1121,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   }
   _loadReceipt(String receiptNumber) {
+    printLongLogMessage("start to load receipt by number $receiptNumber");
+
     if (receiptNumber.isEmpty) {
       return;
     }
@@ -1149,6 +1157,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           else {
 
             if (_currentReceipt != null && _currentReceipt.id != receipt.id) {
+
               // the user scan in a new receipt, let's clear all the fields if needed
               _clearReceiptLineInformation();
             }

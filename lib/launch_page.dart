@@ -46,7 +46,6 @@ class _LaunchPageState extends State<LaunchPage> {
 
     if (kDebugMode) {
       String url = 'https://staging.claytechsuite.com/api/';
-
       // in debug mode
       _serverURLController =  TextEditingController(
           text: url);
