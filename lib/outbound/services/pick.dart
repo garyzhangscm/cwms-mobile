@@ -236,6 +236,7 @@ class PickService {
     if (confirmQuantity >  (pick.quantity - pick.pickedQuantity)) {
       // throw error as we can't over pick
 
+      printLongLogMessage("raise error as over pick is not allowed");
     }
 
     Dio httpClient = CWMSHttpClient.getDio();
@@ -252,7 +253,9 @@ class PickService {
     // we will pick into a new destination only if
     // 1. if the pick is a whole LPN pick but the user choose to pick into a new LPN(retainLPNForLPNPick = false)
     // 2. or the pick is not a whole LPN pick
-    bool pickToNewLPN = !pick.wholeLPNPick || !retainLPNForLPNPick;
+    bool pickToNewLPN = (pick.wholeLPNPick == null || pick.wholeLPNPick == false) || !retainLPNForLPNPick;
+    printLongLogMessage("pickToNewLPN? ${pickToNewLPN}");
+
     if (pickToNewLPN && destinationLpn.isNotEmpty) {
       printLongLogMessage("the pick is a whole LPN pick? ${pick.wholeLPNPick}, user choose to retain LPN? ${retainLPNForLPNPick}");
       printLongLogMessage("we will pick into a new LPN ${destinationLpn}");

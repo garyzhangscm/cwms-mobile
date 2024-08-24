@@ -148,7 +148,7 @@ class WorkOrderService {
         "pickWholeLPN": pickWholeLPN}
     );
 
-    // printLongLogMessage("response from generateManualPick: $response");
+    printLongLogMessage("response from generateManualPick: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
     if (responseString["result"] as int != 0) {

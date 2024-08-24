@@ -733,7 +733,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
                   showToast("pick confirmed");
             } , onError: (e) {
-              showErrorToast("pick confirmed error, please contact your supervisor or manager");
+              // showErrorToast("pick confirmed error, please contact your supervisor or manager");
               showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
             });
           }
@@ -747,7 +747,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
               showToast("pick confirmed");
             } , onError: (e) {
-              showErrorToast("pick confirmed error, please contact your supervisor or manager");
+              //showErrorToast("pick confirmed error, please contact your supervisor or manager");
               showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
             });
           }
@@ -761,7 +761,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
             showToast("pick confirmed");
           } , onError: (e) {
-            showErrorToast("pick confirmed error, please contact your supervisor or manager");
+            //showErrorToast("pick confirmed error, please contact your supervisor or manager");
             showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
           });
         }
