@@ -399,7 +399,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
           inventoryAttribute2,
           inventoryAttribute3,
           inventoryAttribute4,
-          inventoryAttribute5
+          inventoryAttribute5,
+        false, false
       );
       qcRequired = inventory.inboundQCRequired;
       printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");

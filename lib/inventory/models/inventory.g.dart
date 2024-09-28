@@ -58,7 +58,18 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
     ..warehouseId = json['warehouseId'] as int
     ..clientId = json['clientId'] as int
     ..inboundQCRequired = json['inboundQCRequired'] == null
-        ? false : json['inboundQCRequired'] as bool;
+        ? false : json['inboundQCRequired'] as bool
+    ..kitInventoryFlag = json['kitInventoryFlag'] == null
+        ? false : json['kitInventoryFlag'] as bool
+    ..kitInnerInventoryFlag = json['kitInnerInventoryFlag'] == null
+        ? false : json['kitInnerInventoryFlag'] as bool
+    ..kitInventory = json['kitInventory'] == null
+        ? null
+        : Inventory.fromJson(json['kitInventory'] as Map<String, dynamic>)
+    ..kitInnerInventories = (json['kitInnerInventories'] as List)
+        ?.map(
+            (e) => e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
+        ?.toList();
 }
 
 Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
@@ -92,6 +103,10 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'attribute2': instance.attribute2,
       'attribute3': instance.attribute3,
       'attribute4': instance.attribute4,
-      'attribute5': instance.attribute5
+      'attribute5': instance.attribute5,
+      'kitInventoryFlag': instance.kitInventoryFlag,
+      'kitInnerInventoryFlag': instance.kitInnerInventoryFlag,
+      'kitInventory': instance.kitInventory,
+      'kitInnerInventories': instance.kitInnerInventories
 
 };

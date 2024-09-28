@@ -72,6 +72,13 @@ class Inventory{
   String attribute5;
 
 
+  bool kitInventoryFlag;
+  bool kitInnerInventoryFlag;
+
+  Inventory kitInventory;
+  List<Inventory> kitInnerInventories;
+
+
   WarehouseLocation getNextDepositLocaiton() {
     if (inventoryMovements == null || inventoryMovements.isEmpty) {
       return null;

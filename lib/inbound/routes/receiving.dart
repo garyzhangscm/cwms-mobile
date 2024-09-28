@@ -244,6 +244,17 @@ class _ReceivingPageState extends State<ReceivingPage> {
       _inventoryAttributesFromBarcode["attribute5"] = parameters["inventoryAttribute5"];
     }
 
+    // whether the kit inner inventory attribute from
+    // the kit item's default attribute, or from the container's inventory attribute
+    if (parameters.containsKey("kitInnerInventoryWithDefaultAttribute")) {
+      _inventoryAttributesFromBarcode["kitInnerInventoryWithDefaultAttribute"] = parameters["kitInnerInventoryWithDefaultAttribute"];
+    }
+
+    if (parameters.containsKey("kitInnerInventoryAttributeFromKit")) {
+      _inventoryAttributesFromBarcode["kitInnerInventoryAttributeFromKit"] = parameters["kitInnerInventoryAttributeFromKit"];
+    }
+
+
     return true;
   }
   @override
@@ -846,7 +857,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
           inventoryAttributes.containsKey("attribute2") ? inventoryAttributes["attribute2"] : "",
           inventoryAttributes.containsKey("attribute3") ? inventoryAttributes["attribute3"] : "",
           inventoryAttributes.containsKey("attribute4") ? inventoryAttributes["attribute4"] : "",
-          inventoryAttributes.containsKey("attribute5") ? inventoryAttributes["attribute5"] : ""
+          inventoryAttributes.containsKey("attribute5") ? inventoryAttributes["attribute5"] : "",
+          inventoryAttributes.containsKey("kitInnerInventoryWithDefaultAttribute") ?
+              (inventoryAttributes["kitInnerInventoryWithDefaultAttribute"] as bool) : false,
+          inventoryAttributes.containsKey("kitInnerInventoryAttributeFromKit") ?
+              (inventoryAttributes["kitInnerInventoryAttributeFromKit"] as bool) : false,
       );
       qcRequired = inventory.inboundQCRequired;
       printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
@@ -1033,7 +1048,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
             lpn, _selectedInventoryStatus,
             _selectedItemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity,
             "", "", "",
-            "", "", "","", ""
+            "", "", "","", "", false, false
         );
         if (inventory.inboundQCRequired == true) {
           // for any inventory that needs qc, let's allocate the location automatically

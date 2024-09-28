@@ -2,6 +2,7 @@ import 'package:cwms_mobile/common/models/client.dart';
 import 'package:cwms_mobile/inventory/models/item_family.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../../workorder/models/bill_of_material.dart';
 import 'item_package_type.dart';
 
 // user.g.dart 将在我们运行生成命令后自动生成
@@ -62,6 +63,14 @@ class Item{
 
   bool trackingInventoryAttribute5Flag;
   String defaultInventoryAttribute5;
+
+  bool kitItemFlag;
+
+  int billOfMaterialId;
+
+  List<Item> kitInnerItems;
+
+  BillOfMaterial billOfMaterial;
 
   //不同的类使用不同的mixin即可
   factory Item.fromJson(Map<String, dynamic> json) => _$ItemFromJson(json);

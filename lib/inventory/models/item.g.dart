@@ -38,7 +38,18 @@ Item _$ItemFromJson(Map<String, dynamic> json) {
     ..itemPackageTypes = (json['itemPackageTypes'] as List)
         ?.map(
           (e) => e == null ? null : ItemPackageType.fromJson(e as Map<String, dynamic>))
-              ?.toList();
+              ?.toList()
+    ..kitItemFlag = json['kitItemFlag'] == null
+        ? false : json['kitItemFlag'] as bool
+    ..billOfMaterialId = json['billOfMaterialId'] == null
+        ? false : json['billOfMaterialId'] as int
+    ..billOfMaterial = json['billOfMaterial'] == null
+        ? null
+        : BillOfMaterial.fromJson(json['billOfMaterial'] as Map<String, dynamic>)
+    ..kitInnerItems = (json['kitInnerItems'] as List)
+        ?.map(
+            (e) => e == null ? null : Item.fromJson(e as Map<String, dynamic>))
+        ?.toList();
     /**
     ..client = json['client'] == null
         ? null
@@ -73,4 +84,8 @@ Map<String, dynamic> _$ItemToJson(Item instance) => <String, dynamic>{
   'defaultInventoryAttribute4': instance.defaultInventoryAttribute4,
   'trackingInventoryAttribute5Flag': instance.trackingInventoryAttribute5Flag,
   'defaultInventoryAttribute5': instance.defaultInventoryAttribute5,
+  'kitItemFlag': instance.kitItemFlag,
+  'billOfMaterialId': instance.billOfMaterialId,
+  'kitInnerItems': instance.kitInnerItems,
+  'billOfMaterial': instance.billOfMaterial,
 };

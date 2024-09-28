@@ -14,7 +14,11 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
+import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
+import 'package:cwms_mobile/workorder/models/bill_of_material_line.dart';
 import 'package:dio/dio.dart';
+
+import '../../inventory/models/item.dart';
 
 class ReceiptService {
 
@@ -131,7 +135,9 @@ class ReceiptService {
         String inventoryAttribute2,
         String inventoryAttribute3,
         String inventoryAttribute4,
-        String inventoryAttribute5 ) async {
+        String inventoryAttribute5,
+      bool kitInnerInventoryWithDefaultAttribute ,
+      bool kitInnerInventoryAttributeFromKit  ) async {
 
     printLongLogMessage("start to receiving inventory from receiptLine: ${receiptLine.item.toJson()}");
     if (lpn.isEmpty) {
@@ -146,7 +152,9 @@ class ReceiptService {
         inventoryAttribute2,
         inventoryAttribute3,
         inventoryAttribute4,
-        inventoryAttribute5
+        inventoryAttribute5,
+        kitInnerInventoryWithDefaultAttribute ,
+        kitInnerInventoryAttributeFromKit
     );
     printLongLogMessage("and inventory: ${inventory.toJson()}");
 
@@ -177,6 +185,7 @@ class ReceiptService {
 
   }
 
+
   static Future<Inventory> _generateReceivedInventory(Receipt receipt, ReceiptLine receiptLine,
       String lpn, InventoryStatus inventoryStatus,
       ItemPackageType itemPackageType, int quantity,
@@ -185,7 +194,9 @@ class ReceiptService {
       String inventoryAttribute2,
       String inventoryAttribute3,
       String inventoryAttribute4,
-      String inventoryAttribute5 ) async {
+      String inventoryAttribute5,
+      bool kitInnerInventoryWithDefaultAttribute ,
+      bool kitInnerInventoryAttributeFromKit ) async {
 
     Inventory inventory = new Inventory();
     inventory.lpn = lpn;
@@ -211,6 +222,81 @@ class ReceiptService {
     inventory.attribute3 = inventoryAttribute3;
     inventory.attribute4 = inventoryAttribute4;
     inventory.attribute5 = inventoryAttribute5;
+
+    inventory.kitInnerInventories = [];
+    inventory.kitInnerInventoryFlag = false;
+    inventory.kitInventoryFlag = false;
+
+    // we are only allow to receive kit item
+    // with inner items; we can't receive
+    // the inner items directly
+    if(inventory.item.kitItemFlag != null &&
+        inventory.item.kitItemFlag == true &&
+        inventory.item.kitInnerItems.isNotEmpty) {
+      // we are receive a kit item, let's create the inner inventory as well
+      inventory.kitInventoryFlag = true;
+
+      inventory.item.kitInnerItems.forEach((kitInnerItem) {
+
+        Inventory kitInnerInventory = new Inventory();
+        kitInnerInventory.lpn = lpn;
+        kitInnerInventory.item = kitInnerItem;
+        kitInnerInventory.warehouseId = Global.currentWarehouse.id;
+        // calculate the actual quantity based on the bill of material
+        BillOfMaterial billOfMaterial = receiptLine.item.billOfMaterial;
+        BillOfMaterialLine matchedBillOfMaterialLine =
+            billOfMaterial.billOfMaterialLines.firstWhere((element) => element.itemId == kitInnerItem.id);
+
+        kitInnerInventory.quantity =
+        (quantity * matchedBillOfMaterialLine.expectedQuantity / billOfMaterial.expectedQuantity) as int;
+
+        // receive the inventory onto RF
+        kitInnerInventory.location = inventory.location;
+
+
+        kitInnerInventory.inventoryStatus = inventoryStatus;
+        // get the default item package type. Basically we don't care about the item package type
+        // for any inventory inside the kit
+        kitInnerInventory.itemPackageType = kitInnerItem.defaultItemPackageType;
+        kitInnerInventory.locationId = inventory.location.id;
+        kitInnerInventory.receiptId = receipt.id;
+        kitInnerInventory.receiptLineId = receiptLine.id;
+        kitInnerInventory.inventoryMovements = [];
+
+        // either we get the attribute from inner item's default value
+        // or we get from the kit(outside) inventory
+        if (kitInnerInventoryWithDefaultAttribute) {
+
+          kitInnerInventory.color = kitInnerItem.defaultColor;
+          kitInnerInventory.productSize = kitInnerItem.defaultProductSize;
+          kitInnerInventory.style = kitInnerItem.defaultStyle;
+          kitInnerInventory.attribute1 = kitInnerItem.defaultInventoryAttribute1;
+          kitInnerInventory.attribute2 = kitInnerItem.defaultInventoryAttribute2;
+          kitInnerInventory.attribute3 = kitInnerItem.defaultInventoryAttribute3;
+          kitInnerInventory.attribute4 = kitInnerItem.defaultInventoryAttribute4;
+          kitInnerInventory.attribute5 = kitInnerItem.defaultInventoryAttribute5;
+        }
+        else {
+
+          kitInnerInventory.color = inventory.color;
+          kitInnerInventory.productSize = inventory.productSize;
+          kitInnerInventory.style = inventory.style;
+          kitInnerInventory.attribute1 = inventory.attribute1;
+          kitInnerInventory.attribute2 = inventory.attribute2;
+          kitInnerInventory.attribute3 = inventory.attribute3;
+          kitInnerInventory.attribute4 = inventory.attribute4;
+          kitInnerInventory.attribute5 = inventory.attribute5;
+        }
+        kitInnerInventory.kitInnerInventoryFlag = true;
+        kitInnerInventory.kitInventory = inventory;
+        inventory.kitInnerInventories.add(kitInnerInventory);
+
+      });
+
+    }
+
+    // setup the kit inner item
+
     return inventory;
   }
 
@@ -257,7 +343,8 @@ class ReceiptService {
       Inventory inventory = await _generateReceivedInventory(receipt, receiptLine,
           element, inventoryStatus, itemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity,
           "", "", "",
-          "", "", "","", "");
+          "", "", "","", "",
+      false, false);
     });
 
     return inventoryList;
