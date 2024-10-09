@@ -8,7 +8,8 @@ part of 'rf_configuration.dart';
 
 RFConfiguration _$RFConfigurationFromJson(Map<String, dynamic> json) {
   return RFConfiguration()
-    ..validatePartialLPNPick = json['validatePartialLPNPick'] == null ? false : json['validatePartialLPNPick'] as bool
+    ..workOrderValidatePartialLPNPick = json['workOrderValidatePartialLPNPick'] == null ? false : json['workOrderValidatePartialLPNPick'] as bool
+    ..outboundOrderValidatePartialLPNPick = json['outboundOrderValidatePartialLPNPick'] == null ? false : json['outboundOrderValidatePartialLPNPick'] as bool
     ..pickToProductionLineInStage = json['pickToProductionLineInStage'] == null ? false : json['pickToProductionLineInStage'] as bool
     ..receiveToStage = json['receiveToStage'] == null ? false : json['receiveToStage'] as bool
     ..listPickBatchPicking = json['listPickBatchPicking'] == null ? false : json['listPickBatchPicking'] as bool
@@ -19,7 +20,8 @@ RFConfiguration _$RFConfigurationFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$RFConfigurationToJson(RFConfiguration instance) =>
     <String, dynamic>{
-      'validatePartialLPNPick': instance.validatePartialLPNPick,
+      'workOrderValidatePartialLPNPick': instance.workOrderValidatePartialLPNPick,
+      'outboundOrderValidatePartialLPNPick': instance.outboundOrderValidatePartialLPNPick,
       'pickToProductionLineInStage': instance.pickToProductionLineInStage,
       'receiveToStage': instance.receiveToStage,
       'listPickBatchPicking': instance.listPickBatchPicking,

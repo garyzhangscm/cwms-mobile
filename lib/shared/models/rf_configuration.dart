@@ -13,7 +13,7 @@ part 'rf_configuration.g.dart';
 
 class RFConfiguration {
   RFConfiguration() {
-    validatePartialLPNPick = false;
+    workOrderValidatePartialLPNPick = false;
     pickToProductionLineInStage = true;
     receiveToStage = false;
     listPickBatchPicking = true;
@@ -21,7 +21,8 @@ class RFConfiguration {
 
   }
 
-  bool validatePartialLPNPick;
+  bool workOrderValidatePartialLPNPick;
+  bool outboundOrderValidatePartialLPNPick;
   bool pickToProductionLineInStage;
   bool receiveToStage;
   bool listPickBatchPicking;

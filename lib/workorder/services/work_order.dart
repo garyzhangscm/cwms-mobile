@@ -14,17 +14,18 @@ import 'package:dio/dio.dart';
 
 class WorkOrderService {
   // Get all cycle count requests by batch id
-  static Future<WorkOrder> getWorkOrderByNumber(String workOrderNumber) async {
+  static Future<WorkOrder> getWorkOrderByNumber(String workOrderNumber, {loadDetails : true}) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("Start to get work order by ${workOrderNumber}");
     Response response = await httpClient.get(
         "workorder/work-orders",
         queryParameters: {"number": workOrderNumber,
+          "loadDetails" : loadDetails,
           "warehouseId": Global.currentWarehouse.id}
     );
 
-    // printLongLogMessage("response from getWorkOrderByNumber: $response");
+    printLongLogMessage("response from getWorkOrderByNumber: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<WorkOrder> workOrders
@@ -200,6 +201,9 @@ class WorkOrderService {
   static Future<int> getPickableQuantityForManualPick(
       int workOrderId, String lpn, int productionLineId
       ) async {
+    printLongLogMessage("start to get pickable quantity for manual pick of work order id $workOrderId "
+        "from LPN $lpn , into production line with id $productionLineId");
+
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -208,7 +212,7 @@ class WorkOrderService {
           "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
     );
 
-    // printLongLogMessage("response from getPickableQuantityForManualPick: $response");
+    printLongLogMessage("response from getPickableQuantityForManualPick: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
     // List<dynamic> responseData = responseString["data"];
     if (responseString["result"] as int != 0) {

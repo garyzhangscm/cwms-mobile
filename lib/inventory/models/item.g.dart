@@ -42,7 +42,7 @@ Item _$ItemFromJson(Map<String, dynamic> json) {
     ..kitItemFlag = json['kitItemFlag'] == null
         ? false : json['kitItemFlag'] as bool
     ..billOfMaterialId = json['billOfMaterialId'] == null
-        ? false : json['billOfMaterialId'] as int
+        ? null : json['billOfMaterialId'] as int
     ..billOfMaterial = json['billOfMaterial'] == null
         ? null
         : BillOfMaterial.fromJson(json['billOfMaterial'] as Map<String, dynamic>)

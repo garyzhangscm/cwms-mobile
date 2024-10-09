@@ -311,6 +311,11 @@ class InventoryService {
       Map<String, dynamic> responseString = json.decode(response.toString());
     printLongLogMessage("get response from findInventory ${response.toString()}");
 
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("findInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
       List<Inventory> inventories
         = (responseString["data"] as List)?.map((e) =>
         e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))

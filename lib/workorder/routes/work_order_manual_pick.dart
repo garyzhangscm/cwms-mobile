@@ -73,7 +73,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   void initState() {
     super.initState();
 
-    _validatePartialLPNPick = Global.getConfigurationAsBoolean("validatePartialLPNPick");
+    _validatePartialLPNPick = Global.getConfigurationAsBoolean("workOrderValidatePartialLPNPick");
     _pickToProductionLineInStage = Global.getConfigurationAsBoolean("pickToProductionLineInStage");
 
     _currentWorkOrder = null;
@@ -327,7 +327,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
     }
     showLoading(context);
-    _currentWorkOrder = await WorkOrderService.getWorkOrderByNumber(_workOrderNumberController.text);
+    _currentWorkOrder = await WorkOrderService.getWorkOrderByNumber(_workOrderNumberController.text, loadDetails: false);
 
 
 
@@ -652,6 +652,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     ProductionLine productionLine = _scannedProductionLine == null ?
         _selectedProductionLineAssignment.productionLine : _scannedProductionLine;
 
+    printLongLogMessage("do we need to validate partial LPN pick in case "
+        " the inventory has more quantity than required? ${_validatePartialLPNPick}");
     if (_validatePartialLPNPick) {
       try {
         List<Inventory> inventories = await InventoryService.findInventory(lpn: _lpnController.text);

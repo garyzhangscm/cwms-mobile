@@ -17,6 +17,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter/services.dart';
+import '../../shared/global.dart';
 
 import '../models/order.dart';
 
@@ -58,7 +59,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   void initState() {
     super.initState();
 
-    // _validatePartialLPNPick = Global.getConfigurationAsBoolean("validatePartialLPNPick");
+    _validatePartialLPNPick = Global.getConfigurationAsBoolean("outboundOrderValidatePartialLPNPick");
     // _pickToShipStage = Global.getConfigurationAsBoolean("pickToShipStage");
 
     _currentOrder = null;
