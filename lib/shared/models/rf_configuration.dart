@@ -32,7 +32,6 @@ class RFConfiguration {
   bool autoDepositForLpnWithSameDestination;
 
 
-
   //不同的类使用不同的mixin即可
   factory RFConfiguration.fromJson(Map<String, dynamic> json) => _$RFConfigurationFromJson(json);
   Map<String, dynamic> toJson() => _$RFConfigurationToJson(this);
