@@ -22,6 +22,7 @@ class RFConfiguration {
   }
 
   bool workOrderValidatePartialLPNPick;
+
   bool outboundOrderValidatePartialLPNPick;
   bool pickToProductionLineInStage;
   bool receiveToStage;
