@@ -48,6 +48,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage> {
 
               // return Text( _inventories[index].lpn);
 
+
               return InventoryListItem(
                   index: index,
                   inventory: _inventories[index]

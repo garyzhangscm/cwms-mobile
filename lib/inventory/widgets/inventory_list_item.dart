@@ -96,7 +96,7 @@ class _InventoryListItemState extends State<InventoryListItem> {
         child:
           Column(
             children: <Widget>[
-              _buildInformationRow(
+               _buildInformationRow(
                   CWMSLocalizations.of(context).location,
                   widget.inventory.location.name),
               _buildInformationRow(

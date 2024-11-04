@@ -3,6 +3,7 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
+import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -217,6 +218,15 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
       showToast(CWMSLocalizations.of(context).noInventoryFound);
     }
     else {
+      // load the location for each inventory
+      for (var inventory in inventories) {
+        if (inventory.location == null && inventory.locationId != null) {
+          inventory.location = await WarehouseLocationService.getWarehouseLocationById(inventory.locationId);
+        }
+
+        printLongLogMessage("INVENTORY ${inventory.lpn} 's location is setup to ${inventory.location.name}");
+      }
+
       printLongLogMessage("will flow to invenory with ${inventories.length} inventory records");
       Navigator.of(context)
           .pushNamed("inventory_display", arguments: inventories);

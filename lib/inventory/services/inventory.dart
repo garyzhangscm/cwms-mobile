@@ -22,7 +22,7 @@ class InventoryService {
   static Future<List<Inventory>> getInventoryOnCurrentRF() async {
     Dio httpClient = CWMSHttpClient.getDio();
 
-    printLongLogMessage("will get inventory on ${Global.getLastLoginRFCode()}");
+    printLongLogMessage("will get inventory on ${Global.getLastLoginRFCode()} from warehouse ${Global.currentWarehouse.id}");
     Response response = await httpClient.get(
         "/inventory/inventories",
       queryParameters: {
@@ -30,9 +30,9 @@ class InventoryService {
           'location': Global.getLastLoginRFCode()}
     );
 
-    // printLongLogMessage("response from inventory on RF:");
+     printLongLogMessage("response from inventory on RF:");
 
-    // printLongLogMessage(response.toString());
+     printLongLogMessage(response.toString());
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
