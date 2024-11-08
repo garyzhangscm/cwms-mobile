@@ -27,6 +27,8 @@ class Inventory{
   int locationId;
   WarehouseLocation location;
 
+  String locationName;
+
   // if the inventory is picked, then
   // those 2 fields has the pick information
   int pickId;
@@ -36,6 +38,7 @@ class Inventory{
   // receipt or work order
   int receiptId;
   Receipt receipt;
+  String receiptNumber;
   int receiptLineId;
   ReceiptLine receiptLine;
   int workOrderId;
@@ -70,6 +73,8 @@ class Inventory{
   String attribute3;
   String attribute4;
   String attribute5;
+
+
 
 
   bool kitInventoryFlag;

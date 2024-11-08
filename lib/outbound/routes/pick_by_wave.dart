@@ -78,7 +78,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWave)),
       resizeToAvoidBottomInset: true,
       body:
           Column(

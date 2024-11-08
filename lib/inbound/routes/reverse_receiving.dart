@@ -162,12 +162,12 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
         itemNames.add(inventory.item.name);
         itemPackageTypeNames.add(inventory.itemPackageType.name);
         totalQuantity += inventory.quantity;
-        locationName = inventory.location.name;
-        if (inventory.receipt == null) {
+        locationName = inventory.locationName;
+        if (inventory.receiptNumber == "" && inventory.receipt == null) {
           includeNonReceiptInventory = true;
         }
         else {
-          receiptNumbers.add(inventory.receipt.number);
+          receiptNumbers.add(inventory.receiptNumber);
         }
       });
 

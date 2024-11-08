@@ -290,6 +290,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "inventoryAttribute5" : MessageLookupByLibrary.simpleMessage("Inventory Attribute 5"),
 
     "cancelPickAndReallocate" : MessageLookupByLibrary.simpleMessage("Cancel And Reallocate"),
+    "pickByWave" : MessageLookupByLibrary.simpleMessage("Pick By Wave"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

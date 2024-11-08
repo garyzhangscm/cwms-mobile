@@ -11,6 +11,7 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
     ..id = json['id'] as int
     ..lpn = json['lpn'] as String
     ..locationId = json['locationId'] as int
+    ..locationName = json['locationName'] as String
     ..virtual = json['virtual'] as bool
     ..color = json['color']  == null ? null : json['color'] as String
     ..productSize = json['productSize']  == null ? null : json['productSize'] as String
@@ -31,6 +32,7 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
     ..receipt = json['receipt'] == null
         ? null
         : Receipt.fromJson(json['receipt'] as Map<String, dynamic>)
+    ..receiptNumber = json['receiptNumber'] as String
     ..receiptLineId = json['receiptLineId'] as int
     ..receiptLine = json['receiptLine'] == null
         ? null
@@ -76,11 +78,13 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'id': instance.id,
       'lpn': instance.lpn,
       'locationId': instance.locationId,
+      'locationName': instance.locationName,
       'location': instance.location,
       'virtual': instance.virtual,
       'pickId': instance.pickId,
       'pick': instance.pick,
       'receiptId': instance.receiptId,
+      'receiptNumber': instance.receiptNumber,
       'receiptLineId': instance.receiptLineId,
       'workOrderId': instance.workOrderId,
       'workOrder': instance.workOrder,
