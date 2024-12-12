@@ -255,6 +255,7 @@ class CWMSLocalizations {
   String get partailBulkPickNotAllowed  => Intl.message("Partial Bulk Pick is Not Allowed", name: 'partailBulkPickNotAllowed');
   String get cannotFindWarehouse  => Intl.message("Cannot find warehouse", name: 'cannotFindWarehouse');
   String get reverseProduction  => Intl.message("Reverse Production", name: 'reverseProduction');
+  String get reverseReceiving  => Intl.message("Reverse Received LPN", name: 'reverseReceiving');
   String get reverseErrorMixedWithClient  => Intl.message("Can't reverse inventory when it is mixed with different Client", name: 'reverseErrorMixedWithClient');
   String get reverseErrorMixedWithItem  => Intl.message("Can't reverse inventory when it is mixed with different Item", name: 'reverseErrorMixedWithItem');
   String get reverseErrorNoWorkOrder  => Intl.message("Can't reverse inventory as it has inventory that is not from work order", name: 'reverseErrorNoWorkOrder');

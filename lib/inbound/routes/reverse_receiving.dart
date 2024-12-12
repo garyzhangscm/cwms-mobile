@@ -73,7 +73,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).reverseProduction)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).reverseReceiving)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
