@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cwms_mobile/inbound/routes/barcode_receiving.dart';
+import 'package:cwms_mobile/inbound/routes/inbound_qc.dart';
 import 'package:cwms_mobile/inbound/routes/reverse_receiving.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_batch.dart';
 import 'package:cwms_mobile/inventory/routes/audit_count_request.dart';
@@ -170,6 +171,7 @@ class MyApp extends StatelessWidget {
               "partial_inventory_move":(context) => PartialInventoryMovePage(),
               "work_order_reverse_production":(context) => ReverseProductionPage(),
               "reverse_receiving":(context) => ReverseReceivingPage(),
+              "inbound_qc":(context) => InboundQCPage(),
               "pick_by_list":(context) => PickByListPage(),
               "pick_by_number":(context) => PickByBatchPage(),
               "inventory_batch_deposit":(context) => InventoryBatchDepositPage(),

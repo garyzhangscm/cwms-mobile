@@ -14,17 +14,17 @@ import '../../shared/models/barcode.dart';
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
 // with or without any pre-assigned destination
-class InventoryQCPage extends StatefulWidget{
+class InboundQCPage extends StatefulWidget{
 
-  InventoryQCPage({Key key}) : super(key: key);
+  InboundQCPage({Key key}) : super(key: key);
 
 
   @override
-  State<StatefulWidget> createState() => _InventoryQCPageState();
+  State<StatefulWidget> createState() => _InboundQCPageState();
 
 }
 
-class _InventoryQCPageState extends State<InventoryQCPage> {
+class _InboundQCPageState extends State<InboundQCPage> {
 
   // allow user to scan in LPN
   TextEditingController _lpnController = new TextEditingController();
