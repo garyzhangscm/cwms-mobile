@@ -330,7 +330,8 @@ class _LoginPageState extends State<LoginPage> {
 
       // make sure the rf is still valid
       bool isRFCodeValid = await
-          RFService.valdiateRFCode(Global.getAutoLoginWarehouse().id, Global.getLastLoginRFCode());
+          RFService.valdiateRFCode(Global.getAutoLoginCompany().id,
+              Global.getAutoLoginWarehouse().id, Global.getLastLoginRFCode());
       if (!isRFCodeValid) {
 
         print("auto login fail as rf code ${Global.getLastLoginRFCode()} is not valid");
@@ -409,45 +410,45 @@ class _LoginPageState extends State<LoginPage> {
       WarehouseLocation currentLocation;
 
       try {
-        // make sure the rf code is still valid
+          // make sure the rf code is still valid
 
-        bool isRFCodeValid = await
-            RFService.valdiateRFCode(selectedWarehouse.id, _rfCodeController.text);
+          print("will need to get company by code: " + _companyCodeController.text);
+          companyId =
+              await CompanyService.validateCompanyByCode(_companyCodeController.text);
+          print("get by code: ${_companyCodeController.text}, companyId id: $companyId ");
 
-        if (!isRFCodeValid) {
+          if (companyId == null) {
+            showToast("Can't find company by code: " + _companyCodeController.text);
+            return;
+          }
 
-          print("login fail as rf code ${_rfCodeController.text} is not valid");
+          printLongLogMessage("start to validate rf code ${_rfCodeController.text}");
+          bool isRFCodeValid = await
+              RFService.valdiateRFCode(companyId, selectedWarehouse.id, _rfCodeController.text);
 
-          showToast("rf code ${_rfCodeController.text} is not valid ");
-          return;
-        }
+          if (!isRFCodeValid) {
+
+            print("login fail as rf code ${_rfCodeController.text} is not valid");
+
+            showToast("rf code ${_rfCodeController.text} is not valid ");
+            return;
+          }
 
 
-        print("start to validate the location ${_currentLocationController.text}");
-        bool isLocationValid = await
-            WarehouseLocationService.valdiateLocation(selectedWarehouse.id, _currentLocationController.text);
+          print("start to validate the location ${_currentLocationController.text}");
+          bool isLocationValid = await
+              WarehouseLocationService.valdiateLocation(
+                  companyId, selectedWarehouse.id, _currentLocationController.text);
 
-        if (!isLocationValid) {
+          if (!isLocationValid) {
 
-          print("login fail as location  ${_currentLocationController.text} is not valid");
+            print("login fail as location  ${_currentLocationController.text} is not valid");
 
-          showToast("location ${_currentLocationController.text} is not valid ");
-          return;
-        }
-
-        print("will need to get company by code: " + _companyCodeController.text);
-        companyId =
-            await CompanyService.validateCompanyByCode(_companyCodeController.text);
-        print("get by code: ${_companyCodeController.text}, companyId id: $companyId ");
-        if (companyId == null) {
-          showToast("Can't find company by code: " + _companyCodeController.text);
-        }
-        else {
-
+            showToast("location ${_currentLocationController.text} is not valid ");
+            return;
+          }
           user = await LoginService
               .login(companyId, _unameController.text, _pwdController.text);
-        }
-
 
       } catch (e) {
         //登录失败则提示
@@ -611,6 +612,7 @@ class _LoginPageState extends State<LoginPage> {
         if (_validWarehouses.isNotEmpty) {
           // automatically select the first warehouse
           selectedWarehouse = _validWarehouses[0];
+
           print("set selectedWarehouses to ${_validWarehouses[0].name}");
         }
       });

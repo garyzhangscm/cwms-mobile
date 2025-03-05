@@ -11,7 +11,7 @@ import '../../shared/http_client.dart';
 
 class RFService {
 
-  static Future<bool> valdiateRFCode(int warehouseId, String rfCode) async {
+  static Future<bool> valdiateRFCode(int companyId, int warehouseId, String rfCode) async {
 
     // we will need to use the standard dio instead because
     // 1. we will validate the RF code before we log in so we probably don't have the
@@ -22,7 +22,13 @@ class RFService {
         Global.currentServer.url + "resource/validate/rf",
         queryParameters: {
           "warehouseId": warehouseId,
-          "rfCode": rfCode}
+          "rfCode": rfCode},
+        options: Options(
+          headers: {
+            "warehouseId": warehouseId,
+            "companyId": companyId
+          }
+        )
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());

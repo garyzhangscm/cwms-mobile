@@ -200,7 +200,7 @@ class WarehouseLocationService {
   }
 
 
-  static Future<bool> valdiateLocation(int warehouseId, String locationName) async {
+  static Future<bool> valdiateLocation(int companyId, int warehouseId, String locationName) async {
 
     // we will need to use the standard dio instead because
     // 1. we will validate the location before we log in so we probably don't have the
@@ -211,7 +211,14 @@ class WarehouseLocationService {
         Global.currentServer.url + "/layout/validate/locations",
         queryParameters: {
           "warehouseId": warehouseId,
-          "locationName": locationName}
+          "locationName": locationName},
+        options: Options(
+            headers: {
+              "warehouseId": warehouseId,
+              "companyId": companyId
+
+            }
+        )
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());

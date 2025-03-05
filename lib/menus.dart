@@ -119,7 +119,7 @@ class _MenusState extends State<Menus> {
                       // FlutterLogo(),
                       Image(
                         image: NetworkImage(
-                            Global.currentServer.url + "/resource/assets/images/mobile/" + _menuGroup.menuSubGroups[index].icon),
+                            Global.currentServer.url + "resource/assets/images/mobile/" + _menuGroup.menuSubGroups[index].icon),
                           //  "http://k8s-staging-zuulserv-707034e5d3-1316291729.us-west-1.elb.amazonaws.com/api/resource/assets/images/mobile/menu_outbound.jpg"),
                         width: 100.0,
                       ),
