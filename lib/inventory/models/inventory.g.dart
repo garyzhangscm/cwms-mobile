@@ -43,6 +43,9 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
         : WorkOrder.fromJson(json['workOrder'] as Map<String, dynamic>)
     ..workOrderLineId = json['workOrderLineId'] as int
     ..workOrderByProductId = json['workOrderByProductId'] as int
+    ..lastQCTime = json['lastQCTime'] == null
+        ? null
+        : DateTime.parse(json['lastQCTime'] as String)
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
@@ -103,6 +106,7 @@ Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{
       'color': instance.color,
       'productSize;': instance.productSize,
       'style': instance.style,
+      'lastQCTime': instance.lastQCTime,
       'attribute1': instance.attribute1,
       'attribute2': instance.attribute2,
       'attribute3': instance.attribute3,

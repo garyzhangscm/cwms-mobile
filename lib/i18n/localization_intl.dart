@@ -298,6 +298,7 @@ class CWMSLocalizations {
   String get cancelPickAndReallocate => Intl.message("Cancel And Reallocate", name: 'cancelPickAndReallocate');
 
   String get pickByWave => Intl.message('Pick By Wave', name: 'pickByWave');
+  String get lastQCTime => Intl.message('Last QC Time', name: 'lastQCTime');
 
 
 

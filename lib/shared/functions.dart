@@ -411,7 +411,7 @@ Widget buildTwoSectionInformationRow(String name, String value) {
     Row(
         children: <Widget>[
           Padding(padding: EdgeInsets.only(right: 10),
-            child: Text(name, textAlign: TextAlign.left),
+            child: Text(name + ":", textAlign: TextAlign.left) ,
           ),
           Text(value, textAlign: TextAlign.left),
         ]

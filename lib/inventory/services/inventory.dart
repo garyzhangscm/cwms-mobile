@@ -696,4 +696,33 @@ class InventoryService {
   }
 
 
+  static Future<List<QCInspectionRequest>> getManualQCInspectionRequest(Inventory inventory) async {
+
+    printLongLogMessage("start to get manual qc inspection request for lpn ${inventory.lpn}");
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.post(
+      "/inventory/inventories/qc-inspection-requests/manual",
+      queryParameters: {'warehouseId': Global.currentWarehouse.id,
+        'inventoryId': inventory.id},
+    );
+
+    printLongLogMessage("get response from getPendingQCInspectionRequest ${response.toString()}");
+
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("getPendingQCInspectionRequest / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    List<QCInspectionRequest> qcInspectionRequests
+    = (responseString["data"] as List)?.map((e) =>
+    e == null ? null : QCInspectionRequest.fromJson(e as Map<String, dynamic>))
+        ?.toList();
+
+
+    return qcInspectionRequests;
+  }
 }

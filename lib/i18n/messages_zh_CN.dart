@@ -282,6 +282,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
     "cancelPickAndReallocate" : MessageLookupByLibrary.simpleMessage("取消并重新分配"),
     "pickByWave" : MessageLookupByLibrary.simpleMessage("按波次拣货"),
+    "lastQCTime" : MessageLookupByLibrary.simpleMessage("上次QC时间"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

@@ -292,6 +292,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
     "cancelPickAndReallocate" : MessageLookupByLibrary.simpleMessage("Cancel And Reallocate"),
     "pickByWave" : MessageLookupByLibrary.simpleMessage("Pick By Wave"),
+    "lastQCTime" : MessageLookupByLibrary.simpleMessage("Last QC Time"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

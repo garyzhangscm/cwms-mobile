@@ -1,24 +1,16 @@
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
-import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_result.dart';
-import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/qc_inspection.dart';
-import 'package:cwms_mobile/inventory/widgets/inventory_deposit_request_item.dart';
 import 'package:cwms_mobile/inventory/widgets/qc_inspection_item_option_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
-import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/qc_inspection_request_item.dart';
 import '../models/qc_inspection_request_item_option.dart';
 import '../models/qc_rule_item_type.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class QCInspectionPage extends StatefulWidget{

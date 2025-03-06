@@ -18,6 +18,7 @@ class User{
 
   // current login token
   String token;
+  String refreshToken;
 
   String login;
 

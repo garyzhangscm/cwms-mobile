@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cwms_mobile/auth/models/user.dart';
+import 'package:cwms_mobile/shared/RefreshTokenInterceptor.dart';
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,8 @@ class CWMSHttpClient {
       // sendTimeout: 15000,
 
     ));
+    _dioWithAuth.interceptors.add(RefreshTokenInterceptor());
+
   }
   static void init() {
     // 添加缓存插件

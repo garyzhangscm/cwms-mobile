@@ -82,6 +82,7 @@ class Inventory{
 
   Inventory kitInventory;
   List<Inventory> kitInnerInventories;
+  DateTime lastQCTime;
 
 
   WarehouseLocation getNextDepositLocaiton() {

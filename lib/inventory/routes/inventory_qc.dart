@@ -35,6 +35,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
   bool _readyForQCResult = false;
   Inventory _inventoryForQC;
   int _selectedInventoryIndex = 0;
+  List<QCInspectionRequest> qcInspectionRequests;
 
 
   FocusNode _lpnFocusNode = FocusNode();
@@ -48,6 +49,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
     _lpn =  "";
     _readyForQCResult = false;
     _inventoryForQC = null;
+    qcInspectionRequests = [];
 
     _lpnFocusNode.addListener(() {
       print("lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
@@ -95,6 +97,12 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
                 buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn, _lpn),
                 buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemName),
                 buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemDescription),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context).lastQCTime,
+                    _inventoryForQC?.lastQCTime?.toLocal()?.toString() == null ? "" :
+                    _inventoryForQC?.lastQCTime?.toLocal()?.toString()
+                ),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context).inventoryNeedQC,
+                    _readyForQCResult ? CWMSLocalizations.of(context).yes : CWMSLocalizations.of(context).no),
                 _buildQCResultButtons(context),
               ],
         ),
@@ -155,8 +163,6 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
 
     showLoading(context);
     try {
-      List<QCInspectionRequest> qcInspectionRequests =
-          await InventoryService.getPendingQCInspectionRequest(_inventoryForQC);
 
       printLongLogMessage("find ${qcInspectionRequests.length} qc request");
       Navigator.of(context).pop();
@@ -199,52 +205,64 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
     String lpn = _lpnController.text;
     if (lpn.isNotEmpty) {
       showLoading(context);
+      qcInspectionRequests = [];
+      _readyForQCResult = false;
+
       try {
         List<Inventory> inventoryList = await InventoryService.findInventory(
             lpn: lpn);
 
         printLongLogMessage("get ${inventoryList.length} inventory by lpn $lpn");
-        printLongLogMessage("hide the loading prompt");
-        Navigator.of(context).pop();
+
+
+
         // TO-DO, we will support only one inventory record for now
         if (inventoryList.length == 1) {
           // ok, we find only one
           _inventoryForQC = inventoryList.first;
-          setupDisplay(_inventoryForQC);
+          await setupDisplay(_inventoryForQC);
         }
         else if (inventoryList.length > 1) {
           // now we only allow qc by inventory, prompt dialog to let the user
           // choose only one inventory
           _showInventoryDialog(inventoryList);
           if (_inventoryForQC != null) {
-            setupDisplay(_inventoryForQC);
+            await setupDisplay(_inventoryForQC);
           }
         }
+
+        Navigator.of(context).pop();
 
       }
       on WebAPICallException catch (ex) {
         Navigator.of(context).pop();
-        showErrorDialog(context, ex.errMsg());
-        return;
+        //await showBlockedErrorDialog(context, ex.errMsg());
+
       }
     }
 
   }
 
 
-  setupDisplay(Inventory inventory) {
+  setupDisplay(Inventory inventory) async {
 
 
-    setState(() {
+    if (_inventoryForQC.lastQCTime == null) {
+
+      qcInspectionRequests =
+          await InventoryService.getManualQCInspectionRequest(inventory);
+    }
+
+    setState(()  {
 
 
       _itemName = inventory.item.name;
       _itemDescription = inventory.item.description;
       _lpn = inventory.lpn;
 
-      // check if the inventory needs qc
-      if (!inventory.inboundQCRequired) {
-        // showWarningDialog(context,  CWMSLocalizations.of(context).inventoryNotQCRequired);
+
+      if (qcInspectionRequests.isEmpty) {
+
         _readyForQCResult = false;
       }
       else {
