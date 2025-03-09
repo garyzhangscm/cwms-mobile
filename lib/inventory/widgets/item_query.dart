@@ -156,21 +156,26 @@ class _ItemQueryState extends State<ItemQuery> {
   }
 
   void _search(StateSetter setState) async {
-    if (_itemCriteriaInputController.text.isEmpty) {
-      return null;
-    }
 
     showLoading(context);
 
-    try {
+    if (_itemCriteriaInputController.text.isEmpty) {
+      _matchedItemList = [];
+    }
+    else {
 
-      _matchedItemList = await ItemService.queryItemByKeyword(_itemCriteriaInputController.text);
+        try {
+
+          _matchedItemList = await ItemService.queryItemByKeyword(_itemCriteriaInputController.text);
+        }
+        on WebAPICallException catch(ex) {
+          Navigator.of(context).pop();
+          showErrorDialog(context, "can't find item by  ${_itemCriteriaInputController.text}");
+          return;
+        }
     }
-    on WebAPICallException catch(ex) {
-      Navigator.of(context).pop();
-      showErrorDialog(context, "can't find item by  ${_itemCriteriaInputController.text}");
-      return;
-    }
+
+
     printLongLogMessage("we get ${_matchedItemList.length} by keywrod: ${_itemCriteriaInputController.text}");
 
     setState(() {
@@ -178,10 +183,10 @@ class _ItemQueryState extends State<ItemQuery> {
     });
 
     Navigator.of(context).pop();
-    if (_matchedItemList.isEmpty) {
+    //if (_matchedItemList.isEmpty) {
 
-        showErrorDialog(context, "can't find item by  ${_itemCriteriaInputController.text}");
-    }
+      //  showErrorDialog(context, "can't find item by  ${_itemCriteriaInputController.text}");
+    //}
 
     return;
   }

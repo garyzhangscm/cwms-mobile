@@ -21,6 +21,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
+import '../../shared/models/barcode.dart';
+import '../../shared/services/barcode_service.dart';
+
 
 class InventoryLostFoundPage extends StatefulWidget{
 
@@ -40,6 +43,9 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
 
+
+  // save the inventory attribute we got from barcode
+  Map<String, String> _inventoryAttributesFromBarcode = new Map();
 
   FocusNode _itemNumberFocusNode = FocusNode();
   FocusNode _quantityFocusNode = FocusNode();
@@ -62,6 +68,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     _selectedInventoryStatus = new InventoryStatus();
     _selectedItemPackageType = new ItemPackageType();
 
+    _inventoryAttributesFromBarcode.clear();
+
     // get all inventory status to display
     InventoryStatusService.getAllInventoryStatus()
         .then((value) {
@@ -83,8 +91,80 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
         _readyToConfirm = false;
         printLongLogMessage("1. set _readyToConfirm to false ");
         _enterOnLPNController();
+
+
+
+        printLongLogMessage("start to parse the barcode ${_lpnController.text}");
+        Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
+
+
+        print("barcode.is_2d? ${barcode.is_2d}");
+
+        // first check if it is a barcode scanned in
+        if (barcode.is_2d) {
+          _processBarcode(barcode.result).then(
+                  (successful) {
+
+                if (successful) {
+
+                  printLongLogMessage("send focus to the quantity node");
+                  _quantityFocusNode.requestFocus();
+                }
+                else {
+
+                  _lpnFocusNode.requestFocus();
+                }
+              }
+
+          );
+        }
+        else {
+          _enterOnLPNController();
+        }
+
       }
     });
+
+    _itemNumberFocusNode.addListener(() {
+        print("_itemNumberFocusNode.hasFocus: ${_itemNumberFocusNode.hasFocus}");
+        // only reload the item information if the item was changed
+        if (!_itemNumberFocusNode.hasFocus) {
+            if (_itemController.text.isEmpty) {
+              setState(() {
+                _currentItem = null;
+              });
+            }
+            else
+            if (_currentItem == null || _currentItem.name != _itemController.text) {
+              printLongLogMessage("start to parse the barcode ${_itemController.text}");
+              Barcode barcode = BarcodeService.parseBarcode(_itemController.text);
+
+
+              print("barcode.is_2d? ${barcode.is_2d}");
+
+                // first check if it is a barcode scanned in
+                if (barcode.is_2d) {
+                  _processBarcode(barcode.result).then(
+                          (successful) {
+
+                        if (successful) {
+
+                          printLongLogMessage("send focus to the quantity node");
+                          _quantityFocusNode.requestFocus();
+                        }
+                        else {
+
+                          _itemNumberFocusNode.requestFocus();
+                        }
+                      }
+
+                  );
+                }
+
+            }
+        }
+    });
+
 
     inventoryOnRF = [];
 
@@ -316,6 +396,81 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
         )
     );
 
+  }
+
+
+  // if the user scan in a barcode, then we will parse the barcode and
+  // automatically populate all the values
+  Future<bool> _processBarcode(Map<String, String> parameters) async {
+
+
+    if (parameters.containsKey("inventoryStatusId")) {
+      setState(() {
+
+        _selectedInventoryStatus = _validInventoryStatus.firstWhere((inventoryStatus) => inventoryStatus.id.toString() == parameters["inventoryStatusId"]);
+      });
+    }
+
+    if (parameters.containsKey("itemName")) {
+      ItemService.getItemByName(parameters["itemName"]).then((item) => {
+          setState(() {
+              _currentItem = item;
+          })
+      });
+    }
+
+
+    if (parameters.containsKey("quantity")) {
+      _quantityController.text = parameters["quantity"];
+    }
+
+
+    if (parameters.containsKey("lpn")) {
+      _lpnController.text = parameters["lpn"];
+    }
+
+
+
+    _inventoryAttributesFromBarcode.clear();
+
+    if (parameters.containsKey("color")) {
+      _inventoryAttributesFromBarcode["color"] = parameters["color"];
+    }
+    if (parameters.containsKey("productSize")) {
+      _inventoryAttributesFromBarcode["productSize"] = parameters["productSize"];
+    }
+    if (parameters.containsKey("style")) {
+      _inventoryAttributesFromBarcode["style"] = parameters["style"];
+    }
+
+    if (parameters.containsKey("inventoryAttribute1")) {
+      _inventoryAttributesFromBarcode["attribute1"] = parameters["inventoryAttribute1"];
+    }
+    if (parameters.containsKey("inventoryAttribute2")) {
+      _inventoryAttributesFromBarcode["attribute2"] = parameters["inventoryAttribute2"];
+    }
+    if (parameters.containsKey("inventoryAttribute3")) {
+      _inventoryAttributesFromBarcode["attribute3"] = parameters["inventoryAttribute3"];
+    }
+    if (parameters.containsKey("inventoryAttribute4")) {
+      _inventoryAttributesFromBarcode["attribute4"] = parameters["inventoryAttribute4"];
+    }
+    if (parameters.containsKey("inventoryAttribute5")) {
+      _inventoryAttributesFromBarcode["attribute5"] = parameters["inventoryAttribute5"];
+    }
+
+    // whether the kit inner inventory attribute from
+    // the kit item's default attribute, or from the container's inventory attribute
+    if (parameters.containsKey("kitInnerInventoryWithDefaultAttribute")) {
+      _inventoryAttributesFromBarcode["kitInnerInventoryWithDefaultAttribute"] = parameters["kitInnerInventoryWithDefaultAttribute"];
+    }
+
+    if (parameters.containsKey("kitInnerInventoryAttributeFromKit")) {
+      _inventoryAttributesFromBarcode["kitInnerInventoryAttributeFromKit"] = parameters["kitInnerInventoryAttributeFromKit"];
+    }
+
+
+    return true;
   }
 
 
