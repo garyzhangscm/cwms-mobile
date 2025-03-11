@@ -43,17 +43,32 @@ class InventoryStatusService {
 
         return inventoryStatuses;
      */
-
+/*
     CWMSHttpResponse response = await Global.httpClient.get(
         "/inventory/inventory-statuses",
         queryParameters: {'warehouseId': Global.currentWarehouse.id}
     );
 
+ */
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+      "/inventory/inventory-statuses",
+        queryParameters: {'warehouseId': Global.currentWarehouse.id}
+    );
+
     // printLongLogMessage("response from getAllInventoryStatus");
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("getAllInventoryStatus / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
 
 
     List<InventoryStatus> inventoryStatuses
-      = (response.data as List)?.map((e) =>
+      = (responseString["data"] as List)?.map((e) =>
       e == null ? null : InventoryStatus.fromJson(e as Map<String, dynamic>))
           ?.toList();
 

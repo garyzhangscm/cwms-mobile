@@ -151,13 +151,13 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     return
       // confirm input and clear input
       buildTwoButtonRow(context,
-        _qcInspectionRequestItemIndex < _qcInspectionRequest.qcInspectionRequestItems.length - 1 ?
-            _buildNextQCInspectionRequestItemButton(context) :
-            _buildComfirmButton(context),
         ElevatedButton(
             onPressed: _onCancel,
             child: Text(CWMSLocalizations.of(context).cancel)
         ),
+        _qcInspectionRequestItemIndex < _qcInspectionRequest.qcInspectionRequestItems.length - 1 ?
+            _buildNextQCInspectionRequestItemButton(context) :
+            _buildComfirmButton(context),
 
       ) ;
   }

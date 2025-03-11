@@ -24,7 +24,7 @@ class BillOfMaterialService {
         queryParameters: {"workOrderId": workOrder.id}
     );
 
-    // print("response from findMatchedBillOfMaterial: $response");
+    print("response from findMatchedBillOfMaterial: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

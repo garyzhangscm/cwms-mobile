@@ -4,6 +4,7 @@ import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/inventory/services/item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
@@ -363,6 +364,11 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     _workOrderNumberController.text = _currentWorkOrder.number;
     Navigator.of(context).pop();
 
+    if (_currentWorkOrder.item == null) {
+
+      ItemService.getItemById(_currentWorkOrder.itemId).then((item) => _currentWorkOrder.item = item);
+    }
+
     setState(()  {
       _currentWorkOrder;
       _scannedProductionLine;
@@ -441,6 +447,13 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
         _currentWorkOrder = null;
       });
       return;
+    }
+
+    //printLongLogMessage("start to work on work order ${_currentWorkOrder.number} with item ${_currentWorkOrder.item.id}");
+
+    if (_currentWorkOrder.item == null) {
+
+      ItemService.getItemById(_currentWorkOrder.itemId).then((item) => _currentWorkOrder.item = item);
     }
 
     setState(()  {

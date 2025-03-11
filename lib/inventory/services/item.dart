@@ -10,7 +10,32 @@ import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:dio/dio.dart';
 
 class ItemService {
-  // Get all cycle count requests by batch id
+
+  static Future<Item> getItemById(int id) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "/inventory/items/${id}",
+        queryParameters: {'warehouseId': Global.currentWarehouse.id}
+    );
+
+    // printLongLogMessage("response from item by name $name");
+
+    // printLongLogMessage(response.toString());
+
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage("get response from getItemById ${response.toString()}");
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("getItemById / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+
+    return Item.fromJson(responseString["data"] as Map<String, dynamic>);
+  }
+
   static Future<Item> getItemByName(String name) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
