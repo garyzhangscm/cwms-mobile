@@ -375,7 +375,9 @@ class Global {
           headers: {
             HttpHeaders.acceptHeader: "application/json",
             HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
-            "rfCode": Global.lastLoginRFCode
+            "rfCode": Global.lastLoginRFCode,
+            "warehouseId": Global.currentWarehouse.id,
+            "companyId": Global.lastLoginCompanyId
           },);
     httpClient = CWMSHttpClientAdapter(dioConfig: dioConfig);
 
