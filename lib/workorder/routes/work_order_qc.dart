@@ -11,6 +11,7 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_result.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
+import 'package:cwms_mobile/inventory/services/item.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
@@ -285,21 +286,25 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
 
       if (_workOrderQCSample.productionLineAssignment.workOrder == null &&
           _workOrderQCSample.productionLineAssignment.workOrderId != null) {
-          WorkOrderService.getWorkOrderById(_workOrderQCSample.productionLineAssignment.workOrderId)
-              .then((workOrder) {
-            _workOrderQCSample.productionLineAssignment.workOrder = workOrder;
-                _workOrderQCSample = _workOrderQCSample;
-                setupDisplay(_workOrderQCSample);
-                // 隐藏loading框
-                Navigator.of(context).pop();
 
-          });
+          _workOrderQCSample.productionLineAssignment.workOrder =
+              await WorkOrderService.getWorkOrderById(_workOrderQCSample.productionLineAssignment.workOrderId);
+
+
       }
-      else {
-          setupDisplay(_workOrderQCSample);
-          // 隐藏loading框
-          Navigator.of(context).pop();
-        }
+      if (_workOrderQCSample.productionLineAssignment.workOrder.item == null &&
+          _workOrderQCSample.productionLineAssignment.workOrder.itemId != null) {
+
+          _workOrderQCSample.productionLineAssignment.workOrder.item =
+                await ItemService.getItemById(_workOrderQCSample.productionLineAssignment.workOrder.itemId);
+      }
+
+
+
+      setupDisplay(_workOrderQCSample);
+      // 隐藏loading框
+      Navigator.of(context).pop();
+
         // once we get the sample information, move the cursor to the start qc button
       _startQCButtonFocusNode.requestFocus();
 
@@ -331,6 +336,8 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
       _workOrderQCSampleNumber = workOrderQCSample.number;
       _workOrderNumber = workOrderQCSample.productionLineAssignment.workOrder.number;
       _productionLineName = workOrderQCSample.productionLineAssignment.productionLine.name;
+
+
       _itemName = workOrderQCSample.productionLineAssignment.workOrder.item.name;
       _itemDescription = workOrderQCSample.productionLineAssignment.workOrder.item.description;
       _readyForQCResult = true;
