@@ -415,6 +415,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
       ItemService.getItemByName(parameters["itemName"]).then((item) => {
           setState(() {
               _currentItem = item;
+              _itemController.text = item.name;
           })
       });
     }
