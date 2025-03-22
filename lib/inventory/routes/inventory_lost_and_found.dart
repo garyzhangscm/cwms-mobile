@@ -649,6 +649,23 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     }
 
   }
+  bool _needCaptureInventoryAttribute(Item item) {
+    printLongLogMessage("check if we need to capture inventory attribute for the item ${item.name}");
+
+    printLongLogMessage("item.trackingColorFlag ${item.trackingColorFlag}");
+    printLongLogMessage("item.trackingProductSizeFlag ${item.trackingProductSizeFlag}");
+    printLongLogMessage("item.trackingStyleFlag ${item.trackingStyleFlag}");
+
+    return item.trackingColorFlag == true ||
+        item.trackingProductSizeFlag  == true ||
+        item.trackingStyleFlag  == true ||
+        item.trackingInventoryAttribute1Flag  == true ||
+        item.trackingInventoryAttribute2Flag  == true ||
+        item.trackingInventoryAttribute3Flag  == true ||
+        item.trackingInventoryAttribute4Flag  == true ||
+        item.trackingInventoryAttribute5Flag == true ;
+  }
+
   void _onAdjustSingleLpnConfirm(int confirmedQuantity,
       String lpn) async {
 
@@ -656,10 +673,32 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     // make sure this is a valid LPN
 
 
+    Map<String, String> inventoryAttributes = new Map();
+    if (_needCaptureInventoryAttribute(_currentItem)) {
+
+      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentItem.name}");
+      printLongLogMessage("_inventoryAttributesFromBarcode.isNotEmpty? ${_inventoryAttributesFromBarcode.isNotEmpty}");
+
+      if (_inventoryAttributesFromBarcode.isNotEmpty) {
+        // the item needs certain attribute but we already parsed from the barcode
+        // we don't need to capture them manually
+        printLongLogMessage("get inventory attribute from the barcode ${_inventoryAttributesFromBarcode}");
+        inventoryAttributes = _inventoryAttributesFromBarcode;
+      }
+      else {
+
+        final result = await Navigator.of(context)
+            .pushNamed("inventory_attribute_capture", arguments: _currentItem);
+
+        inventoryAttributes = result as Map<String, String>;
+      }
+
+    }
 
     // refresh the work order to reflect the produced quantity
 
-    Inventory inventory = await createInventory(lpn, confirmedQuantity * _selectedItemUnitOfMeasure.quantity);
+    Inventory inventory = await createInventory(lpn, confirmedQuantity * _selectedItemUnitOfMeasure.quantity,
+        inventoryAttributes);
     try {
       await InventoryService.addInventory(inventory);
     }
@@ -674,7 +713,9 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     _refreshScreenAfterAdjust();
 
   }
-  Future<Inventory> createInventory(String lpn, int quantity) async {
+  Future<Inventory> createInventory(String lpn, int quantity,
+      Map<String, String> inventoryAttributes) async {
+
     Inventory inventory = new Inventory();
     inventory.item = _currentItem;
     // in 3pl environment, let's set the inventory's client id based on the item
@@ -695,6 +736,17 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     inventory.inventoryStatus = _selectedInventoryStatus;
     inventory.itemPackageType = _selectedItemPackageType;
     inventory.virtual = false;
+
+    inventory.color = inventoryAttributes.containsKey("color") ? inventoryAttributes["color"] : "";
+    inventory.productSize = inventoryAttributes.containsKey("productSize") ? inventoryAttributes["productSize"] : "";
+    inventory.style = inventoryAttributes.containsKey("style") ? inventoryAttributes["style"] : "";
+    inventory.attribute1 = inventoryAttributes.containsKey("attribute1") ? inventoryAttributes["attribute1"] : "";
+    inventory.attribute2 = inventoryAttributes.containsKey("attribute2") ? inventoryAttributes["attribute2"] : "";
+    inventory.attribute3 = inventoryAttributes.containsKey("attribute3") ? inventoryAttributes["attribute3"] : "";
+    inventory.attribute4 = inventoryAttributes.containsKey("attribute4") ? inventoryAttributes["attribute4"] : "";
+    inventory.attribute5 = inventoryAttributes.containsKey("attribute5") ? inventoryAttributes["attribute5"] : "";
+
+
     return inventory;
   }
 
@@ -774,6 +826,29 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
       return;
 
     }
+
+    Map<String, String> inventoryAttributes = new Map();
+    if (_needCaptureInventoryAttribute(_currentItem)) {
+
+      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentItem.name}");
+      printLongLogMessage("_inventoryAttributesFromBarcode.isNotEmpty? ${_inventoryAttributesFromBarcode.isNotEmpty}");
+
+      if (_inventoryAttributesFromBarcode.isNotEmpty) {
+        // the item needs certain attribute but we already parsed from the barcode
+        // we don't need to capture them manually
+        printLongLogMessage("get inventory attribute from the barcode ${_inventoryAttributesFromBarcode}");
+        inventoryAttributes = _inventoryAttributesFromBarcode;
+      }
+      else {
+
+        final result = await Navigator.of(context)
+            .pushNamed("inventory_attribute_capture", arguments: _currentItem);
+
+        inventoryAttributes = result as Map<String, String>;
+      }
+
+    }
+
     try {
       // start receive LPNs one by one and show the progress bar
       _setupProgressBar();
@@ -789,7 +864,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
         _progressDialog.update(progress: progress, message: message);
 
-        Inventory inventory = await createInventory(lpn, lpnCaptureRequest.lpnUnitOfMeasure.quantity);
+        Inventory inventory = await createInventory(lpn, lpnCaptureRequest.lpnUnitOfMeasure.quantity, inventoryAttributes);
 
         await InventoryService.addInventory(inventory);
 
