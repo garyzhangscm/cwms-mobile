@@ -1,23 +1,19 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:badges/badges.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:cwms_mobile/shared/global.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../exception/WebAPICallException.dart';
-import '../../shared/http_client.dart';
+import '../../shared/global.dart';
 import '../models/inventory_batch_deposit_sort_by_criteria.dart';
 
 // Page to allow the user scan in an LPN and start the put away process
@@ -275,6 +271,8 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   Widget _buildInventoryDepositRequestListTile(BuildContext context, int index) {
     String key = _inventoryDepositRequests.keys.elementAt(index);
 
+    printLongLogMessage("_inventoryDepositRequests[key].requestInProcess: ${_inventoryDepositRequests[key].requestInProcess}");
+    printLongLogMessage("_inventoryDepositRequests[key].requestResult: ${_inventoryDepositRequests[key].requestResult}");
     if (_inventoryDepositRequests[key].requestInProcess == true) {
       // show loading indicator if the inventory still reverse in progress
       printLongLogMessage("show loading for index $index / ${_inventoryDepositRequests[key].lpn}");
@@ -586,9 +584,30 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   void _reloadInventoryOnRF({int refreshCount = 0}) {
 
     InventoryService.getInventoryOnCurrentRF()
-        .then((value) {
+        .then((inventoryList) async {
+          // load location information
+
+      WarehouseLocation rfLocation = await WarehouseLocationService.getWarehouseLocationByName(
+          Global.getLastLoginRFCode()
+      );
+
+      inventoryList.forEach((inventory) async {
+        inventory.location = rfLocation;
+        if (inventory.inventoryMovements != null &&
+            inventory.inventoryMovements.isNotEmpty &&
+            inventory.inventoryMovements[0].locationId != null &&
+            inventory.inventoryMovements[0].location == null) {
+
+          WarehouseLocation nextLocation = await WarehouseLocationService.getWarehouseLocationById(
+              inventory.inventoryMovements[0].locationId
+          );
+          inventory.inventoryMovements[0].location = nextLocation;
+
+        }
+      });
+
       setState(() {
-        inventoryOnRF = value;
+        inventoryOnRF = inventoryList;
         // setup the inventory deposit requests
         // so we can display the request list
         _setupInventoryDepositRequest();
@@ -624,6 +643,10 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
       }
       else {
         _inventoryDepositRequests[inventory.lpn] = InventoryDepositRequest.fromInventory(inventory);
+        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].currentLocationName: ${_inventoryDepositRequests[inventory.lpn].currentLocationName}");
+
+        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].nextLocationName: ${_inventoryDepositRequests[inventory.lpn].nextLocationName}");
+        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].itemName: ${_inventoryDepositRequests[inventory.lpn].itemName}");
         _selectedLPNMap[inventory.lpn] = false;
       }
     });

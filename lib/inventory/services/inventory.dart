@@ -529,6 +529,43 @@ class InventoryService {
 
   }
 
+  // tryTime: we may need to wait for a while when print LPN labels
+  // for work order producing or inbound receiving
+  // as we may use asynchronously receiving for work order producing or inbound receiving
+  static Future<void> autoPrintLPNLabelByLpn(String lpn, {int tryTime = 10}) {
+
+    if (tryTime > 0) {
+
+      InventoryService.findInventory(lpn : lpn, includeDetails: true)
+          .then((inventoryList) {
+
+        if (inventoryList != null && inventoryList.isNotEmpty) {
+
+          autoPrintLPNLabel(inventoryList[0]);
+        }
+        else {
+          Future.delayed(const Duration(milliseconds: 1000),
+                  () => autoPrintLPNLabelByLpn(lpn, tryTime: tryTime - 1));
+        }
+      });
+    }
+
+
+  }
+
+  static Future<void> autoPrintLPNLabel(Inventory invenotry) async {
+
+
+        InventoryService.generateLPNLabel(invenotry).then((reportHistory) {
+          PrintingService.downloadFile(reportHistory).then((filePath) {
+            PrintingService.sendFileToPrinter(filePath).then((value) => {
+              printLongLogMessage("$filePath is printed")
+            });
+          });
+        });
+
+  }
+
   static Future<List<QCInspectionRequest>> getPendingQCInspectionRequest(Inventory inventory) async {
 
     printLongLogMessage("start to get qc inspection request for lpn ${inventory.lpn}");

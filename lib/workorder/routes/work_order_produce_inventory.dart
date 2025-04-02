@@ -31,6 +31,8 @@ import 'package:flutter/services.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 import '../../shared/global.dart';
+import '../../shared/models/printing_strategy.dart';
+import '../../shared/services/printing.dart';
 
 
 class WorkOrderProduceInventoryPage extends StatefulWidget{
@@ -269,7 +271,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                                   autofocus: _forceLPNReceiving ? false : true,
                                   focusNode: quantityFocusNode,
                                   onFieldSubmitted: (v){
-                                    printLongLogMessage("start to focus on lpn node");
+
                                     _lpnControllerFocusNode.requestFocus();
 
                                   },
@@ -340,7 +342,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             _readyToConfirm = false;
                           });
 
-                          printLongLogMessage("user pressed enter, lpn is: ${_lpnController.text}");
                           _enterOnLPNController(10);
                         }
                       },
@@ -377,8 +378,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         onPressed: !_readyToConfirm ? null : () {
 
           _readyToConfirm = false;
-          printLongLogMessage("confirm button click!");
-          print("1. _formKey.currentState.validate()? ${_formKey.currentState.validate()}");
+
+
           if (_formKey.currentState.validate()) {
             _onWorkOrderProduceConfirm();
 /**
@@ -661,9 +662,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // enter in the LPN controller. In either case, we will need to make sure
     // the lpn doesn't have focus before we start confirm
 
-
-
-    printLongLogMessage("_enterOnLPNController: Start to confirm work order produced inventory, tryTime = $tryTime");
     if (tryTime <= 0) {
       // do nothing as we run out of try time
 
@@ -673,7 +671,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       });
       return;
     }
-    printLongLogMessage("_enterOnLPNController / lpnFocusNode.hasFocus:   ${lpnFocusNode.hasFocus}");
+
     if (lpnFocusNode.hasFocus) {
       // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
       Future.delayed(const Duration(milliseconds: 100),
@@ -689,8 +687,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     // printLongLogMessage("lpn controller lost focus, its value is ${_lpnController.text}");
     if (_formKey.currentState.validate()) {
-      printLongLogMessage("2. form passed validation");
-      printLongLogMessage("2. _readyToConfirm? $_readyToConfirm");
         // set ready to confirm to fail so other trigger point
         // won't process the receiving request
         // the issue happens when we have 2 trigger point to process
@@ -699,7 +695,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         // 2. confirm button click
         // so when we blur the LPN controller by clicking the confirm button, the
         // _onRecevingConfirm function will be fired twice
-        printLongLogMessage("2. set _readyToConfirm to false");
         _readyToConfirm = false;
         _onWorkOrderProduceConfirm();
     }
@@ -732,7 +727,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         return;
 
       }
-      printLongLogMessage("lpnUOM: ${lpnUOM.unitOfMeasure.name}, quantity: ${lpnUOM.quantity}");
       inventoryQuantity = lpnUOM.quantity;
     }
     else {
@@ -768,7 +762,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   void _confirmWorkOrderProduce(WorkOrder workOrder, int inventoryQuantity,
       String lpn ) async {
 
-    printLongLogMessage("_onWorkOrderProduceConfirm");
     if (lpn.isNotEmpty) {
       showLoading(context);
       // first of all, validate the LPN
@@ -780,7 +773,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
           return;
         }
-        printLongLogMessage("LPN ${lpn} passed the validation");
       }
       on CWMSHttpException catch(ex) {
 
@@ -792,7 +784,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       Navigator.of(context).pop();
     }
 
-    printLongLogMessage("_forceLPNReceiving: $_forceLPNReceiving");
 
 
     int lpnCount = _getRequiredLPNCount(inventoryQuantity);
@@ -881,9 +872,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
             _getReasonCodeForProducingInventory()
         );
 
-    printLongLogMessage("start to save work order produce transaction");
-    printLongLogMessage("===========================================");
-    printLongLogMessage(workOrderProduceTransaction.toJson().toString());
+
     try {
       await WorkOrderService.saveWorkOrderProduceTransaction(
           workOrderProduceTransaction
@@ -898,10 +887,28 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     }
 
+    if (Global.warehouseConfiguration.newLPNPrintLabelAtProducingFlag == true &&
+        Global.warehouseConfiguration.printingStrategy == PrintingStrategy.LOCAL_PRINTER_SERVER_DATA) {
+      // we will print the LPN label
+      // we will download the LPN label as PDF and then print from the printer that attached to the RF
+      _printLPNLabel(lpn);
+    }
 
     Navigator.of(context).pop();
     _refreshScreenAfterProducing();
 
+
+  }
+
+  void _printLPNLabel(String lpn) {
+    // get the default printer that attached to the RF
+
+
+    if (Global.getLastLoginRF().printerName == "") {
+      return ;
+    }
+    // download the LPN label
+    InventoryService.autoPrintLPNLabelByLpn(lpn);
 
   }
 
@@ -948,7 +955,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       // if the user already scna in a lpn, then add it
       if (lpn.isNotEmpty) {
         capturedLpn.add(lpn);
-        printLongLogMessage("add current LPN $lpn first so that the user don't have to scan in again");
       }
       LpnCaptureRequest lpnCaptureRequest = new LpnCaptureRequest.withData(
           _currentWorkOrder.item,
@@ -995,7 +1001,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
           showErrorDialog(context, errorMessage);
           return;
         }
-        printLongLogMessage("LPN ${lpnIterator.current} passed the validation");
       }
     }
     on CWMSHttpException catch(ex) {
@@ -1076,7 +1081,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     _quantityController.text = "1";
     _lpnControllerFocusNode.requestFocus();
     // FocusScope.of(context).requestFocus(lpnFocusNode);
-    printLongLogMessage("start to forcue on the LPN node");
 
     _readyToConfirm = true;
 
@@ -1094,8 +1098,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     if (_forceLPNReceiving) {
       return 1;
     }
-    printLongLogMessage("start to get required lpn quantity with total quantity $totalQuantity");
-    printLongLogMessage("_selectedItemPackageType.trackingLpnUOM.quantity is ${_selectedItemPackageType.trackingLpnUOM.quantity}");
+
     int lpnCount = 0;
 
     if (_selectedItemPackageType.trackingLpnUOM == null) {
@@ -1195,7 +1198,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
         });
      */
-    printLongLogMessage("workOrderLineConsumeTransactions.length: ${workOrderLineConsumeTransactions.length}");
     workOrderProduceTransaction.workOrderLineConsumeTransactions =
         workOrderLineConsumeTransactions;
 

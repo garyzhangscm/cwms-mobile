@@ -875,6 +875,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
         printLongLogMessage("allocate location for the QC needed inventory ${inventory.lpn}");
         InventoryService.allocateLocation(inventory);
       }
+
+      printLongLogMessage("Global.warehouseConfiguration.newLPNPrintLabelAtReceivingFlag ${Global.warehouseConfiguration.newLPNPrintLabelAtReceivingFlag}");
+      printLongLogMessage("Global.warehouseConfiguration.printingStrategy ${Global.warehouseConfiguration.printingStrategy}");
       if (Global.warehouseConfiguration.newLPNPrintLabelAtReceivingFlag == true &&
           Global.warehouseConfiguration.printingStrategy == PrintingStrategy.LOCAL_PRINTER_SERVER_DATA) {
           // we will print the LPN label
@@ -899,19 +902,13 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   void _printLPNLabel(Inventory inventory) {
     // get the default printer that attached to the RF
-    if (Global.getRFConfiguration.printerName == "") {
+    printLongLogMessage("Global.getRFConfiguration.printerName: ${Global.getLastLoginRF().printerName}");
+
+    if (Global.getLastLoginRF().printerName == "") {
       return ;
     }
     // download the LPN label
-    InventoryService.generateLPNLabel(inventory).then((reportHistory) {
-        printLongLogMessage("generated lpn label file  ${reportHistory.fileName}");
-
-        PrintingService.downloadFile(reportHistory).then((filePath) {
-          PrintingService.sendFileToPrinter(filePath).then((value) => {
-            printLongLogMessage("$filePath is printed")
-          });
-        });
-    });
+    InventoryService.autoPrintLPNLabel(inventory);
   }
   bool _needCaptureInventoryAttribute(Item item) {
     printLongLogMessage("check if we need to capture inventory attribute for the item ${item.name}");
@@ -1499,8 +1496,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // full assigned to the lpnController.
 
     if (_formKey.currentState.validate()) {
-      printLongLogMessage("2. form passed validation");
-      printLongLogMessage("2. _readyToConfirm? $_readyToConfirm");
+
       if (_readyToConfirm == true) {
         // set ready to confirm to fail so other trigger point
         // won't process the receiving request
@@ -1510,7 +1506,6 @@ class _ReceivingPageState extends State<ReceivingPage> {
         // 2. confirm button click
         // so when we blur the LPN controller by clicking the confirm button, the
         // _onRecevingConfirm function will be fired twice
-        printLongLogMessage("2. set _readyToConfirm to false");
         _readyToConfirm = false;
         _onRecevingConfirm(_currentReceiptLine,
             int.parse(_quantityController.text),
