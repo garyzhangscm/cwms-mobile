@@ -1,5 +1,9 @@
 
 import 'dart:convert';
+import 'dart:io' show Directory, File, Platform;
+
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -7,6 +11,8 @@ import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/shared/models/printing_strategy.dart';
 import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../models/report_history.dart';
 
@@ -97,7 +103,76 @@ class PrintingService {
 
 
 
+  static Future<String> downloadFile(ReportHistory reportHistory) async {
+//https://staging.claytechsuite.com/api/resource/report-histories/preview/4/6/LPN_LABEL/LPN_LABEL_1743551794620_0109.lbl?token=eyJhbGciOiJIUzI1NiJ9.eyJjb21wYW55SWQiOi0xLCJzdWIiOiJHWkhBTkciLCJpYXQiOjE3NDM1NTE0MzUsImV4cCI6MTc0MzU4NzQzNX0.l4xWVEA5dQSwhGUtVqAGEqFDQYsrMl784Y0N-rkUkJQ&companyId=4
 
+    String url = "resource/report-histories/preview/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/LPN_LABEL/${reportHistory.fileName}";
+    url  = "$url?token=${Global.currentUser.token}";
+    url  = "$url&companyId=${Global.lastLoginCompanyId}";
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    final status = await Permission.storage.request();
+    if (status.isGranted) {
+      Directory directory;
+      if (Platform.isAndroid) {
+        // dirloc = "/sdcard/download/NHB/";
+        directory = await getTemporaryDirectory();
+      } else {
+        directory = await getDownloadsDirectory();
+      }
+
+      String tempFilePath = "${directory.path}/${reportHistory.fileName}";
+
+      printLongLogMessage(
+          'Save report file to temporary folder: ${tempFilePath}');
+      try {
+
+        await httpClient.download(
+            url, tempFilePath,
+            onReceiveProgress: (receivedBytes, totalBytes) {
+              printLongLogMessage("received ${receivedBytes} of $totalBytes");
+            });
+
+
+        /// For Android call the flutter_file_dialog package, which will give
+          /// the option to save the now downloaded file by Dio (to temp
+          /// application cache) to wherever the user wants including Downloads!
+        ///
+        // if (Platform.isAndroid) {
+        //    final params = SaveFileDialogParams(
+        //        sourceFilePath: tempFilePath);
+        //    final filePath =
+        //        await FlutterFileDialog.saveFile(params: params);
+
+        //    print('Download path: $filePath');
+
+
+
+        //  return filePath;
+        // }
+
+
+
+
+          return tempFilePath;
+      } catch (e) {
+        printLongLogMessage('catch catch catch');
+        printLongLogMessage(e);
+        return "";
+      }
+    }
+    else {
+
+      return "";
+    }
+  }
+
+
+  static Future<void> sendFileToPrinter(String filePath) async {
+
+    await Printing.layoutPdf( onLayout: (PdfPageFormat format) async => new File(filePath).readAsBytesSync());
+  }
 }
 
 

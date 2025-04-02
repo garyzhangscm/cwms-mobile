@@ -476,7 +476,7 @@ class InventoryService {
 
   static Future<Inventory> allocateLocation(Inventory inventory) async {
     printLongLogMessage("start to allocate location for lpn ${inventory.lpn}");
-    printLongLogMessage("start to allocate location for lpn ${inventory.toJson()}");
+
 
     Dio httpClient = CWMSHttpClient.getDio();
 
@@ -496,6 +496,36 @@ class InventoryService {
     }
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
+
+  }
+
+  static Future<ReportHistory> generateLPNLabel(Inventory inventory) async {
+    printLongLogMessage("start to download LPN Label for lpn ${inventory.lpn}");
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    // generate LPN Label
+    // https://staging.claytechsuite.com/api/inventory/inventories/6/L0000000001/lpn-label?warehouseId=6
+    // download PDF:
+    // https://staging.claytechsuite.com/api/resource/report-histories/preview/4/6/LPN_LABEL/LPN_LABEL_1743551794620_0109.lbl?token=eyJhbGciOiJIUzI1NiJ9.eyJjb21wYW55SWQiOi0xLCJzdWIiOiJHWkhBTkciLCJpYXQiOjE3NDM1NTE0MzUsImV4cCI6MTc0MzU4NzQzNX0.l4xWVEA5dQSwhGUtVqAGEqFDQYsrMl784Y0N-rkUkJQ&companyId=4
+
+
+    Response response = await httpClient.post(
+        "/inventory/inventories/${Global.currentWarehouse.id}/${inventory.lpn}/lpn-label",
+        queryParameters: {'warehouseId': Global.currentWarehouse.id},
+    );
+
+    // printLongLogMessage("get response from allocateLocation ${response.toString()}");
+
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("allocateLocation / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return ReportHistory.fromJson(responseString["data"] as Map<String, dynamic>);
 
   }
 

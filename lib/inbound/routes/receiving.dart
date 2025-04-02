@@ -19,12 +19,15 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/services/barcode_service.dart';
+import 'package:cwms_mobile/shared/services/printing.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 import '../../inventory/models/item.dart';
+import '../../shared/global.dart';
 import '../../shared/models/barcode.dart';
+import '../../shared/models/printing_strategy.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
@@ -872,6 +875,12 @@ class _ReceivingPageState extends State<ReceivingPage> {
         printLongLogMessage("allocate location for the QC needed inventory ${inventory.lpn}");
         InventoryService.allocateLocation(inventory);
       }
+      if (Global.warehouseConfiguration.newLPNPrintLabelAtReceivingFlag == true &&
+          Global.warehouseConfiguration.printingStrategy == PrintingStrategy.LOCAL_PRINTER_SERVER_DATA) {
+          // we will print the LPN label
+          // we will download the LPN label as PDF and then print from the printer that attached to the RF
+          _printLPNLabel(inventory);
+      }
       _inventoryAttributesFromBarcode.clear();
 
     }
@@ -888,6 +897,22 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   }
 
+  void _printLPNLabel(Inventory inventory) {
+    // get the default printer that attached to the RF
+    if (Global.getRFConfiguration.printerName == "") {
+      return ;
+    }
+    // download the LPN label
+    InventoryService.generateLPNLabel(inventory).then((reportHistory) {
+        printLongLogMessage("generated lpn label file  ${reportHistory.fileName}");
+
+        PrintingService.downloadFile(reportHistory).then((filePath) {
+          PrintingService.sendFileToPrinter(filePath).then((value) => {
+            printLongLogMessage("$filePath is printed")
+          });
+        });
+    });
+  }
   bool _needCaptureInventoryAttribute(Item item) {
     printLongLogMessage("check if we need to capture inventory attribute for the item ${item.name}");
 
