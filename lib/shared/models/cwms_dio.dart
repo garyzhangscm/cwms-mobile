@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'cwms_http_config.dart';
 
 class CWMSDio with DioMixin implements Dio {
-    CWMSDio({BaseOptions options, CWMSHttpConfig dioConfig}) {
+    CWMSDio({required BaseOptions options, required CWMSHttpConfig dioConfig}) {
         options ??= BaseOptions(
             baseUrl: dioConfig?.baseUrl ?? "",
             contentType: 'application/json',

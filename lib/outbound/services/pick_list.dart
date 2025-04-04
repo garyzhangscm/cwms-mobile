@@ -40,9 +40,8 @@ class PickListService {
     }
 
     List<PickList> pickLists
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : PickList.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => PickList.fromJson(e as Map<String, dynamic>))
+          .toList();
 
 
     if (pickLists.length > 0) {
@@ -56,8 +55,8 @@ class PickListService {
 
 
   // Confirm pick, with picking quantity
-  static Future<PickList> confirmPickList(PickList pickList, int confirmQuantity,
-      int sourceLocationId, [String lpn, String nextLocationName = ""]) async{
+  static Future<PickList?> confirmPickList(PickList pickList, int confirmQuantity,
+      int sourceLocationId, [String? lpn, String nextLocationName = ""]) async{
 
     printLongLogMessage("start to confirm pick list ${pickList.number}, confirmQuantity: $confirmQuantity, lpn: $lpn");
 

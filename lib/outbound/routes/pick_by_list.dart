@@ -28,7 +28,7 @@ import '../models/pick_mode.dart';
 
 class PickByListPage extends StatefulWidget{
 
-  PickByListPage({Key key}) : super(key: key);
+  PickByListPage({Key? key}) : super(key: key);
 
 
   @override
@@ -45,19 +45,19 @@ class _PickByListPageState extends State<PickByListPage> {
   TextEditingController _newLPNNumberController = new TextEditingController();
   FocusNode _newLPNNumberFocusNode = FocusNode();
 
-  PickList _currentPickList;
-  String _currentDestinationLPN;
+  PickList? _currentPickList;
+  String? _currentDestinationLPN;
   // if the list contains partial LPN pick, then we will require the
   // user to input a new LPN so that the partial LPN picks can pick into
   // this new LPN
-  bool _requireNewLPN;
+  bool? _requireNewLPN;
 
   // whether we retain the LPN for a whole LPN pick
-  bool _retainLPNForLPNPick;
+  bool? _retainLPNForLPNPick;
 
-  Pick _currentPick;
+  Pick? _currentPick;
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   @override
   void initState() {
@@ -96,12 +96,12 @@ class _PickByListPageState extends State<PickByListPage> {
     super.dispose();
     // for any reason the user return, let's try to unacknowledge the _currentPickList
     if (_currentPickList != null) {
-      PickListService.unacknowledgePickList(_currentPickList.id).then(
+      PickListService.unacknowledgePickList(_currentPickList!.id!).then(
           (pickList) {
               // _currentPickList= null;
       }).catchError((err) {
         // ignore any error
-        printLongLogMessage("error while unacknowledge the pick list ${_currentPickList.number}");
+        printLongLogMessage("error while unacknowledge the pick list ${_currentPickList?.number}");
       });
     }
 
@@ -233,7 +233,8 @@ class _PickByListPageState extends State<PickByListPage> {
       children: [
         buildTwoButtonRow(context,
             ElevatedButton(
-                onPressed: _currentPickList != null && (!_requireNewLPN || _currentDestinationLPN.isNotEmpty) ? _startPickingForPick : null,
+                onPressed: _currentPickList != null && (_requireNewLPN == false || _currentDestinationLPN?.isNotEmpty == true)
+                    ? _startPickingForPick : null,
                 child: Text(CWMSLocalizations.of(context)!.start)
             ),
             badge.Badge(
@@ -263,7 +264,7 @@ class _PickByListPageState extends State<PickByListPage> {
 
     if (_currentPickList != null) {
 
-      PickListService.unacknowledgePickList(_currentPickList.id);
+      PickListService.unacknowledgePickList(_currentPickList!.id!);
       _currentPickList = null;
     }
 
@@ -284,9 +285,9 @@ class _PickByListPageState extends State<PickByListPage> {
 
         if (_currentPickList != null) {
           // acknowledge the pick list so that no one else can work on the same list
-          await PickListService.acknowledgePickList(_currentPickList.id);
+          await PickListService.acknowledgePickList(_currentPickList!.id!);
         }
-        _requireNewLPN = _checkNewLPNRequirement(_currentPickList);
+        _requireNewLPN = _checkNewLPNRequirement(_currentPickList!);
 
         setState(() {
         });
@@ -310,7 +311,7 @@ class _PickByListPageState extends State<PickByListPage> {
   // then we will requires a new LPN so that the partail LPN
   // pick can pick into this new LPN
   bool _checkNewLPNRequirement(PickList pickList) {
-    return pickList.picks.any((pick) => !pick.wholeLPNPick);
+    return pickList.picks.any((pick) => pick.wholeLPNPick == false);
   }
 
   void _onAddingNewLPN() async {
@@ -364,10 +365,10 @@ class _PickByListPageState extends State<PickByListPage> {
 
     if (_currentPick != null) {
 
-      printLongLogMessage("start to pick for ${_currentPick.number} with batch quantity ${_currentPick.batchPickQuantity}");
+      printLongLogMessage("start to pick for ${_currentPick?.number} with batch quantity ${_currentPick?.batchPickQuantity}");
       Map argumentMap = new HashMap();
       argumentMap['pick'] = _currentPick;
-      argumentMap['workNumber'] = _currentPickList.number;
+      argumentMap['workNumber'] = _currentPickList!.number;
       argumentMap['pickMode'] = PickMode.BY_LIST;
       argumentMap['destinationLPN'] = _currentDestinationLPN;
 
@@ -378,7 +379,7 @@ class _PickByListPageState extends State<PickByListPage> {
         return;
       }
       var pickResult = result as PickResult;
-      print("pick result: $pickResult for pick: ${_currentPick.number}");
+      print("pick result: $pickResult for pick: ${_currentPick?.number}");
 
       // refresh the orders
       if (pickResult.result == true) {
@@ -421,29 +422,29 @@ class _PickByListPageState extends State<PickByListPage> {
   }
 
 
-  Pick _getNextValidPick() {
+  Pick? _getNextValidPick() {
     print(" =====   _getNextValidPick      =====");
-    _currentPickList.picks.forEach((pick) {
+    _currentPickList!.picks.forEach((pick) {
       print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity} / ${pick.skipCount}");
     });
-    if (_currentPickList.picks.isEmpty) {
+    if (_currentPickList!.picks.isEmpty) {
        return null;
     }
     else {
       // sort the pick first so skipped pick will come last
 
-      PickService.sortPicks(_currentPickList.picks, Global.getLastActivityLocation(), Global.isMovingForward());
+      PickService.sortPicks(_currentPickList!.picks, Global.getLastActivityLocation(), Global.isMovingForward());
       // get the first available pick and then group the quantity all together from the same location, for the same
       // inventory
-      _currentPick = _currentPickList.picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity, orElse: () => null);
+      _currentPick = _currentPickList!.picks.firstWhere((pick) => pick.quantity! > pick!.pickedQuantity!);
       if (_currentPick != null) {
-        _currentPick.batchPickQuantity = 0;
-        _currentPick.batchedPicks = [];
-        _currentPickList.picks.forEach((pick) {
-          if (pick.quantity > pick.pickedQuantity && PickService.pickInventoryWithSameAttribute(pick, _currentPick)) {
-            _currentPick.batchPickQuantity += (pick.quantity - pick.pickedQuantity);
-            if (pick.id != _currentPick.id) {
-              _currentPick.batchedPicks.add(pick);
+        _currentPick!.batchPickQuantity = 0;
+        _currentPick!.batchedPicks = [];
+        _currentPickList!.picks.forEach((pick) {
+          if (pick.quantity! > pick!.pickedQuantity! && PickService.pickInventoryWithSameAttribute(pick, _currentPick!)) {
+            _currentPick?.batchPickQuantity = _currentPick!.batchPickQuantity! + (pick.quantity! - pick.pickedQuantity!);
+            if (pick.id != _currentPick!.id!) {
+              _currentPick!.batchedPicks.add(pick);
             }
           }
         });

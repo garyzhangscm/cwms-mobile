@@ -20,7 +20,7 @@ import '../models/pick_mode.dart';
 
 class PickByBatchPage extends StatefulWidget{
 
-  PickByBatchPage({Key key}) : super(key: key);
+  PickByBatchPage({Key? key}) : super(key: key);
 
 
   @override
@@ -36,9 +36,9 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
 
   List<Pick> _currentPickBatch = [];
 
-  Pick _currentPick;
+  Pick? _currentPick;
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   @override
   void initState() {
@@ -68,7 +68,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
     if (_currentPickBatch != null && _currentPickBatch.isNotEmpty) {
       _currentPickBatch.forEach((pick) {
 
-        PickService.unacknowledgePick(pick.id).then(
+        PickService.unacknowledgePick(pick!.id!).then(
                 (pick) {
               // _currentPickList= null;
             }).catchError((err) {
@@ -170,7 +170,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
 
       _currentPickBatch.forEach((pick) {
 
-        PickService.unacknowledgePick(pick.id);
+        PickService.unacknowledgePick(pick.id!);
       });
 
       setState(() {
@@ -194,7 +194,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
 
         for (var pickNumber in pickNumbers) {
 
-          await _onAddingPick(pickNumber);
+          _onAddingPick(pickNumber);
           // printLongLogMessage(" $pickNumber Added!");
         }
         _pickNumberController.clear();
@@ -216,19 +216,19 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
 
       // if the pick is already added, then do nothing
       if (_currentPickBatch != null && _currentPickBatch.isNotEmpty &&
-          _currentPickBatch.any((pick) => pick.number.trim() == pickNumber.trim())) {
+          _currentPickBatch.any((pick) => pick.number!.trim() == pickNumber.trim())) {
         // ok, the pick is already added in the current batch. then do nothing
         return;
       }
 
       // printLongLogMessage("start to get pick by number $pickNumber");
-        Pick pick = await PickService.getPicksByNumber(pickNumber);
+        Pick? pick = await PickService.getPicksByNumber(pickNumber);
 
       // printLongLogMessage("got pick by number ${pick.number}");
 
         if (pick != null) {
           // acknowledge the pick list so that no one else can work on the same list
-          await PickService.acknowledgePick(pick.id);
+          await PickService.acknowledgePick(pick.id!);
           printLongLogMessage("will add ${pick.number} to current batch");
           setState(() {
             _currentPickBatch.add(pick);
@@ -250,7 +250,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
       // printLongLogMessage("start to pick for ${_currentPick.number} with batch quantity ${_currentPick.batchPickQuantity}");
       Map argumentMap = new HashMap();
       argumentMap['pick'] = _currentPick;
-      argumentMap['workNumber'] = _currentPick.number;
+      argumentMap['workNumber'] = _currentPick!.number!;
       argumentMap['pickMode'] = PickMode.BY_BATCH;
 
       final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
@@ -260,16 +260,16 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
         return;
       }
       var pickResult = result as PickResult;
-      print("pick result: ${pickResult.toJson()} for pick: ${_currentPick.number}");
+      print("pick result: ${pickResult.toJson()} for pick: ${_currentPick!.number}");
 
       // refresh the orders
       if (pickResult.result == true) {
-        if (pickResult.confirmedQuantity > 0) {
+        if (pickResult.confirmedQuantity! > 0) {
           // we will have to update the local instance of pick with the
           // confirmed quantity
           setState(() {
 
-            _currentPick.pickedQuantity += pickResult.confirmedQuantity;
+            _currentPick!.pickedQuantity = (_currentPick!.pickedQuantity!  + pickResult.confirmedQuantity!);
           });
           printLongLogMessage("after pick confirm, the picks in the list are ==>");
           _currentPickBatch.forEach((element) {
@@ -302,7 +302,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
   }
 
 
-  Pick _getNextValidPick() {
+  Pick? _getNextValidPick() {
     print(" =====   _getNextValidPick      =====");
     _currentPickBatch.forEach((pick) {
       print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity} / ${pick.skipCount}");
@@ -316,13 +316,13 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
       PickService.sortPicks(_currentPickBatch, Global.getLastActivityLocation(), Global.isMovingForward());
       // get the first available pick and then group the quantity all together from the same location, for the same
       // inventory
-      _currentPick = _currentPickBatch.firstWhere((pick) => pick.quantity > pick.pickedQuantity, orElse: () => null);
+      _currentPick = _currentPickBatch.firstWhere((pick) => pick.quantity! > pick!.pickedQuantity!);
       if (_currentPick != null) {
         // Batch picking means we will group all picks but we won't do
         // the actual batch picking in the location. Instead, if the user would like to do a batch picking
         // we suggest to use list pick instead of just group picks into the list
-        _currentPick.batchPickQuantity = _currentPick.quantity - _currentPick.pickedQuantity;
-        _currentPick.batchedPicks = [];
+        _currentPick!.batchPickQuantity = _currentPick!.quantity! - _currentPick!.pickedQuantity!;
+        _currentPick!.batchedPicks = [];
         /**
         _currentPickBatch.forEach((pick) {
           if (pick.quantity > pick.pickedQuantity && PickService.pickInventoryWithSameAttribute(pick, _currentPick)) {
@@ -373,7 +373,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
             height: 75,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.pick + ": " + _currentPickBatch[index].number),
+              title: Text(CWMSLocalizations.of(context)!.pick + ": " + _currentPickBatch[index]!.number!),
               subtitle:
                 Column(
                   children: <Widget>[
@@ -389,7 +389,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                               )
                           ),
                           Text(
-                              _currentPickBatch[index].item.name,
+                              _currentPickBatch[index].item?.name ?? "",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -411,7 +411,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                               )
                           ),
                           Text(
-                              (_currentPickBatch[index].quantity - _currentPickBatch[index].pickedQuantity).toString(),
+                              (_currentPickBatch[index].quantity! - _currentPickBatch[index]!.pickedQuantity!).toString(),
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -433,7 +433,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                               )
                           ),
                           Text(
-                              _currentPickBatch[index].sourceLocation.name,
+                              _currentPickBatch[index].sourceLocation?.name ?? "",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -451,7 +451,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                   onPressed: () => _removePickFromBatch(index),
                   icon: Icon(Icons.close),
                 ),
-              tileColor: _currentPickBatch[index].quantity > _currentPickBatch[index].pickedQuantity ?
+              tileColor: _currentPickBatch[index].quantity! > _currentPickBatch[index]!.pickedQuantity! ?
                   Colors.lightGreen : Colors.white38,
             )
         );
@@ -466,7 +466,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
     showLoading(context);
     try {
 
-      await PickService.unacknowledgePick(pick.id);
+      await PickService.unacknowledgePick(pick.id!);
     }
     on WebAPICallException catch(ex) {
 

@@ -26,7 +26,7 @@ import '../models/pick_mode.dart';
 
 class PickByOrderPage extends StatefulWidget{
 
-  PickByOrderPage({Key key}) : super(key: key);
+  PickByOrderPage({Key? key}) : super(key: key);
 
 
   @override
@@ -43,7 +43,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   List<Pick> assignedPicks = [];
 
   // a map of relationship beteen order and pick id
-  HashMap orderPicks = new HashMap<String, Set<int>>();
+  HashMap<String, Set<int>> orderPicks = new HashMap<String, Set<int>>();
   FocusNode _orderNumberFocusNode = FocusNode();
   FocusNode _orderNumberControllerFocusNode = FocusNode();
 
@@ -66,9 +66,9 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   // selected orders from the order selection pop up
   List<Order> selectedOrders = [];
 
-  Pick currentPick;
+  Pick? currentPick;
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   @override
   void initState() {
@@ -81,7 +81,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     orderSharedFlagMap.clear();
     assignedOrders = [];
     selectedOrders = [];
-    inventoryOnRF = new List<Inventory>();
+    inventoryOnRF = [];
 
     _orderNumberFocusNode.addListener(() {
       print("_orderNumberFocusNode.hasFocus: ${_orderNumberFocusNode.hasFocus}");
@@ -323,7 +323,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
   void _assignPickToUser(Order order) async {
     print("start to get the picks from order ${order.number}");
-    List<Pick> picksByOrder =  await PickService.getPicksByOrder(order.id);
+    List<Pick> picksByOrder =  await PickService.getPicksByOrder(order.id!);
 
     printLongLogMessage("get ${picksByOrder.length} picks from the order ${order.number}");
     assignedPicks.addAll(picksByOrder);
@@ -331,13 +331,13 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     // save the relationship between the order and the picks so that
     // when we remove the order from current assignment, we can
     // remove the picks as well
-    Set<int> existingPicks = orderPicks[order.number];
+    Set<int> existingPicks = orderPicks[order.number]!;
     if (existingPicks == null) {
       existingPicks = new Set<int>();
     }
 
-    picksByOrder.forEach((pick) => existingPicks.add(pick.id));
-    orderPicks[order.number] = existingPicks;
+    picksByOrder.forEach((pick) => existingPicks.add(pick.id!));
+    orderPicks[order.number!] = existingPicks;
 
     print("_assignPickToUser: Now we have ${assignedPicks.length} picks from ${orderPicks.length} orders assigned");
 
@@ -347,7 +347,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   void _deassignPickFromUser(Order order) {
     // find the pick ids and remove them from the pick list
 
-    Set<int> existingPicks = orderPicks[order.number];
+    Set<int> existingPicks = orderPicks[order.number!]!;
     existingPicks.forEach((pickId) =>
         assignedPicks.removeWhere((assignedPick) => assignedPick.id == pickId));
 
@@ -390,39 +390,39 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     }
 
     // acknowledge the pick so no one else can take it
-    await PickService.acknowledgePick(currentPick.id);
+    await PickService.acknowledgePick(currentPick!.id!);
 
     // setup the batch picked quantity to be the same as pick quantity
     // since we are working on a single pick. In the next pick page,
     // we will use the same logic to handle the batch picking and single pick
-    currentPick.batchPickQuantity = currentPick.quantity - currentPick.pickedQuantity;
+    currentPick!.batchPickQuantity = currentPick!.quantity! - currentPick!.pickedQuantity!;
     Map argumentMap = new HashMap();
     argumentMap['pick'] = currentPick;
     argumentMap['pickMode'] = PickMode.BY_ORDER;
 
     final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
-    await PickService.unacknowledgePick(currentPick.id);
+    await PickService.unacknowledgePick(currentPick!.id!);
     if (result == null) {
       // if the user click the return button instead of confirming
       // let's do nothing
       return;
     }
     var pickResult = result as PickResult;
-    print("pick result: $pickResult for pick: ${currentPick.number}");
+    print("pick result: $pickResult for pick: ${currentPick?.number}");
 
     // refresh the orders
     if (pickResult.result == true) {
       // update the current pick
-      currentPick.pickedQuantity
-        = currentPick.pickedQuantity + pickResult.confirmedQuantity;
+      currentPick!.pickedQuantity
+        = currentPick!.pickedQuantity! + pickResult!.confirmedQuantity!;
       // update the order's open pick quantity to reflect the
       // pick status
-      Order order = _getOrderByPick(currentPick);
+      Order order = _getOrderByPick(currentPick!);
       if (order != null) {
         setState(() {
 
-          order.totalOpenPickQuantity -= pickResult.confirmedQuantity;
-          order.totalPickedQuantity +=  pickResult.confirmedQuantity;
+          order.totalOpenPickQuantity = order.totalOpenPickQuantity! - pickResult!.confirmedQuantity!;
+          order.totalPickedQuantity = order.totalPickedQuantity! + pickResult!.confirmedQuantity!;
         });
       }
 
@@ -453,8 +453,8 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     // is the only place we store the relationship between
     // order number and pick id
 
-    Order order;
-    Iterator<MapEntry<String, Set<int>>> orderPickIterator = orderPicks.entries.iterator;
+    Order? order;
+    Iterator<MapEntry<String, Set<int>>> orderPickIterator = orderPicks!.entries!.iterator!;
     while(orderPickIterator.moveNext()) {
       MapEntry<String, Set<int>> orderPick = orderPickIterator.current;
       String orderNumber = orderPick.key;
@@ -470,7 +470,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
     }
 
-    return order;
+    return order!;
   }
 
   Future<void> _startBarcodeScanner() async {
@@ -482,11 +482,11 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 **/
   }
 
-  Future<Pick> _getNextValidPick() async {
+  Future<Pick?> _getNextValidPick() async {
     print(" =====   _getNextValidPick      =====");
     assignedPicks.forEach((pick) {
       printLongLogMessage(">> number: ${pick.number} / quantity: ${pick.quantity} / picked quantity: ${pick.pickedQuantity} / skip count: ${pick.skipCount} " +
-          "/ source location: ${pick.sourceLocation.name} / pick sequence: ${pick.sourceLocation.pickSequence}");
+          "/ source location: ${pick.sourceLocation?.name} / pick sequence: ${pick.sourceLocation?.pickSequence}");
     });
     if (assignedPicks.isEmpty) {
        return null;
@@ -499,11 +499,11 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
       print(" =====   after sort, we have picks      =====");
       assignedPicks.forEach((pick) {
         printLongLogMessage(">> number: ${pick.number} / quantity: ${pick.quantity} / picked quantity: ${pick.pickedQuantity} / skip count: ${pick.skipCount} " +
-            "/ source location: ${pick.sourceLocation.name} / pick sequence: ${pick.sourceLocation.pickSequence}");
+            "/ source location: ${pick.sourceLocation?.name} / pick sequence: ${pick.sourceLocation?.pickSequence}");
       });
       // return the first unacknowleged pick
-      for (var pick in assignedPicks.where((pick) => pick.quantity > pick.pickedQuantity)) {
-        bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id);
+      for (var pick in assignedPicks.where((pick) => pick.quantity! > pick!.pickedQuantity!)) {
+        bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id!);
         if (acknowledgeable) {
           return pick;
         }
@@ -575,9 +575,9 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
                   highPriorityFlag: false,
                   sharedFlag: false,
                   displayOnlyFlag: true,
-                  onPriorityChanged:  null,
-                  onSharedFlagChanged: null,
-                  onRemove:  null,
+                  onPriorityChanged:  (value){},
+                  onSharedFlagChanged: (value){},
+                  onRemove:  (value){},
                   onToggleHightlighted:  (selected) => _selectOrderFromList(selected, ordersWithOpenPick[index])
               );
             }),

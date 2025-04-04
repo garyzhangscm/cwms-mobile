@@ -23,7 +23,7 @@ import '../widgets/wave_list_item.dart';
 
 class PickByWavePage extends StatefulWidget{
 
-  PickByWavePage({Key key}) : super(key: key);
+  PickByWavePage({Key? key}) : super(key: key);
 
 
   @override
@@ -40,16 +40,16 @@ class _PickByWavePageState extends State<PickByWavePage> {
   List<Pick> assignedPicks = [];
 
   // a map of relationship between wave and pick id
-  HashMap wavePicks = new HashMap<String, Set<int>>();
+  HashMap<String, Set<int>> wavePicks = new HashMap();
   FocusNode _waveNumberFocusNode = FocusNode();
 
 
   List<Wave> assignedWaves = [];
 
 
-  Pick currentPick;
+  Pick? currentPick;
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   @override
   void initState() {
@@ -271,7 +271,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
 
   void _assignPickToUser(Wave wave) async {
     print("start to get the picks from wave ${wave.number}");
-    List<Pick> picksByWave =  await PickService.getPicksByWave(wave.id);
+    List<Pick> picksByWave =  await PickService.getPicksByWave(wave.id!);
 
     printLongLogMessage("get ${picksByWave.length} picks from the wave ${wave.number}");
     assignedPicks.addAll(picksByWave);
@@ -279,13 +279,13 @@ class _PickByWavePageState extends State<PickByWavePage> {
     // save the relationship between the wave and the picks so that
     // when we remove the wave from current assignment, we can
     // remove the picks as well
-    Set<int> existingPicks = wavePicks[wave.number];
+    Set<int> existingPicks = wavePicks[wave.number]!;
     if (existingPicks == null) {
       existingPicks = new Set<int>();
     }
 
-    picksByWave.forEach((pick) => existingPicks.add(pick.id));
-    wavePicks[wave.number] = existingPicks;
+    picksByWave.forEach((pick) => existingPicks.add(pick.id!));
+    wavePicks[wave.number!] = existingPicks;
 
     print("_assignPickToUser: Now we have ${assignedPicks.length} picks from ${wavePicks.length} waves assigned");
 
@@ -295,7 +295,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
   void _deassignPickFromUser(Wave wave) {
     // find the pick ids and remove them from the pick list
 
-    Set<int> existingPicks = wavePicks[wave.number];
+    Set<int> existingPicks = wavePicks[wave.number]!;
     existingPicks.forEach((pickId) =>
         assignedPicks.removeWhere((assignedPick) => assignedPick.id == pickId));
 
@@ -333,7 +333,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
 
     // acknowledge the pick so no one else can take it
     try {
-        await PickService.acknowledgePick(currentPick.id);
+        await PickService.acknowledgePick(currentPick!.id!);
     }
     on WebAPICallException catch(ex) {
         Navigator.of(context).pop();
@@ -346,22 +346,22 @@ class _PickByWavePageState extends State<PickByWavePage> {
     // let's find picks from the same wave from same location with same attribute
     // and not assigned or aknowledged yet so that we can assign to the same user
     // for batch pick
-    currentPick.batchPickQuantity = 0;
-    currentPick.batchedPicks = [];
+    currentPick!.batchPickQuantity = 0;
+    currentPick!.batchedPicks = [];
     for(var pick in  assignedPicks) {
 
       try {
         // if we have error assign one valid pick, let's just ignore the pick
         // and continue with others
-          if (pick.quantity > pick.pickedQuantity && pick.id != currentPick.id &&
-              PickService.pickInventoryWithSameAttribute(pick, currentPick)) {
-              bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id);
+          if (pick.quantity! > pick!.pickedQuantity! && pick.id != currentPick!.id! &&
+              PickService.pickInventoryWithSameAttribute(pick, currentPick!)) {
+              bool acknowledgeable = await PickService.isPickAcknowledgable(pick!.id!);
               printLongLogMessage("pick ${pick.number} is acknowledgeable? ${acknowledgeable}");
 
               if (acknowledgeable) {
-                await PickService.acknowledgePick(pick.id);
-                currentPick.batchedPicks.add(pick);
-                currentPick.batchPickQuantity += (pick.quantity - pick.pickedQuantity);
+                await PickService.acknowledgePick(pick!.id!);
+                currentPick!.batchedPicks.add(pick);
+                currentPick!.batchPickQuantity = currentPick!.batchPickQuantity! + (pick.quantity! - pick!.pickedQuantity!);
               }
           }
       }
@@ -391,9 +391,9 @@ class _PickByWavePageState extends State<PickByWavePage> {
         **/
 
     // add the main pick if there're other picks can be batched together
-    if (currentPick.batchPickQuantity > 0) {
-      currentPick.batchPickQuantity += (currentPick.quantity - currentPick.pickedQuantity);
-      currentPick.batchedPicks.add(currentPick);
+    if (currentPick!.batchPickQuantity! > 0) {
+      currentPick!.batchPickQuantity = currentPick!.batchPickQuantity! + (currentPick!.quantity! - currentPick!.pickedQuantity!);
+      currentPick!.batchedPicks.add(currentPick!);
     }
 
     // setup the batch picked quantity to be the same as pick quantity
@@ -408,11 +408,11 @@ class _PickByWavePageState extends State<PickByWavePage> {
     showLoading(context);
 
     try {
-        await PickService.unacknowledgePick(currentPick.id);
-        if (currentPick.batchedPicks.length > 0) {
+        await PickService.unacknowledgePick(currentPick!.id!);
+        if (currentPick!.batchedPicks.length > 0) {
           // assigned the batch picks as well
-          currentPick.batchedPicks.forEach((pick) async {
-            await PickService.unacknowledgePick(pick.id);
+          currentPick!.batchedPicks.forEach((pick) async {
+            await PickService.unacknowledgePick(pick!.id!);
           });
         }
     }
@@ -433,7 +433,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
       return;
     }
     var pickResult = result as PickResult;
-    print("pick result: ${pickResult.toJson()} for pick: ${currentPick.number}");
+    print("pick result: ${pickResult.toJson()} for pick: ${currentPick?.number}");
 
     // refresh the wave
     if (pickResult.result == true) {
@@ -483,7 +483,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
             for (Pick pick in assignedPicks) {
               if (pick.id == pickId) {
                 printLongLogMessage("found pick ${pick.number}, will add ${confirmedQuantity} to its current picked quantity ${pick.pickedQuantity}");
-                pick.pickedQuantity += confirmedQuantity;
+                pick.pickedQuantity = pick.pickedQuantity! + confirmedQuantity!;
               }
             }
       }
@@ -519,7 +519,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
     // is the only place we store the relationship between
     // wave number and pick id
 
-    Wave wave;
+    Wave? wave;
     Iterator<MapEntry<String, Set<int>>> wavePickIterator = wavePicks.entries.iterator;
     while(wavePickIterator.moveNext()) {
       MapEntry<String, Set<int>> wavePick = wavePickIterator.current;
@@ -536,15 +536,15 @@ class _PickByWavePageState extends State<PickByWavePage> {
 
     }
 
-    return wave;
+    return wave!;
   }
 
 
-  Future<Pick> _getNextValidPick() async {
+  Future<Pick?> _getNextValidPick() async {
     print(" =====   _getNextValidPick      =====");
     assignedPicks.forEach((pick) {
       printLongLogMessage(">> number: ${pick.number} / quantity: ${pick.quantity} / picked quantity: ${pick.pickedQuantity} / skip count: ${pick.skipCount} " +
-          "/ source location: ${pick.sourceLocation.name} / pick sequence: ${pick.sourceLocation.pickSequence}");
+          "/ source location: ${pick.sourceLocation?.name} / pick sequence: ${pick.sourceLocation?.pickSequence}");
     });
     if (assignedPicks.isEmpty) {
        return null;
@@ -557,11 +557,11 @@ class _PickByWavePageState extends State<PickByWavePage> {
       print(" =====   after sort, we have picks      =====");
       assignedPicks.forEach((pick) {
         printLongLogMessage(">> number: ${pick.number} / quantity: ${pick.quantity} / picked quantity: ${pick.pickedQuantity} / skip count: ${pick.skipCount} " +
-            "/ source location: ${pick.sourceLocation.name} / pick sequence: ${pick.sourceLocation.pickSequence}");
+            "/ source location: ${pick.sourceLocation?.name} / pick sequence: ${pick.sourceLocation?.pickSequence}");
       });
       // return the first unacknowleged pick
-      for (var pick in assignedPicks.where((pick) => pick.quantity > pick.pickedQuantity)) {
-        bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id);
+      for (var pick in assignedPicks.where((pick) => pick.quantity! > pick!.pickedQuantity!)) {
+        bool acknowledgeable = await PickService.isPickAcknowledgable(pick!.id!);
         if (acknowledgeable) {
           return pick;
         }

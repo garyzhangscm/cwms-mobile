@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import '../models/wave.dart';
 
 class WaveListItem extends StatefulWidget {
-  WaveListItem({this.index, this.wave,
-       @required this.onRemove }
+  WaveListItem({required this.index, required this.wave,
+       required this.onRemove }
        ) : super(key: ValueKey(wave.number));
 
   final ValueChanged<int> onRemove;
@@ -53,7 +53,7 @@ class _WaveListItemState extends State<WaveListItem> {
                 //     widget.order.totalOpenPickQuantity == 0 ?
                 //                Colors.grey : Colors.white,
                 title: Text(
-                  widget.wave.number,
+                  widget.wave.number ?? "",
                   textScaleFactor: .9,
                   style: TextStyle(
                     height: 1.15,

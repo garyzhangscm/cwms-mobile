@@ -5,15 +5,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class OrderListItem extends StatefulWidget {
-  OrderListItem({this.index, this.order,
+  OrderListItem({required this.index, required this.order,
        this.highPriorityFlag: false,
        this.sharedFlag: false,
        this.displayOnlyFlag: false,
        this.highlighted: false,
-       @required this.onPriorityChanged,
-       @required this.onSharedFlagChanged,
-       @required this.onRemove,
-       @required this.onToggleHightlighted}
+       required this.onPriorityChanged,
+       required this.onSharedFlagChanged,
+       required this.onRemove,
+       required this.onToggleHightlighted}
        ) : super(key: ValueKey(order.number));
 
   final ValueChanged<Order> onPriorityChanged;
@@ -94,7 +94,7 @@ class _OrderListItemState extends State<OrderListItem> {
                   //     widget.order.totalOpenPickQuantity == 0 ?
                   //                Colors.grey : Colors.white,
                   title: Text(
-                    widget.order.number,
+                    widget.order.number ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,
@@ -104,9 +104,9 @@ class _OrderListItemState extends State<OrderListItem> {
 
                   ),
                   trailing: Text(
-                    (widget.order.shipToContactorFirstname == null ? ""  : widget.order.shipToContactorFirstname) +
+                    ( widget.order.shipToContactorFirstname ?? "") +
                         " , " +
-                        (widget.order.shipToContactorLastname == null ? ""  : widget.order.shipToContactorLastname),
+                        ( widget.order.shipToContactorLastname ?? ""),
                     style: TextStyle(
                       color: Colors.blueGrey[700],
                       fontSize: 12,

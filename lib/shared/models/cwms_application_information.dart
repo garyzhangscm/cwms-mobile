@@ -11,9 +11,9 @@ class CWMSApplicationInformation {
   CWMSApplicationInformation();
 
 
-  String name;
-  String description;
-  String version;
+  String? name;
+  String? description;
+  String? version;
 
 
 

@@ -11,14 +11,14 @@ class CWMSHttpConfig {
     final Map<String, dynamic> headers;
 
     CWMSHttpConfig({
-        this.baseUrl,
-        this.proxy,
-        this.cookiesPath,
-        this.interceptors,
+        required this.baseUrl,
+        required this.proxy,
+        required this.cookiesPath,
+        required this.interceptors,
         this.connectTimeout = Duration.millisecondsPerMinute,
         this.sendTimeout = Duration.millisecondsPerMinute,
         this.receiveTimeout = Duration.millisecondsPerMinute,
-        this.headers,
+        required this.headers,
     });
 
 }

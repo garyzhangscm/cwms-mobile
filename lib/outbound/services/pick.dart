@@ -13,7 +13,7 @@ import 'package:dio/dio.dart';
 import '../models/pick_mode.dart';
 
 class PickService {
-  static Future<Pick> getPicksByNumber(String number) async {
+  static Future<Pick?> getPicksByNumber(String number) async {
     Dio httpClient = CWMSHttpClient.getDio();
     printLongLogMessage("start to find pick by number $number");
 
@@ -27,9 +27,8 @@ class PickService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // we should only have one pick that match with the number
     if (picks.isEmpty) {
@@ -51,9 +50,8 @@ class PickService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
@@ -80,9 +78,8 @@ class PickService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
@@ -104,9 +101,8 @@ class PickService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
@@ -122,22 +118,22 @@ class PickService {
       // the picks either forward, or backward
       if (isMovingForward) {
         picks.sort((pickA, pickB)   {
-          if (pickA.skipCount > pickB.skipCount) {
+          if (pickA.skipCount! > pickB!.skipCount!) {
             return 1;
           }
-          else if (pickA.skipCount < pickB.skipCount) {
+          else if (pickA.skipCount! < pickB!.skipCount!) {
             return -1;
           }
 
-          if (pickB.sourceLocation.pickSequence == null) {
+          if (pickB.sourceLocation?.pickSequence == null) {
             return -1;
           }
-          else if (pickA.sourceLocation.pickSequence == null) {
+          else if (pickA.sourceLocation?.pickSequence == null) {
             return 1;
           }
           else {
-            return pickA.sourceLocation.pickSequence.compareTo(
-                pickB.sourceLocation.pickSequence
+            return pickA.sourceLocation!.pickSequence.compareTo(
+                pickB.sourceLocation!.pickSequence
             );
           }
         });
@@ -145,22 +141,22 @@ class PickService {
       else {
         picks.sort((pickA, pickB) {
 
-          if (pickA.skipCount > pickB.skipCount) {
+          if (pickA.skipCount! > pickB!.skipCount!) {
             return 1;
           }
-          else if (pickA.skipCount < pickB.skipCount) {
+          else if (pickA.skipCount! < pickB!.skipCount!) {
             return -1;
           }
 
-          if (pickA.sourceLocation.pickSequence == null) {
+          if (pickA.sourceLocation?.pickSequence == null) {
             return -1;
           }
-          else if (pickB.sourceLocation.pickSequence == null) {
+          else if (pickB.sourceLocation?.pickSequence == null) {
             return 1;
           }
           else {
-            return pickB.sourceLocation.pickSequence.compareTo(
-                pickA.sourceLocation.pickSequence
+            return pickB.sourceLocation!.pickSequence.compareTo(
+                pickA.sourceLocation!.pickSequence
             );
           }
         });
@@ -174,24 +170,24 @@ class PickService {
       // otherwise, return the one in the right direction first
         picks.sort((pickA, pickB) {
 
-          if (pickA.skipCount > pickB.skipCount) {
+          if (pickA.skipCount! > pickB!.skipCount!) {
             return 1;
           }
-          else if (pickA.skipCount < pickB.skipCount) {
+          else if (pickA.skipCount! < pickB!.skipCount!) {
             return -1;
           }
 
-          int pickASourceLocationPickSequence = pickA.sourceLocation.pickSequence == null ?
-              0: pickA.sourceLocation.pickSequence;
-          int pickBSourceLocationPickSequence = pickB.sourceLocation.pickSequence == null ?
-              0: pickB.sourceLocation.pickSequence;
+          int pickASourceLocationPickSequence = pickA.sourceLocation?.pickSequence == null ?
+              0: pickA.sourceLocation!.pickSequence!;
+          int pickBSourceLocationPickSequence = pickB.sourceLocation?.pickSequence == null ?
+              0: pickB.sourceLocation!.pickSequence!;
           int currentLocationPickSequence = currentLocation.pickSequence == null ?
               0: currentLocation.pickSequence;
 
            if (pickASourceLocationPickSequence == currentLocationPickSequence) {
              return -1;
            }
-           else if (pickB.sourceLocation.pickSequence == currentLocationPickSequence) {
+           else if (pickB.sourceLocation?.pickSequence == currentLocationPickSequence) {
              return 1;
            }
            else if ((pickASourceLocationPickSequence - currentLocationPickSequence) *
@@ -219,7 +215,7 @@ class PickService {
   }
 
   static Future<void> confirmWholePick(Pick pick)  async{
-    return confirmPick(pick, (pick.quantity - pick.pickedQuantity));
+    return confirmPick(pick, (pick.quantity! - pick!.pickedQuantity!));
 
   }
   // Confirm pick, with picking quantity
@@ -233,7 +229,7 @@ class PickService {
     if (confirmQuantity <= 0) {
       return;
     }
-    if (confirmQuantity >  (pick.quantity - pick.pickedQuantity)) {
+    if (confirmQuantity >  (pick.quantity! - pick!.pickedQuantity!)) {
       // throw error as we can't over pick
 
       printLongLogMessage("raise error as over pick is not allowed");
@@ -300,54 +296,54 @@ class PickService {
     if (pickA.inventoryStatusId != pickB.inventoryStatusId) {
       return false;
     }
-    if (pickA.color != null && pickA.color.isNotEmpty &&
-        pickB.color != null && pickB.color.isNotEmpty &&
+    if (pickA.color != null && pickA.color?.isNotEmpty == true &&
+        pickB.color != null && pickB.color?.isNotEmpty  == true &&
         pickA.color != pickB.color) {
       return false;
     }
-    if (pickA.productSize != null && pickA.productSize.isNotEmpty &&
-        pickB.productSize != null && pickB.productSize.isNotEmpty &&
+    if (pickA.productSize != null && pickA.productSize?.isNotEmpty  == true &&
+        pickB.productSize != null && pickB.productSize?.isNotEmpty  == true &&
         pickA.productSize != pickB.productSize) {
       return false;
     }
-    if (pickA.style != null && pickA.style.isNotEmpty &&
-        pickB.style != null && pickB.style.isNotEmpty &&
+    if (pickA.style != null && pickA.style?.isNotEmpty  == true &&
+        pickB.style != null && pickB.style?.isNotEmpty  == true &&
         pickA.style != pickB.style) {
       return false;
     }
 
-    if (pickA.inventoryAttribute1 != null && pickA.inventoryAttribute1.isNotEmpty &&
-        pickB.inventoryAttribute1 != null && pickB.inventoryAttribute1.isNotEmpty &&
+    if (pickA.inventoryAttribute1 != null && pickA.inventoryAttribute1?.isNotEmpty  == true &&
+        pickB.inventoryAttribute1 != null && pickB.inventoryAttribute1?.isNotEmpty  == true &&
         pickA.inventoryAttribute1 != pickB.inventoryAttribute1) {
       return false;
     }
 
-    if (pickA.inventoryAttribute2 != null && pickA.inventoryAttribute2.isNotEmpty &&
-        pickB.inventoryAttribute2 != null && pickB.inventoryAttribute2.isNotEmpty &&
+    if (pickA.inventoryAttribute2 != null && pickA.inventoryAttribute2?.isNotEmpty  == true &&
+        pickB.inventoryAttribute2 != null && pickB.inventoryAttribute2?.isNotEmpty  == true &&
         pickA.inventoryAttribute2 != pickB.inventoryAttribute2) {
       return false;
     }
 
-    if (pickA.inventoryAttribute3 != null && pickA.inventoryAttribute3.isNotEmpty &&
-        pickB.inventoryAttribute3 != null && pickB.inventoryAttribute3.isNotEmpty &&
+    if (pickA.inventoryAttribute3 != null && pickA.inventoryAttribute3?.isNotEmpty  == true &&
+        pickB.inventoryAttribute3 != null && pickB.inventoryAttribute3?.isNotEmpty  == true &&
         pickA.inventoryAttribute3 != pickB.inventoryAttribute3) {
       return false;
     }
 
-    if (pickA.inventoryAttribute4 != null && pickA.inventoryAttribute4.isNotEmpty &&
-        pickB.inventoryAttribute4 != null && pickB.inventoryAttribute4.isNotEmpty &&
+    if (pickA.inventoryAttribute4 != null && pickA.inventoryAttribute4?.isNotEmpty  == true &&
+        pickB.inventoryAttribute4 != null && pickB.inventoryAttribute4?.isNotEmpty  == true &&
         pickA.inventoryAttribute4 != pickB.inventoryAttribute4) {
       return false;
     }
 
-    if (pickA.inventoryAttribute5 != null && pickA.inventoryAttribute5.isNotEmpty &&
-        pickB.inventoryAttribute5 != null && pickB.inventoryAttribute5.isNotEmpty &&
+    if (pickA.inventoryAttribute5 != null && pickA.inventoryAttribute5?.isNotEmpty  == true &&
+        pickB.inventoryAttribute5 != null && pickB.inventoryAttribute5?.isNotEmpty  == true &&
         pickA.inventoryAttribute5 != pickB.inventoryAttribute5) {
       return false;
     }
 
-    if (pickA.allocateByReceiptNumber != null && pickA.allocateByReceiptNumber.isNotEmpty &&
-        pickB.allocateByReceiptNumber != null && pickB.allocateByReceiptNumber.isNotEmpty &&
+    if (pickA.allocateByReceiptNumber != null && pickA.allocateByReceiptNumber?.isNotEmpty  == true &&
+        pickB.allocateByReceiptNumber != null && pickB.allocateByReceiptNumber?.isNotEmpty  == true &&
         pickA.allocateByReceiptNumber != pickB.allocateByReceiptNumber) {
       return false;
     }
@@ -466,9 +462,8 @@ class PickService {
 
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     return picks;
   }

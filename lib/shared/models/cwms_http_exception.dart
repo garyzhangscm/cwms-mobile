@@ -1,9 +1,9 @@
 class CWMSHttpException implements Exception {
-    final String _message;
+    final String? _message;
 
     String get message => _message ?? this.runtimeType.toString();
 
-    final int _code;
+    final int? _code;
 
     int get code => _code ?? -1;
 
@@ -16,30 +16,30 @@ class CWMSHttpException implements Exception {
 
 /// 客户端请求错误
 class BadRequestException extends CWMSHttpException {
-    BadRequestException({String message, int code}) : super(message, code);
+    BadRequestException({String? message, int? code}) : super(message, code);
 }
 /// 服务端响应错误
 class BadServiceException extends CWMSHttpException {
-    BadServiceException({String message, int code}) : super(message, code);
+    BadServiceException({String? message, int? code}) : super(message, code);
 }
 
 
 
 class UnknownException extends CWMSHttpException {
-    UnknownException([String message]) : super(message);
+    UnknownException([String? message]) : super(message);
 }
 
 class CancelException extends CWMSHttpException {
-    CancelException([String message]) : super(message);
+    CancelException([String? message]) : super(message);
 }
 
 class NetworkException extends CWMSHttpException {
-    NetworkException({String message, int code}) : super(message, code);
+    NetworkException({String? message, int? code}) : super(message, code);
 }
 
 /// 401
 class UnauthorisedException extends CWMSHttpException {
-    UnauthorisedException({String message, int code = 401}) : super(message);
+    UnauthorisedException({String? message, int code = 401}) : super(message);
 }
 
 class BadResponseException extends CWMSHttpException {

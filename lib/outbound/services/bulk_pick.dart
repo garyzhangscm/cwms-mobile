@@ -15,7 +15,7 @@ import '../models/bulk_pick.dart';
 class BulkPickService {
 
   // Confirm pick, with picking quantity
-  static Future<void> confirmBulkPick(BulkPick bulkPick, int confirmQuantity, [String lpn, String nextLocationName = ""]) async{
+  static Future<void> confirmBulkPick(BulkPick bulkPick, int confirmQuantity, [String? lpn, String nextLocationName = ""]) async{
 
     printLongLogMessage("start to confirm bulk pick ${bulkPick.number}, confirmQuantity: ${confirmQuantity}, lpn: ${lpn}");
 
@@ -75,9 +75,8 @@ class BulkPickService {
     }
 
     List<BulkPick> bulkPicks
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : BulkPick.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => BulkPick.fromJson(e as Map<String, dynamic>))
+          .toList();
 
 
     if (bulkPicks.length > 0) {

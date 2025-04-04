@@ -33,9 +33,8 @@ class WaveService {
 
 
     List<Wave> waves
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Wave.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Wave.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     if (waves.length > 0) {
       return waves.first;
@@ -63,9 +62,8 @@ class WaveService {
     // List<dynamic> responseData = responseString["data"];
 
     List<Order> orders
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Order.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Order.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     print("get ${orders.length} orders");
 
@@ -125,9 +123,8 @@ class WaveService {
     }
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     print("get ${picks.length} picks by manual picking for order $orderId, lpn: $lpn");
 

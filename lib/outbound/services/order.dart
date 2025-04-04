@@ -31,9 +31,8 @@ class OrderService {
 
 
     List<Order> orders
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Order.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Order.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     if (orders.length > 0) {
       return orders.first;
@@ -61,9 +60,8 @@ class OrderService {
     // List<dynamic> responseData = responseString["data"];
 
     List<Order> orders
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Order.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Order.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     print("get ${orders.length} orders");
 
@@ -123,9 +121,8 @@ class OrderService {
     }
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     print("get ${picks.length} picks by manual picking for order $orderId, lpn: $lpn");
 

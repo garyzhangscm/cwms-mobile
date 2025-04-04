@@ -18,15 +18,15 @@ import 'cwms_http_transformer.dart';
 class CWMSHttpClientAdapter {
     CWMSDio _dio;
 
-    CWMSHttpClientAdapter({BaseOptions options, CWMSHttpConfig dioConfig})
+    CWMSHttpClientAdapter({required BaseOptions options, required CWMSHttpConfig dioConfig})
         : _dio = CWMSDio(options: options, dioConfig: dioConfig);
 
     Future<CWMSHttpResponse> get(String uri,
-        {Map<String, dynamic> queryParameters,
-            Options options,
-            CancelToken cancelToken,
-            ProgressCallback onReceiveProgress,
-            CWMSHttpTransformer httpTransformer}) async {
+        {required Map<String, dynamic> queryParameters,
+            required Options options,
+            required CancelToken cancelToken,
+            required ProgressCallback onReceiveProgress,
+            required CWMSHttpTransformer httpTransformer}) async {
             var response = await _dio.get(
                 uri,
                 queryParameters: queryParameters,
@@ -37,14 +37,14 @@ class CWMSHttpClientAdapter {
             return handleResponse(response, httpTransformer: httpTransformer);
     }
 
-    Future<CWMSHttpResponse> post(String uri,
+    Future<CWMSHttpResponse?> post(String uri,
         {data,
-            Map<String, dynamic> queryParameters,
-            Options options,
-            CancelToken cancelToken,
-            ProgressCallback onSendProgress,
-            ProgressCallback onReceiveProgress,
-            CWMSHttpTransformer httpTransformer}) async {
+            required Map<String, dynamic> queryParameters,
+            required Options options,
+            required CancelToken cancelToken,
+            required ProgressCallback onSendProgress,
+            required ProgressCallback onReceiveProgress,
+            required CWMSHttpTransformer httpTransformer}) async {
 
         try{
 
@@ -63,17 +63,17 @@ class CWMSHttpClientAdapter {
           printLongLogMessage("get DioError while call http post");
           printLongLogMessage("message: ${ex.message}");
           printLongLogMessage("response: ${ex.response}");
-          printLongLogMessage("response.statusCode: ${ex.response.statusCode}");
-          printLongLogMessage("response.statusMessage: ${ex.response.statusMessage}");
-          printLongLogMessage("response.extra: ${ex.response.extra}");
-          printLongLogMessage("response.data: ${ex.response.data}");
+          printLongLogMessage("response.statusCode: ${ex.response?.statusCode}");
+          printLongLogMessage("response.statusMessage: ${ex.response?.statusMessage}");
+          printLongLogMessage("response.extra: ${ex.response?.extra}");
+          printLongLogMessage("response.data: ${ex.response?.data}");
           printLongLogMessage("type: ${ex.type}");
           printLongLogMessage("error: ${ex.error}");
 
-          if (ex.response.statusCode == 401) {
-            showYesNoDialog(NavigationService.navigatorKey.currentContext,
+          if (ex.response?.statusCode == 401) {
+            showYesNoDialog(NavigationService.navigatorKey.currentContext!,
                 "User Not Login", "User is not login, please click Yes to go back to the login page and login",
-                  () => Navigator.popUntil(NavigationService.navigatorKey.currentContext, ModalRoute.withName('login_page')),
+                  () => Navigator.popUntil(NavigationService.navigatorKey.currentContext!, ModalRoute.withName('login_page')),
                   () {});
           }
           else {
@@ -85,12 +85,12 @@ class CWMSHttpClientAdapter {
 
     Future<CWMSHttpResponse> patch(String uri,
         {data,
-            Map<String, dynamic> queryParameters,
-            Options options,
-            CancelToken cancelToken,
-            ProgressCallback onSendProgress,
-            ProgressCallback onReceiveProgress,
-            CWMSHttpTransformer httpTransformer}) async {
+            required Map<String, dynamic> queryParameters,
+          required Options options,
+          required CancelToken cancelToken,
+          required ProgressCallback onSendProgress,
+          required ProgressCallback onReceiveProgress,
+          required CWMSHttpTransformer httpTransformer}) async {
 
             var response = await _dio.patch(
                 uri,
@@ -107,10 +107,10 @@ class CWMSHttpClientAdapter {
 
     Future<CWMSHttpResponse> delete(String uri,
         {data,
-            Map<String, dynamic> queryParameters,
-            Options options,
-            CancelToken cancelToken,
-            CWMSHttpTransformer httpTransformer}) async {
+          required Map<String, dynamic> queryParameters,
+          required Options options,
+          required CancelToken cancelToken,
+          required CWMSHttpTransformer httpTransformer}) async {
 
             var response = await _dio.delete(
                 uri,
@@ -125,10 +125,10 @@ class CWMSHttpClientAdapter {
 
     Future<CWMSHttpResponse> put(String uri,
         {data,
-            Map<String, dynamic> queryParameters,
-            Options options,
-            CancelToken cancelToken,
-            CWMSHttpTransformer httpTransformer}) async {
+          required Map<String, dynamic> queryParameters,
+          required Options options,
+          required CancelToken cancelToken,
+          required CWMSHttpTransformer httpTransformer}) async {
 
             var response = await _dio.put(
                 uri,
@@ -142,14 +142,14 @@ class CWMSHttpClientAdapter {
     }
 
     Future<Response> download(String urlPath, savePath,
-        {ProgressCallback onReceiveProgress,
-            Map<String, dynamic> queryParameters,
-            CancelToken cancelToken,
+        {required ProgressCallback onReceiveProgress,
+          required Map<String, dynamic> queryParameters,
+          required CancelToken cancelToken,
             bool deleteOnError = true,
             String lengthHeader = Headers.contentLengthHeader,
             data,
-            Options options,
-            CWMSHttpTransformer httpTransformer}) async {
+          required Options options,
+          required CWMSHttpTransformer httpTransformer}) async {
 
             var response = await _dio.download(
                 urlPath,
@@ -166,7 +166,7 @@ class CWMSHttpClientAdapter {
 
     }
     CWMSHttpResponse handleResponse(Response response,
-        {CWMSHttpTransformer httpTransformer}) {
+        {required CWMSHttpTransformer httpTransformer}) {
         httpTransformer ??= CWMSDefaultHttpTransformer.getInstance();
 
         CWMSHttpResponse cwmsHttpResponse = parseResponse(response, httpTransformer: httpTransformer);
@@ -186,7 +186,7 @@ class CWMSHttpClientAdapter {
 
     }
     CWMSHttpResponse parseResponse(Response response,
-        {CWMSHttpTransformer httpTransformer}) {
+        {required CWMSHttpTransformer httpTransformer}) {
         httpTransformer ??= CWMSDefaultHttpTransformer.getInstance();
 
         // 返回值异常
@@ -196,20 +196,20 @@ class CWMSHttpClientAdapter {
 
         // token失效
         printLongLogMessage("response.statusCode: ${response.statusCode}");
-        if (_isTokenTimeout(response.statusCode)) {
+        if (_isTokenTimeout(response.statusCode!)) {
 
             return CWMSHttpResponse.failureFromError(
-                UnauthorisedException(message: "Not Auth", code: response.statusCode));
+                UnauthorisedException(message: "Not Auth", code: response.statusCode!));
 
         }
         // 接口调用成功
-        if (_isRequestSuccess(response.statusCode)) {
+        if (_isRequestSuccess(response.statusCode!)) {
 
             return httpTransformer.parse(response);
         } else {
             // 接口调用失败
             return  CWMSHttpResponse.failure(
-                errorMsg: response.statusMessage, errorCode: response.statusCode);
+                errorMsg: response.statusMessage!, errorCode: response.statusCode!);
 
 
         }
@@ -241,43 +241,43 @@ class CWMSHttpClientAdapter {
                     return CancelException(error.error.message);
                 case DioErrorType.response:
                     try {
-                        int errCode = error.response?.statusCode;
+                        int errCode = error.response!.statusCode!;
                         switch (errCode) {
                             case 400:
                                 return BadRequestException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError400,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError400,
                                     code: errCode);
                             case 401:
                                 return UnauthorisedException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError401,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError401,
                                     code: errCode);
                             case 403:
                                 return BadRequestException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError403,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError403,
                                     code: errCode);
                             case 404:
                                 return BadRequestException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError404,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError404,
                                     code: errCode);
                             case 405:
                                 return BadRequestException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError405,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError405,
                                     code: errCode);
                             case 500:
                                 return BadServiceException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError500,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError500,
                                     code: errCode);
                             case 502:
                                 return BadServiceException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError502,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError502,
                                     code: errCode);
                             case 503:
                                 return BadServiceException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError503,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError503,
                                     code: errCode);
                             case 505:
                                 return UnauthorisedException(
-                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext).httpError505,
+                                    message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError505,
                                     code: errCode);
                             default:
                                 return UnknownException(error.error.message);

@@ -30,7 +30,7 @@ import '../models/pick_mode.dart';
 
 class PickByBulkPage extends StatefulWidget{
 
-  PickByBulkPage({Key key}) : super(key: key);
+  PickByBulkPage({Key? key}) : super(key: key);
 
 
   @override
@@ -45,9 +45,9 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
   FocusNode _bulkPickNumberFocusNode = FocusNode();
 
 
-  BulkPick _currentBulkPick;
+  BulkPick? _currentBulkPick;
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   @override
   void initState() {
@@ -74,12 +74,12 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
     super.dispose();
     // for any reason the user return, let's try to unacknowledge the _currentPickList
     if (_currentBulkPick != null) {
-      BulkPickService.unacknowledgeBulkPick(_currentBulkPick.id).then(
+      BulkPickService.unacknowledgeBulkPick(_currentBulkPick!.id!).then(
           (bulkPick) {
               // _currentPickList= null;
       }).catchError((err) {
         // ignore any error
-        printLongLogMessage("error while unacknowledge the bulk pick ${_currentBulkPick.number}");
+        printLongLogMessage("error while unacknowledge the bulk pick ${_currentBulkPick?.number}");
       });
     }
 
@@ -172,7 +172,7 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
   void _clear() {
     if (_currentBulkPick != null) {
 
-      BulkPickService.unacknowledgeBulkPick(_currentBulkPick.id);
+      BulkPickService.unacknowledgeBulkPick(_currentBulkPick!.id!);
       _currentBulkPick = null;
     }
     _bulkPickNumberController.clear();
@@ -191,7 +191,7 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
 
         if (_currentBulkPick != null) {
           // acknowledge the pick list so that no one else can work on the same list
-          await BulkPickService.acknowledgeBulkPick(_currentBulkPick.id);
+          await BulkPickService.acknowledgeBulkPick(_currentBulkPick!.id!);
         }
 
         setState(() {
@@ -218,7 +218,7 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
 
   _startBulkPick() async {
 
-      printLongLogMessage("start to pick for ${_currentBulkPick.number} ");
+      printLongLogMessage("start to pick for ${_currentBulkPick?.number} ");
       Map argumentMap = new HashMap();
       argumentMap['bulkPick'] = _currentBulkPick;
       argumentMap['pickMode'] = PickMode.BY_BULK;
