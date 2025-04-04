@@ -9,14 +9,14 @@ import 'package:flutter/material.dart';
 class InventoryDepositRequestItem extends StatefulWidget {
   InventoryDepositRequestItem({this.index, this.inventoryDepositRequest,
        this.highlighted: false,
-       @required this.onToggleHightlighted}
+       required this.onToggleHightlighted}
        ) : super(key: ValueKey(index));
 
 
   final ValueChanged<bool> onToggleHightlighted;
 
-  final int index;
-  final InventoryDepositRequest inventoryDepositRequest;
+  final int? index;
+  final InventoryDepositRequest? inventoryDepositRequest;
 
 
   bool highlighted;
@@ -38,7 +38,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
       setState(() {
         widget.highlighted = !widget.highlighted;
       });
-      widget.onToggleHightlighted(widget.highlighted);
+      widget.onToggleHightlighted!(widget.highlighted);
     }
   }
 
@@ -69,7 +69,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                   //     widget.order.totalOpenPickQuantity == 0 ?
                   //                Colors.grey : Colors.white,
                   title: Text(
-                    widget.inventoryDepositRequest.lpn,
+                    widget.inventoryDepositRequest?.lpn ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,
@@ -93,7 +93,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                                 )
                               ),
                               Text(
-                                  widget.inventoryDepositRequest.itemName,
+                                  widget.inventoryDepositRequest?.itemName ?? "",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,
@@ -115,7 +115,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                                   )
                               ),
                               Text(
-                                  widget.inventoryDepositRequest.inventoryStatusDescription,
+                                  widget.inventoryDepositRequest?.inventoryStatusDescription ?? "",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,
@@ -137,7 +137,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                                   )
                               ),
                               Text(
-                                  widget.inventoryDepositRequest.quantity.toString(),
+                                  widget.inventoryDepositRequest?.quantity.toString() ?? "",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,

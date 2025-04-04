@@ -16,16 +16,16 @@ class CountResultListItem extends StatefulWidget {
        this.onItemValueChange,
        this.onRemove,
        @required this.onQuantityValueChange}
-       ) : super(key: ValueKey(cycleCountResult.id));
+       ) : super(key: ValueKey(cycleCountResult?.id));
 
-  final ValueChanged<String> onQuantityValueChange;
-  final ValueChanged<Item> onItemValueChange;
-  final ValueChanged<int> onRemove;
+  final ValueChanged<String>? onQuantityValueChange;
+  final ValueChanged<Item>? onItemValueChange;
+  final ValueChanged<int>? onRemove;
 
 
 
-  final int index;
-  final CycleCountResult cycleCountResult;
+  final int? index;
+  final CycleCountResult? cycleCountResult;
 
 
 
@@ -41,7 +41,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
   TextEditingController _itemController = new TextEditingController();
 
   void _onQuantityValueChange(String value) {
-      widget.onQuantityValueChange(value);
+      widget.onQuantityValueChange!(value);
   }
 
   void _onItemValueChange(String value) {
@@ -50,7 +50,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
     ItemService.getItemByName(value).then((item) {
       if (item != null) {
 
-        widget.onItemValueChange(item);
+        widget.onItemValueChange!(item);
 
       }
 
@@ -60,7 +60,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
   }
 
   void _removeCountResultFromlist() {
-      widget.onRemove(widget.index);
+      widget.onRemove!(widget.index!);
   }
 
   @override
@@ -126,7 +126,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                       ),
                     // if the cycle count result doesn't have item,
                     // it means the locaiton doesn't any inventory
-                    widget.cycleCountResult.unexpectedItem == true ?
+                    widget.cycleCountResult?.unexpectedItem == true ?
 
                         new Expanded(
                           child: TextFormField(
@@ -151,7 +151,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                         :
                     Padding(
                         padding: const EdgeInsets.only(left: 25.0),
-                        child: Text(widget.cycleCountResult.item.name)
+                        child: Text(widget.cycleCountResult?.item?.name ?? "")
                     )
                   ],
                 ),
@@ -173,7 +173,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                     Padding(
                       padding: const EdgeInsets.only(left: 25.0),
                       child:
-                        Text(widget.cycleCountResult.item == null ? "" : widget.cycleCountResult.item.description)
+                        Text(widget.cycleCountResult?.item?.description ?? "")
                     )
                   ],
                 ),
@@ -192,7 +192,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                       Padding(
                         padding: const EdgeInsets.only(right: 20.0),
                         child:
-                            Text(widget.cycleCountResult.quantity.toString()),
+                            Text(widget.cycleCountResult?.quantity.toString() ?? ""),
                       ),]
                   ),
               ),
@@ -218,8 +218,8 @@ class _CountResultListItemState extends State<CountResultListItem> {
                             validator: (v) {
                               // if we specify a item, either by manually input
                               // or an existing item, we will force the user to type in the quantity
-                              if (( _itemController.text.isNotEmpty || widget.cycleCountResult.item != null) &&
-                                  v.trim() == "") {
+                              if (( _itemController.text.isNotEmpty || widget.cycleCountResult?.item != null) &&
+                                  v?.trim() == "") {
                                 return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.countQuantity);
                               }
                               return null;

@@ -11,7 +11,7 @@ import 'package:dio/dio.dart';
 
 class ItemPackageTypeService {
   // Get all cycle count requests by batch id
-  static Future<ItemPackageType> getItemPackageTypeByName(int itemId, String name) async {
+  static Future<ItemPackageType?> getItemPackageTypeByName(int itemId, String name) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -28,9 +28,8 @@ class ItemPackageTypeService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<ItemPackageType> itemPackageTypes
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : ItemPackageType.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => ItemPackageType.fromJson(e as Map<String, dynamic>))
+        .toList();
     print("itemPackageTypes.length: ${itemPackageTypes.length}");
 
     if (itemPackageTypes.length == 1) {

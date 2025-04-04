@@ -156,16 +156,16 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
       String locationName = "";
 
       inventories.forEach((inventory) {
-        clientNames.add(inventory.client.name ?? "");
-        itemNames.add(inventory.item.name ?? "");
-        itemPackageTypeNames.add(inventory.itemPackageType.name);
-        totalQuantity += inventory.quantity;
-        locationName = inventory.locationName;
+        clientNames.add(inventory.client?.name ?? "");
+        itemNames.add(inventory.item?.name ?? "");
+        itemPackageTypeNames.add(inventory.itemPackageType!.name ?? "");
+        totalQuantity += inventory.quantity!;
+        locationName = inventory.locationName ?? "";
         if (inventory.receiptNumber == "" && inventory.receipt == null) {
           includeNonReceiptInventory = true;
         }
         else {
-          receiptNumbers.add(inventory.receiptNumber);
+          receiptNumbers.add(inventory.receiptNumber ?? "");
         }
       });
 
@@ -242,7 +242,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
       });
 
         for (var inventory in inventories) {
-          await InventoryService.reverseReceivedInventory(inventory.id);
+          await InventoryService.reverseReceivedInventory(inventory.id!);
         }
         setState(() {
           reversedInventoryInformation.reverseResult = true;
@@ -264,7 +264,9 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
           setState(() {
             reversedInventoryInformation.reverseResult = false;
             reversedInventoryInformation.reverseInProgress = false;
-            reversedInventoryInformation.result = "Fail to reverse LPN: " + reversedInventoryInformation.lpn + " after trying ${CWMSHttpClient.timeoutRetryTime}  times";
+            reversedInventoryInformation.result = "Fail to reverse LPN: " +
+                (reversedInventoryInformation.lpn ?? "" )
+                + " after trying ${CWMSHttpClient.timeoutRetryTime}  times";
             _reversedInventories;
           });
         }
@@ -347,7 +349,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
             fit: StackFit.expand, //未定位widget占满Stack整个空间
             children: <Widget>[
               ListTile(
-                title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn),
+                title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn!),
                 subtitle:
                 Column(
                     children: <Widget>[
@@ -363,7 +365,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
                                 )
                             ),
                             Text(
-                                _reversedInventories[index].itemName,
+                                _reversedInventories[index].itemName!,
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -421,7 +423,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
           height: 75,
           child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn!),
               subtitle:
                 Column(
                   children: <Widget>[
@@ -437,7 +439,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
                           )
                         ),
                         Text(
-                          _reversedInventories[index].itemName,
+                          _reversedInventories[index].itemName!,
                           textScaleFactor: .9,
                           style: TextStyle(
                             height: 1.15,
@@ -478,13 +480,13 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
         );
     }
     else {
-      double height = min(75 + (_reversedInventories[index].result.length / 50) * 15, 120);
+      double height = min(75 + (_reversedInventories[index].result!.length! / 50) * 15, 120);
       return
         SizedBox(
             height: height,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn!),
               subtitle:
               Column(
                   children: <Widget>[
@@ -500,7 +502,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
                               )
                           ),
                           Text(
-                              _reversedInventories[index].itemName,
+                              _reversedInventories[index].itemName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,

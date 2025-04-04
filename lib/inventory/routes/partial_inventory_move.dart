@@ -27,7 +27,7 @@ import '../../shared/models/barcode.dart';
 // with or without any pre-assigned destination
 class PartialInventoryMovePage extends StatefulWidget{
 
-  PartialInventoryMovePage({Key key}) : super(key: key);
+  PartialInventoryMovePage({Key? key}) : super(key: key);
 
 
   @override
@@ -41,10 +41,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   TextEditingController _lpnController = new TextEditingController();
   GlobalKey _formKey = new GlobalKey<FormState>();
   TextEditingController _quantityController = new TextEditingController();
-  ItemUnitOfMeasure _selectedItemUnitOfMeasure;
+  ItemUnitOfMeasure? _selectedItemUnitOfMeasure;
 
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   FocusNode _lpnFocusNode = FocusNode();
 
@@ -55,7 +55,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   // item on the LPN
   Map<String, int> _itemQuantityMap = HashMap();
   var _selectedItemName = "";
-  Timer _timer;  // timer to refresh inventory on RF every 2 second
+  Timer? _timer;  // timer to refresh inventory on RF every 2 second
 
 
   List<InventoryDepositRequest> _inventoryDepositRequests = [];
@@ -160,7 +160,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                 ),
             ),
             validator: (v) {
-              return v.trim().isNotEmpty ?
+              return v!.trim().isNotEmpty ?
               null :
               CWMSLocalizations.of(context)!.missingField(
                   CWMSLocalizations.of(context)!.lpn);
@@ -198,10 +198,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         Icons.list,
         size: 20,
       ),
-      onChanged: (T) {
+      onChanged: (String? value) {
         //下拉菜单item点击之后的回调
         setState(() {
-          _selectedItemName = T;
+          _selectedItemName = value!;
         });
       },
     );
@@ -213,7 +213,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
       return buildTwoSectionInformationRow(
           CWMSLocalizations.of(context)!.item,
-          _itemMap.putIfAbsent(_selectedItemName, () => null).description);
+          _itemMap[_selectedItemName]?.description ?? "");
     }
 
     return buildTwoSectionInformationRow(
@@ -233,7 +233,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             ),
             // 校验ITEM NUMBER（不能为空）
             validator: (v) {
-              if (v.trim().isEmpty) {
+              if (v!.trim().isEmpty) {
                 return "please type in quantity";
               }
               if (!_validateQuantity()) {
@@ -258,31 +258,31 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
               height: 0,
               color: Colors.deepPurpleAccent,
             ),
-            onChanged: (T) {
+            onChanged: (ItemUnitOfMeasure? value) {
               //下拉菜单item点击之后的回调
               setState(() {
-                _selectedItemUnitOfMeasure = T;
+                _selectedItemUnitOfMeasure = value;
               });
             },
           )
       );
   }
 
-  List<DropdownMenuItem> _getItemUnitOfMeasures() {
+  List<DropdownMenuItem<ItemUnitOfMeasure>> _getItemUnitOfMeasures() {
 
-    List<DropdownMenuItem> dropdownMenuItems = [];
+    List<DropdownMenuItem<ItemUnitOfMeasure>> dropdownMenuItems = [];
 
     if (!_itemMap.containsKey(_selectedItemName)) {
 
       return dropdownMenuItems;
     }
-    Item item = _itemMap.putIfAbsent(_selectedItemName, () => null);
+    Item item = _itemMap[_selectedItemName]!;
 
-    for (int i = 0; i < item.defaultItemPackageType.itemUnitOfMeasures.length; i++) {
+    for (int i = 0; i < item.defaultItemPackageType!.itemUnitOfMeasures.length; i++) {
 
       dropdownMenuItems.add(DropdownMenuItem(
-        value:  item.defaultItemPackageType.itemUnitOfMeasures[i],
-        child: Text(item.defaultItemPackageType.itemUnitOfMeasures[i].unitOfMeasure.name),
+        value:  item.defaultItemPackageType?.itemUnitOfMeasures[i],
+        child: Text(item.defaultItemPackageType?.itemUnitOfMeasures[i].unitOfMeasure!.name ?? ""),
       ));
     }
 
@@ -293,12 +293,12 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     // then we know that we just changed the item package type or item, so we will need
     // to refresh the _selectedItemUnitOfMeasure to the default inbound receiving uom as well
     if (_selectedItemUnitOfMeasure == null ||
-        !item.defaultItemPackageType.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
+        !item.defaultItemPackageType!.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
       // if the user has not select any item unit of measure yet, then
       // default the value to the one marked as 'default for inbound receiving'
 
-      _selectedItemUnitOfMeasure = item.defaultItemPackageType.itemUnitOfMeasures
-          .firstWhere((element) => element.id == item.defaultItemPackageType.defaultInboundReceivingUOM.id);
+      _selectedItemUnitOfMeasure = item.defaultItemPackageType?.itemUnitOfMeasures
+          .firstWhere((element) => element.id == item.defaultItemPackageType?.defaultInboundReceivingUOM?.id);
     }
 /**
     if (item.defaultItemPackageType.itemUnitOfMeasures.length == 1) {
@@ -311,8 +311,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   bool _validateQuantity() {
     return true;
   }
-  List<DropdownMenuItem> _getItemNames() {
-    List<DropdownMenuItem> dropdownMenuItems = [];
+  List<DropdownMenuItem<String>> _getItemNames() {
+    List<DropdownMenuItem<String>> dropdownMenuItems = [];
 
     _itemNames.forEach((itemName) {
       dropdownMenuItems.add(DropdownMenuItem(
@@ -358,10 +358,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       return;
     }
     inventories.forEach((inventory) {
-      _itemNames.add(inventory.item.name);
-      _itemMap[inventory.item.name] = inventory.item;
-      int accumulativeQuantity = _itemQuantityMap.putIfAbsent(inventory.item.name, () => 0);
-      _itemQuantityMap[inventory.item.name] = accumulativeQuantity + inventory.quantity;
+      _itemNames.add(inventory.item!.name!);
+      _itemMap[inventory.item!.name!] = inventory.item!;
+      int accumulativeQuantity = _itemQuantityMap.putIfAbsent(inventory.item!.name!, () => 0);
+      _itemQuantityMap[inventory.item!.name!] = accumulativeQuantity + inventory!.quantity!;
 
     });
 
@@ -528,7 +528,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             fit: StackFit.expand, //未定位widget占满Stack整个空间
             children: <Widget>[
               ListTile(
-                title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn),
+                title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn!),
                 subtitle:
                 Column(
                     children: <Widget>[
@@ -544,7 +544,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                                 )
                             ),
                             Text(
-                                _inventoryDepositRequests[index].itemName,
+                                _inventoryDepositRequests[index].itemName!,
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -602,7 +602,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             height: 95,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].newLpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].newLpn!),
               subtitle:
                 Column(
                   children: <Widget>[
@@ -618,7 +618,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                               )
                           ),
                           Text(
-                              _inventoryDepositRequests[index].lpn,
+                              _inventoryDepositRequests[index].lpn!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -640,7 +640,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                               )
                           ),
                           Text(
-                              _inventoryDepositRequests[index].itemName,
+                              _inventoryDepositRequests[index].itemName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -680,18 +680,18 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
               trailing:
                 IconButton(
                     icon: new Icon(Icons.print_rounded),
-                    onPressed: () => _printLPNLabel(_inventoryDepositRequests[index].newLpn))
+                    onPressed: () => _printLPNLabel(_inventoryDepositRequests[index].newLpn!))
             )
         );
     }
     else {
-      double height = min(75 + (_inventoryDepositRequests[index].result.length / 50) * 15, 120);
+      double height = min(75 + (_inventoryDepositRequests[index].result!.length! / 50) * 15, 120);
       return
         SizedBox(
             height: height,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn!),
               subtitle:
               Column(
                   children: <Widget>[
@@ -707,7 +707,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                               )
                           ),
                           Text(
-                              _inventoryDepositRequests[index].itemName,
+                              _inventoryDepositRequests[index].itemName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -786,7 +786,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       inventoryDepositRequest.lpn = _lpnController.text;
       int quantity = int.parse(_quantityController.text);
       if (_selectedItemUnitOfMeasure != null) {
-        quantity *= _selectedItemUnitOfMeasure.quantity;
+        quantity *= _selectedItemUnitOfMeasure!.quantity!;
         printLongLogMessage("by considering the selected UOM, the final quantity is ${quantity}");
       }
 
@@ -801,7 +801,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       _inventoryDepositRequests.insert(0, inventoryDepositRequest);
 
       _moveInventoryAsync(inventoryDepositRequest,
-          _selectedItemUnitOfMeasure.unitOfMeasure.name,
+          _selectedItemUnitOfMeasure!.unitOfMeasure!.name!,
           retryTime: 0);
 
       // Navigator.of(context).pop();
@@ -825,9 +825,9 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         Global.lastLoginRFCode
     ).then((rfLocation) async {
       List<Inventory> resultInventories = await InventoryService.moveInventory(
-          lpn: inventoryDepositRequest.lpn,
-          quantity: inventoryDepositRequest.quantity,
-          itemName: inventoryDepositRequest.itemName,
+          lpn: inventoryDepositRequest!.lpn!,
+          quantity: inventoryDepositRequest!.quantity!,
+          itemName: inventoryDepositRequest!.itemName!,
           unitOfMeasure: unitOfMeasure,
           destinationLocation: rfLocation
       );
@@ -858,7 +858,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         else {
           inventoryDepositRequest.requestInProcess = false;
           inventoryDepositRequest.requestResult = false;
-          inventoryDepositRequest.result = "Fail to move LPN: " + inventoryDepositRequest.lpn + " after trying ${CWMSHttpClient.timeoutRetryTime}  times";
+          inventoryDepositRequest.result = "Fail to move LPN: " + inventoryDepositRequest!.lpn! + " after trying ${CWMSHttpClient.timeoutRetryTime}  times";
 
           setState(() {
             _inventoryDepositRequests;
@@ -873,7 +873,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
         inventoryDepositRequest.requestInProcess = false;
         inventoryDepositRequest.requestResult = false;
-        inventoryDepositRequest.result = webAPICallException.errMsg() + ", LPN: " + inventoryDepositRequest.lpn;
+        inventoryDepositRequest.result = webAPICallException.errMsg() + ", LPN: " + inventoryDepositRequest!.lpn!;
 
         setState(() {
           _inventoryDepositRequests;
@@ -883,7 +883,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
         inventoryDepositRequest.requestInProcess = false;
         inventoryDepositRequest.requestResult = false;
-        inventoryDepositRequest.result =err.toString() + ", LPN: " + inventoryDepositRequest.lpn;
+        inventoryDepositRequest.result =err.toString() + ", LPN: " + inventoryDepositRequest!.lpn!;
 
         setState(() {
           _inventoryDepositRequests;

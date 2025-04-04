@@ -13,7 +13,7 @@ import '../../shared/services/barcode_service.dart';
 
 class InventoryQueryPage extends StatefulWidget{
 
-  InventoryQueryPage({Key key}) : super(key: key);
+  InventoryQueryPage({Key? key}) : super(key: key);
 
 
   @override
@@ -91,7 +91,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
                     onPressed: () {
-                       if (_formKey.currentState.validate()) {
+                       if (_formKey.currentState!.validate()) {
                          print("form validation passed");
                          _onInventoryQuery();
                        }
@@ -221,10 +221,10 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
       // load the location for each inventory
       for (var inventory in inventories) {
         if (inventory.location == null && inventory.locationId != null) {
-          inventory.location = await WarehouseLocationService.getWarehouseLocationById(inventory.locationId);
+          inventory.location = await WarehouseLocationService.getWarehouseLocationById(inventory.locationId!);
         }
 
-        printLongLogMessage("INVENTORY ${inventory.lpn} 's location is setup to ${inventory.location.name}");
+        printLongLogMessage("INVENTORY ${inventory.lpn} 's location is setup to ${inventory.location?.name}");
       }
 
       printLongLogMessage("will flow to invenory with ${inventories.length} inventory records");

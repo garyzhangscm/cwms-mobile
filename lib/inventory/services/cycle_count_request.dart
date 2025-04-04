@@ -28,9 +28,8 @@ class CycleCountRequestService {
     List<dynamic> responseData = responseString["data"];
 
     List<CycleCountRequest> cycleCountRequests
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : CycleCountRequest.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => CycleCountRequest.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     return cycleCountRequests;
   }
@@ -48,13 +47,12 @@ class CycleCountRequestService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<CycleCountResult> _cycleCountResults
-    = (responseString["data"] as List)?.map((e) =>
-        e == null ? null : CycleCountResult.fromJson(e as Map<String, dynamic>))
-            ?.toList();
+    = (responseString["data"] as List).map((e) => CycleCountResult.fromJson(e as Map<String, dynamic>))
+            .toList();
     return _cycleCountResults;
   }
 
-  static CycleCountRequest getNextLocationForCount(
+  static CycleCountRequest? getNextLocationForCount(
       List<CycleCountRequest> cycleCountRequests) {
 
     if (cycleCountRequests.isEmpty) {
@@ -62,25 +60,25 @@ class CycleCountRequestService {
     }
     CycleCountRequest nextCycleCountRequest = cycleCountRequests[0];
 
-    printLongLogMessage("start to consider next location: ${nextCycleCountRequest.location.name}");
+    printLongLogMessage("start to consider next location: ${nextCycleCountRequest.location!.name}");
     // skip this location if it is already skipped more times than the
     // previous best location
     cycleCountRequests
-        .where((cycleCountRequest) => cycleCountRequest.skippedCount <= nextCycleCountRequest.skippedCount)
+        .where((cycleCountRequest) => cycleCountRequest.skippedCount! <= nextCycleCountRequest.skippedCount!)
         .forEach((cycleCountRequest) {
-          if (nextCycleCountRequest.skippedCount > cycleCountRequest.skippedCount) {
+          if (nextCycleCountRequest.skippedCount! > cycleCountRequest.skippedCount!) {
             // the last cycle has more time skipped than the current one, let's use the current one
-            return nextCycleCountRequest = cycleCountRequest;
+            nextCycleCountRequest = cycleCountRequest;
           }
           else {
             // printLongLogMessage("Global.getLastActivityLocation(): ${Global.getLastActivityLocation().name}");
             WarehouseLocation nextLocation =
             WarehouseLocationService.getBestLocationForNextCount(
                 Global.getLastActivityLocation(),
-                nextCycleCountRequest.location,
-                cycleCountRequest.location);
+                nextCycleCountRequest.location!,
+                cycleCountRequest.location!);
 
-            if (nextLocation.name == cycleCountRequest.location.name) {
+            if (nextLocation.name == cycleCountRequest.location!.name) {
               // OK, this location is better than last one, let's assign
               // it as the next best location
               nextCycleCountRequest = cycleCountRequest;
@@ -111,14 +109,13 @@ class CycleCountRequestService {
 
 
     List<CycleCountResult> _cycleCountResults
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : CycleCountResult.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => CycleCountResult.fromJson(e as Map<String, dynamic>))
+          .toList();
 
     return _cycleCountResults;
   }
 
-  static Future<CycleCountRequest> cancelCycleCount(CycleCountRequest cycleCountRequest) async {
+  static Future<CycleCountRequest?> cancelCycleCount(CycleCountRequest cycleCountRequest) async {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
@@ -131,9 +128,8 @@ class CycleCountRequestService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<CycleCountRequest> _cycleCountRequests
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : CycleCountRequest.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+    = (responseString["data"] as List).map((e) => CycleCountRequest.fromJson(e as Map<String, dynamic>))
+          .toList();
 
     // Since we only cancel one request, it should only return one result
     if (_cycleCountRequests.length == 1) {

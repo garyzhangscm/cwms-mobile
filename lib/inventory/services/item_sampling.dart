@@ -12,7 +12,7 @@ import 'package:dio/dio.dart';
 
 class ItemSamplingService {
   // Get all cycle count requests by batch id
-  static Future<ItemSampling> getCurrentItemSamplingByItemName(String itemName) async {
+  static Future<ItemSampling?> getCurrentItemSamplingByItemName(String itemName) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -33,9 +33,8 @@ class ItemSamplingService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ItemSampling> itemSamplingList
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : ItemSampling.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => ItemSampling.fromJson(e as Map<String, dynamic>))
+        .toList();
     print("itemSamplingList.length: ${itemSamplingList.length}");
 
     if (itemSamplingList.length == 1) {
@@ -48,7 +47,7 @@ class ItemSamplingService {
 
 
 
-  static Future<ItemSampling> getItemSamplingByNumber(String number) async {
+  static Future<ItemSampling?> getItemSamplingByNumber(String number) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -68,9 +67,8 @@ class ItemSamplingService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ItemSampling> itemSamplingList
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : ItemSampling.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => ItemSampling.fromJson(e as Map<String, dynamic>))
+        .toList();
     print("itemSamplingList.length: ${itemSamplingList.length}");
 
     if (itemSamplingList.length == 1) {

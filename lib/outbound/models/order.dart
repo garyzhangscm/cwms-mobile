@@ -15,53 +15,53 @@ part 'order.g.dart';
 class Order{
   Order();
 
-  int id;
-  String number;
+  int? id;
+  String? number;
 
-  Customer shipToCustomer;
-  Customer billToCustomer;
+  Customer? shipToCustomer;
+  Customer? billToCustomer;
 
-  String shipToContactorFirstname;
-  String shipToContactorLastname;
+  String? shipToContactorFirstname;
+  String? shipToContactorLastname;
 
-  bool allowForManualPick;
+  bool? allowForManualPick;
 
-  String shipToAddressCountry;
-  String shipToAddressState;
-  String shipToAddressCounty;
-  String shipToAddressCity;
-  String shipToAddressDistrict;
-  String shipToAddressLine1;
-  String shipToAddressLine2;
-  String shipToAddressPostcode;
+  String? shipToAddressCountry;
+  String? shipToAddressState;
+  String? shipToAddressCounty;
+  String? shipToAddressCity;
+  String? shipToAddressDistrict;
+  String? shipToAddressLine1;
+  String? shipToAddressLine2;
+  String? shipToAddressPostcode;
 
 
-  String billToContactorFirstname;
-  String billToContactorLastname;
+  String? billToContactorFirstname;
+  String? billToContactorLastname;
 
-  String billToAddressCountry;
-  String billToAddressState;
-  String billToAddressCounty;
-  String billToAddressCity;
-  String billToAddressDistrict;
-  String billToAddressLine1;
-  String billToAddressLine2;
-  String billToAddressPostcode;
+  String? billToAddressCountry;
+  String? billToAddressState;
+  String? billToAddressCounty;
+  String? billToAddressCity;
+  String? billToAddressDistrict;
+  String? billToAddressLine1;
+  String? billToAddressLine2;
+  String? billToAddressPostcode;
 
-  Carrier carrier;
-  CarrierServiceLevel carrierServiceLevel;
+  Carrier? carrier;
+  CarrierServiceLevel? carrierServiceLevel;
 
-  List<OrderLine> orderLines;
+  List<OrderLine> orderLines = [];
 
-  int totalLineCount;
-  int totalItemCount;
-  int totalExpectedQuantity;
-  int totalOpenQuantity;
-  int totalInprocessQuantity;
-  int totalPendingAllocationQuantity;
-  int  totalOpenPickQuantity;
-  int totalPickedQuantity;
-  int totalShippedQuantity;
+  int? totalLineCount;
+  int? totalItemCount;
+  int? totalExpectedQuantity;
+  int? totalOpenQuantity;
+  int? totalInprocessQuantity;
+  int? totalPendingAllocationQuantity;
+  int?  totalOpenPickQuantity;
+  int? totalPickedQuantity;
+  int? totalShippedQuantity;
 
 
 

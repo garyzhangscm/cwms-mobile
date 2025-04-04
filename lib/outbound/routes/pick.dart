@@ -26,7 +26,7 @@ import '../../shared/services/barcode_service.dart';
 
 class PickPage extends StatefulWidget{
 
-  PickPage({Key key}) : super(key: key);
+  PickPage({Key? key}) : super(key: key);
 
 
   @override
@@ -41,7 +41,7 @@ class _PickPageState extends State<PickPage> {
   TextEditingController _sourceLocationController = new TextEditingController();
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
-  Pick _currentPick;
+  Pick? _currentPick;
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
   FocusNode _sourceLocationFocusNode = FocusNode();
@@ -50,7 +50,7 @@ class _PickPageState extends State<PickPage> {
   FocusNode _quantityControllerFocusNode = FocusNode();
 
 
-  String _workNumber;
+  String? _workNumber;
   int _lpnQuantity = 0;
 
   // pickable inveotory's item package type. Used to show how to pick
@@ -58,16 +58,16 @@ class _PickPageState extends State<PickPage> {
   // show (Mixed Item Package Type)
   // if the source location is not mixed of item package type,
   // then show (X case, Y package, Z Each)
-  ItemPackageType _pickableInventoryItemPackageType = null;
+  ItemPackageType? _pickableInventoryItemPackageType;
 
 
   final  _formKey = GlobalKey<FormState>();
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   // if pick to a specific destination LPN
-  String _destinationLPN;
-  bool _retainLPNForLPNPick;
+  String? _destinationLPN;
+  bool? _retainLPNForLPNPick;
 
   List<String> _pickErrorOptions = [];
   String _selectedPickErrorOption = "";
@@ -139,18 +139,18 @@ class _PickPageState extends State<PickPage> {
 
     // extract the argument
     printLongLogMessage("start to get picks and related mode");
-    Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
+    Map arguments  = ModalRoute.of(context)?.settings.arguments as Map ;
 
 
     _currentPick = arguments['pick'];
-    _setupPickableInventoryItemPackageType(_currentPick);
-    printLongLogMessage("_currentPick: ${_currentPick.toJson()}");
+    _setupPickableInventoryItemPackageType(_currentPick!);
+    printLongLogMessage("_currentPick: ${_currentPick?.toJson()}");
     _destinationLPN  = arguments['destinationLPN'] == null ? "" : arguments['destinationLPN'];
     printLongLogMessage("_destinationLPN: $_destinationLPN");
     // when pick a LPN in a batch, whether we want to keep the original LPN
     // or pick into the destination(only if _destinationLPN is passed in)
     _retainLPNForLPNPick  = arguments['retainLPNForLPNPick'] == null ? true : arguments['retainLPNForLPNPick'] as bool;
-    _workNumber = arguments['workNumber'] == null || arguments['workNumber'].toString().isEmpty ? _currentPick.number : arguments['workNumber'];
+    _workNumber = arguments['workNumber'] == null || arguments['workNumber'].toString().isEmpty ? _currentPick?.number : arguments['workNumber'];
     printLongLogMessage("_workNumber: $_workNumber");
 
   }
@@ -176,46 +176,46 @@ class _PickPageState extends State<PickPage> {
       body:
           Column(
             children: <Widget>[
-              buildTwoSectionInformationRow("Work Number:", _workNumber),
-              buildTwoSectionInformationRow("Location:", _currentPick.sourceLocation.name),
+              buildTwoSectionInformationRow("Work Number:", _workNumber ?? ""),
+              buildTwoSectionInformationRow("Location:", _currentPick?.sourceLocation?.name ?? ""),
               _buildLocationInput(context),
               _buildLPNInput(context),
               buildTwoSectionInformationRowWithWidget(
                   CWMSLocalizations.of(context)!.item,
-                  _buildItemDisplayWidget(context, _currentPick)),
+                  _buildItemDisplayWidget(context, _currentPick!)),
               // buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
               // add the batch pick quantity only if the quantity to be picked is more than the single pick
               // _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
-              _currentPick.batchPickQuantity > 0 ?
+              _currentPick!.batchPickQuantity! > 0 ?
                   buildTwoSectionInformationRow("Batch Pick Quantity:",
-                      _currentPick.batchPickQuantity.toString() +
+                      _currentPick!.batchPickQuantity.toString() +
                           (_pickableInventoryItemPackageType == null ? "" :
-                              _getPickQuantityIndicator(_currentPick.batchPickQuantity)))
+                              _getPickQuantityIndicator(_currentPick!.batchPickQuantity!)))
                   :
                   buildTwoSectionInformationRow("Pick Quantity:",
-                      _currentPick.quantity.toString() +
+                      _currentPick!.quantity.toString() +
                       (_pickableInventoryItemPackageType == null ? "" :
-                      _getPickQuantityIndicator(_currentPick.quantity))) ,
+                      _getPickQuantityIndicator(_currentPick!.quantity!))) ,
               buildTwoSectionInformationRow("Picked Quantity:",
-                  _currentPick.pickedQuantity.toString() +
+                  _currentPick!.pickedQuantity.toString() +
                       (_pickableInventoryItemPackageType == null ? "" :
-                      _getPickQuantityIndicator(_currentPick.pickedQuantity))),
+                      _getPickQuantityIndicator(_currentPick!.pickedQuantity!))),
 
-              _currentPick.batchPickQuantity > 0 ?
+              (_currentPick!.batchPickQuantity ?? 0) > 0 ?
                   buildTwoSectionInformationRow("Remaining Quantity:",
-                      _currentPick.batchPickQuantity.toString() +
+                      _currentPick!.batchPickQuantity!.toString() +
                           (_pickableInventoryItemPackageType == null ? "" :
-                          _getPickQuantityIndicator(_currentPick.batchPickQuantity)))
+                          _getPickQuantityIndicator(_currentPick!.batchPickQuantity!)))
                   :
                   buildTwoSectionInformationRow("Remaining Quantity:",
-                      (_currentPick.quantity - _currentPick.pickedQuantity).toString() +
+                      (_currentPick!.quantity! - _currentPick!.pickedQuantity!).toString() +
                           (_pickableInventoryItemPackageType == null ? "" :
-                          _getPickQuantityIndicator(_currentPick.quantity - _currentPick.pickedQuantity))),
+                          _getPickQuantityIndicator(_currentPick!.quantity! - _currentPick!.pickedQuantity!))),
               buildTwoSectionInformationRow("Inventory Quantity:",
                       _lpnQuantity.toString() +
                       (_pickableInventoryItemPackageType == null ? "" :
                       _getPickQuantityIndicator(_lpnQuantity))),
-              _destinationLPN.isEmpty? Container() : buildTwoSectionInformationRow("Destination LPN:", _destinationLPN),
+              _destinationLPN!.isEmpty? Container() : buildTwoSectionInformationRow("Destination LPN:", _destinationLPN!),
               _buildQuantityInput(context),
               _buildButtons(context),
             ],
@@ -228,49 +228,49 @@ class _PickPageState extends State<PickPage> {
   Widget _buildItemDisplayWidget(BuildContext context, Pick pick) {
     return new RichText(
         text: new TextSpan(
-          text: pick.item.name,
+          text: pick.item?.name,
           style: new TextStyle(color: Colors.blue),
           recognizer: new TapGestureRecognizer()
             ..onTap = () {
               showInformationDialog(
-                  context, pick.item.name,
+                  context, pick.item?.name ?? "",
                   Column(
                       children: <Widget>[
                         buildTwoSectionInformationRow(
                             CWMSLocalizations.of(context)!.item + ":",
-                            pick.item.name),
+                            pick.item?.name ?? ""),
                         buildTwoSectionInformationRow(
                             CWMSLocalizations.of(context)!.item + ":",
-                            pick.item.description),
+                            pick.item?.description ?? ""),
                         buildTwoSectionInformationRow(
                             CWMSLocalizations.of(context)!.color + ":",
-                            pick.color),
+                            pick.color ?? ""),
                         buildTwoSectionInformationRow(
                             CWMSLocalizations.of(context)!.style + ":",
-                            pick.style),
+                            pick.style ?? ""),
                         buildTwoSectionInformationRow(
                             CWMSLocalizations.of(context)!.productSize + ":",
-                            pick.productSize),
-                        Global.currentInventoryConfiguration.inventoryAttribute1Enabled ?
+                            pick.productSize ?? ""),
+                        Global.currentInventoryConfiguration.inventoryAttribute1Enabled == true?
                             buildTwoSectionInformationRow(
                                 Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute1") + ":",
-                                pick.inventoryAttribute1) : Container(),
-                        Global.currentInventoryConfiguration.inventoryAttribute2Enabled ?
+                                pick.inventoryAttribute1 ?? "") : Container(),
+                        Global.currentInventoryConfiguration.inventoryAttribute2Enabled  == true?
                         buildTwoSectionInformationRow(
                             Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute2") + ":",
-                            pick.inventoryAttribute2) : Container(),
-                        Global.currentInventoryConfiguration.inventoryAttribute3Enabled ?
+                            pick.inventoryAttribute2 ?? "") : Container(),
+                        Global.currentInventoryConfiguration.inventoryAttribute3Enabled  == true?
                             buildTwoSectionInformationRow(
                                 Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute3") + ":",
-                                pick.inventoryAttribute3) : Container(),
-                        Global.currentInventoryConfiguration.inventoryAttribute4Enabled ?
+                                pick.inventoryAttribute3 ?? "") : Container(),
+                        Global.currentInventoryConfiguration.inventoryAttribute4Enabled  == true?
                             buildTwoSectionInformationRow(
                                 Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute4") + ":",
-                                pick.inventoryAttribute4) : Container(),
-                        Global.currentInventoryConfiguration.inventoryAttribute5Enabled ?
+                                pick.inventoryAttribute4 ?? "") : Container(),
+                        Global.currentInventoryConfiguration.inventoryAttribute5Enabled  == true?
                             buildTwoSectionInformationRow(
                                 Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute5") + ":",
-                                pick.inventoryAttribute5) : Container(),
+                                pick.inventoryAttribute5 ?? "") : Container(),
                       ]
                   ),
                   verticalPadding: 25.0,
@@ -285,7 +285,7 @@ class _PickPageState extends State<PickPage> {
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(
         CWMSLocalizations.of(context)!.location,
-        _currentPick.confirmLocationFlag == true || _currentPick.confirmLocationCodeFlag == true ?
+        _currentPick?.confirmLocationFlag == true || _currentPick?.confirmLocationCodeFlag == true ?
           Focus(
               focusNode: _sourceLocationFocusNode,
               child:
@@ -316,7 +316,7 @@ class _PickPageState extends State<PickPage> {
           :
           Padding(
             padding: EdgeInsets.only(right: 10),
-            child: Text(_currentPick.sourceLocation.name, textAlign: TextAlign.left ),
+            child: Text(_currentPick?.sourceLocation?.name ?? "", textAlign: TextAlign.left ),
           ),
     );
   }
@@ -325,7 +325,7 @@ class _PickPageState extends State<PickPage> {
   Widget _buildLPNInput(BuildContext context) {
     return buildTwoSectionInputRow(
       CWMSLocalizations.of(context)!.lpn,
-      _currentPick.confirmLpnFlag == true ?
+      _currentPick?.confirmLpnFlag == true ?
       Focus(
           focusNode: _lpnFocusNode,
           child:
@@ -400,7 +400,7 @@ class _PickPageState extends State<PickPage> {
       CWMSLocalizations.of(context)!.skip,
       CWMSLocalizations.of(context)!.cancelPickAndReallocate,
     ];
-    _selectedPickErrorOption = null;
+    _selectedPickErrorOption = "";
 
     return DropdownButtonHideUnderline(
       child: DropdownButton2<String>(
@@ -445,7 +445,7 @@ class _PickPageState extends State<PickPage> {
         value: _selectedPickErrorOption,
         onChanged: (value) {
           setState(() {
-            _selectedPickErrorOption = value;
+            _selectedPickErrorOption = value!;
             _processPickError(value);
           });
         },
@@ -503,7 +503,7 @@ class _PickPageState extends State<PickPage> {
         ElevatedButton(
             onPressed: () async {
 
-              _onPickConfirm(_currentPick, int.parse(_quantityController.text));
+              _onPickConfirm(_currentPick!, int.parse(_quantityController.text));
             },
             child: Text(CWMSLocalizations.of(context)!.confirm)
         ),
@@ -578,9 +578,9 @@ class _PickPageState extends State<PickPage> {
     }
 
     // when the user confirmed the location , we know that the user arrives at the location
-    RFService.changeCurrentRFLocation(_currentPick.sourceLocationId).then((value) => printLongLogMessage("RF location changed"));
+    RFService.changeCurrentRFLocation(_currentPick!.sourceLocationId!).then((value) => printLongLogMessage("RF location changed"));
     printLongLogMessage("Move to the next focus node");
-    if (_currentPick.confirmLpnFlag) {
+    if (_currentPick?.confirmLpnFlag == true) {
       _lpnControllerFocusNode.requestFocus();
     }
     else {
@@ -658,7 +658,7 @@ class _PickPageState extends State<PickPage> {
     }
 
 
-    _onPickConfirm(_currentPick, int.parse(_quantityController.text));
+    _onPickConfirm(_currentPick!, int.parse(_quantityController.text));
 
   }
 
@@ -667,7 +667,7 @@ class _PickPageState extends State<PickPage> {
     try {
       inventories = await InventoryService.findInventory(
           lpn: lpn,
-          locationName: _currentPick.sourceLocation.name
+          locationName: _currentPick?.sourceLocation?.name ?? ""
       );
     }
     on WebAPICallException catch(ex) {
@@ -681,14 +681,14 @@ class _PickPageState extends State<PickPage> {
     }
     // over pick is not allowed so only return the pickable quantity
     setState(() {
-      _lpnQuantity = inventories.map((inventory) => inventory.quantity).reduce((a, b) => a + b);
+      _lpnQuantity = inventories.map((inventory) => inventory.quantity).reduce((a, b) => a! + b!) ?? 0;
     });
-    int openPickQuanity = _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
-        _currentPick.batchPickQuantity : _currentPick.quantity - _currentPick.pickedQuantity;
+    int openPickQuanity = _currentPick!.batchPickQuantity! > _currentPick!.quantity! - _currentPick!.pickedQuantity! ?
+        _currentPick!.batchPickQuantity! : _currentPick!.quantity! - _currentPick!.pickedQuantity!;
 
-    printLongLogMessage("validateLPNByQuantity: _currentPick.batchPickQuantity = ${_currentPick.batchPickQuantity}");
-    printLongLogMessage("validateLPNByQuantity: _currentPick.quantity = ${_currentPick.quantity}");
-    printLongLogMessage("validateLPNByQuantity: _currentPick.pickedQuantity = ${_currentPick.pickedQuantity}");
+    printLongLogMessage("validateLPNByQuantity: _currentPick.batchPickQuantity = ${_currentPick!.batchPickQuantity}");
+    printLongLogMessage("validateLPNByQuantity: _currentPick.quantity = ${_currentPick!.quantity}");
+    printLongLogMessage("validateLPNByQuantity: _currentPick.pickedQuantity = ${_currentPick!.pickedQuantity}");
     printLongLogMessage("validateLPNByQuantity: openPickQuanity = ${openPickQuanity}");
     printLongLogMessage("validateLPNByQuantity: _lpnQuantity = ${_lpnQuantity}");
 
@@ -710,7 +710,7 @@ class _PickPageState extends State<PickPage> {
 
     print("pick.batchedPicks.size: ${pick.batchedPicks.length}");
     int totalOpenQuantity =
-        pick.batchedPicks.map((e) => (e.quantity - e.pickedQuantity) > 0 ? e.quantity - e.pickedQuantity : 0)
+        pick.batchedPicks.map((e) => (e.quantity! - e!.pickedQuantity!) > 0 ? e.quantity! - e!.pickedQuantity! : 0)
             .reduce((a, b) => a + b);
 
     if (confirmedQuantity > totalOpenQuantity) {
@@ -725,7 +725,7 @@ class _PickPageState extends State<PickPage> {
     pick.batchedPicks.sort((pickA, pickB)   {
       // if the second pick's quantity is perfect match, then sort the second
       // pick first, otherwise we will keep the same sequence
-      if (pickB.quantity - pickB.pickedQuantity == confirmedQuantity) {
+      if (pickB.quantity! - pickB!.pickedQuantity! == confirmedQuantity) {
         return 1;
       }
       return -1;
@@ -745,31 +745,31 @@ class _PickPageState extends State<PickPage> {
       // confirm each pick in the batch until we consume the whole quantity
       currentConfirmedPick = pickIterator.current;
 
-      if (currentConfirmedPick.pickedQuantity >= currentConfirmedPick.quantity) {
+      if (currentConfirmedPick.pickedQuantity! >= currentConfirmedPick!.quantity!) {
         // skip the pick if it is already confirmed
         continue;
       }
-      currentConfirmedPickConfirmedQuantity = confirmedQuantity > (currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity) ?
-          currentConfirmedPick.quantity - currentConfirmedPick.pickedQuantity : confirmedQuantity;
+      currentConfirmedPickConfirmedQuantity = confirmedQuantity > (currentConfirmedPick.quantity! - currentConfirmedPick!.pickedQuantity!) ?
+          currentConfirmedPick.quantity! - currentConfirmedPick!.pickedQuantity! : confirmedQuantity;
       printLongLogMessage("start to confirm pick ${currentConfirmedPick.number} with quantity ${currentConfirmedPickConfirmedQuantity}");
 
       try {
-        if (currentConfirmedPick.confirmLpnFlag && _lpnController.text.isNotEmpty) {
+        if (currentConfirmedPick.confirmLpnFlag == true && _lpnController.text.isNotEmpty) {
           printLongLogMessage(
               "We will confirm the pick with LPN ${_lpnController.text}");
           await PickService.confirmPick(
               currentConfirmedPick, currentConfirmedPickConfirmedQuantity, lpn: _lpnController.text,
-              destinationLpn: _destinationLPN);
+              destinationLpn: _destinationLPN!);
         }
         else {
           printLongLogMessage("We will NOT confirm the pick with specify the LPN");
           await PickService.confirmPick(
               currentConfirmedPick, currentConfirmedPickConfirmedQuantity,
-              destinationLpn: _destinationLPN);
+              destinationLpn: _destinationLPN!);
         }
         confirmedQuantity = confirmedQuantity - currentConfirmedPickConfirmedQuantity;
 
-        confirmedPickResultMap[currentConfirmedPick.id] =  currentConfirmedPickConfirmedQuantity;
+        confirmedPickResultMap[currentConfirmedPick.id!] =  currentConfirmedPickConfirmedQuantity;
       }
       on WebAPICallException catch(ex) {
         Navigator.of(context).pop();
@@ -786,7 +786,7 @@ class _PickPageState extends State<PickPage> {
 
     // change the RF's current location to the current location as we know the user is already
     // in the location
-    RFService.changeCurrentRFLocation(pick.sourceLocationId).then((value) => printLongLogMessage("current RF's location is changed to ${pick.sourceLocationId}"));
+    RFService.changeCurrentRFLocation(pick.sourceLocationId!).then((value) => printLongLogMessage("current RF's location is changed to ${pick.sourceLocationId}"));
 
     var pickResult = PickResult.fromJson(
         {'result': true, 'confirmedQuantity': totalConfirmedQuantity});
@@ -815,11 +815,11 @@ class _PickPageState extends State<PickPage> {
     showLoading(context);
 
     Set<int> pickIds = new Set();
-    if (_currentPick.batchedPicks != null && _currentPick.batchedPicks.length > 0) {
-      pickIds = {..._currentPick.batchedPicks.map((pick) => pick.id)};
+    if (_currentPick!.batchedPicks != null && _currentPick!.batchedPicks.length > 0) {
+      pickIds = {..._currentPick!.batchedPicks.map((pick) => pick.id!)};
     }
     else {
-      pickIds.add(_currentPick.id);
+      pickIds.add(_currentPick!.id!);
     }
     // we will save the newly generated picks
     // so that we can add it back to the list
@@ -832,12 +832,12 @@ class _PickPageState extends State<PickPage> {
     on WebAPICallException catch(ex) {
         Navigator.of(context).pop();
         await showBlockedErrorDialog(context, ex.errMsg());
-        return false;
+        return;
     }
 
     printLongLogMessage("after cancelled the original pick ${pickIds}, we get ${newPicks.length} new picks");
     newPicks.forEach((newPick) {
-      printLongLogMessage("# new pick: ${newPick.number}, source location : ${newPick.sourceLocation.name}, quantity: ${newPick.quantity}");
+      printLongLogMessage("# new pick: ${newPick.number}, source location : ${newPick.sourceLocation?.name}, quantity: ${newPick.quantity}");
     });
 
     Navigator.of(context).pop();
@@ -855,7 +855,7 @@ class _PickPageState extends State<PickPage> {
   }
 
   void _skipCurrentPick() {
-    _currentPick.skipCount++;
+    _currentPick?.skipCount = _currentPick!.skipCount! + 1;
     var pickResult = PickResult.fromJson(
         {'result': true, 'confirmedQuantity': 0});
 
@@ -865,15 +865,15 @@ class _PickPageState extends State<PickPage> {
 
   void _setupPickableInventoryItemPackageType(Pick pick) {
     // get all the inventory from the pick's source location
-    int pickableQuantity = max(0, pick.quantity - pick.pickedQuantity);
+    int pickableQuantity = max(0, pick.quantity! - pick.pickedQuantity!);
     printLongLogMessage("start to get pickable inventory item package type for pick ${pick.number} with pickable quantity: ${pickableQuantity}");
     if (pickableQuantity > 0) {
       InventoryService.findPickableInventory(
-          pick.item.id,
-          pick.inventoryStatus.id,
-          color: pick.color != null &&  pick.color.isNotEmpty ? pick.color : "",
-          productSize: pick.productSize != null && pick.productSize.isNotEmpty ? pick.productSize : "",
-          style: pick.style != null && pick.style.isNotEmpty ? pick.style : "",
+          pick!.item!.id!,
+          pick!.inventoryStatus!.id!,
+          color: pick.color ?? "",
+          productSize: pick.productSize ?? "",
+          style:  pick.style ?? "",
           locationId: pick.sourceLocationId).then((inventoryInLocation){
          // for the pickable inventory , let's get the biggest possible
         // item unit of measure for each item package type(if mixed)
@@ -881,7 +881,7 @@ class _PickPageState extends State<PickPage> {
         // matches with name and quantity, then we will show it.
             Map<int, ItemPackageType> itemPackageTypeMap = new Map();
             inventoryInLocation.forEach((inventory) => itemPackageTypeMap.putIfAbsent(
-                inventory.itemPackageType.id, () => inventory.itemPackageType));
+                inventory!.itemPackageType!.id!, () => inventory!.itemPackageType!));
             printLongLogMessage(">> itemPackageTypeMap.isEmpty : ${itemPackageTypeMap.isEmpty} , itemPackageTypeMap.length  : ${itemPackageTypeMap.length}");
             if (itemPackageTypeMap.isEmpty || itemPackageTypeMap.length > 1) {
               _pickableInventoryItemPackageType = null;
@@ -889,7 +889,7 @@ class _PickPageState extends State<PickPage> {
             else {
               // there's only one item package type in the map
               _pickableInventoryItemPackageType = itemPackageTypeMap.values.toList().first;
-              printLongLogMessage("_pickableInventoryItemPackageType is setup to ${_pickableInventoryItemPackageType.name}");
+              printLongLogMessage("_pickableInventoryItemPackageType is setup to ${_pickableInventoryItemPackageType?.name}");
 
 
             }
@@ -909,19 +909,20 @@ class _PickPageState extends State<PickPage> {
     // save the quantity of each unit of measure  so we can
     // calculate how many of each unit of measure needed for the pick
     Map<int, ItemUnitOfMeasure> itemUnitOfMeasureMap = new Map();
-    _pickableInventoryItemPackageType.itemUnitOfMeasures.forEach((itemUnitOfMeasure) =>
-        itemUnitOfMeasureMap.putIfAbsent(itemUnitOfMeasure.quantity, () => itemUnitOfMeasure)
+    _pickableInventoryItemPackageType?.itemUnitOfMeasures.forEach((itemUnitOfMeasure) =>
+        itemUnitOfMeasureMap.putIfAbsent(itemUnitOfMeasure.quantity!, () => itemUnitOfMeasure)
     );
     List<int> itemUnitOfMeasureQuantityList = itemUnitOfMeasureMap.keys.toList()..sort((a, b) => b.compareTo(a));
 
     String pickByUnitOfMeasureIndicator = "";
     itemUnitOfMeasureQuantityList.forEach((itemUnitOfMeasureQuantity) {
-      if (quantity > 0 && itemUnitOfMeasureMap[itemUnitOfMeasureQuantity].quantity <= quantity) {
+      if (quantity > 0 && itemUnitOfMeasureMap[itemUnitOfMeasureQuantity]!.quantity! <= quantity) {
         // continue if we can pick at this item unit of measure
-        int pickQuantityAtUnitOfMeasure = (quantity ~/ itemUnitOfMeasureMap[itemUnitOfMeasureQuantity].quantity);
+        int pickQuantityAtUnitOfMeasure = (quantity ~/ itemUnitOfMeasureMap[itemUnitOfMeasureQuantity]!.quantity!);
 
-        pickByUnitOfMeasureIndicator += pickQuantityAtUnitOfMeasure.toString() + " " + itemUnitOfMeasureMap[itemUnitOfMeasureQuantity].unitOfMeasure.name + ", ";
-        quantity = quantity % itemUnitOfMeasureMap[itemUnitOfMeasureQuantity].quantity;
+        pickByUnitOfMeasureIndicator += pickQuantityAtUnitOfMeasure.toString() + " " +
+            itemUnitOfMeasureMap[itemUnitOfMeasureQuantity]!.unitOfMeasure!.name! + ", ";
+        quantity = quantity % itemUnitOfMeasureMap[itemUnitOfMeasureQuantity]!.quantity!;
       }
     });
     pickByUnitOfMeasureIndicator = pickByUnitOfMeasureIndicator.trim();
@@ -942,17 +943,17 @@ class _PickPageState extends State<PickPage> {
   setupControllers(Pick pick) {
 
     if(pick.confirmItemFlag == false) {
-      _itemController.text = pick.item.name;
+      _itemController.text = pick.item?.name ?? "";
     }
     printLongLogMessage("pick.confirmLocationFlag: ${pick.confirmLocationFlag}");
     printLongLogMessage("pick.confirmLocationCodeFlag: ${pick.confirmLocationCodeFlag}");
     if (pick.confirmLocationFlag == false &&
         pick.confirmLocationCodeFlag == false) {
-      _sourceLocationController.text = pick.sourceLocation.name;
+      _sourceLocationController.text = pick.sourceLocation?.name ?? "";
     }
-    if (pick.quantity > pick.pickedQuantity) {
+    if (pick.quantity! > pick!.pickedQuantity!) {
 
-      _quantityController.text = (pick.quantity - pick.pickedQuantity).toString();
+      _quantityController.text = (pick.quantity! - pick!.pickedQuantity!).toString();
     }
     else {
       _quantityController.text = "0";
@@ -988,7 +989,7 @@ class _PickPageState extends State<PickPage> {
     showLoading(context);
     WarehouseLocation warehouseLocation;
     try {
-      if (_currentPick.confirmLocationCodeFlag) {
+      if (_currentPick?.confirmLocationCodeFlag == true) {
         // ok, the pick is required to verify by location code, make sure
         // the user in put a location code
         warehouseLocation =
@@ -1016,7 +1017,7 @@ class _PickPageState extends State<PickPage> {
       await showBlockedErrorDialog(context, "can't find location by input value ${_sourceLocationController.text}");
       return false;
     }
-    else if (warehouseLocation.id != _currentPick.sourceLocationId) {
+    else if (warehouseLocation.id != _currentPick?.sourceLocationId) {
       await showBlockedErrorDialog(context, "Location ${_sourceLocationController.text} is not the right location for pick");
       return false;
 

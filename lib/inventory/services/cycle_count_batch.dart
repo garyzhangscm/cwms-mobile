@@ -24,9 +24,8 @@ class CycleCountBatchService {
 
 
     List<CycleCountBatch> cycleCountBatches
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : CycleCountBatch.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => CycleCountBatch.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     return cycleCountBatches;
   }
@@ -44,9 +43,8 @@ class CycleCountBatchService {
 
 
     List<CycleCountBatch> cycleCountBatches
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : CycleCountBatch.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => CycleCountBatch.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     return cycleCountBatches;
   }
@@ -63,16 +61,15 @@ class CycleCountBatchService {
 
 
     List<CycleCountBatch> cycleCountBatches
-    = (responseString["data"] as List)?.map((e) =>
-        e == null ? null : CycleCountBatch.fromJson(e as Map<String, dynamic>))
-            ?.toList();
+    = (responseString["data"] as List).map((e) => CycleCountBatch.fromJson(e as Map<String, dynamic>))
+            .toList();
 
     return cycleCountBatches;
   }
 
 
 
-  static Future<CycleCountBatch> getCycleCountBatchByBatchId(String batchId) async {
+  static Future<CycleCountBatch?> getCycleCountBatchByBatchId(String batchId) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -86,9 +83,8 @@ class CycleCountBatchService {
 
 
     List<CycleCountBatch> cycleCountBatches
-    = (responseString["data"] as List)?.map((e) =>
-        e == null ? null : CycleCountBatch.fromJson(e as Map<String, dynamic>))
-            ?.toList();
+    = (responseString["data"] as List).map((e) => CycleCountBatch.fromJson(e as Map<String, dynamic>))
+            .toList();
     if (cycleCountBatches.length == 1) {
       return cycleCountBatches[0];
     }

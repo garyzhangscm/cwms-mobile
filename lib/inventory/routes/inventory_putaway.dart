@@ -24,7 +24,7 @@ import '../../shared/models/barcode.dart';
 // with or without any pre-assigned destination
 class InventoryPutawayPage extends StatefulWidget{
 
-  InventoryPutawayPage({Key key}) : super(key: key);
+  InventoryPutawayPage({Key? key}) : super(key: key);
 
 
   @override
@@ -39,14 +39,14 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   GlobalKey _formKey = new GlobalKey<FormState>();
 
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   FocusNode lpnFocusNode = FocusNode();
 
   List<InventoryDepositRequest> _inventoryDepositRequests = [];
 
 
-  Timer _timer;  // timer to refresh inventory on RF every 2 second
+  Timer? _timer;  // timer to refresh inventory on RF every 2 second
 
   @override
   void initState() {
@@ -123,7 +123,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         ),
         // 校验用户名（不能为空）
         validator: (v) {
-          return v.trim().isNotEmpty ?
+          return v!.trim().isNotEmpty ?
               null :
               CWMSLocalizations.of(context)!.missingField(
                   CWMSLocalizations.of(context)!.lpn);
@@ -191,28 +191,6 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
   }
 
-  void _startLPNBarcodeScanner() async  {
-    String lpnScanned = await _startBarcodeScanner();
-    if (lpnScanned != "-1") {
-
-      _lpnController.text = lpnScanned;
-
-
-    }
-
-
-  }
-
-  Future<String> _startBarcodeScanner() async {
-    /**
-     *
-        String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
-        print("barcode scanned: $barcodeScanRes");
-        return barcodeScanRes;
-     * */
-
-  }
 
   void _onAddingLPN() async {
 
@@ -250,7 +228,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
     // showLoading(context);
     // move the inventory being scanned onto RF
     printLongLogMessage("==>> Start to adding LPN for deposit");
-    InventoryService.findInventory(lpn : inventoryDepositRequest.lpn, includeDetails: false)
+    InventoryService.findInventory(lpn : inventoryDepositRequest.lpn!, includeDetails: false)
         .then((inventories) async {
 
             if(inventories.isNotEmpty) {
@@ -266,10 +244,10 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                 printLongLogMessage("==>> start to move invenotry with id ${inventory.id} lpn ${inventory.lpn}");
 
                 await InventoryService.moveInventory(
-                      inventoryId: inventory.id,
+                      inventoryId: inventory.id!,
                       destinationLocation: rfLocation
                   );
-                totalInventoryQuantity += inventory.quantity;
+                totalInventoryQuantity += inventory.quantity!;
 
                 printLongLogMessage("==>> finish moving invenotry with id ${inventory.id} lpn ${inventory.lpn}");
               }
@@ -335,7 +313,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
               // do nothing as we already running out of retry time
               inventoryDepositRequest.requestInProcess = false;
               inventoryDepositRequest.requestResult = false;
-              inventoryDepositRequest.result = webAPICallException.errMsg() + ", LPN: " + inventoryDepositRequest.lpn;
+              inventoryDepositRequest.result = webAPICallException.errMsg() + ", LPN: " + inventoryDepositRequest.lpn!;
 
               setState(() {
                 _inventoryDepositRequests;
@@ -345,7 +323,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
               inventoryDepositRequest.requestInProcess = false;
               inventoryDepositRequest.requestResult = false;
-              inventoryDepositRequest.result =err.toString() + ", LPN: " + inventoryDepositRequest.lpn;
+              inventoryDepositRequest.result =err.toString() + ", LPN: " + inventoryDepositRequest.lpn!;
 
               setState(() {
                 _inventoryDepositRequests;
@@ -430,7 +408,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             fit: StackFit.expand, //未定位widget占满Stack整个空间
             children: <Widget>[
               ListTile(
-                title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn),
+                title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn!),
                 subtitle:
                 Column(
                     children: <Widget>[
@@ -446,7 +424,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                                 )
                             ),
                             Text(
-                                _inventoryDepositRequests[index].itemName,
+                                _inventoryDepositRequests[index].itemName!,
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -504,7 +482,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             height: 75,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn!),
               subtitle:
               Column(
                   children: <Widget>[
@@ -520,7 +498,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                               )
                           ),
                           Text(
-                              _inventoryDepositRequests[index].itemName,
+                              _inventoryDepositRequests[index].itemName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -561,13 +539,13 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         );
     }
     else {
-      double height = min(75 + (_inventoryDepositRequests[index].result.length / 50) * 15, 120);
+      double height = min(75 + (_inventoryDepositRequests[index].result!.length! / 50) * 15, 120);
       return
         SizedBox(
             height: height,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn!),
               subtitle:
               Column(
                   children: <Widget>[
@@ -583,7 +561,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                               )
                           ),
                           Text(
-                              _inventoryDepositRequests[index].itemName,
+                              _inventoryDepositRequests[index].itemName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,

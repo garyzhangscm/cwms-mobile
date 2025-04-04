@@ -238,12 +238,12 @@ class _InboundQCPageState extends State<InboundQCPage> {
     setState(() {
 
 
-      _itemName = inventory.item.name ?? "";
-      _itemDescription = inventory.item.description ?? "";
-      _lpn = inventory.lpn;
+      _itemName = inventory.item!.name ?? "";
+      _itemDescription = inventory.item!.description ?? "";
+      _lpn = inventory!.lpn!;
 
       // check if the inventory needs qc
-      if (!inventory.inboundQCRequired) {
+      if (inventory.inboundQCRequired == false) {
         // showWarningDialog(context,  CWMSLocalizations.of(context).inventoryNotQCRequired);
         _readyForQCResult = false;
       }
@@ -329,14 +329,14 @@ class _InboundQCPageState extends State<InboundQCPage> {
                         });
                       },
                       title: Text(
-                        inventoryList[index].lpn ,
+                        inventoryList[index].lpn ?? "",
                         style: TextStyle(
                           height: 1.15,
                           color: Colors.blueGrey[700],
                           fontSize: 17,
                         ),
                       ),
-                      subtitle: Text(inventoryList[index].item.description ?? ""),
+                      subtitle: Text(inventoryList[index].item?.description ?? ""),
                     )
                 );
 

@@ -15,14 +15,14 @@ class CountBatchListItem extends StatefulWidget {
 
        @required this.onRemove,
        @required this.onToggleHightlighted}
-       ) : super(key: ValueKey(countBatch.batchId));
+       ) : super(key: ValueKey(countBatch!.batchId));
 
-  final ValueChanged<int> onRemove;
-  final ValueChanged<bool> onToggleHightlighted;
+  final ValueChanged<int>? onRemove;
+  final ValueChanged<bool>? onToggleHightlighted;
 
-  final int index;
-  final CycleCountBatch countBatch;
-  final bool displayOnlyFlag;
+  final int? index;
+  final CycleCountBatch? countBatch;
+  final bool? displayOnlyFlag;
   // whether we display the information for
   // audit count or cycle count
   final bool auditCountFlag;
@@ -41,8 +41,8 @@ class _CountBatchListItemState extends State<CountBatchListItem> {
 
 
   void _removeOrderFromlist() {
-    if (!widget.displayOnlyFlag) {
-      widget.onRemove(widget.index);
+    if (widget.displayOnlyFlag == false) {
+      widget.onRemove!(widget!.index!);
     }
   }
   void _onToggleHightlighted() {
@@ -50,7 +50,7 @@ class _CountBatchListItemState extends State<CountBatchListItem> {
       setState(() {
         widget.highlighted = !widget.highlighted;
       });
-      widget.onToggleHightlighted(widget.highlighted);
+      widget.onToggleHightlighted!(widget.highlighted);
     }
   }
 
@@ -62,8 +62,8 @@ class _CountBatchListItemState extends State<CountBatchListItem> {
         // If the user highlight the widget, display green
         // otherwise if there's no open pick, display grey
         color: widget.highlighted ? Colors.lightGreen:
-        ((widget.countBatch.openLocationCount == 0  && widget.cycleCountFlag == true) ||
-            (widget.countBatch.openAuditLocationCount == 0  && widget.auditCountFlag == true)) ?
+        ((widget.countBatch?.openLocationCount == 0  && widget.cycleCountFlag == true) ||
+            (widget.countBatch?.openAuditLocationCount == 0  && widget.auditCountFlag == true)) ?
               Colors.grey : Colors.white,
         shape: BorderDirectional(
           bottom: BorderSide(
@@ -84,7 +84,7 @@ class _CountBatchListItemState extends State<CountBatchListItem> {
                   //     widget.order.totalOpenPickQuantity == 0 ?
                   //                Colors.grey : Colors.white,
                   title: Text(
-                    widget.countBatch.batchId,
+                    widget.countBatch!.batchId ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,
@@ -94,7 +94,7 @@ class _CountBatchListItemState extends State<CountBatchListItem> {
 
                   ),
                   trailing:
-                    widget.displayOnlyFlag ?
+                    widget.displayOnlyFlag == true?
                       Text("") :
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -106,11 +106,11 @@ class _CountBatchListItemState extends State<CountBatchListItem> {
                         ]
                       ),
                   subtitle: Text(
-                      widget.countBatch.openLocationCount.toString() + " / " +
-                          widget.countBatch.finishedLocationCount.toString() + " / " +
-                          widget.countBatch.cancelledLocationCount.toString() + " / " +
-                          widget.countBatch.openAuditLocationCount.toString() + " / " +
-                          widget.countBatch.finishedAuditLocationCount.toString()
+                      widget.countBatch!.openLocationCount.toString() + " / " +
+                          widget.countBatch!.finishedLocationCount.toString() + " / " +
+                          widget.countBatch!.cancelledLocationCount.toString() + " / " +
+                          widget.countBatch!.openAuditLocationCount.toString() + " / " +
+                          widget.countBatch!.finishedAuditLocationCount.toString()
                   ),
                 ),
               ],

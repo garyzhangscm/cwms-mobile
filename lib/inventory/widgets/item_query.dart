@@ -11,14 +11,14 @@ import 'package:flutter/material.dart';
 
 
 class ItemQuery extends StatefulWidget {
-  ItemQuery({this.itemNumberController,
-        this.autofocus = true, this.onItemSelected,
-        this.focusNode,
-        this.validator, Key key}) : super(key: key);
+  ItemQuery({required this.itemNumberController,
+        this.autofocus = true, required this.onItemSelected,
+        required this.focusNode,
+        required this.validator, Key? key}) : super(key: key);
 
 
   final TextEditingController itemNumberController;
-  final bool autofocus;
+  final bool? autofocus;
 
   final FocusNode focusNode;
 
@@ -53,7 +53,7 @@ class _ItemQueryState extends State<ItemQuery> {
         TextFormField(
             controller: widget.itemNumberController,
             validator: widget.validator,
-            autofocus: widget.autofocus,
+            autofocus: widget.autofocus == true? true : false,
             focusNode: widget.focusNode,
             decoration: InputDecoration(
               suffixIcon:
@@ -106,9 +106,9 @@ class _ItemQueryState extends State<ItemQuery> {
                                     itemBuilder: (_, index) {
                                       return ListTile(
                                         title: Text(
-                                            _matchedItemList[index].name),
+                                            _matchedItemList[index].name ?? ""),
                                         subtitle: Text(_matchedItemList[index]
-                                            .description),
+                                            .description ?? ""),
                                         onTap: () {
                                           _selectItem(index);
                                         },
@@ -150,7 +150,7 @@ class _ItemQueryState extends State<ItemQuery> {
 
   _selectItem(int index) {
     printLongLogMessage("_selectItem WITH index ${index}");
-    widget.itemNumberController.text = _matchedItemList[index].name;
+    widget.itemNumberController.text = _matchedItemList[index].name ?? "";
     _onItemSelected(_matchedItemList[index]);
     Navigator.of(context).pop();
   }

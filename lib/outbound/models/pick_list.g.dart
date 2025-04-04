@@ -11,9 +11,9 @@ PickList _$PickListFromJson(Map<String, dynamic> json) {
     ..id = json['id'] as int
     ..number = json['number'] as String
     ..picks = (json['picks'] as List)
-        ?.map(
-            (e) => e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+        .map(
+            (e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 }
 
 Map<String, dynamic> _$PickListToJson(PickList instance) => <String, dynamic>{

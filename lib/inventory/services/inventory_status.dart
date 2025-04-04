@@ -68,9 +68,8 @@ class InventoryStatusService {
 
 
     List<InventoryStatus> inventoryStatuses
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : InventoryStatus.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => InventoryStatus.fromJson(e as Map<String, dynamic>))
+          .toList();
 
 
 
@@ -78,7 +77,7 @@ class InventoryStatusService {
   }
 
 
-  static Future<InventoryStatus> getInventoryStatusByName(String name) async {
+  static Future<InventoryStatus?> getInventoryStatusByName(String name) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -94,9 +93,8 @@ class InventoryStatusService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<InventoryStatus> inventoryStatuses
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : InventoryStatus.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+    = (responseString["data"] as List).map((e) => InventoryStatus.fromJson(e as Map<String, dynamic>))
+          .toList();
     printLongLogMessage("items.length: ${inventoryStatuses.length}");
 
     if (inventoryStatuses.length == 1) {
@@ -108,7 +106,7 @@ class InventoryStatusService {
   }
 
 
-  static Future<InventoryStatus> getAvaiableInventoryStatus() async {
+  static Future<InventoryStatus?> getAvaiableInventoryStatus() async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -135,7 +133,7 @@ class InventoryStatusService {
   // get default inventory status for new inventory, from a list of inventory status
   // 1. available inventory
   // 2. first inventory status in the list
-  static InventoryStatus getDefaultInventoryStatusForNewInventory(List<InventoryStatus> inventoryStatuses) {
+  static InventoryStatus? getDefaultInventoryStatusForNewInventory(List<InventoryStatus> inventoryStatuses) {
     if (inventoryStatuses.isEmpty) {
       return null;
     }

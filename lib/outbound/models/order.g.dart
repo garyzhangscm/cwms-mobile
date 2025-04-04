@@ -44,9 +44,9 @@ Order _$OrderFromJson(Map<String, dynamic> json) {
         ? null
         : CarrierServiceLevel.fromJson(json['carrierServiceLevel'] as Map<String, dynamic>)
     ..orderLines = (json['orderLines'] as List)
-        ?.map(
-            (e) => e == null ? null : OrderLine.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) => OrderLine.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..totalLineCount = json['totalLineCount'] as int
     ..totalItemCount = json['totalItemCount'] as int
     ..totalExpectedQuantity = json['totalExpectedQuantity'] as int

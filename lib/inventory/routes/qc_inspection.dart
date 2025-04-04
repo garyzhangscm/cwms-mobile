@@ -15,7 +15,7 @@ import '../models/qc_rule_item_type.dart';
 
 class QCInspectionPage extends StatefulWidget{
 
-  QCInspectionPage({Key key}) : super(key: key);
+  QCInspectionPage({Key? key}) : super(key: key);
 
 
   @override
@@ -25,8 +25,8 @@ class QCInspectionPage extends StatefulWidget{
 
 class _QCInspectionPageState extends State<QCInspectionPage> {
 
-  int _qcInspectionRequestItemIndex;
-  QCInspectionRequest _qcInspectionRequest;
+  int? _qcInspectionRequestItemIndex;
+  QCInspectionRequest? _qcInspectionRequest;
   TextEditingController _qcQuantityController = new TextEditingController();
   final  _formKey = GlobalKey<FormState>();
 
@@ -48,8 +48,8 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   @override
   Widget build(BuildContext context) {
 
-    _qcInspectionRequest  = ModalRoute.of(context).settings.arguments;
-    _qcQuantityController.text = _qcInspectionRequest.qcQuantity.toString();
+    _qcInspectionRequest  = ModalRoute.of(context)?.settings.arguments as QCInspectionRequest;
+    _qcQuantityController.text = _qcInspectionRequest!.qcQuantity.toString();
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -61,7 +61,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
             Column(
                 children: [
                   // for work order qc, we will show the input to let the user input the qc quantity
-                  _qcInspectionRequest.workOrderQCSampleId == null ?
+                  _qcInspectionRequest!.workOrderQCSampleId == null ?
                   Container() :
                   _buildQCQuantity(context),
                   _buildQCItemName(context),
@@ -81,7 +81,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
               controller: _qcQuantityController,
               keyboardType: TextInputType.number,
               onChanged: (text) {
-                _qcInspectionRequest.qcQuantity = int.parse(text);
+                _qcInspectionRequest!.qcQuantity = int.parse(text);
               },
 
           ));
@@ -91,9 +91,9 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     return
       Row(
           children: <Widget>[
-            Text(_qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex].qcRule.name,
+            Text(_qcInspectionRequest!.qcInspectionRequestItems[_qcInspectionRequestItemIndex!].qcRule!.name ?? "",
                 textAlign: TextAlign.left,
-                 style: Theme.of(context).textTheme.headline5,
+                 style: Theme.of(context).textTheme.headlineSmall,
             ),
           ]
       );
@@ -102,7 +102,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   Widget _buildQCItemOptionList(BuildContext context) {
 
     List<QCInspectionRequestItemOption> enabledQCInspectionRequestItemOptions =
-        getEnabledQCItemOptions(_qcInspectionRequest.qcInspectionRequestItems[_qcInspectionRequestItemIndex]);
+        getEnabledQCItemOptions(_qcInspectionRequest!.qcInspectionRequestItems[_qcInspectionRequestItemIndex!]);
 
     return
       Expanded(
@@ -126,22 +126,22 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   }
 
   Object _getOptionValue(QCInspectionRequestItemOption option) {
-    switch(option.qcRuleItem.qcRuleItemType) {
+    switch(option.qcRuleItem?.qcRuleItemType) {
       case QCRuleItemType.NUMBER:
-        return option.doubleValue;
+        return option.doubleValue!;
         break;
       case QCRuleItemType.STRING:
-        return option.stringValue;
+        return option.stringValue!;
         break;
 
       default:
-        return option.booleanValue;
+        return option.booleanValue!;
 
     }
   }
 
   List<QCInspectionRequestItemOption> getEnabledQCItemOptions(QCInspectionRequestItem qcItem) {
-    return qcItem.qcInspectionRequestItemOptions.where((option) => option.qcRuleItem.enabled
+    return qcItem.qcInspectionRequestItemOptions.where((option) => option.qcRuleItem?.enabled == true
     ).toList();
   }
 
@@ -155,7 +155,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
             onPressed: _onCancel,
             child: Text(CWMSLocalizations.of(context)!.cancel)
         ),
-        _qcInspectionRequestItemIndex < _qcInspectionRequest.qcInspectionRequestItems.length - 1 ?
+        _qcInspectionRequestItemIndex! < _qcInspectionRequest!.qcInspectionRequestItems.length - 1 ?
             _buildNextQCInspectionRequestItemButton(context) :
             _buildComfirmButton(context),
 
@@ -184,7 +184,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     showLoading(context);
     try {
 
-      await QCInspectionService.saveQCInspectionRequest([_getQCInspectionResult(_qcInspectionRequest)]);
+      await QCInspectionService.saveQCInspectionRequest([_getQCInspectionResult(_qcInspectionRequest!)]);
 
       // flow to the previous page after we saved the result
 
@@ -215,7 +215,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       int failedQCInspectionRequestItemOption = 0;
       int pendingQCInspectionRequestItemOption = 0;
       qcInspectionRequestItem.qcInspectionRequestItemOptions.forEach((qcInspectionRequestItemOption) {
-          if (!qcInspectionRequestItemOption.qcRuleItem.enabled) {
+          if (qcInspectionRequestItemOption.qcRuleItem?.enabled == false) {
             // if the item is disabled, then the user won't need to do QC on the item
             // it is a pass by default
             qcInspectionRequestItemOption.qcInspectionResult = QCInspectionResult.PASS;
@@ -278,7 +278,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   }
   void _onNextQCInspectionRequestItem() {
     setState(() {
-      _qcInspectionRequestItemIndex++;
+      _qcInspectionRequestItemIndex = _qcInspectionRequestItemIndex! + 1;
     });
   }
   void _onCancel() {

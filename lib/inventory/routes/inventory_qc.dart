@@ -16,7 +16,7 @@ import '../../shared/models/barcode.dart';
 // with or without any pre-assigned destination
 class InventoryQCPage extends StatefulWidget{
 
-  InventoryQCPage({Key key}) : super(key: key);
+  InventoryQCPage({Key? key}) : super(key: key);
 
 
   @override
@@ -29,13 +29,13 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
   // allow user to scan in LPN
   TextEditingController _lpnController = new TextEditingController();
 
-  String _itemName;
-  String _itemDescription;
-  String _lpn;
+  String? _itemName;
+  String? _itemDescription;
+  String? _lpn;
   bool _readyForQCResult = false;
-  Inventory _inventoryForQC;
+  Inventory? _inventoryForQC;
   int _selectedInventoryIndex = 0;
-  List<QCInspectionRequest> qcInspectionRequests;
+  List<QCInspectionRequest> qcInspectionRequests = [];
 
 
   FocusNode _lpnFocusNode = FocusNode();
@@ -94,12 +94,11 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
               children: [
                 _buildLPNScanner(context),
                 _buildButtons(context),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.lpn, _lpn),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.item, _itemName),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.item, _itemDescription),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.lpn, _lpn ?? ""),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.item, _itemName ?? ""),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.item, _itemDescription ?? ""),
                 buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.lastQCTime,
-                    _inventoryForQC?.lastQCTime?.toLocal()?.toString() == null ? "" :
-                    _inventoryForQC?.lastQCTime?.toLocal()?.toString()
+                    _inventoryForQC?.lastQCTime?.toLocal().toString() ?? ""
                 ),
                 buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.inventoryNeedQC,
                     _readyForQCResult ? CWMSLocalizations.of(context)!.yes : CWMSLocalizations.of(context)!.no),
@@ -220,14 +219,14 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
         if (inventoryList.length == 1) {
           // ok, we find only one
           _inventoryForQC = inventoryList.first;
-          await setupDisplay(_inventoryForQC);
+          await setupDisplay(_inventoryForQC!);
         }
         else if (inventoryList.length > 1) {
           // now we only allow qc by inventory, prompt dialog to let the user
           // choose only one inventory
           _showInventoryDialog(inventoryList);
           if (_inventoryForQC != null) {
-            await setupDisplay(_inventoryForQC);
+            await setupDisplay(_inventoryForQC!);
           }
         }
 
@@ -247,7 +246,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
   setupDisplay(Inventory inventory) async {
 
 
-    if (_inventoryForQC.lastQCTime == null) {
+    if (_inventoryForQC?.lastQCTime == null) {
 
       qcInspectionRequests =
           await InventoryService.getManualQCInspectionRequest(inventory);
@@ -256,8 +255,8 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
     setState(()  {
 
 
-      _itemName = inventory.item.name;
-      _itemDescription = inventory.item.description;
+      _itemName = inventory.item!.name;
+      _itemDescription = inventory.item!.description;
       _lpn = inventory.lpn;
 
 
@@ -347,14 +346,14 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
                         });
                       },
                       title: Text(
-                        inventoryList[index].lpn ,
+                        inventoryList[index].lpn ?? "",
                         style: TextStyle(
                           height: 1.15,
                           color: Colors.blueGrey[700],
                           fontSize: 17,
                         ),
                       ),
-                      subtitle: Text(inventoryList[index].item.description),
+                      subtitle: Text(inventoryList[index].item?.description ?? ""),
                     )
                 );
 

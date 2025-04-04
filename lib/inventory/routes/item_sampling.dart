@@ -21,7 +21,7 @@ import 'package:image_picker/image_picker.dart';
 // with or without any pre-assigned destination
 class ItemSamplingPage extends StatefulWidget{
 
-  ItemSamplingPage({Key key}) : super(key: key);
+  ItemSamplingPage({Key? key}) : super(key: key);
 
 
   @override
@@ -35,7 +35,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
   TextEditingController _itemNameController = new TextEditingController();
   TextEditingController _itemSamplingNumberController = new TextEditingController();
 
-  ItemSampling _currentItemSampling;
+  ItemSampling? _currentItemSampling;
   bool _newItemSampling = true;
 
   FocusNode _itemNameFocusNode = FocusNode();
@@ -99,16 +99,15 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
                 showKeyboard: false,
                 focusNode: _itemSamplingNumberFocusNode,
                 autofocus: true,
-                onValueChanged: (value) => _itemSamplingNumberChanged(value)
+                onValueChanged: (value) => _itemSamplingNumberChanged(value!)
               ),
             ),
             buildTwoSectionInformationRow(
                   CWMSLocalizations.of(context)!.item,
-                  _currentItemSampling.item.name
+                  _currentItemSampling?.item?.name ?? ""
             ),
             buildTwoSectionInformationRow(
-                CWMSLocalizations.of(context)!.item,
-                _currentItemSampling == null ? "" : _currentItemSampling.item.description
+                CWMSLocalizations.of(context)!.item, _currentItemSampling?.item?.description ?? ""
             ),
             _buildItemSamplingImages(),
 
@@ -155,7 +154,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
   _onAddNewItemSampling(){
     setState(() {
 
-      _currentItemSampling = ItemSampling.fromItem(Global.currentWarehouse.id, _currentItemSampling.item);
+      _currentItemSampling = ItemSampling.fromItem(Global.currentWarehouse.id, _currentItemSampling!.item!);
       _newItemSampling = true;
       _itemSamplingNumberController.clear();
     });
@@ -203,7 +202,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
         setState(() {
           _currentItemSampling;
           _newItemSampling;
-          _itemSamplingNumberController.text = _currentItemSampling.number;
+          _itemSamplingNumberController.text = _currentItemSampling?.number ?? "";
           _itemNameController.clear();
         });
 
@@ -244,10 +243,10 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
                     // check if we will need to load from local storage or network
                     // _localFile map stores the file name as the key and the file path as the value
                     _localFile.containsKey(imageUrl) ?
-                    Image.file(File(_localFile[imageUrl]))
+                    Image.file(File(_localFile[imageUrl]!))
                         :
                     Image.network(
-                        Global.currentServer.url + "inventory/item-sampling/images/${Global.currentWarehouse.id}/${_currentItemSampling.item.id}/${_currentItemSampling.number}/$imageUrl",
+                        Global.currentServer.url + "inventory/item-sampling/images/${Global.currentWarehouse.id}/${_currentItemSampling!.item!.id}/${_currentItemSampling!.number}/$imageUrl",
                         fit: BoxFit.cover, width: 1000,
                         headers: {
                           HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
@@ -288,12 +287,12 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
       _localFile.remove(imageFileName);
 
       // remove the file from the list and fix the comma
-      _currentItemSampling.imageUrls = _currentItemSampling.imageUrls.replaceAll(imageFileName, "");
-      if (_currentItemSampling.imageUrls.startsWith(",")) {
-        _currentItemSampling.imageUrls = _currentItemSampling.imageUrls.substring(1);
+      _currentItemSampling!.imageUrls = _currentItemSampling!.imageUrls!.replaceAll(imageFileName, "");
+      if (_currentItemSampling!.imageUrls!.startsWith(",")) {
+        _currentItemSampling!.imageUrls = _currentItemSampling!.imageUrls!.substring(1);
       }
-      if (_currentItemSampling.imageUrls.endsWith(",")) {
-        _currentItemSampling.imageUrls = _currentItemSampling.imageUrls.substring(0, _currentItemSampling.imageUrls.length - 1);
+      if (_currentItemSampling!.imageUrls!.endsWith(",")) {
+        _currentItemSampling!.imageUrls = _currentItemSampling!.imageUrls!.substring(0, _currentItemSampling!.imageUrls!.length - 1);
       }
 
     });
@@ -305,9 +304,9 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
     List<String>  itemSamplingImageUrls = [];
 
     if (_currentItemSampling != null &&
-        _currentItemSampling.imageUrls.isNotEmpty) {
+        _currentItemSampling!.imageUrls!.isNotEmpty) {
       // we have files from the server, let's add it to the list
-      itemSamplingImageUrls.addAll(_currentItemSampling.imageUrls.split(","));
+      itemSamplingImageUrls.addAll(_currentItemSampling!.imageUrls!.split(","));
     }
     // add the local uploaded file
     if (_localFile.isNotEmpty) {
@@ -385,8 +384,8 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
     // otherwise, we will upload teh file to a folder that belongs to the item sampling
     String fileUploadUrl =
         _newItemSampling ?
-        "inventory/item-sampling/${_currentItemSampling.item.id}/images" :
-        "inventory/item-sampling/${_currentItemSampling.item.id}/${_currentItemSampling.number}/images";
+        "inventory/item-sampling/${_currentItemSampling!.item!.id}/images" :
+        "inventory/item-sampling/${_currentItemSampling!.item!.id}/${_currentItemSampling!.number}/images";
     String filename = await uploadFile(imageFile, fileUploadUrl);
 
     setState(() {
@@ -411,11 +410,11 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
   _onConfirm() async {
     // setup the image list for the _workOrderQCSample object
     if (_localFile.isNotEmpty) {
-      if (_currentItemSampling.imageUrls.isEmpty) {
-        _currentItemSampling.imageUrls = _localFile.keys.join(",");
+      if (_currentItemSampling!.imageUrls!.isEmpty) {
+        _currentItemSampling!.imageUrls = _localFile.keys.join(",");
       }
       else {
-        _currentItemSampling.imageUrls += "," + _localFile.keys.join(",");
+        _currentItemSampling!.imageUrls  = _currentItemSampling!.imageUrls! + "," + _localFile.keys.join(",");
       }
     }
 
@@ -425,13 +424,13 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
 
     // make sure the number doesn't exists yet
     showLoading(context);
-    _currentItemSampling.number = _itemSamplingNumberController.text;
+    _currentItemSampling!.number = _itemSamplingNumberController.text;
 
     if (_newItemSampling == true) {
       // we are adding a new work order qc sample, make sure the number doesn't exists yet
       try {
         ItemSampling itemSampling =
-        await ItemSamplingService.getItemSamplingByNumber(_currentItemSampling.number);
+        await ItemSamplingService.getItemSamplingByNumber(_currentItemSampling!.number!);
         if (itemSampling != null) {
           // ok we are supposed to create a new work order sample but it already exists, let's
           // raise an error
@@ -454,10 +453,10 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
     try {
       if (_newItemSampling) {
 
-        await ItemSamplingService.addItemSampling(_currentItemSampling);
+        await ItemSamplingService.addItemSampling(_currentItemSampling!);
       }
       else {
-        await ItemSamplingService.changeItemSampling(_currentItemSampling);
+        await ItemSamplingService.changeItemSampling(_currentItemSampling!);
 
       }
 

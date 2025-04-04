@@ -22,18 +22,18 @@ class AuditCountListItem extends StatefulWidget {
     this.onRemove, this.onInventoryStatusValueChange,
     this.onItemPackageTypeValueChange,
     @required this.onQuantityValueChange}
-       ) : super(key: ValueKey(auditCountResult.id));
+       ) : super(key: ValueKey(auditCountResult!.id));
 
 
-  final ValueChanged<String> onQuantityValueChange;
-  final ValueChanged<Item> onItemValueChange;
-  final ValueChanged<InventoryStatus> onInventoryStatusValueChange;
-  final ValueChanged<ItemPackageType> onItemPackageTypeValueChange;
-  final ValueChanged<String> onLPNValueChange;
-  final ValueChanged<int> onRemove;
+  final ValueChanged<String>? onQuantityValueChange;
+  final ValueChanged<Item>? onItemValueChange;
+  final ValueChanged<InventoryStatus>? onInventoryStatusValueChange;
+  final ValueChanged<ItemPackageType>? onItemPackageTypeValueChange;
+  final ValueChanged<String>? onLPNValueChange;
+  final ValueChanged<int>? onRemove;
 
-  final int index;
-  final AuditCountResult auditCountResult;
+  final int? index;
+  final AuditCountResult? auditCountResult;
 
 
 
@@ -50,10 +50,10 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
 
-  List<InventoryStatus> _validInventoryStatus;
-  InventoryStatus _selectedInventoryStatus;
-  ItemPackageType _selectedItemPackageType;
-  Item _unexpectedItem;
+  List<InventoryStatus> _validInventoryStatus = [];
+  InventoryStatus? _selectedInventoryStatus;
+  ItemPackageType? _selectedItemPackageType;
+  Item? _unexpectedItem;
 
 
   @override
@@ -69,7 +69,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
       _validInventoryStatus = value;
       if (_validInventoryStatus.length > 0) {
         _selectedInventoryStatus = _validInventoryStatus[0];
-        _onInventoryStatusValueChange(_selectedInventoryStatus.name);
+        _onInventoryStatusValueChange(_selectedInventoryStatus!.name!);
       }
     });
 
@@ -83,7 +83,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
         _unexpectedItem = item;
       });
 
-      widget.onItemValueChange(item);
+      widget.onItemValueChange!(item!);
     });
   }
 
@@ -91,7 +91,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
     printLongLogMessage("inventory status changed to $value");
     InventoryStatusService.getInventoryStatusByName(value)
         .then((inventoryStatus) {
-            widget.onInventoryStatusValueChange(inventoryStatus);
+            widget.onInventoryStatusValueChange!(inventoryStatus!);
 
     });
   }
@@ -101,10 +101,10 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
 
     if (_unexpectedItem != null ) {
       ItemPackageType itemPackageType
-          = _unexpectedItem.itemPackageTypes.firstWhere(
+          = _unexpectedItem!.itemPackageTypes.firstWhere(
               (itemPackageType) => itemPackageType.name == value);
       if (itemPackageType != null) {
-          widget.onItemPackageTypeValueChange(itemPackageType);
+          widget.onItemPackageTypeValueChange!(itemPackageType);
 
       }
     }
@@ -116,15 +116,15 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
     printLongLogMessage("lpn changed to $value");
 
 
-      widget.onLPNValueChange(value);
+      widget.onLPNValueChange!(value);
 
   }
 
   void _onQuantityValueChange(String value) {
-    widget.onQuantityValueChange(value);
+    widget.onQuantityValueChange!(value);
   }
   void _removeAuditResultFromlist() {
-    widget.onRemove(widget.index);
+    widget.onRemove!(widget.index!);
   }
 
 
@@ -180,7 +180,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
 
                   // if the cycle count result doesn't have item,
                   // it means the locaiton doesn't any inventory
-                  widget.auditCountResult.unexpectedItem == true ?
+                  widget.auditCountResult!.unexpectedItem == true ?
                     new Expanded(
                       child:
                       Focus(
@@ -195,7 +195,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       )
                     )
                         :
-                    Text(widget.auditCountResult.lpn)
+                    Text(widget!.auditCountResult!.lpn ?? "")
               ),
               /***
               Padding(
@@ -236,7 +236,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
 
                   // if the cycle count result doesn't have item,
                   // it means the locaiton doesn't any inventory
-                  widget.auditCountResult.unexpectedItem == true ?
+                  widget.auditCountResult!.unexpectedItem == true ?
                     new Expanded(
                         child: TextFormField(
                           textAlign: TextAlign.end,
@@ -258,7 +258,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                         )
                     )
                         :
-                    Text(widget.auditCountResult.inventory.item.name)
+                    Text(widget.auditCountResult?.inventory?.item?.name ?? "")
               ),
               /***
               Padding(
@@ -303,10 +303,10 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               **/
               // Item Description Controller
               buildTwoSectionInputRow(CWMSLocalizations.of(context)!.item,
-                  widget.auditCountResult.unexpectedItem == true ?
-                    Text(_unexpectedItem == null ? "" : _unexpectedItem.description)
+                  widget.auditCountResult!.unexpectedItem == true ?
+                    Text( _unexpectedItem?.description ?? "")
                         :
-                    Text(widget.auditCountResult.inventory.item.description)
+                    Text(widget.auditCountResult?.inventory?.item?.description ?? "")
               ),
               /**
               Padding(
@@ -331,7 +331,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               **/
               // item package type
               buildTwoSectionInputRow(CWMSLocalizations.of(context)!.itemPackageType,
-                  widget.auditCountResult.unexpectedItem == true ?
+                  widget.auditCountResult!.unexpectedItem == true ?
                     Expanded(
                         child:
                         DropdownButtonFormField<ItemPackageType>(
@@ -353,7 +353,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                             validator: (v) {
                               // if we specify a item, either by manually input
                               // or an existing item, we will force the user to type in the quantity
-                              if (v == null || v.name.isEmpty) {
+                              if (v == null || v!.name?.isEmpty == true) {
                                 return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.itemPackageType);
                               }
                               return null;
@@ -361,7 +361,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                         )
                     )
                         :
-                    Text(widget.auditCountResult.inventory.itemPackageType.name)
+                    Text(widget.auditCountResult?.inventory?.itemPackageType?.name ?? "")
               ),
               /**
               Padding(
@@ -418,7 +418,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               **/
               //Inventory Status
               buildTwoSectionInputRow(CWMSLocalizations.of(context)!.inventoryStatus,
-                  widget.auditCountResult.unexpectedItem == true ?
+                  widget.auditCountResult!.unexpectedItem == true ?
                     Expanded(
                         child:
                         DropdownButtonFormField<InventoryStatus>(
@@ -431,17 +431,17 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                               Icons.list,
                               size: 20,
                             ),
-                            onChanged: (T) {
-                              _onInventoryStatusValueChange(T.name);
+                            onChanged: (InventoryStatus? value) {
+                              _onInventoryStatusValueChange(value!.name!);
                               //下拉菜单item点击之后的回调
                               setState(() {
-                                _selectedInventoryStatus = T;
+                                _selectedInventoryStatus = value;
                               });
                             },
                             validator: (v) {
                               // if we specify a item, either by manually input
                               // or an existing item, we will force the user to type in the quantity
-                              if (v == null  || v.name.isEmpty) {
+                              if (v == null  || v!.name?.isEmpty == true) {
                                 return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.inventoryStatus);
                               }
                               return null;
@@ -449,7 +449,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                         )
                     )
                         :
-                    Text(widget.auditCountResult.inventory.itemPackageType.name)
+                    Text(widget.auditCountResult?.inventory?.itemPackageType?.name ?? "")
               ),
               /***
               Padding(
@@ -517,8 +517,8 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       // if we specify a item, either by manually input
                       // or an existing item, we will force the user to type in the quantity
                       if (( _itemController.text.isNotEmpty ||
-                          widget.auditCountResult.unexpectedItem != true ) &&
-                          v.trim() == "") {
+                          widget.auditCountResult!.unexpectedItem != true ) &&
+                          v!.trim() == "") {
                         return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.countQuantity);
                       }
                       return null;
@@ -579,29 +579,29 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
   List<DropdownMenuItem<ItemPackageType>> _getItemPackageTypeItems() {
     List<DropdownMenuItem<ItemPackageType>> items = [];
 
-    if (_unexpectedItem == null || _unexpectedItem.itemPackageTypes == null) {
+    if (_unexpectedItem == null || _unexpectedItem!.itemPackageTypes == null) {
       return items;
     }
-    if (_unexpectedItem.itemPackageTypes != null &&
-            _unexpectedItem.itemPackageTypes.length > 0) {
+    if (_unexpectedItem!.itemPackageTypes != null &&
+            _unexpectedItem!.itemPackageTypes.length > 0) {
       // _selectedItemPackageType = _unexpectedItem.itemPackageTypes[0];
       // _onItemPackageTypeValueChange(_selectedItemPackageType.name);
 
-      for (int i = 0; i < _unexpectedItem.itemPackageTypes.length; i++) {
+      for (int i = 0; i < _unexpectedItem!.itemPackageTypes.length; i++) {
 
         items.add(DropdownMenuItem<ItemPackageType>(
-          value: _unexpectedItem.itemPackageTypes[i],
-          child: Text(_unexpectedItem.itemPackageTypes[i].description),
+          value: _unexpectedItem!.itemPackageTypes[i],
+          child: Text(_unexpectedItem!.itemPackageTypes[i].description ?? ""),
         ));
       }
-      if (_unexpectedItem.itemPackageTypes.length == 1 ||
+      if (_unexpectedItem!.itemPackageTypes.length == 1 ||
           _selectedItemPackageType == null) {
         // if we only have one item package type for this item, then
         // default the selection to it
         // if the user has not select any item package type yet, then
         // default the value to the first option as well
-        _selectedItemPackageType = _unexpectedItem.itemPackageTypes[0];
-        _onItemPackageTypeValueChange(_selectedItemPackageType.name);
+        _selectedItemPackageType = _unexpectedItem!.itemPackageTypes[0];
+        _onItemPackageTypeValueChange(_selectedItemPackageType!.name!);
       }
     }
     return items;
@@ -615,7 +615,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
     for (int i = 0; i < _validInventoryStatus.length; i++) {
       items.add(DropdownMenuItem<InventoryStatus>(
         value: _validInventoryStatus[i],
-        child: Text(_validInventoryStatus[i].description),
+        child: Text(_validInventoryStatus[i].description ?? ""),
       ));
     }
 

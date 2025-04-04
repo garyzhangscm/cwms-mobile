@@ -10,14 +10,14 @@ import '../models/qc_rule_item_comparator.dart';
 import '../models/qc_rule_item_type.dart';
 
 class QCInspectionItemOptionListItem extends StatefulWidget {
-  QCInspectionItemOptionListItem({this.qcInspectionRequestItemOption, this.value }
+  QCInspectionItemOptionListItem({required this.qcInspectionRequestItemOption, this.value }
        ) : super(key: ValueKey(qcInspectionRequestItemOption.id));
 
 
 
   final QCInspectionRequestItemOption qcInspectionRequestItemOption;
-  bool _qcResult;
-  Object value;
+  bool? _qcResult;
+  Object? value;
 
   @override
   _QCInspectionItemOptionListItemState createState() => _QCInspectionItemOptionListItemState();
@@ -30,7 +30,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
 
   @override
   Widget build(BuildContext context) {
-    switch(widget.qcInspectionRequestItemOption.qcRuleItem.qcRuleItemType) {
+    switch(widget.qcInspectionRequestItemOption.qcRuleItem?.qcRuleItemType) {
       case QCRuleItemType.NUMBER:
         return buildNumberOption(context);
         break;
@@ -47,7 +47,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
   Widget buildYesNoOption(BuildContext context) {
 
     if (widget.value != null) {
-      widget._qcResult = widget.value;
+      widget._qcResult = widget.value as bool;
     }
     return Padding(
       padding: const EdgeInsets.only(top: 2.0),
@@ -75,7 +75,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
                   //leading: _buildInventoryImage(),
 
                   title: Text(
-                    widget.qcInspectionRequestItemOption.qcRuleItem.checkPoint,
+                    widget.qcInspectionRequestItemOption.qcRuleItem?.checkPoint ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,
@@ -88,7 +88,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
                     tristate: true,
                     value: widget._qcResult,
                     onChanged: (value) {
-                      _qcBooleanResultChanged(value);
+                      _qcBooleanResultChanged(value!);
                     },
                   ),
                 ),
@@ -128,7 +128,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
                   //leading: _buildInventoryImage(),
 
                   title: Text(
-                    widget.qcInspectionRequestItemOption.qcRuleItem.checkPoint,
+                    widget.qcInspectionRequestItemOption.qcRuleItem?.checkPoint ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,
@@ -187,7 +187,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
                   //leading: _buildInventoryImage(),
 
                   title: Text(
-                    widget.qcInspectionRequestItemOption.qcRuleItem.checkPoint,
+                    widget.qcInspectionRequestItemOption.qcRuleItem?.checkPoint ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,
@@ -199,7 +199,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
                     SizedBox(
                       width: 150,
                       child:  new TextFormField(
-                        initialValue: widget.value,
+                        initialValue: widget.value?.toString(),
                         onChanged: (value) {
                           _qcStringResultChanged(value);
                         },// Only numbers can be entered
@@ -217,7 +217,7 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
 
   _qcBooleanResultChanged(bool value){
 
-    printLongLogMessage("_qcBooleanResultChanged ${widget.qcInspectionRequestItemOption.qcRuleItem.checkPoint} is changed to ${value}");
+    printLongLogMessage("_qcBooleanResultChanged ${widget.qcInspectionRequestItemOption.qcRuleItem?.checkPoint} is changed to ${value}");
 
     widget.qcInspectionRequestItemOption.booleanValue = value;
     setState(() {
@@ -242,13 +242,13 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
   // check if the user input number is a pass or fail
   bool _validateBooleanResult(bool value) {
 
-    var expectedValue = widget.qcInspectionRequestItemOption.qcRuleItem.expectedValue;
+    var expectedValue = widget.qcInspectionRequestItemOption.qcRuleItem?.expectedValue;
     if (expectedValue == null) {
       // the expected value is not defined correctly, QC fail
       return false;
     }
     bool result = true;
-    switch(widget.qcInspectionRequestItemOption.qcRuleItem.qcRuleItemComparator) {
+    switch(widget.qcInspectionRequestItemOption.qcRuleItem?.qcRuleItemComparator) {
       case QCRuleItemComparator.EQUAL:
         result = value.toString().toLowerCase() == expectedValue.toLowerCase();
         break;
@@ -307,13 +307,13 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
   // check if the user input number is a pass or fail
   bool _validateNumberResult(double value) {
 
-    var expectedValue = double.tryParse(widget.qcInspectionRequestItemOption.qcRuleItem.expectedValue);
+    var expectedValue = double.tryParse(widget.qcInspectionRequestItemOption.qcRuleItem!.expectedValue ?? "");
     if (expectedValue == null) {
       // the expected value is not defined correctly, QC fail
       return false;
     }
     bool result = true;
-    switch(widget.qcInspectionRequestItemOption.qcRuleItem.qcRuleItemComparator) {
+    switch(widget.qcInspectionRequestItemOption.qcRuleItem?.qcRuleItemComparator) {
       case QCRuleItemComparator.EQUAL:
         result = value == expectedValue;
         break;
@@ -373,13 +373,13 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
   // check if the user input number is a pass or fail
   bool _validateStringResult(String value) {
 
-    var expectedValue =  widget.qcInspectionRequestItemOption.qcRuleItem.expectedValue;
+    var expectedValue =  widget.qcInspectionRequestItemOption.qcRuleItem?.expectedValue ?? "";
     if (expectedValue == null) {
       // the expected value is not defined, we will take everything as a pass
       return true;
     }
     bool result = true;
-    switch(widget.qcInspectionRequestItemOption.qcRuleItem.qcRuleItemComparator) {
+    switch(widget.qcInspectionRequestItemOption.qcRuleItem?.qcRuleItemComparator) {
       case QCRuleItemComparator.EQUAL:
         result = value == expectedValue;
         break;

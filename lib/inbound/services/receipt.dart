@@ -205,10 +205,10 @@ class ReceiptService {
     inventory.location = await WarehouseLocationService.getWarehouseLocationByName(
         Global.lastLoginRFCode
     );
-    print("inventory's location: ${inventory.location.locationGroup.locationGroupType.virtual}");
+    print("inventory's location: ${inventory.location?.locationGroup.locationGroupType.virtual}");
     inventory.inventoryStatus = inventoryStatus;
     inventory.itemPackageType = itemPackageType;
-    inventory.locationId = inventory.location.id;
+    inventory.locationId = inventory.location?.id;
     inventory.receiptId = receipt.id!;
     inventory.receiptLineId = receiptLine.id!;
     inventory.inventoryMovements = [];
@@ -228,13 +228,13 @@ class ReceiptService {
     // we are only allow to receive kit item
     // with inner items; we can't receive
     // the inner items directly
-    if(inventory.item.kitItemFlag != null &&
-        inventory.item.kitItemFlag == true &&
-        inventory.item.kitInnerItems.isNotEmpty) {
+    if(inventory.item?.kitItemFlag != null &&
+        inventory.item?.kitItemFlag == true &&
+        inventory.item?.kitInnerItems.isNotEmpty == true) {
       // we are receive a kit item, let's create the inner inventory as well
       inventory.kitInventoryFlag = true;
 
-      inventory.item.kitInnerItems.forEach((kitInnerItem) {
+      inventory.item?.kitInnerItems.forEach((kitInnerItem) {
 
         Inventory kitInnerInventory = new Inventory();
         kitInnerInventory.lpn = lpn;
@@ -256,7 +256,7 @@ class ReceiptService {
         // get the default item package type. Basically we don't care about the item package type
         // for any inventory inside the kit
         kitInnerInventory.itemPackageType = kitInnerItem.defaultItemPackageType!;
-        kitInnerInventory.locationId = inventory.location.id;
+        kitInnerInventory.locationId = inventory.location?.id;
         kitInnerInventory.receiptId = receipt.id!;
         kitInnerInventory.receiptLineId = receiptLine.id!;
         kitInnerInventory.inventoryMovements = [];
@@ -339,7 +339,7 @@ class ReceiptService {
     List<Inventory> inventoryList = [];
     lpnCaptureRequest.capturedLpn.forEach((element) async {
       Inventory inventory = await _generateReceivedInventory(receipt, receiptLine,
-          element, inventoryStatus, itemPackageType, lpnCaptureRequest.lpnUnitOfMeasure!.quantity,
+          element, inventoryStatus, itemPackageType, lpnCaptureRequest.lpnUnitOfMeasure!.quantity!,
           "", "", "",
           "", "", "","", "",
       false, false);

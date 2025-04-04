@@ -30,9 +30,8 @@ class AuditCountResultService {
     List<dynamic> responseData = responseString["data"];
 
     List<AuditCountResult> auditCountResults
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : AuditCountResult.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => AuditCountResult.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     return auditCountResults;
   }

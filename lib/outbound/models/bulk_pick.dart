@@ -11,27 +11,27 @@ part 'bulk_pick.g.dart';
 class BulkPick{
   BulkPick();
 
-  int id;
-  String number;
-  String waveNumber;
+  int? id;
+  String? number;
+  String? waveNumber;
 
-  int sourceLocationId;
-  WarehouseLocation sourceLocation;
+  int? sourceLocationId;
+  WarehouseLocation? sourceLocation;
 
-  Item item;
-  int quantity;
-  int pickedQuantity;
-  int warehouseId;
-  InventoryStatus inventoryStatus;
-  bool confirmItemFlag;
-  bool confirmLocationFlag;
-  bool confirmLocationCodeFlag;
-  bool confirmLpnFlag;
+  Item? item;
+  int? quantity;
+  int? pickedQuantity;
+  int? warehouseId;
+  InventoryStatus? inventoryStatus;
+  bool? confirmItemFlag;
+  bool? confirmLocationFlag;
+  bool? confirmLocationCodeFlag;
+  bool? confirmLpnFlag;
 
-  int skipCount = 0;
-  String color;
-  String productSize;
-  String style;
+  int? skipCount = 0;
+  String? color;
+  String? productSize;
+  String? style;
 
 
 

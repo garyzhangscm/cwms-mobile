@@ -36,7 +36,7 @@ class ItemService {
     return Item.fromJson(responseString["data"] as Map<String, dynamic>);
   }
 
-  static Future<Item> getItemByName(String name) async {
+  static Future<Item?> getItemByName(String name) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -52,9 +52,8 @@ class ItemService {
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<Item> items
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Item.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Item.fromJson(e as Map<String, dynamic>))
+        .toList();
     print("items.length: ${items.length}");
 
     if (items.length == 1) {
@@ -89,9 +88,8 @@ class ItemService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
-    return (responseString["data"] as List)?.map((e) =>
-        e == null ? null : Item.fromJson(e as Map<String, dynamic>))
-            ?.toList();
+    return (responseString["data"] as List).map((e) => Item.fromJson(e as Map<String, dynamic>))
+            .toList();
   }
 
 

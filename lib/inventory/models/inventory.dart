@@ -91,8 +91,8 @@ class Inventory{
     }
 
 
-      inventoryMovements.sort((a, b) => a.sequence.compareTo(
-          b.sequence
+      inventoryMovements.sort((a, b) => a.sequence!.compareTo(
+          b.sequence!
       ));
       return inventoryMovements[0].location;
 

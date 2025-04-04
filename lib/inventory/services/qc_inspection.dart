@@ -41,9 +41,8 @@ class QCInspectionService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
-    return (responseString["data"] as List)?.map((e) =>
-            e == null ? null : QCInspectionRequest.fromJson(e as Map<String, dynamic>))
-              ?.toList();
+    return (responseString["data"] as List).map((e) => QCInspectionRequest.fromJson(e as Map<String, dynamic>))
+              .toList();
 
 
   }

@@ -43,44 +43,44 @@ class Pick{
     this.allocateByReceiptNumber = anotherPick.allocateByReceiptNumber;
   }
 
-  int id;
-  String number;
-  int sourceLocationId;
-  WarehouseLocation sourceLocation;
-  int destinationLocationId;
-  WarehouseLocation destinationLocation;
-  int itemId;
-  Item item;
-  int quantity;
-  int batchPickQuantity;     // used by the client only when we want to batch pick from the same location.
-  List<Pick> batchedPicks;   // picks from same location with same item and inventory attribute that can be complete together
-  int pickedQuantity;
-  int warehouseId;
-  int inventoryStatusId;
-  InventoryStatus inventoryStatus;
-  bool confirmItemFlag;
-  bool confirmLocationFlag;
-  bool confirmLocationCodeFlag;
-  bool confirmLpnFlag;
-  bool wholeLPNPick;
+  int? id;
+  String? number;
+  int? sourceLocationId;
+  WarehouseLocation? sourceLocation;
+  int? destinationLocationId;
+  WarehouseLocation? destinationLocation;
+  int? itemId;
+  Item? item;
+  int? quantity;
+  int? batchPickQuantity;     // used by the client only when we want to batch pick from the same location.
+  List<Pick> batchedPicks = [];   // picks from same location with same item and inventory attribute that can be complete together
+  int? pickedQuantity;
+  int? warehouseId;
+  int? inventoryStatusId;
+  InventoryStatus? inventoryStatus;
+  bool? confirmItemFlag;
+  bool? confirmLocationFlag;
+  bool? confirmLocationCodeFlag;
+  bool? confirmLpnFlag;
+  bool? wholeLPNPick;
 
 
 
-  int skipCount = 0;
+  int? skipCount = 0;
 
-  int workTaskId;
-  WorkTask workTask;
+  int? workTaskId;
+  WorkTask? workTask;
 
-  String color;
-  String productSize;
-  String style;
-  String allocateByReceiptNumber;
+  String? color;
+  String? productSize;
+  String? style;
+  String? allocateByReceiptNumber;
 
-  String inventoryAttribute1;
-  String inventoryAttribute2;
-  String inventoryAttribute3;
-  String inventoryAttribute4;
-  String inventoryAttribute5;
+  String? inventoryAttribute1;
+  String? inventoryAttribute2;
+  String? inventoryAttribute3;
+  String? inventoryAttribute4;
+  String? inventoryAttribute5;
 
   //不同的类使用不同的mixin即可
   factory Pick.fromJson(Map<String, dynamic> json) => _$PickFromJson(json);

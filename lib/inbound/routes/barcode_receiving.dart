@@ -138,18 +138,18 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
                       _lastReceivedInventory?.lpn ?? ""),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                      _lastReceivedInventory?.item.name ?? ""),
+                      _lastReceivedInventory?.item?.name ?? ""),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                      _lastReceivedInventory?.item.description ?? ""),
+                      _lastReceivedInventory?.item?.description ?? ""),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity,
                       (_lastReceivedInventory?.quantity.toString()  ?? "") + " " +
-                          (_lastReceivedInventory?.itemPackageType.stockItemUnitOfMeasure.unitOfMeasure.description ?? "")),
+                          (_lastReceivedInventory?.itemPackageType?.stockItemUnitOfMeasure?.unitOfMeasure?.description ?? "")),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity,
                       _lastReceivedInventory == null ? "" :
                           (_getDisplayQuantity(_lastReceivedInventory!).toString()
                               + " " + _getDisplayUOM(_lastReceivedInventory!))),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).inventoryStatus,
-                      _lastReceivedInventory?.inventoryStatus.description ?? ""),
+                      _lastReceivedInventory?.inventoryStatus?.description ?? ""),
                 ]),
               ),
               // Expanded(child: Container(color: Colors.amber)),
@@ -403,7 +403,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
           inventoryAttribute5,
         false, false
       );
-      qcRequired = inventory.inboundQCRequired;
+      qcRequired = inventory.inboundQCRequired!;
       printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
       if (qcRequired) {
         // for any inventory that needs qc, let's allocate the location automatically
@@ -414,7 +414,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
       }
 
       // refresh the inventory to get latest information
-      inventory = await InventoryService.getInventoryById(inventory.id);
+      inventory = await InventoryService.getInventoryById(inventory.id!);
 
       setState(() {
         _lastReceivedReceipt = receipt;
@@ -459,21 +459,21 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
     if (displayItemUnitOfMeasure == null) {
       printLongLogMessage("display item unit of measure is not defined");
-      return inventory.quantity;
+      return inventory.quantity!;
     }
-    else if (inventory.quantity % displayItemUnitOfMeasure.quantity == 0) {
+    else if (inventory.quantity! % displayItemUnitOfMeasure.quantity! == 0) {
       printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
       printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
-      printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity % displayItemUnitOfMeasure.quantity}");
+      printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
 
-      return inventory.quantity / displayItemUnitOfMeasure.quantity;
+      return inventory.quantity! / displayItemUnitOfMeasure.quantity!;
     }
     else {
 
       printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
       printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
-      printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity % displayItemUnitOfMeasure.quantity}");
-      return inventory.quantity;
+      printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
+      return inventory.quantity!;
     }
 
   }
@@ -485,8 +485,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     if (displayItemUnitOfMeasure == null) {
       return "";
     }
-    else if (inventory.quantity % displayItemUnitOfMeasure.quantity == 0) {
-      return displayItemUnitOfMeasure.unitOfMeasure.description ?? "";
+    else if (inventory.quantity! % displayItemUnitOfMeasure!.quantity! == 0) {
+      return displayItemUnitOfMeasure.unitOfMeasure?.description ?? "";
     }
     else {
 
@@ -496,15 +496,15 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
   }
   ItemUnitOfMeasure _getDisplayItemUnitOfMeasure(Inventory inventory) {
     printLongLogMessage("start to get display item unit of measure from inventory:\n ${inventory.toJson()}");
-    printLongLogMessage("inventory.itemPackageType: \n ${inventory.itemPackageType.toJson()}");
+    printLongLogMessage("inventory.itemPackageType: \n ${inventory.itemPackageType?.toJson()}");
 
-    if (inventory.itemPackageType.displayItemUnitOfMeasure != null) {
-       printLongLogMessage("inventory.itemPackageType.displayItemUnitOfMeasure: \n ${inventory.itemPackageType.displayItemUnitOfMeasure.toJson()}");
+    if (inventory.itemPackageType?.displayItemUnitOfMeasure != null) {
+       printLongLogMessage("inventory.itemPackageType.displayItemUnitOfMeasure: \n ${inventory.itemPackageType!.displayItemUnitOfMeasure?.toJson()}");
     }
 
-    return inventory.itemPackageType.displayItemUnitOfMeasure != null ?
-          inventory.itemPackageType.displayItemUnitOfMeasure :
-          inventory.itemPackageType.stockItemUnitOfMeasure;
+    return inventory.itemPackageType!.displayItemUnitOfMeasure != null ?
+          inventory.itemPackageType!.displayItemUnitOfMeasure! :
+          inventory.itemPackageType!.stockItemUnitOfMeasure!;
   }
 
   void _reloadInventoryOnRF() {

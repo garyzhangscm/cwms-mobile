@@ -14,7 +14,7 @@ import '../../shared/models/barcode.dart';
 
 class LpnCapturePage extends StatefulWidget{
 
-  LpnCapturePage({Key key}) : super(key: key);
+  LpnCapturePage({Key? key}) : super(key: key);
 
 
   @override
@@ -24,7 +24,7 @@ class LpnCapturePage extends StatefulWidget{
 
 class _LpnCapturePageState extends State<LpnCapturePage> {
 
-  LpnCaptureRequest _lpnCaptureRequest;
+  LpnCaptureRequest? _lpnCaptureRequest;
   TextEditingController _lpnController = new TextEditingController();
   FocusNode _lpnFocusNode = FocusNode();
 
@@ -64,7 +64,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
   Widget build(BuildContext context) {
 
 
-    _lpnCaptureRequest = ModalRoute.of(context).settings.arguments;
+    _lpnCaptureRequest = ModalRoute.of(context)?.settings.arguments as LpnCaptureRequest;
 
     return Scaffold(
       appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.captureLPN)),
@@ -76,29 +76,29 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
                     children: <Widget>[
                       buildTwoSectionInformationRow(
                         CWMSLocalizations.of(context)!.item,
-                        _lpnCaptureRequest.item.name,
+                        _lpnCaptureRequest?.item?.name ?? "",
                       ),
                       buildTwoSectionInformationRow(
                         CWMSLocalizations.of(context)!.item,
-                        _lpnCaptureRequest.item.description,
+                        _lpnCaptureRequest?.item?.description ?? "",
                       ),
                       buildTwoSectionInformationRow(
                         CWMSLocalizations.of(context)!.itemPackageType,
-                        _lpnCaptureRequest.itemPackageType.description,
+                        _lpnCaptureRequest?.itemPackageType?.description ?? "",
                       ),
                       buildFourSectionInformationRow(
                         CWMSLocalizations.of(context)!.lpnUnitOfMeasure,
-                        _lpnCaptureRequest.lpnUnitOfMeasure.unitOfMeasure.name,
+                        _lpnCaptureRequest?.lpnUnitOfMeasure?.unitOfMeasure?.name ?? "",
                         CWMSLocalizations.of(context)!.quantity,
-                        _lpnCaptureRequest.lpnUnitOfMeasure.quantity.toString()
+                        _lpnCaptureRequest?.lpnUnitOfMeasure?.quantity.toString()  ?? ""
                       ),
                       buildTwoSectionInformationRow(
                         CWMSLocalizations.of(context)!.requestedLPNQuantity,
-                        _lpnCaptureRequest.requestedLPNQuantity.toString(),
+                        _lpnCaptureRequest?.requestedLPNQuantity.toString()  ?? "",
                       ),
                       buildTwoSectionInformationRow(
                         CWMSLocalizations.of(context)!.capturedLPNQuantity,
-                        _lpnCaptureRequest.capturedLpn.length.toString()
+                        _lpnCaptureRequest?.capturedLpn.length.toString()  ?? ""
                       ),
                       buildTwoSectionInputRow(
                         CWMSLocalizations.of(context)!.lpn,
@@ -126,18 +126,18 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
 
     return
       SizedBox(
-        height: MediaQuery.of(context).size.height - 400 > _lpnCaptureRequest.capturedLpn.length * 50.0 ?
-        _lpnCaptureRequest.capturedLpn.length * 50.0 : MediaQuery.of(context).size.height - 400,
+        height: MediaQuery.of(context).size.height - 400 > _lpnCaptureRequest!.capturedLpn.length * 50.0 ?
+        _lpnCaptureRequest!.capturedLpn.length * 50.0 : MediaQuery.of(context).size.height - 400,
         child:
         new ListView(
-          children: _lpnCaptureRequest.capturedLpn.map((String lpn) {
+          children: _lpnCaptureRequest!.capturedLpn.map((String lpn) {
             return new CheckboxListTile(
               title: new Text(lpn),
               value: true,
-              onChanged: (bool value) {
+              onChanged: (bool? value) {
                 if (value == false) {
                   setState(() {
-                    _lpnCaptureRequest.capturedLpn.remove(lpn);
+                    _lpnCaptureRequest!.capturedLpn.remove(lpn);
                   });
                 }
               },
@@ -156,7 +156,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
             child: Text(CWMSLocalizations.of(context)!.cancel)
         ),
         ElevatedButton(
-            onPressed: _lpnCaptureRequest.capturedLpn.length == _lpnCaptureRequest.requestedLPNQuantity ? _onConfirm : null,
+            onPressed: _lpnCaptureRequest!.capturedLpn.length == _lpnCaptureRequest!.requestedLPNQuantity ? _onConfirm : null,
             child: Text(CWMSLocalizations.of(context)!.confirm)
         ),
     );
@@ -168,7 +168,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
     if (_lpnController.text.isEmpty) {
       return;
     }
-    if (_lpnCaptureRequest.capturedLpn.length == _lpnCaptureRequest.requestedLPNQuantity) {
+    if (_lpnCaptureRequest!.capturedLpn.length == _lpnCaptureRequest!.requestedLPNQuantity) {
       showToast(CWMSLocalizations.of(context)!.enoughLPNCaptured);
       return;
     }
@@ -177,7 +177,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
 
     // if we only allow new LPN, then make sure the LPN entered in is
     // a new LPN
-    if (_lpnCaptureRequest.newLPNOnly) {
+    if (_lpnCaptureRequest!.newLPNOnly == true) {
       showLoading(context);
       try {
         String errorMessage = await InventoryService.validateNewLpn(_lpnController.text);
@@ -197,7 +197,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
     }
 
     setState(() {
-      _lpnCaptureRequest.capturedLpn.add(_lpnController.text);
+      _lpnCaptureRequest!.capturedLpn.add(_lpnController.text);
     });
     _lpnController.clear();
     _lpnFocusNode.requestFocus();
@@ -207,14 +207,14 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
 
   void _onConfirm() {
 
-    _lpnCaptureRequest.result = true;
+    _lpnCaptureRequest!.result = true;
     Navigator.pop(context, _lpnCaptureRequest);
   }
 
 
   void _onCancel() {
 
-    _lpnCaptureRequest.result = false;
+    _lpnCaptureRequest!.result = false;
     Navigator.pop(context, _lpnCaptureRequest);
   }
 

@@ -24,7 +24,7 @@ import '../models/order.dart';
 
 class OrderManualPickPage extends StatefulWidget{
 
-  OrderManualPickPage({Key key}) : super(key: key);
+  OrderManualPickPage({Key? key}) : super(key: key);
 
 
   @override
@@ -38,7 +38,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   TextEditingController _orderNumberController = new TextEditingController();
   FocusNode _orderNumberFocusNode = FocusNode();
 
-  Order _currentOrder;
+  Order? _currentOrder;
 
   bool _readyToConfirm = true;
 
@@ -53,7 +53,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   TextEditingController _lpnController = new TextEditingController();
   FocusNode _lpnFocusNode = FocusNode();
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   @override
   void initState() {
@@ -194,15 +194,15 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
     return
       Expanded(
         child: ListView.builder(
-            itemCount: _currentOrder.orderLines.length,
+            itemCount: _currentOrder?.orderLines.length,
             itemBuilder: (BuildContext context, int index) {
 
               return ListTile(
 
                 title: Text(
-                    CWMSLocalizations.of(context)!.item + ':' + _currentOrder.orderLines[index].item.name),
+                    CWMSLocalizations.of(context).item + ':' + (_currentOrder?.orderLines[index].item!.name ?? "")),
                 subtitle: Text(
-                    CWMSLocalizations.of(context)!.expectedQuantity + ':' + _currentOrder.orderLines[index].openQuantity.toString()),
+                    CWMSLocalizations.of(context)!.expectedQuantity + ':' + (_currentOrder?.orderLines[index].openQuantity.toString() ?? "")),
               );
             }),
       );
@@ -249,7 +249,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
     }
 
-    if (_currentOrder.allowForManualPick != true) {
+    if (_currentOrder?.allowForManualPick != true) {
 
       await showBlockedErrorDialog(context, "order " + _orderNumberController.text + " is marked as not for manual pick");
 
@@ -280,9 +280,9 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
         Checkbox(
           value: _pickToShipStage,
-          onChanged: (bool value) {
+          onChanged: (bool? value) {
             setState(() {
-              _pickToShipStage = value;
+              _pickToShipStage = value!;
             });
           },
         ),
@@ -308,7 +308,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
               // if we only need one LPN, then make sure the user input the LPN in this form.
               // otherwise, we will flow to next LPN Capture form to let the user capture
               // more LPNs
-              if (v.trim().isEmpty) {
+              if (v?.trim().isEmpty == true) {
                 return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
               }
 
@@ -420,13 +420,13 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
         // check the quantity we can pick from the invenotry
         int pickableQuantity = await OrderService.getPickableQuantityForManualPick(
-            _currentOrder.id, _lpnController.text
+            _currentOrder!.id!, _lpnController.text
         );
 
         printLongLogMessage("we can pick $pickableQuantity from lpn ${_lpnController.text}");
 
         // check the total quantity of the LPN
-        int inventoryQuantity =  inventories.fold(0, (previous, current) => previous + current.quantity);
+        int inventoryQuantity =  inventories.fold(0, (previous, current) => previous + current.quantity!);
 
         if (pickableQuantity < inventoryQuantity) {
 
@@ -472,23 +472,23 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
     showLoading(context);
     try {
       List<Pick> picks = await OrderService.generateManualPick(
-          _currentOrder.id, _lpnController.text,
+          _currentOrder!.id!, _lpnController.text,
           continueWholeLPN
 
       );
-      printLongLogMessage("get ${picks.length} by generating manual pick for the order ${_currentOrder.number}");
+      printLongLogMessage("get ${picks.length} by generating manual pick for the order ${_currentOrder!.number}");
 
       // let's finish each pick one by one
       for(var i = 0; i < picks.length; i++){
 
-        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity - picks[i].pickedQuantity}");
+        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity! - picks[i]!.pickedQuantity!}");
         if (_pickToShipStage) {
 
           WarehouseLocation shipStageLocation = await WarehouseLocationService.getWarehouseLocationById(
-              picks[i].destinationLocationId);
+              picks[i].destinationLocationId!);
 
           PickService.confirmPick(
-                picks[i], (picks[i].quantity - picks[i].pickedQuantity), lpn: _lpnController.text,
+                picks[i], (picks[i].quantity! - picks[i].pickedQuantity!), lpn: _lpnController.text,
                 nextLocationName: shipStageLocation.name).then((value) {
 
                   showToast("pick confirmed");
@@ -503,7 +503,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
           // Async confirmed the pick to increase the performance
           // await PickService.confirmPick(
           PickService.confirmPick(
-              picks[i], (picks[i].quantity - picks[i].pickedQuantity), lpn: _lpnController.text).then((value) {
+              picks[i], (picks[i].quantity! - picks[i].pickedQuantity!), lpn: _lpnController.text).then((value) {
 
             showToast("pick confirmed");
           } , onError: (e) {

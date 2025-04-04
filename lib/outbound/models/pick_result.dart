@@ -14,17 +14,17 @@ part 'pick_result.g.dart';
 class PickResult{
   PickResult();
 
-  bool result;
-  int confirmedQuantity;
+  bool? result;
+  int? confirmedQuantity;
 
   // key: pick id
   // value: confirmed quantity
-  Map<int, int> confirmedPickResult;
+  Map<int, int> confirmedPickResult = new Map();
 
   // in case of pick cancellation
-  Set<int> cancelledPicks;
+  Set<int> cancelledPicks = new Set();
 
-  List<Pick> reallocatedPicks;
+  List<Pick> reallocatedPicks = [];
 
 
 

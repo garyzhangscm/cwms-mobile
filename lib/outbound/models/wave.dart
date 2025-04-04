@@ -11,11 +11,11 @@ part 'wave.g.dart';
 
 class Wave{
   Wave();
-  int id;
-  String number;
+  int? id;
+  String? number;
 
-  int totalOpenPickQuantity;
-  int totalPickedQuantity;
+  int? totalOpenPickQuantity;
+  int? totalPickedQuantity;
 
 
   //不同的类使用不同的mixin即可

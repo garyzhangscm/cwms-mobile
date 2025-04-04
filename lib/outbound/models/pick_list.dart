@@ -12,11 +12,11 @@ part 'pick_list.g.dart';
 class PickList {
   PickList();
 
-  int id;
-  String number;
+  int? id;
+  String? number;
 
 
-  List<Pick> picks;
+  List<Pick> picks = [];
 
 
 

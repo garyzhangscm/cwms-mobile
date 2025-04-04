@@ -575,7 +575,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
       items.add(DropdownMenuItem(
         value: _validInventoryStatus[i],
-        child: Text(_validInventoryStatus[i].description),
+        child: Text(_validInventoryStatus[i].description ?? ""),
       ));
     }
 
@@ -601,7 +601,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
         items.add(DropdownMenuItem(
           value: _currentReceiptLine!.item!.itemPackageTypes[i],
-          child: Text(_currentReceiptLine!.item!.itemPackageTypes[i].description),
+          child: Text(_currentReceiptLine!.item!.itemPackageTypes[i].description ?? ""),
         ));
       }
       if (_currentReceiptLine!.item!.itemPackageTypes.length == 1 ||
@@ -661,7 +661,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
         items.add(DropdownMenuItem(
           value:  _selectedItemPackageType?.itemUnitOfMeasures[i],
-          child: Text( _selectedItemPackageType!.itemUnitOfMeasures[i].unitOfMeasure.name ?? ""),
+          child: Text( _selectedItemPackageType!.itemUnitOfMeasures[i].unitOfMeasure?.name ?? ""),
         ));
       }
 
@@ -677,7 +677,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         // default the value to the one marked as 'default for inbound receiving'
 
         _selectedItemUnitOfMeasure = _selectedItemPackageType!.itemUnitOfMeasures
-            .firstWhere((element) => element.id == _selectedItemPackageType!.defaultInboundReceivingUOM.id);
+            .firstWhere((element) => element.id == _selectedItemPackageType!.defaultInboundReceivingUOM?.id);
     }
 
     return items;
@@ -738,7 +738,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // the user to make sure it is not a typo. Since we already define the LPN
     // uom, normally the quantity of the single LPN won't exceed the standard
     // lpn UOM's quantity
-    if (confirmedQuantity > _selectedItemPackageType!.trackingLpnUOM.quantity) {
+    if (confirmedQuantity > _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
       // bool continueWithExceedQuantity = await showYesNoDialog(context, "lpn validation", "lpn quantity exceed the standard quantity, continue?");
       bool continueWithExceedQuantity = false;
       await showYesNoDialog(context, CWMSLocalizations.of(context).lpnQuantityExceedWarningTitle, CWMSLocalizations.of(context).lpnQuantityExceedWarningMessage,
@@ -853,7 +853,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       Inventory inventory = await ReceiptService.receiveInventory(
           _currentReceipt!, _currentReceiptLine!,
           _lpnController.text, _selectedInventoryStatus!,
-          _selectedItemPackageType!, int.parse(_quantityController.text) * _selectedItemUnitOfMeasure!.quantity,
+          _selectedItemPackageType!, int.parse(_quantityController.text) * _selectedItemUnitOfMeasure!.quantity!,
           inventoryAttributes.containsKey("color") ? (inventoryAttributes["color"] ?? "") : "",
           inventoryAttributes.containsKey("productSize") ? inventoryAttributes["productSize"] ?? "" : "",
           inventoryAttributes.containsKey("style") ? inventoryAttributes["style"] ?? ""  : "",
@@ -867,7 +867,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           inventoryAttributes.containsKey("kitInnerInventoryAttributeFromKit") ?
               (inventoryAttributes["kitInnerInventoryAttributeFromKit"] as bool) : false,
       );
-      qcRequired = inventory.inboundQCRequired;
+      qcRequired = inventory.inboundQCRequired!;
       printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
       if (qcRequired) {
         // for any inventory that needs qc, let's allocate the location automatically
@@ -938,15 +938,15 @@ class _ReceivingPageState extends State<ReceivingPage> {
       // how to calculate how many LPNs we may need based on the UOM and quantity
       lpnCount = 1;
     }
-    else if (_selectedItemUnitOfMeasure!.quantity == _selectedItemPackageType!.trackingLpnUOM.quantity) {
+    else if (_selectedItemUnitOfMeasure!.quantity == _selectedItemPackageType!.trackingLpnUOM?.quantity) {
       // we are receiving at LPN uom level, then see what's the quantity the user specify
       lpnCount = totalQuantity;
     }
-    else if (_selectedItemUnitOfMeasure!.quantity > _selectedItemPackageType!.trackingLpnUOM.quantity) {
+    else if (_selectedItemUnitOfMeasure!.quantity! > _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
       // we are receiving at some higher level, see how many LPN uom we will need
       printLongLogMessage("totalQuantity: ${totalQuantity}, _selectedItemUnitOfMeasure.quantity: ${_selectedItemUnitOfMeasure!.quantity}");
-      printLongLogMessage("_selectedItemPackageType.trackingLpnUOM.quantity: ${_selectedItemPackageType!.trackingLpnUOM.quantity}");
-      lpnCount = totalQuantity * _selectedItemUnitOfMeasure!.quantity ~/ _selectedItemPackageType!.trackingLpnUOM.quantity;
+      printLongLogMessage("_selectedItemPackageType.trackingLpnUOM.quantity: ${_selectedItemPackageType!.trackingLpnUOM?.quantity}");
+      lpnCount = totalQuantity * _selectedItemUnitOfMeasure!.quantity! ~/ _selectedItemPackageType!.trackingLpnUOM!.quantity!;
     }
     else{
       // we are receiving at some lower level than the tracking LPN UOM,
@@ -999,7 +999,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       LpnCaptureRequest lpnCaptureRequest = new LpnCaptureRequest.withData(
           receiptLine!.item!,
           _selectedItemPackageType!,
-          _selectedItemPackageType!.trackingLpnUOM,
+          _selectedItemPackageType!.trackingLpnUOM!,
           lpnCount, capturedLpn,
         true
       );
@@ -1069,7 +1069,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         Inventory inventory = await ReceiptService.receiveInventory(
             _currentReceipt!, _currentReceiptLine!,
             lpn, _selectedInventoryStatus!,
-            _selectedItemPackageType!, lpnCaptureRequest.lpnUnitOfMeasure!.quantity,
+            _selectedItemPackageType!, lpnCaptureRequest.lpnUnitOfMeasure!.quantity!,
             "", "", "",
             "", "", "","", "", false, false
         );

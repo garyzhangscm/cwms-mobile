@@ -13,24 +13,24 @@ part 'order_line.g.dart';
 class OrderLine{
   OrderLine();
 
-  int id;
-  String number;
+  int? id;
+  String? number;
 
-  Item item;
-  int expectedQuantity;
-  int openQuantity;
+  Item? item;
+  int? expectedQuantity;
+  int? openQuantity;
 
 
 
-  int inprocessQuantity;
-  int shippedQuantity;
-  int productionPlanInprocessQuantity;
-  int productionPlanProducedQuantity;
+  int? inprocessQuantity;
+  int? shippedQuantity;
+  int? productionPlanInprocessQuantity;
+  int? productionPlanProducedQuantity;
 
-  Carrier carrier;
-  CarrierServiceLevel carrierServiceLevel;
+  Carrier? carrier;
+  CarrierServiceLevel? carrierServiceLevel;
 
-  InventoryStatus inventoryStatus;
+  InventoryStatus? inventoryStatus;
 
 
 

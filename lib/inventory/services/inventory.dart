@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'dart:convert';
 
 
-import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
@@ -47,9 +46,8 @@ class InventoryService {
     }
 
     List<Inventory> inventories
-      = (responseString["data"] as List)?.map((e) =>
-        e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+          .toList();
 
 
     printLongLogMessage("we have ${inventories.length} on the RF");
@@ -78,7 +76,7 @@ class InventoryService {
         // the request with same key already exists, let's just add current
         // inventory on top of it
         InventoryDepositRequest inventoryDepositRequest =
-            inventoryDepositRequestMap[key];
+            inventoryDepositRequestMap[key]!;
         // add the inventory to the current deposit request
         inventoryDepositRequest.addInventory(inventory);
       }
@@ -96,18 +94,18 @@ class InventoryService {
   // inventory into deposit request
   static String _getKey(Inventory inventory, bool groupItemFlag,
       bool groupInventoryStatusFlag) {
-    String key = inventory.lpn;
+    String key = inventory!.lpn!;
     if (!groupItemFlag) {
-      key += "-" + inventory.item.name;
+      key += "-" + inventory!.item!.name!;
     }
     if (!groupInventoryStatusFlag) {
-      key += "-" + inventory.inventoryStatus.name;
+      key += "-" + inventory!.inventoryStatus!.name!;
     }
     return key;
   }
 
   // Get the next deposit request from a list of inventory
-  static InventoryDepositRequest getNextInventoryDepositRequest(
+  static InventoryDepositRequest? getNextInventoryDepositRequest(
       List<Inventory> inventories, bool groupItemFlag, 
       bool groupInventoryStatusFlag
   ) {
@@ -125,7 +123,7 @@ class InventoryService {
     // let's get the
     InventoryDepositRequest inventoryDepositRequest = new InventoryDepositRequest();
     inventories.forEach((inventory) {
-      if (inventoryDepositRequest.lpn.isEmpty) {
+      if (inventoryDepositRequest.lpn?.isEmpty == true) {
         // OK, this is the first inventory we can check.
         // let's assign to the inventory deposit request
         printLongLogMessage("get the first inventory in the list, init the inventory request by the inventory");
@@ -169,7 +167,7 @@ class InventoryService {
     else if (inventoryDepositRequest.nextLocationId != null &&
               inventory.getNextDepositLocaiton() != null &&
               inventoryDepositRequest.nextLocationId !=
-                  inventory.getNextDepositLocaiton().id) {
+                  inventory.getNextDepositLocaiton()?.id) {
       return;
     }
 
@@ -179,7 +177,7 @@ class InventoryService {
     // check if we can group item or inventory status
     // and deposit together
     if (inventoryDepositRequest.itemName !=
-        inventory.item.name) {
+        inventory.item?.name) {
       if (!groupItemFlag) {
 
         return;
@@ -187,7 +185,7 @@ class InventoryService {
     }
 
     if (inventoryDepositRequest.inventoryStatusName !=
-          inventory.inventoryStatus.name) {
+          inventory.inventoryStatus?.name) {
       if (!groupInventoryStatusFlag) {
         return;
       }
@@ -199,10 +197,10 @@ class InventoryService {
 
   // move inventory
   static Future<List<Inventory>> moveInventory  (
-      {int inventoryId, int pickId, bool immediateMove = true,
-        String destinationLpn = "", WarehouseLocation destinationLocation,
+      {int? inventoryId, int? pickId, bool immediateMove = true,
+        String destinationLpn = "", WarehouseLocation? destinationLocation,
         String lpn = "",
-        String itemName = "", int quantity, String unitOfMeasure = ""}) async {
+        String itemName = "", int? quantity, String unitOfMeasure = ""}) async {
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
     queryParameters["warehouseId"] = Global.currentWarehouse.id;
@@ -251,9 +249,8 @@ class InventoryService {
 
 
     List<Inventory> inventories
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+          .toList();
 
 
     return inventories;
@@ -322,16 +319,15 @@ class InventoryService {
     }
 
       List<Inventory> inventories
-        = (responseString["data"] as List)?.map((e) =>
-        e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-            ?.toList();
+        = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+            .toList();
 
 
       return inventories;
   }
 
 
-  static Future<void> printLPNLabel(String lpn, [String findPrinterByValue]) async {
+  static Future<void> printLPNLabel(String lpn, [String? findPrinterByValue]) async {
     printLongLogMessage("Start calling printLPNLabel with lpn $lpn");
     // get the printer for printing LPN
     String printerName = "";
@@ -379,7 +375,7 @@ class InventoryService {
   }
 
   static Future<Inventory> addInventory(Inventory inventory,
-      {String documentNumber, String comment}) async {
+      {String? documentNumber, String? comment}) async {
     /***
      *
      *
@@ -537,7 +533,7 @@ class InventoryService {
   // tryTime: we may need to wait for a while when print LPN labels
   // for work order producing or inbound receiving
   // as we may use asynchronously receiving for work order producing or inbound receiving
-  static Future<void> autoPrintLPNLabelByLpn(BuildContext context, String lpn, {int tryTime = 10}) {
+  static Future<void> autoPrintLPNLabelByLpn(BuildContext context, String lpn, {int tryTime = 10}) async {
 
     if (tryTime > 0) {
 
@@ -633,9 +629,8 @@ class InventoryService {
     }
 
     List<QCInspectionRequest> qcInspectionRequests
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : QCInspectionRequest.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => QCInspectionRequest.fromJson(e as Map<String, dynamic>))
+          .toList();
 
 
     return qcInspectionRequests;
@@ -673,7 +668,7 @@ class InventoryService {
       int itemId,
       int inventoryStatusId,
       {String lpn = "", String color = "", String productSize = "",
-        String style = "",String receiptNumber = "", int locationId}
+        String style = "",String receiptNumber = "", int? locationId}
       )  async {
 
     printLongLogMessage("will find pickable inventory by ");
@@ -729,9 +724,8 @@ class InventoryService {
     }
 
     List<Inventory> inventories
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+        .toList();
 
 
     return inventories;
@@ -799,9 +793,8 @@ class InventoryService {
     }
 
     List<Inventory> inventories
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+    = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+          .toList();
 
 
     return inventories;
@@ -830,9 +823,8 @@ class InventoryService {
     }
 
     List<QCInspectionRequest> qcInspectionRequests
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : QCInspectionRequest.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => QCInspectionRequest.fromJson(e as Map<String, dynamic>))
+        .toList();
 
 
     return qcInspectionRequests;

@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 
 import '../../shared/global.dart';
 import '../models/pick_list.dart';
-import '../models/pick_mode.dart';
+
 import '../../shared/services/barcode_service.dart';
 import '../../shared/models/barcode.dart';
 
@@ -26,7 +26,7 @@ import '../../shared/models/barcode.dart';
  */
 class ListPickPage extends StatefulWidget{
 
-  ListPickPage({Key key}) : super(key: key);
+  ListPickPage({Key? key}) : super(key: key);
 
 
   @override
@@ -44,8 +44,8 @@ class _ListPickPageState extends State<ListPickPage> {
 
   int _totalConfirmedQuantity = 0;
 
-  PickList _currentPickList;
-  Pick _currentPick;
+  PickList? _currentPickList;
+  Pick? _currentPick;
 
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
@@ -55,7 +55,7 @@ class _ListPickPageState extends State<ListPickPage> {
   FocusNode _quantityControllerFocusNode = FocusNode();
 
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   @override
   void initState() {
@@ -108,7 +108,7 @@ class _ListPickPageState extends State<ListPickPage> {
     Future.delayed(Duration.zero, () {
       // extract the argument
       printLongLogMessage("=========== initState ==========");
-      Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
+      Map arguments  = ModalRoute.of(context)?.settings.arguments as Map ;
 
 
       _currentPickList = arguments['pickList'];
@@ -147,11 +147,11 @@ class _ListPickPageState extends State<ListPickPage> {
   }
 
   /// Get the next pick from the list
-  Future<Pick> getNextPick() async {
+  Future<Pick?> getNextPick() async {
     if (_currentPickList == null) {
       return null;
     }
-    if (_currentPickList.picks.isEmpty) {
+    if (_currentPickList?.picks.isEmpty == true) {
       return null;
     }
     /**
@@ -163,14 +163,13 @@ class _ListPickPageState extends State<ListPickPage> {
         **/
 
     // sort the picks
-    PickService.sortPicks(_currentPickList.picks, Global.getLastActivityLocation(), Global.isMovingForward());
+    PickService.sortPicks(_currentPickList!.picks, Global.getLastActivityLocation(), Global.isMovingForward());
 
 
     setState(() {
 
       // return the first pick that has open quantity
-      _currentPick = _currentPickList.picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity,
-        orElse: () => null);
+      _currentPick = _currentPickList?.picks.firstWhere((pick) => pick.quantity! > pick.pickedQuantity!);
     });
     if (_currentPick == null) {
       // there's no available pick in the list, show message and return
@@ -180,7 +179,7 @@ class _ListPickPageState extends State<ListPickPage> {
           return
             AlertDialog(
               title: Text(""),
-              content: Text("current list ${_currentPickList.number} is done"),
+              content: Text("current list ${_currentPickList?.number} is done"),
               actions: <Widget>[
 
                 ElevatedButton(
@@ -200,7 +199,7 @@ class _ListPickPageState extends State<ListPickPage> {
       // same attribute into one and allow the user to batch picking
       setState(() {
 
-        _currentPick = getPickBatch(_currentPick, _currentPickList);
+        _currentPick = getPickBatch(_currentPick!, _currentPickList!);
       });
     }
     
@@ -220,7 +219,7 @@ class _ListPickPageState extends State<ListPickPage> {
           return false;
         }
         // skip the fully picked pick
-        if (anotherPick.pickedQuantity >= anotherPick.quantity) {
+        if (anotherPick.pickedQuantity! >= anotherPick.quantity!) {
           return false;
         }
         if (PickService.pickInventoryWithSameAttribute(pick, anotherPick)) {
@@ -241,19 +240,19 @@ class _ListPickPageState extends State<ListPickPage> {
     combinedPick.destinationLocationId = null;
     combinedPick.destinationLocation = null;
     similarPicks.forEach((similarPick) {
-      combinedPick.pickedQuantity += similarPick.pickedQuantity;
-      combinedPick.quantity += similarPick.quantity;
+      combinedPick.pickedQuantity = combinedPick.pickedQuantity! + similarPick.pickedQuantity!;
+      combinedPick.quantity = combinedPick.quantity! + similarPick.quantity!;
       // set the inventory attribute to be the most specific one
-      if (combinedPick.color == null || combinedPick.color.isNotEmpty) {
+      if (combinedPick.color == null || combinedPick.color?.isNotEmpty == true) {
         combinedPick.color = similarPick.color;
       }
-      if (combinedPick.productSize == null || combinedPick.productSize.isNotEmpty) {
+      if (combinedPick.productSize == null || combinedPick.productSize?.isNotEmpty == true) {
         combinedPick.productSize = similarPick.productSize;
       }
-      if (combinedPick.style == null || combinedPick.style.isNotEmpty) {
+      if (combinedPick.style == null || combinedPick.style?.isNotEmpty == true) {
         combinedPick.style = similarPick.style;
       }
-      if (combinedPick.allocateByReceiptNumber == null || combinedPick.allocateByReceiptNumber.isNotEmpty) {
+      if (combinedPick.allocateByReceiptNumber == null || combinedPick.allocateByReceiptNumber?.isNotEmpty == true) {
         combinedPick.allocateByReceiptNumber = similarPick.allocateByReceiptNumber;
       }
     });
@@ -272,13 +271,13 @@ class _ListPickPageState extends State<ListPickPage> {
       body:
           Column(
             children: <Widget>[
-              buildTwoSectionInformationRow("List Number:", _currentPickList.number),
-              buildTwoSectionInformationRow("Pick Number:", _currentPick == null ? "" : _currentPick.number),
-              buildTwoSectionInformationRow("Location:", _currentPick == null ? "" : _currentPick.sourceLocation.name),
+              buildTwoSectionInformationRow("List Number:", _currentPickList?.number ?? ""),
+              buildTwoSectionInformationRow("Pick Number:", _currentPick?.number ?? ""),
+              buildTwoSectionInformationRow("Location:", _currentPick?.sourceLocation?.name ?? ""),
               _currentPick == null ? Container() : _buildLocationInput(context),
               _currentPick == null ? Container() : _buildLPNInput(context),
-              buildTwoSectionInformationRow("Item Number:", _currentPick == null ? "" : _currentPick.item.name),
-              buildTwoSectionInformationRow("Pick Quantity:", _currentPick == null ? "" : _currentPick.quantity.toString()),
+              buildTwoSectionInformationRow("Item Number:",  _currentPick?.item?.name ?? ""),
+              buildTwoSectionInformationRow("Pick Quantity:", _currentPick?.quantity.toString() ?? ""),
               _currentPick == null ? Container() : _buildQuantityInput(context),
               _buildButtons(context),
             ],
@@ -290,7 +289,7 @@ class _ListPickPageState extends State<ListPickPage> {
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(
         CWMSLocalizations.of(context)!.location,
-      _currentPick.confirmLocationFlag == true || _currentPick.confirmLocationCodeFlag == true ?
+      _currentPick?.confirmLocationFlag == true || _currentPick?.confirmLocationCodeFlag == true ?
           Focus(
               focusNode: _sourceLocationFocusNode,
               child:
@@ -318,7 +317,7 @@ class _ListPickPageState extends State<ListPickPage> {
           :
           Padding(
             padding: EdgeInsets.only(right: 10),
-            child: Text(_currentPick.item.name, textAlign: TextAlign.left ),
+            child: Text(_currentPick?.item?.name ?? "", textAlign: TextAlign.left ),
           ),
     );
   }
@@ -327,7 +326,7 @@ class _ListPickPageState extends State<ListPickPage> {
   Widget _buildLPNInput(BuildContext context) {
     return buildTwoSectionInputRow(
       CWMSLocalizations.of(context)!.lpn,
-        _currentPick.confirmLpnFlag == true ?
+        _currentPick?.confirmLpnFlag == true ?
       Focus(
           focusNode: _lpnFocusNode,
           child:
@@ -399,7 +398,7 @@ class _ListPickPageState extends State<ListPickPage> {
         ElevatedButton(
             onPressed: () async {
 
-              _onPickConfirm(_currentPickList, int.parse(_quantityController.text));
+              _onPickConfirm(_currentPickList!, int.parse(_quantityController.text));
             },
             child: Text(CWMSLocalizations.of(context)!.confirm)
         ),
@@ -494,7 +493,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
     showLoading(context);
     int pickableQuantity = await validateLPNByQuantity(_lpnController.text);
-    pickableQuantity = min(pickableQuantity, _currentPick.quantity - _currentPick.pickedQuantity);
+    pickableQuantity = min(pickableQuantity, _currentPick!.quantity! - _currentPick!.pickedQuantity!);
 
     Navigator.of(context).pop();
     if (pickableQuantity > 0) {
@@ -517,13 +516,13 @@ class _ListPickPageState extends State<ListPickPage> {
     List<Inventory> inventories = [];
     try {
       inventories = await InventoryService.findPickableInventory(
-        _currentPick.itemId, _currentPick.inventoryStatusId,
+        _currentPick!.itemId!, _currentPick!.inventoryStatusId!,
           lpn: lpn,
-          color: _currentPick.color == null ? "" :  _currentPick.color,
-        productSize: _currentPick.productSize == null ? "" :  _currentPick.productSize,
-        style: _currentPick.style == null ? "" :  _currentPick.style,
-        receiptNumber: _currentPick.allocateByReceiptNumber == null ? "" :  _currentPick.allocateByReceiptNumber,
-          locationId: _currentPick.sourceLocationId
+          color: _currentPick?.color ?? "",
+        productSize: _currentPick?.productSize  ?? "",
+        style: _currentPick?.style  ?? "",
+        receiptNumber: _currentPick?.allocateByReceiptNumber  ?? "",
+          locationId: _currentPick?.sourceLocationId
       );
     }
     on WebAPICallException catch(ex) {
@@ -532,17 +531,14 @@ class _ListPickPageState extends State<ListPickPage> {
     }
 
     printLongLogMessage("validateLPNByQuantity, lpn: ${lpn}\n found ${inventories.length} inventory record");
-    if (inventories.isEmpty) {
-      return 0;
-    }
-    return inventories.map((inventory) => inventory.quantity).reduce((a, b) => a + b);
+    return inventories.map((inventory) => inventory.quantity).reduce((a, b) => a! + b!) ?? 0;
   }
 
   void _onPickConfirm(PickList pickList, int confirmedQuantity) async {
 
     int totalPickableQuantity = 0 ;
     pickList.picks.forEach((pick) {
-      totalPickableQuantity += (pick.quantity - pick.pickedQuantity);
+      totalPickableQuantity += (pick.quantity! - pick!.pickedQuantity!);
     });
 
     // over pick for bulk pick is not allowed
@@ -557,12 +553,12 @@ class _ListPickPageState extends State<ListPickPage> {
     try {
       if (_lpnController.text.isNotEmpty) {
         _currentPickList = await PickListService.confirmPickList(
-            pickList, confirmedQuantity, _currentPick.sourceLocationId,  _lpnController.text);
+            pickList, confirmedQuantity, _currentPick!.sourceLocationId!,  _lpnController.text);
       }
       else {
         printLongLogMessage("We will confirm the pick with specify the LPN");
         _currentPickList = await PickListService.confirmPickList(
-            pickList, confirmedQuantity, _currentPick.sourceLocationId);
+            pickList, confirmedQuantity, _currentPick!.sourceLocationId!);
       }
     }
     on WebAPICallException catch(ex) {
@@ -621,7 +617,7 @@ class _ListPickPageState extends State<ListPickPage> {
   }
 
   void _skipCurrentPick() {
-    _currentPick.skipCount++;
+    _currentPick!.skipCount = _currentPick!.skipCount! + 1;
 
     getNextPick();
 
@@ -637,17 +633,17 @@ class _ListPickPageState extends State<ListPickPage> {
   setupControllers(Pick pick) {
 
     if(pick.confirmItemFlag == false) {
-      _itemController.text = pick.item.name;
+      _itemController.text = pick.item?.name ?? "";
     }
     // printLongLogMessage("pick.confirmLocationFlag: ${pick.confirmLocationFlag}");
     // printLongLogMessage("pick.confirmLocationCodeFlag: ${pick.confirmLocationCodeFlag}");
     if (pick.confirmLocationFlag == false &&
         pick.confirmLocationCodeFlag == false) {
-      _sourceLocationController.text = pick.sourceLocation.name;
+      _sourceLocationController.text = pick.sourceLocation?.name ?? "";
     }
-    if (pick.quantity > pick.pickedQuantity) {
+    if (pick!.quantity! > pick!.pickedQuantity!) {
 
-      _quantityController.text = (pick.quantity - pick.pickedQuantity).toString();
+      _quantityController.text = (pick.quantity! - pick!.pickedQuantity!).toString();
     }
     else {
       _quantityController.text = "0";
@@ -662,7 +658,7 @@ class _ListPickPageState extends State<ListPickPage> {
     showLoading(context);
     WarehouseLocation warehouseLocation;
     try {
-      if (_currentPick.confirmLocationCodeFlag) {
+      if (_currentPick?.confirmLocationCodeFlag == true) {
         // ok, the pick is required to verify by location code, make sure
         // the user in put a location code
         warehouseLocation =
@@ -690,7 +686,7 @@ class _ListPickPageState extends State<ListPickPage> {
       showErrorDialog(context, "can't find location by input value ${_sourceLocationController.text}");
       return false;
     }
-    else if (warehouseLocation.id != _currentPick.sourceLocationId) {
+    else if (warehouseLocation.id != _currentPick?.sourceLocationId) {
       showErrorDialog(context, "Location ${_sourceLocationController.text} is not the right location for pick");
       return false;
 
