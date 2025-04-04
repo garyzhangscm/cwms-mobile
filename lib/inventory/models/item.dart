@@ -23,54 +23,54 @@ class Item{
     itemFamily = null;
   }
 
-  int id;
-  String name;
-  String description;
+  int? id;
+  String? name;
+  String? description;
 
-  int clientId;
+  int? clientId;
 
-  Client client;
+  Client? client;
 
-  List<ItemPackageType> itemPackageTypes;
+  List<ItemPackageType> itemPackageTypes = [];
 
-  int warehouseId;
+  int? warehouseId;
 
-  ItemFamily itemFamily;
+  ItemFamily? itemFamily;
 
-  ItemPackageType defaultItemPackageType;
+  ItemPackageType? defaultItemPackageType;
 
 
-  bool trackingColorFlag;
-  String defaultColor;
+  bool? trackingColorFlag;
+  String? defaultColor;
 
-  bool trackingProductSizeFlag;
-  String defaultProductSize;
+  bool? trackingProductSizeFlag;
+  String? defaultProductSize;
 
-  bool trackingStyleFlag;
-  String defaultStyle;
+  bool? trackingStyleFlag;
+  String? defaultStyle;
 
-  bool trackingInventoryAttribute1Flag;
-  String defaultInventoryAttribute1;
+  bool? trackingInventoryAttribute1Flag;
+  String? defaultInventoryAttribute1;
 
-  bool trackingInventoryAttribute2Flag;
-  String defaultInventoryAttribute2;
+  bool? trackingInventoryAttribute2Flag;
+  String? defaultInventoryAttribute2;
 
-  bool trackingInventoryAttribute3Flag;
-  String defaultInventoryAttribute3;
+  bool? trackingInventoryAttribute3Flag;
+  String? defaultInventoryAttribute3;
 
-  bool trackingInventoryAttribute4Flag;
-  String defaultInventoryAttribute4;
+  bool? trackingInventoryAttribute4Flag;
+  String? defaultInventoryAttribute4;
 
-  bool trackingInventoryAttribute5Flag;
-  String defaultInventoryAttribute5;
+  bool? trackingInventoryAttribute5Flag;
+  String? defaultInventoryAttribute5;
 
-  bool kitItemFlag;
+  bool? kitItemFlag;
 
-  int billOfMaterialId;
+  int? billOfMaterialId;
 
-  List<Item> kitInnerItems;
+  List<Item> kitInnerItems = [];
 
-  BillOfMaterial billOfMaterial;
+  BillOfMaterial? billOfMaterial;
 
   //不同的类使用不同的mixin即可
   factory Item.fromJson(Map<String, dynamic> json) => _$ItemFromJson(json);

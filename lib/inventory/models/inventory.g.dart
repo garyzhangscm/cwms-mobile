@@ -57,9 +57,9 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
         : InventoryStatus.fromJson(json['inventoryStatus'] as Map<String, dynamic>)
     ..quantity = json['quantity'] as int
     ..inventoryMovements = (json['inventoryMovements'] as List)
-        ?.map(
-            (e) => e == null ? null : InventoryMovement.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) => InventoryMovement.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..warehouseId = json['warehouseId'] as int
     ..clientId = json['clientId'] as int
     ..inboundQCRequired = json['inboundQCRequired'] == null
@@ -72,9 +72,9 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
         ? null
         : Inventory.fromJson(json['kitInventory'] as Map<String, dynamic>)
     ..kitInnerInventories = (json['kitInnerInventories'] as List)
-        ?.map(
-            (e) => e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+        .map(
+            (e) =>  Inventory.fromJson(e as Map<String, dynamic>))
+        .toList();
 }
 
 Map<String, dynamic> _$InventoryToJson(Inventory instance) => <String, dynamic>{

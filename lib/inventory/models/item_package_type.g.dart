@@ -29,9 +29,9 @@ ItemPackageType _$ItemPackageTypeFromJson(Map<String, dynamic> json) {
         ? null
         : ItemUnitOfMeasure.fromJson(json['trackingLpnUOM'] as Map<String, dynamic>)
     ..itemUnitOfMeasures = (json['itemUnitOfMeasures'] as List)
-        ?.map(
-            (e) => e == null ? null : ItemUnitOfMeasure.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) =>  ItemUnitOfMeasure.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..warehouseId = json['warehouseId'] as int
     ..defaultFlag = json['defaultFlag'] == null ? null : json['defaultFlag'] as bool;
 }

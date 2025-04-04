@@ -95,7 +95,7 @@ class _WorkOrderKPIItemState extends State<WorkOrderKPIItem> {
                     Padding(
                       padding: const EdgeInsets.only(right: 25.0),
                       child:
-                      Text(CWMSLocalizations.of(context).userName),
+                      Text(CWMSLocalizations.of(context)!.userName),
                     ),
 
                     Text(widget.workOrderKPITransaction.username == null ? "" : widget.workOrderKPITransaction.username)
@@ -112,7 +112,7 @@ class _WorkOrderKPIItemState extends State<WorkOrderKPIItem> {
                     Padding(
                       padding: const EdgeInsets.only(right: 25.0),
                       child:
-                      Text(CWMSLocalizations.of(context).workingTeamName),
+                      Text(CWMSLocalizations.of(context)!.workingTeamName),
                     ),
 
                     Text(widget.workOrderKPITransaction.workingTeamName == null ? "" : widget.workOrderKPITransaction.workingTeamName)

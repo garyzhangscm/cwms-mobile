@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inbound/models/receipt.dart';
@@ -22,7 +22,8 @@ import 'package:cwms_mobile/shared/services/barcode_service.dart';
 import 'package:cwms_mobile/shared/services/printing.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:flutter/material.dart';
-import 'package:progress_dialog/progress_dialog.dart';
+import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
+
 
 import '../../inventory/models/item.dart';
 import '../../shared/global.dart';
@@ -33,7 +34,7 @@ import '../../shared/models/printing_strategy.dart';
 
 class ReceivingPage extends StatefulWidget{
 
-  ReceivingPage({Key key}) : super(key: key);
+  ReceivingPage({Key? key}) : super(key: key);
 
 
   @override
@@ -49,15 +50,15 @@ class _ReceivingPageState extends State<ReceivingPage> {
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
 
-  Receipt _currentReceipt;
-  ReceiptLine _currentReceiptLine;
+  Receipt? _currentReceipt;
+  ReceiptLine? _currentReceiptLine;
 
-  List<InventoryStatus> _validInventoryStatus;
-  InventoryStatus _selectedInventoryStatus;
-  ItemPackageType _selectedItemPackageType;
-  ItemUnitOfMeasure _selectedItemUnitOfMeasure;
+  List<InventoryStatus> _validInventoryStatus = [];
+  InventoryStatus? _selectedInventoryStatus;
+  ItemPackageType? _selectedItemPackageType;
+  ItemUnitOfMeasure? _selectedItemUnitOfMeasure;
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
   FocusNode _receiptNumberFocusNode = FocusNode();
   FocusNode _itemFocusNode = FocusNode();
   FocusNode _quantityFocusNode = FocusNode();
@@ -75,7 +76,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
 
   final  _formKey = GlobalKey<FormState>();
-  ProgressDialog pr;
+  ProgressDialog? pr;
 
   @override
   void initState() {
@@ -190,8 +191,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
       return false;
     }
 
-    String receiptIdString = parameters["receiptId"];
-    String receiptLineIdString = parameters["receiptLineId"];
+    String receiptIdString = parameters["receiptId"] ?? "";
+    String receiptLineIdString = parameters["receiptLineId"] ?? "";
 
     bool loadReceiptAndLine = await _loadReceiptAndLineById(receiptIdString, receiptLineIdString);
 
@@ -210,51 +211,51 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
 
     if (parameters.containsKey("quantity")) {
-      _quantityController.text = parameters["quantity"];
+      _quantityController.text = parameters["quantity"] ?? "";
     }
 
 
     if (parameters.containsKey("lpn")) {
-      _lpnController.text = parameters["lpn"];
+      _lpnController.text = parameters["lpn"] ?? "";
     }
 
 
     _inventoryAttributesFromBarcode.clear();
 
     if (parameters.containsKey("color")) {
-      _inventoryAttributesFromBarcode["color"] = parameters["color"];
+      _inventoryAttributesFromBarcode["color"] = parameters["color"] ?? "";
     }
     if (parameters.containsKey("productSize")) {
-      _inventoryAttributesFromBarcode["productSize"] = parameters["productSize"];
+      _inventoryAttributesFromBarcode["productSize"] = parameters["productSize"] ?? "";
     }
     if (parameters.containsKey("style")) {
-      _inventoryAttributesFromBarcode["style"] = parameters["style"];
+      _inventoryAttributesFromBarcode["style"] = parameters["style"] ?? "";
     }
 
     if (parameters.containsKey("inventoryAttribute1")) {
-      _inventoryAttributesFromBarcode["attribute1"] = parameters["inventoryAttribute1"];
+      _inventoryAttributesFromBarcode["attribute1"] = parameters["inventoryAttribute1"] ?? "";
     }
     if (parameters.containsKey("inventoryAttribute2")) {
-      _inventoryAttributesFromBarcode["attribute2"] = parameters["inventoryAttribute2"];
+      _inventoryAttributesFromBarcode["attribute2"] = parameters["inventoryAttribute2"] ?? "";
     }
     if (parameters.containsKey("inventoryAttribute3")) {
-      _inventoryAttributesFromBarcode["attribute3"] = parameters["inventoryAttribute3"];
+      _inventoryAttributesFromBarcode["attribute3"] = parameters["inventoryAttribute3"] ?? "";
     }
     if (parameters.containsKey("inventoryAttribute4")) {
-      _inventoryAttributesFromBarcode["attribute4"] = parameters["inventoryAttribute4"];
+      _inventoryAttributesFromBarcode["attribute4"] = parameters["inventoryAttribute4"] ?? "";
     }
     if (parameters.containsKey("inventoryAttribute5")) {
-      _inventoryAttributesFromBarcode["attribute5"] = parameters["inventoryAttribute5"];
+      _inventoryAttributesFromBarcode["attribute5"] = parameters["inventoryAttribute5"] ?? "";
     }
 
     // whether the kit inner inventory attribute from
     // the kit item's default attribute, or from the container's inventory attribute
     if (parameters.containsKey("kitInnerInventoryWithDefaultAttribute")) {
-      _inventoryAttributesFromBarcode["kitInnerInventoryWithDefaultAttribute"] = parameters["kitInnerInventoryWithDefaultAttribute"];
+      _inventoryAttributesFromBarcode["kitInnerInventoryWithDefaultAttribute"] = parameters["kitInnerInventoryWithDefaultAttribute"] ?? "";
     }
 
     if (parameters.containsKey("kitInnerInventoryAttributeFromKit")) {
-      _inventoryAttributesFromBarcode["kitInnerInventoryAttributeFromKit"] = parameters["kitInnerInventoryAttributeFromKit"];
+      _inventoryAttributesFromBarcode["kitInnerInventoryAttributeFromKit"] = parameters["kitInnerInventoryAttributeFromKit"] ?? "";
     }
 
 
@@ -295,7 +296,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                     // 校验ITEM NUMBER（不能为空）
                     validator: (v) {
 
-                      if (v.trim().isEmpty) {
+                      if (v?.trim().isEmpty ?? true) {
                         return "please scan in item";
                       }
                       return null;
@@ -304,14 +305,13 @@ class _ReceivingPageState extends State<ReceivingPage> {
               // display the item
               buildTwoSectionInformationRow(
                 CWMSLocalizations.of(context).item,
-                _currentReceiptLine.item == null ?
-                    "" : _currentReceiptLine.item.description,
+                    _currentReceiptLine?.item?.description ?? "",
               ),
               buildFourSectionInformationRow(
                   CWMSLocalizations.of(context).expectedQuantity,
-                  _currentReceiptLine.expectedQuantity.toString(),
+                  _currentReceiptLine?.expectedQuantity.toString() ?? "",
                   CWMSLocalizations.of(context).receivedQuantity,
-                 _currentReceiptLine.receivedQuantity.toString()),
+                 _currentReceiptLine?.receivedQuantity.toString()  ?? ""),
 
               // Allow the user to choose item package type
 
@@ -330,10 +330,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
                             Icons.list,
                             size: 20,
                           ),
-                          onChanged: (T) {
+                          onChanged: (ItemPackageType? value) {
                             //下拉菜单item点击之后的回调
                             setState(() {
-                              _selectedItemPackageType = T;
+                              _selectedItemPackageType = value;
                             });
                           },
                         )
@@ -352,10 +352,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
                       Icons.list,
                       size: 20,
                     ),
-                    onChanged: (T) {
+                    onChanged: (InventoryStatus? value) {
                       //下拉菜单item点击之后的回调
                       setState(() {
-                        _selectedInventoryStatus = T;
+                        _selectedInventoryStatus = value;
                       });
                     },
                   )
@@ -378,11 +378,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
                       ),
                       // 校验ITEM NUMBER（不能为空）
                       validator: (v) {
-                        if (v.trim().isEmpty) {
+                        if (v?.trim().isEmpty ?? true) {
                           return "please type in quantity";
                         }
                         if (!_validateOverReceiving(
-                            _currentReceiptLine, int.parse(_quantityController.text))) {
+                            _currentReceiptLine!, int.parse(_quantityController.text))) {
 
                           return "over receive is not allowed";
                         }
@@ -400,10 +400,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
                           Icons.list,
                           size: 20,
                         ),
-                        onChanged: (T) {
+                        onChanged: (ItemUnitOfMeasure? value) {
                           //下拉菜单item点击之后的回调
                           setState(() {
-                            _selectedItemUnitOfMeasure = T;
+                            _selectedItemUnitOfMeasure = value;
                           });
                         },
                       )
@@ -424,7 +424,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                             // if we only need one LPN, then make sure the user input the LPN in this form.
                             // otherwise, we will flow to next LPN Capture form to let the user capture
                             // more LPNs
-                            if (v.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
+                            if ((v?.trim().isEmpty ?? true) && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
                               return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
                             }
 
@@ -484,7 +484,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
             ),
             // 校验ITEM NUMBER（不能为空）
             validator: (v) {
-              if (v.trim().isEmpty) {
+              if (v?.trim().isEmpty ?? true) {
                 return "please scan in receipt";
               }
               return null;
@@ -498,14 +498,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
       context,
       ElevatedButton(
         onPressed: () {
-          if (_formKey.currentState.validate()) {
+          if (_formKey.currentState?.validate() ?? false) {
 
             print("1. _readyToConfirm? $_readyToConfirm");
             if (_readyToConfirm == true) {
               _readyToConfirm = false;
               print("1. form validation passed");
               print("1. set _readyToConfirm to false");
-              _onRecevingConfirm(_currentReceiptLine,
+              _onRecevingConfirm(_currentReceiptLine!,
                   int.parse(_quantityController.text),
                   _lpnController.text);
             }
@@ -516,7 +516,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
             .of(context)
             .confirm),
       ),
-      Badge(
+      badge.Badge(
         showBadge: true,
         padding: EdgeInsets.all(8),
         badgeColor: Colors.deepPurple,
@@ -553,21 +553,21 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // expected quantity or the arrived quantity. It is based on configuraiton
     // and we will postponed to the actual receiving web call to
     // let the server decides whether it is a over receiving
-    int maxExpectedQuantity = receiptLine.arrivedQuantity > receiptLine.expectedQuantity ?
-        receiptLine.arrivedQuantity  : receiptLine.expectedQuantity ;
-    double openQuantity = (maxExpectedQuantity - receiptLine.receivedQuantity) * 1.0;
-    if (receiptLine.overReceivingQuantity > 0) {
-      openQuantity += receiptLine.overReceivingQuantity;
+    int maxExpectedQuantity = receiptLine.arrivedQuantity! > receiptLine.expectedQuantity! ?
+        receiptLine.arrivedQuantity!  : receiptLine.expectedQuantity! ;
+    double openQuantity = (maxExpectedQuantity - receiptLine.receivedQuantity!) * 1.0;
+    if (receiptLine.overReceivingQuantity! > 0) {
+      openQuantity += receiptLine.overReceivingQuantity!;
     }
-    else if (receiptLine.overReceivingPercent > 0) {
+    else if (receiptLine.overReceivingPercent! > 0) {
       openQuantity = openQuantity +
-          receiptLine.expectedQuantity * (100 + receiptLine.overReceivingPercent) / 100;
+          receiptLine.expectedQuantity! * (100 + receiptLine.overReceivingPercent!) / 100;
     }
     return openQuantity >= receivingQuantity;
   }
 
-  List<DropdownMenuItem> _getInventoryStatusItems() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
+    List<DropdownMenuItem<InventoryStatus>> items = [];
     if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
       return items;
     }
@@ -590,22 +590,22 @@ class _ReceivingPageState extends State<ReceivingPage> {
     return items;
   }
 
-  List<DropdownMenuItem> _getItemPackageTypeItems() {
+  List<DropdownMenuItem<ItemPackageType>> _getItemPackageTypeItems() {
 
 
-    List<DropdownMenuItem> items = [];
-    if (_currentReceiptLine.item.itemPackageTypes.length > 0) {
+    List<DropdownMenuItem<ItemPackageType>> items = [];
+    if (_currentReceiptLine!.item!.itemPackageTypes.length > 0) {
       // _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes[0];
 
-      for (int i = 0; i < _currentReceiptLine.item.itemPackageTypes.length; i++) {
+      for (int i = 0; i < _currentReceiptLine!.item!.itemPackageTypes.length; i++) {
 
         items.add(DropdownMenuItem(
-          value: _currentReceiptLine.item.itemPackageTypes[i],
-          child: Text(_currentReceiptLine.item.itemPackageTypes[i].description),
+          value: _currentReceiptLine!.item!.itemPackageTypes[i],
+          child: Text(_currentReceiptLine!.item!.itemPackageTypes[i].description),
         ));
       }
-      if (_currentReceiptLine.item.itemPackageTypes.length == 1 ||
-          (_selectedItemPackageType == null || _selectedItemPackageType.id == null)) {
+      if (_currentReceiptLine!.item!.itemPackageTypes.length == 1 ||
+          (_selectedItemPackageType == null || _selectedItemPackageType?.id == null)) {
         // if we only have one item package type for this item, then
         // default the selection to it
         // if the user has not select any item package type yet, then
@@ -617,13 +617,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
         // if (_currentReceiptLine.itemPackageTypeId != null)
         setState(() {
-          _selectedItemPackageType = getDefaultItemPackageType(_currentReceiptLine);
+          _selectedItemPackageType = getDefaultItemPackageType(_currentReceiptLine!);
 
         });
       }
       else if (_selectedItemPackageType != null){
           setState(() {
-            _selectedItemPackageType = _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.id == _selectedItemPackageType.id);
+            _selectedItemPackageType = _currentReceiptLine!.item!.itemPackageTypes
+                .firstWhere((element) => element.id == _selectedItemPackageType?.id);
           });
       }
     }
@@ -636,31 +637,31 @@ class _ReceivingPageState extends State<ReceivingPage> {
   // 3. first item package type of the item
   ItemPackageType getDefaultItemPackageType(ReceiptLine receiptLine) {
       if (receiptLine.itemPackageTypeId != null) {
-        return _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.id == receiptLine.itemPackageTypeId);
+        return _currentReceiptLine!.item!.itemPackageTypes.firstWhere((element) => element.id == receiptLine.itemPackageTypeId);
       }
 
 
       ItemPackageType defaultItemPackageType =
-          _currentReceiptLine.item.itemPackageTypes.firstWhere((element) => element.defaultFlag == true, orElse: () => null);
+          _currentReceiptLine!.item!.itemPackageTypes.firstWhere((element) => element.defaultFlag == true);
 
-      return defaultItemPackageType == null ? _currentReceiptLine.item.itemPackageTypes[0] : defaultItemPackageType;
+      return defaultItemPackageType == null ? _currentReceiptLine!.item!.itemPackageTypes[0] : defaultItemPackageType;
   }
 
-  List<DropdownMenuItem> _getItemUnitOfMeasures() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<ItemUnitOfMeasure>> _getItemUnitOfMeasures() {
+    List<DropdownMenuItem<ItemUnitOfMeasure>> items = [];
 
-    if ( _selectedItemPackageType == null || _selectedItemPackageType.itemUnitOfMeasures == null ||
-        _selectedItemPackageType.itemUnitOfMeasures.length == 0) {
+    if ( _selectedItemPackageType == null || _selectedItemPackageType?.itemUnitOfMeasures == null ||
+        _selectedItemPackageType?.itemUnitOfMeasures.length == 0) {
       // if the user has not selected any item package type yet
       // return nothing
       return items;
     }
 
-    for (int i = 0; i < _selectedItemPackageType.itemUnitOfMeasures.length; i++) {
+    for (int i = 0; i < _selectedItemPackageType!.itemUnitOfMeasures.length; i++) {
 
         items.add(DropdownMenuItem(
-          value:  _selectedItemPackageType.itemUnitOfMeasures[i],
-          child: Text( _selectedItemPackageType.itemUnitOfMeasures[i].unitOfMeasure.name),
+          value:  _selectedItemPackageType?.itemUnitOfMeasures[i],
+          child: Text( _selectedItemPackageType!.itemUnitOfMeasures[i].unitOfMeasure.name ?? ""),
         ));
       }
 
@@ -671,12 +672,12 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // then we know that we just changed the item package type or item, so we will need
     // to refresh the _selectedItemUnitOfMeasure to the default inbound receiving uom as well
     if (_selectedItemUnitOfMeasure == null ||
-            !_selectedItemPackageType.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
+            !_selectedItemPackageType!.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
         // if the user has not select any item unit of measure yet, then
         // default the value to the one marked as 'default for inbound receiving'
 
-        _selectedItemUnitOfMeasure = _selectedItemPackageType.itemUnitOfMeasures
-            .firstWhere((element) => element.id == _selectedItemPackageType.defaultInboundReceivingUOM.id);
+        _selectedItemUnitOfMeasure = _selectedItemPackageType!.itemUnitOfMeasures
+            .firstWhere((element) => element.id == _selectedItemPackageType!.defaultInboundReceivingUOM.id);
     }
 
     return items;
@@ -727,7 +728,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   Future<bool> _validateQuantityForSingleLPN(int confirmedQuantity) async {
 
-    if (_selectedItemPackageType.trackingLpnUOM == null) {
+    if (_selectedItemPackageType?.trackingLpnUOM == null) {
       // the tracking LPN UOM is not defined for this item package type
       // so no matter what's the quantity the user input, we will always
       // take it as PASS
@@ -737,7 +738,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // the user to make sure it is not a typo. Since we already define the LPN
     // uom, normally the quantity of the single LPN won't exceed the standard
     // lpn UOM's quantity
-    if (confirmedQuantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
+    if (confirmedQuantity > _selectedItemPackageType!.trackingLpnUOM.quantity) {
       // bool continueWithExceedQuantity = await showYesNoDialog(context, "lpn validation", "lpn quantity exceed the standard quantity, continue?");
       bool continueWithExceedQuantity = false;
       await showYesNoDialog(context, CWMSLocalizations.of(context).lpnQuantityExceedWarningTitle, CWMSLocalizations.of(context).lpnQuantityExceedWarningMessage,
@@ -792,10 +793,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
         _currentReceiptLine;
       });
 
-      _receiptNumberController.text = _currentReceipt.number;
-      printLongLogMessage("current receipt ${_currentReceipt.number}");
+      _receiptNumberController.text = _currentReceipt!.number ?? "";
+      printLongLogMessage("current receipt ${_currentReceipt?.number}");
 
-      _itemController.text = _currentReceiptLine.item.name;
+      _itemController.text = _currentReceiptLine!.item?.name ?? "";
       Navigator.of(context).pop();
       return true;
 
@@ -828,9 +829,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     }
     Map<String, String> inventoryAttributes = new Map();
-    if (_needCaptureInventoryAttribute(_currentReceiptLine.item)) {
+    if (_needCaptureInventoryAttribute(_currentReceiptLine!.item!)) {
 
-      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentReceiptLine.item.name}");
+      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentReceiptLine!.item!.name}");
       printLongLogMessage("_inventoryAttributesFromBarcode.isNotEmpty? ${_inventoryAttributesFromBarcode.isNotEmpty}");
 
       if (_inventoryAttributesFromBarcode.isNotEmpty) {
@@ -842,7 +843,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       else {
 
         final result = await Navigator.of(context)
-            .pushNamed("inventory_attribute_capture", arguments: _currentReceiptLine.item);
+            .pushNamed("inventory_attribute_capture", arguments: _currentReceiptLine!.item);
 
         inventoryAttributes = result as Map<String, String>;
       }
@@ -850,17 +851,17 @@ class _ReceivingPageState extends State<ReceivingPage> {
     }
     try {
       Inventory inventory = await ReceiptService.receiveInventory(
-          _currentReceipt, _currentReceiptLine,
-          _lpnController.text, _selectedInventoryStatus,
-          _selectedItemPackageType, int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity,
-          inventoryAttributes.containsKey("color") ? inventoryAttributes["color"] : "",
-          inventoryAttributes.containsKey("productSize") ? inventoryAttributes["productSize"] : "",
-          inventoryAttributes.containsKey("style") ? inventoryAttributes["style"] : "",
-          inventoryAttributes.containsKey("attribute1") ? inventoryAttributes["attribute1"] : "",
-          inventoryAttributes.containsKey("attribute2") ? inventoryAttributes["attribute2"] : "",
-          inventoryAttributes.containsKey("attribute3") ? inventoryAttributes["attribute3"] : "",
-          inventoryAttributes.containsKey("attribute4") ? inventoryAttributes["attribute4"] : "",
-          inventoryAttributes.containsKey("attribute5") ? inventoryAttributes["attribute5"] : "",
+          _currentReceipt!, _currentReceiptLine!,
+          _lpnController.text, _selectedInventoryStatus!,
+          _selectedItemPackageType!, int.parse(_quantityController.text) * _selectedItemUnitOfMeasure!.quantity,
+          inventoryAttributes.containsKey("color") ? (inventoryAttributes["color"] ?? "") : "",
+          inventoryAttributes.containsKey("productSize") ? inventoryAttributes["productSize"] ?? "" : "",
+          inventoryAttributes.containsKey("style") ? inventoryAttributes["style"] ?? ""  : "",
+          inventoryAttributes.containsKey("attribute1") ? inventoryAttributes["attribute1"] ?? ""  : "",
+          inventoryAttributes.containsKey("attribute2") ? inventoryAttributes["attribute2"] ?? ""  : "",
+          inventoryAttributes.containsKey("attribute3") ? inventoryAttributes["attribute3"] ?? ""  : "",
+          inventoryAttributes.containsKey("attribute4") ? inventoryAttributes["attribute4"] ?? ""  : "",
+          inventoryAttributes.containsKey("attribute5") ? inventoryAttributes["attribute5"] ?? ""  : "",
           inventoryAttributes.containsKey("kitInnerInventoryWithDefaultAttribute") ?
               (inventoryAttributes["kitInnerInventoryWithDefaultAttribute"] as bool) : false,
           inventoryAttributes.containsKey("kitInnerInventoryAttributeFromKit") ?
@@ -908,7 +909,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       return ;
     }
     // download the LPN label
-    InventoryService.autoPrintLPNLabel(inventory);
+    InventoryService.autoPrintLPNLabel(context, inventory);
   }
   bool _needCaptureInventoryAttribute(Item item) {
     printLongLogMessage("check if we need to capture inventory attribute for the item ${item.name}");
@@ -932,20 +933,20 @@ class _ReceivingPageState extends State<ReceivingPage> {
   int _getRequiredLPNCount(int totalQuantity) {
 
     int lpnCount = 0;
-    if (_selectedItemPackageType.trackingLpnUOM == null) {
+    if (_selectedItemPackageType!.trackingLpnUOM == null) {
        // the tracking LPN UOM is not defined for this item package type, so we don't know
       // how to calculate how many LPNs we may need based on the UOM and quantity
       lpnCount = 1;
     }
-    else if (_selectedItemUnitOfMeasure.quantity == _selectedItemPackageType.trackingLpnUOM.quantity) {
+    else if (_selectedItemUnitOfMeasure!.quantity == _selectedItemPackageType!.trackingLpnUOM.quantity) {
       // we are receiving at LPN uom level, then see what's the quantity the user specify
       lpnCount = totalQuantity;
     }
-    else if (_selectedItemUnitOfMeasure.quantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
+    else if (_selectedItemUnitOfMeasure!.quantity > _selectedItemPackageType!.trackingLpnUOM.quantity) {
       // we are receiving at some higher level, see how many LPN uom we will need
-      printLongLogMessage("totalQuantity: ${totalQuantity}, _selectedItemUnitOfMeasure.quantity: ${_selectedItemUnitOfMeasure.quantity}");
-      printLongLogMessage("_selectedItemPackageType.trackingLpnUOM.quantity: ${_selectedItemPackageType.trackingLpnUOM.quantity}");
-      lpnCount = totalQuantity * _selectedItemUnitOfMeasure.quantity ~/ _selectedItemPackageType.trackingLpnUOM.quantity;
+      printLongLogMessage("totalQuantity: ${totalQuantity}, _selectedItemUnitOfMeasure.quantity: ${_selectedItemUnitOfMeasure!.quantity}");
+      printLongLogMessage("_selectedItemPackageType.trackingLpnUOM.quantity: ${_selectedItemPackageType!.trackingLpnUOM.quantity}");
+      lpnCount = totalQuantity * _selectedItemUnitOfMeasure!.quantity ~/ _selectedItemPackageType!.trackingLpnUOM.quantity;
     }
     else{
       // we are receiving at some lower level than the tracking LPN UOM,
@@ -996,9 +997,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
         printLongLogMessage("add current LPN $lpn first so that the user don't have to scan in again");
       }
       LpnCaptureRequest lpnCaptureRequest = new LpnCaptureRequest.withData(
-          receiptLine.item,
-          _selectedItemPackageType,
-          _selectedItemPackageType.trackingLpnUOM,
+          receiptLine!.item!,
+          _selectedItemPackageType!,
+          _selectedItemPackageType!.trackingLpnUOM,
           lpnCount, capturedLpn,
         true
       );
@@ -1064,11 +1065,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
         String message = CWMSLocalizations.of(context).receivingCurrentLpn + ": " +
             lpn + ", " + currentLPNIndex.toString() + " / " + totalLPNCount.toString();
 
-        pr.update(progress: progress, message: message);
+        pr!.update(progress: progress, message: message);
         Inventory inventory = await ReceiptService.receiveInventory(
-            _currentReceipt, _currentReceiptLine,
-            lpn, _selectedInventoryStatus,
-            _selectedItemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity,
+            _currentReceipt!, _currentReceiptLine!,
+            lpn, _selectedInventoryStatus!,
+            _selectedItemPackageType!, lpnCaptureRequest.lpnUnitOfMeasure!.quantity,
             "", "", "",
             "", "", "","", "", false, false
         );
@@ -1093,8 +1094,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     }
 
-    if (pr.isShowing()) {
-      pr.hide();
+    if (pr!.isShowing()) {
+      pr!.hide();
     }
     _refreshScreenAfterReceive(qcRequired);
 
@@ -1104,14 +1105,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     pr = new ProgressDialog(
       context,
-      type: ProgressDialogType.Normal,
+      type: ProgressDialogType.normal,
       isDismissible: false,
       showLogs: true,
     );
 
-    pr.style(message: CWMSLocalizations.of(context).receivingMultipleLpns);
-    if (!pr.isShowing()) {
-      pr.show();
+    pr!.style(message: CWMSLocalizations.of(context).receivingMultipleLpns);
+    if (!pr!.isShowing()) {
+      pr!.show();
     }
   }
   _refreshScreenAfterReceive(bool qcRequired) {
@@ -1193,7 +1194,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           }
           else {
 
-            if (_currentReceipt != null && _currentReceipt.id != receipt.id) {
+            if (_currentReceipt != null && _currentReceipt!.id != receipt.id) {
 
               // the user scan in a new receipt, let's clear all the fields if needed
               _clearReceiptLineInformation();
@@ -1229,14 +1230,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
   _loadReceiptLine(String itemNumber) {
     // we can only load the line from current receipt
     // based on the item being scanned
-    if (_currentReceipt.receiptLines.isEmpty ||
+    if (_currentReceipt!.receiptLines.isEmpty ||
         itemNumber.isEmpty) {
       return ;
     }
 
     setState(() {
-      _currentReceiptLine =  _currentReceipt.receiptLines.firstWhere(
-              (receiptLine) => receiptLine.item.name == itemNumber);
+      _currentReceiptLine =  _currentReceipt!.receiptLines.firstWhere(
+              (receiptLine) => receiptLine!.item!.name == itemNumber);
     });
 
 
@@ -1320,8 +1321,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
     int totalExpectedQuantity = 0;
     int totalReceivedQuantity = 0;
     receipt.receiptLines.forEach((receiptLine) {
-      totalExpectedQuantity += receiptLine.expectedQuantity;
-      totalReceivedQuantity += receiptLine.receivedQuantity;
+      totalExpectedQuantity += receiptLine!.expectedQuantity!;
+      totalReceivedQuantity += receiptLine!.receivedQuantity!;
     });
     receipt.totalReceivedQuantity = totalReceivedQuantity;
     receipt.totalExpectedQuantity = totalExpectedQuantity;
@@ -1361,7 +1362,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         _currentReceipt = receipt;
         _currentReceiptLine = new ReceiptLine();
 
-        _receiptNumberController.text = receipt.number;
+        _receiptNumberController.text = receipt!.number ?? "";
         _clearReceiptLineInformation();
       });
     }
@@ -1371,7 +1372,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
   // Show all items on this receipt
   _showChoosingItemsDialog() async {
     showLoading(context);
-    List<ReceiptLine> receiptLines = _currentReceipt.receiptLines;
+    List<ReceiptLine> receiptLines = _currentReceipt!.receiptLines;
 
     // 隐藏loading框
     Navigator.of(context).pop();
@@ -1430,7 +1431,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       setState(() {
 
         _currentReceiptLine = receiptLine;
-        _itemController.text = receiptLine.item.name;
+        _itemController.text = receiptLine!.item!.name ?? "";
       });
     }
     _quantityFocusNode.requestFocus();
@@ -1495,7 +1496,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // action listner handler fired before the input characters are
     // full assigned to the lpnController.
 
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
 
       if (_readyToConfirm == true) {
         // set ready to confirm to fail so other trigger point
@@ -1507,7 +1508,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         // so when we blur the LPN controller by clicking the confirm button, the
         // _onRecevingConfirm function will be fired twice
         _readyToConfirm = false;
-        _onRecevingConfirm(_currentReceiptLine,
+        _onRecevingConfirm(_currentReceiptLine!,
             int.parse(_quantityController.text),
             _lpnController.text);
       }

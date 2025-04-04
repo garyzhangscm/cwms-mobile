@@ -148,7 +148,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
                         children: [
                           Icon(widget.highPriorityFlag ?
                             Icons.star : Icons.star_border),
-                          Text(CWMSLocalizations.of(context).highPriority),
+                          Text(CWMSLocalizations.of(context)!.highPriority),
 
                         ],
                       ),
@@ -160,7 +160,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
                       children: [
                         Icon(widget.sharedFlag ?
                             Icons.share : Icons.share_outlined),
-                        Text(CWMSLocalizations.of(context).share),
+                        Text(CWMSLocalizations.of(context)!.share),
                       ],
                     ),
                   ),
@@ -170,7 +170,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
                       Column(
                         children: [
                           Icon(Icons.delete), //我们的自定义图标
-                          Text(CWMSLocalizations.of(context).remove),
+                          Text(CWMSLocalizations.of(context)!.remove),
                         ],
                       )
                  ),

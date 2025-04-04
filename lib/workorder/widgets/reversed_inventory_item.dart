@@ -100,7 +100,7 @@ class _ReversedInventoryItemState extends State<ReversedInventoryItem> {
                         Row(
                             children: <Widget>[
                               Text(
-                                CWMSLocalizations.of(context).item + ": ",
+                                CWMSLocalizations.of(context)!.item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -122,7 +122,7 @@ class _ReversedInventoryItemState extends State<ReversedInventoryItem> {
                         Row(
                             children: <Widget>[
                               Text(
-                                  CWMSLocalizations.of(context).quantity + ": ",
+                                  CWMSLocalizations.of(context)!.quantity + ": ",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,

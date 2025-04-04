@@ -128,7 +128,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).productionLineCheckIn)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.productionLineCheckIn)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -155,10 +155,10 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                   children: <Widget>[
                     // Allow the user to choose production line
                     buildTwoSectionInputRow(
-                        CWMSLocalizations.of(context).productionLine,
+                        CWMSLocalizations.of(context)!.productionLine,
                         DropdownButton(
                           focusNode: _productionLineNode,
-                          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                          hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                           items: _getValidProductionLines(),
                           value: _selectedProductionLine == null ?  null : _selectedProductionLine,
                           elevation: 1,
@@ -178,24 +178,24 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                         )
                     ),
                     buildTwoSectionInputRow(
-                        CWMSLocalizations.of(context).userName,
+                        CWMSLocalizations.of(context)!.userName,
                         TextFormField(
                         focusNode: _usernameFocusNode,
                         controller: _usernameController,
                         textInputAction: TextInputAction.next,
                         validator: (v) {
                           if (_incorrectUsername) {
-                            return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).userName);
+                            return CWMSLocalizations.of(context)!.incorrectValue(CWMSLocalizations.of(context)!.userName);
                           }
                           return v.trim().isNotEmpty ? null :
-                          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).userName);
+                          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.userName);
                         },
                       ),
                     ),
                     _currentUser == null? new Container() :
                       buildTwoSectionInformationRow(
 
-                        CWMSLocalizations.of(context).userName,
+                        CWMSLocalizations.of(context)!.userName,
                           _currentUser.username + " (" + _currentUser.firstname + ", " + _currentUser.lastname + ")"
                       )
                     /**
@@ -208,7 +208,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                             Padding(
                               padding: EdgeInsets.only(right: 20),
                               child:
-                              Text(CWMSLocalizations.of(context).productionLine,
+                              Text(CWMSLocalizations.of(context)!.productionLine,
                                 textAlign: TextAlign.left,
                               ),
                             ),
@@ -216,7 +216,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                                 child:
                                 DropdownButton(
                                   focusNode: _productionLineNode,
-                                  hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                                  hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                                   items: _getValidProductionLines(),
                                   value: _selectedProductionLine == null ?  null : _selectedProductionLine,
                                   elevation: 1,
@@ -247,7 +247,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                             Padding(
                               padding: EdgeInsets.only(right: 20),
                               child:
-                              Text(CWMSLocalizations.of(context).userName,
+                              Text(CWMSLocalizations.of(context)!.userName,
                                 textAlign: TextAlign.left,
                               ),
                             ),
@@ -260,10 +260,10 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                                     textInputAction: TextInputAction.next,
                                     validator: (v) {
                                       if (_incorrectUsername) {
-                                        return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).userName);
+                                        return CWMSLocalizations.of(context)!.incorrectValue(CWMSLocalizations.of(context)!.userName);
                                       }
                                       return v.trim().isNotEmpty ? null :
-                                          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).userName);
+                                          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.userName);
                                     },
                                 ),
                             ),
@@ -317,7 +317,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                       }
 
                     },
-            child: Text(CWMSLocalizations.of(context).productionLineCheckIn),
+            child: Text(CWMSLocalizations.of(context)!.productionLineCheckIn),
           )
         );
 
@@ -344,16 +344,16 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
         new Column(
             children: [
               buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context).productionLine,
+                  CWMSLocalizations.of(context)!.productionLine,
                   _workOrderLabor == null ? "" : _workOrderLabor.productionLine.name
               ),
               buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context).userName,
+                  CWMSLocalizations.of(context)!.userName,
                       _workOrderLabor == null ? ""
                           : _workOrderLabor.username
               ),
               buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context).transactionTime,
+                  CWMSLocalizations.of(context)!.transactionTime,
                   _workOrderLabor == null ?
                     "" :
                     DateFormat("MM/dd/yyyy HH:mm:ss").format(_workOrderLabor.lastCheckInTime)
@@ -401,7 +401,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
     if (workOrders.isEmpty) {
       // no work order is assigned yet, there's no need to check in
       // an empty production line
-      showToast(CWMSLocalizations.of(context).noWorkOrderFoundOnProductionLine);
+      showToast(CWMSLocalizations.of(context)!.noWorkOrderFoundOnProductionLine);
       Navigator.of(context).pop();
       return;
 
@@ -429,7 +429,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
     print("production line check in transaction saved!");
 
-    showToast(CWMSLocalizations.of(context).actionComplete);
+    showToast(CWMSLocalizations.of(context)!.actionComplete);
     _usernameController.clear();
     _usernameFocusNode.requestFocus();
     _currentUser = null;

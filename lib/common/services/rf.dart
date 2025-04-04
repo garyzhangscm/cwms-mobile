@@ -77,9 +77,8 @@ class RFService {
     print("getRFByCodeAndWarehouseId returns: ${responseString["data"]}");
 
     List<RF> rfs
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : RF.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => RF.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     if (rfs == null || rfs.isEmpty) {
 

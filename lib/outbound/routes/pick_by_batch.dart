@@ -12,7 +12,7 @@ import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/material.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 
 import '../../shared/global.dart';
 import '../models/pick_mode.dart';
@@ -83,7 +83,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -111,7 +111,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                         autofocus: true,
                         focusNode: _pickNumberFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context).pick,
+                          labelText: CWMSLocalizations.of(context)!.pick,
                           hintText: "please input pick number",
                           suffixIcon:
                           Row(
@@ -139,9 +139,9 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _currentPickBatch != null && _currentPickBatch.isNotEmpty ? _startBatchPicking : null,
-                child: Text(CWMSLocalizations.of(context).start)
+                child: Text(CWMSLocalizations.of(context)!.start)
             ),
-            Badge(
+            badge.Badge(
               showBadge: true,
               padding: EdgeInsets.all(8),
               badgeColor: Colors.deepPurple,
@@ -154,7 +154,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
                 ),
               ),
             )
@@ -373,14 +373,14 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
             height: 75,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context).pick + ": " + _currentPickBatch[index].number),
+              title: Text(CWMSLocalizations.of(context)!.pick + ": " + _currentPickBatch[index].number),
               subtitle:
                 Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).item + ": ",
+                              CWMSLocalizations.of(context)!.item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -402,7 +402,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).quantity + ": ",
+                              CWMSLocalizations.of(context)!.quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -424,7 +424,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).location + ": ",
+                              CWMSLocalizations.of(context)!.location + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,

@@ -21,71 +21,71 @@ part 'inventory.g.dart';
 class Inventory{
   Inventory() ;
 
-  int id;
-  String lpn;
+  int? id;
+  String? lpn;
 
-  int locationId;
-  WarehouseLocation location;
+  int? locationId;
+  WarehouseLocation? location;
 
-  String locationName;
+  String? locationName;
 
   // if the inventory is picked, then
   // those 2 fields has the pick information
-  int pickId;
-  Pick pick;
+  int? pickId;
+  Pick? pick;
 
   // setup when the inventory is received from
   // receipt or work order
-  int receiptId;
-  Receipt receipt;
-  String receiptNumber;
-  int receiptLineId;
-  ReceiptLine receiptLine;
-  int workOrderId;
-  WorkOrder workOrder;
-  int workOrderLineId;
-  int workOrderByProductId;
+  int? receiptId;
+  Receipt? receipt;
+  String? receiptNumber;
+  int? receiptLineId;
+  ReceiptLine? receiptLine;
+  int? workOrderId;
+  WorkOrder? workOrder;
+  int? workOrderLineId;
+  int? workOrderByProductId;
 
-  bool virtual;
+  bool? virtual;
 
-  Item item;
-  ItemPackageType itemPackageType;
-  InventoryStatus inventoryStatus;
+  Item? item;
+  ItemPackageType? itemPackageType;
+  InventoryStatus? inventoryStatus;
 
-  int quantity;
+  int? quantity;
 
-  int warehouseId;
-  Warehouse warehouse;
+  int? warehouseId;
+  Warehouse? warehouse;
 
-  List<InventoryMovement> inventoryMovements;
+  List<InventoryMovement> inventoryMovements = [];
 
-  bool inboundQCRequired;
+  bool? inboundQCRequired;
 
-  int clientId;
+  int? clientId;
 
-  Client client;
+  Client? client;
 
-  String color;
-  String productSize;
-  String style;
-  String attribute1;
-  String attribute2;
-  String attribute3;
-  String attribute4;
-  String attribute5;
-
-
+  String? color;
+  String? productSize;
+  String? style;
+  String? attribute1;
+  String? attribute2;
+  String? attribute3;
+  String? attribute4;
+  String? attribute5;
 
 
-  bool kitInventoryFlag;
-  bool kitInnerInventoryFlag;
-
-  Inventory kitInventory;
-  List<Inventory> kitInnerInventories;
-  DateTime lastQCTime;
 
 
-  WarehouseLocation getNextDepositLocaiton() {
+  bool? kitInventoryFlag;
+  bool? kitInnerInventoryFlag;
+
+  Inventory? kitInventory;
+  List<Inventory> kitInnerInventories = [];
+  DateTime? lastQCTime;
+
+
+  WarehouseLocation? getNextDepositLocaiton() {
     if (inventoryMovements == null || inventoryMovements.isEmpty) {
       return null;
     }

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -267,7 +267,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).listPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.listPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -289,7 +289,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).location,
+        CWMSLocalizations.of(context)!.location,
       _currentPick.confirmLocationFlag == true || _currentPick.confirmLocationCodeFlag == true ?
           Focus(
               focusNode: _sourceLocationFocusNode,
@@ -326,7 +326,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
   Widget _buildLPNInput(BuildContext context) {
     return buildTwoSectionInputRow(
-      CWMSLocalizations.of(context).lpn,
+      CWMSLocalizations.of(context)!.lpn,
         _currentPick.confirmLpnFlag == true ?
       Focus(
           focusNode: _lpnFocusNode,
@@ -365,7 +365,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
   Widget _buildQuantityInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).quantity,
+        CWMSLocalizations.of(context)!.quantity,
         Focus(
             focusNode: _quantityFocusNode,
             child:
@@ -401,13 +401,13 @@ class _ListPickPageState extends State<ListPickPage> {
 
               _onPickConfirm(_currentPickList, int.parse(_quantityController.text));
             },
-            child: Text(CWMSLocalizations.of(context).confirm)
+            child: Text(CWMSLocalizations.of(context)!.confirm)
         ),
         ElevatedButton(
             onPressed: _skipCurrentPick,
-            child: Text(CWMSLocalizations.of(context).skip)
+            child: Text(CWMSLocalizations.of(context)!.skip)
         ),
-        Badge(
+        badge.Badge(
             showBadge: true,
             padding: EdgeInsets.all(8),
             badgeColor: Colors.deepPurple,
@@ -420,7 +420,7 @@ class _ListPickPageState extends State<ListPickPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
                 )
             ),
 
@@ -437,7 +437,7 @@ class _ListPickPageState extends State<ListPickPage> {
     // right location
     if (_sourceLocationController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).location));
+          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.location));
       _sourceLocationControllerFocusNode.requestFocus();
       return;
     }
@@ -473,7 +473,7 @@ class _ListPickPageState extends State<ListPickPage> {
     // right location
     if (_lpnController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn));
+          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn));
       _lpnControllerFocusNode.requestFocus();
       return;
     }
@@ -548,7 +548,7 @@ class _ListPickPageState extends State<ListPickPage> {
     // over pick for bulk pick is not allowed
     if (confirmedQuantity > totalPickableQuantity) {
       showErrorDialog(context,
-        CWMSLocalizations.of(context).overPickNotAllowed);
+        CWMSLocalizations.of(context)!.overPickNotAllowed);
       return;
     }
 

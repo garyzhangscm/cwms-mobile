@@ -24,19 +24,19 @@ class ItemSampling{
      this.enabled = true;
   }
 
-  int id;
+  int? id;
 
-  String number;
-  String description;
+  String? number;
+  String? description;
 
-  int warehouseId;
+  int? warehouseId;
 
-  String imageUrls;
+  String? imageUrls;
 
 
-  Item item;
+  Item? item;
 
-  bool enabled;
+  bool? enabled;
 
 
 

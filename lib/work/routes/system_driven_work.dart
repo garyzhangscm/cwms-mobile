@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -158,11 +158,11 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
                       children: [
                         Expanded(
                           child: Column(children: [
-                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).number,
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.number,
                                 _currentWorkTask == null ? "" : _currentWorkTask.number),
-                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).type,
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.type,
                                 _currentWorkTask == null ? "" : _currentWorkTask.type.name),
-                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).sourceLocation, _currentWorkTaskSourceLocationName),
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.sourceLocation, _currentWorkTaskSourceLocationName),
                           ]),
                         ),
                         // Expanded(child: Container(color: Colors.amber)),
@@ -196,11 +196,11 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
             children: [
               Expanded(
                 child: Column(children: [
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).number,
+                  buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.number,
                       _currentWorkTask == null ? "" : _currentWorkTask.number),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).type,
+                  buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.type,
                       _currentWorkTask == null ? "" : _currentWorkTask.type.name),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).sourceLocation,
+                  buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.sourceLocation,
                       _currentWorkTask == null ? "" : _currentWorkTask.sourceLocation.name),
                 ]),
               ),
@@ -271,7 +271,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
               .of(context)
               .skip),
         ),
-        Badge(
+        badge.Badge(
           showBadge: true,
           padding: EdgeInsets.all(8),
           badgeColor: Colors.deepPurple,
@@ -284,7 +284,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
             width: MediaQuery.of(context).size.width,
             child: ElevatedButton(
               onPressed: _inventoryOnRF.length == 0 ? null : _startDeposit,
-              child: Text(CWMSLocalizations.of(context).depositInventory),
+              child: Text(CWMSLocalizations.of(context)!.depositInventory),
             ),
           ),
         )

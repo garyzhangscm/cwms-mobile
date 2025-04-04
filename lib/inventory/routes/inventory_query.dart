@@ -96,7 +96,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
                          _onInventoryQuery();
                        }
                     },
-                    child: Text(CWMSLocalizations.of(context).query),
+                    child: Text(CWMSLocalizations.of(context)!.query),
                   ),
                 ),
               ),
@@ -215,7 +215,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
 
     if (inventories.length == 0) {
 
-      showToast(CWMSLocalizations.of(context).noInventoryFound);
+      showToast(CWMSLocalizations.of(context)!.noInventoryFound);
     }
     else {
       // load the location for each inventory

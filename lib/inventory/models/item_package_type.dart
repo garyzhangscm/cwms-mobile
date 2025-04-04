@@ -21,26 +21,26 @@ class ItemPackageType{
 
   }
 
-  int id;
+  int? id;
 
-  String name;
-  String description;
+  String? name;
+  String? description;
 
-  int clientId;
-  int supplierId;
+  int? clientId;
+  int? supplierId;
 
-  ItemUnitOfMeasure stockItemUnitOfMeasure;
-  ItemUnitOfMeasure displayItemUnitOfMeasure;
-  List<ItemUnitOfMeasure> itemUnitOfMeasures;
-  ItemUnitOfMeasure defaultInboundReceivingUOM;
-  ItemUnitOfMeasure defaultWorkOrderReceivingUOM;
-  ItemUnitOfMeasure trackingLpnUOM;
+  ItemUnitOfMeasure? stockItemUnitOfMeasure;
+  ItemUnitOfMeasure? displayItemUnitOfMeasure;
+  List<ItemUnitOfMeasure> itemUnitOfMeasures = [];
+  ItemUnitOfMeasure? defaultInboundReceivingUOM;
+  ItemUnitOfMeasure? defaultWorkOrderReceivingUOM;
+  ItemUnitOfMeasure? trackingLpnUOM;
 
-  int warehouseId;
-  Warehouse warehouse;
+  int? warehouseId;
+  Warehouse? warehouse;
 
 
-  bool defaultFlag;
+  bool? defaultFlag;
 
 
   //不同的类使用不同的mixin即可

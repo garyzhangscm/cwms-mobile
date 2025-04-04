@@ -13,20 +13,20 @@ part 'item_unit_of_measure.g.dart';
 class ItemUnitOfMeasure{
   ItemUnitOfMeasure();
 
-  int id;
+  int? id;
 
-  int unitOfMeasureId;
-  UnitOfMeasure unitOfMeasure;
+  int? unitOfMeasureId;
+  UnitOfMeasure? unitOfMeasure;
 
-  int quantity;
+  int? quantity;
 
-  double weight;
-  double length;
-  double width;
-  double height;
+  double? weight;
+  double? length;
+  double? width;
+  double? height;
 
-  int warehouseId;
-  Warehouse warehouse;
+  int? warehouseId;
+  Warehouse? warehouse;
 
 
   //不同的类使用不同的mixin即可

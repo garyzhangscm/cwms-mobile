@@ -76,7 +76,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
 
   Widget _buildQCQuantity(BuildContext context) {
     return
-          buildTwoSectionInputRow(CWMSLocalizations.of(context).qcQuantity,
+          buildTwoSectionInputRow(CWMSLocalizations.of(context)!.qcQuantity,
           TextFormField(
               controller: _qcQuantityController,
               keyboardType: TextInputType.number,
@@ -153,7 +153,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       buildTwoButtonRow(context,
         ElevatedButton(
             onPressed: _onCancel,
-            child: Text(CWMSLocalizations.of(context).cancel)
+            child: Text(CWMSLocalizations.of(context)!.cancel)
         ),
         _qcInspectionRequestItemIndex < _qcInspectionRequest.qcInspectionRequestItems.length - 1 ?
             _buildNextQCInspectionRequestItemButton(context) :
@@ -167,7 +167,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     return
         ElevatedButton(
             onPressed: _onNextQCInspectionRequestItem,
-            child: Text(CWMSLocalizations.of(context).nextQCRule)
+            child: Text(CWMSLocalizations.of(context)!.nextQCRule)
         );
   }
   Widget _buildComfirmButton(BuildContext context) {
@@ -175,7 +175,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     return
       ElevatedButton(
           onPressed: _onConfirm,
-          child: Text(CWMSLocalizations.of(context).confirm)
+          child: Text(CWMSLocalizations.of(context)!.confirm)
       );
 
   }
@@ -189,7 +189,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       // flow to the previous page after we saved the result
 
       Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context).qcCompleted);
+      showToast(CWMSLocalizations.of(context)!.qcCompleted);
       Navigator.of(context).pop();
     }
     on WebAPICallException catch(ex) {

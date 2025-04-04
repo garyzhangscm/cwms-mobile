@@ -4,7 +4,7 @@ import 'messages_all.dart'; //1
 
 class CWMSLocalizations {
   static Future<CWMSLocalizations> load(Locale locale) {
-    final String name = locale.countryCode.isEmpty ? locale.languageCode : locale.toString();
+    final String name = locale.countryCode!.isEmpty ? locale.languageCode : locale.toString();
     final String localeName = Intl.canonicalizedLocale(name);
     //2
     return initializeMessages(localeName).then((b) {
@@ -14,7 +14,7 @@ class CWMSLocalizations {
   }
 
   static CWMSLocalizations of(BuildContext context) {
-    return Localizations.of<CWMSLocalizations>(context, CWMSLocalizations);
+    return Localizations.of<CWMSLocalizations>(context, CWMSLocalizations)!;
   }
 
   String get title {

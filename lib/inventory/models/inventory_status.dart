@@ -14,22 +14,22 @@ class InventoryStatus{
     description = "";
   }
 
-  int id;
-  String name;
-  String description;
+  int? id;
+  String? name;
+  String? description;
 
 
-  int warehouseId;
+  int? warehouseId;
 
-  bool availableStatusFlag;
+  bool? availableStatusFlag;
 
-  bool reasonRequiredWhenReceiving;
-  bool reasonRequiredWhenProducing;
-  bool reasonRequiredWhenAdjusting;
+  bool? reasonRequiredWhenReceiving;
+  bool? reasonRequiredWhenProducing;
+  bool? reasonRequiredWhenAdjusting;
 
-  bool reasonOptionalWhenReceiving;
-  bool reasonOptionalWhenProducing;
-  bool reasonOptionalWhenAdjusting;
+  bool? reasonOptionalWhenReceiving;
+  bool? reasonOptionalWhenProducing;
+  bool? reasonOptionalWhenAdjusting;
 
 
 

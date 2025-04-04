@@ -10,16 +10,16 @@ class CycleCountBatch{
   CycleCountBatch();
 
 
-  int id;
-  String batchId;
-  int warehouseId;
+  int? id;
+  String? batchId;
+  int? warehouseId;
 
-  int requestLocationCount;
-  int openLocationCount;
-  int finishedLocationCount;
-  int cancelledLocationCount;
-  int openAuditLocationCount;
-  int finishedAuditLocationCount;
+  int? requestLocationCount;
+  int? openLocationCount;
+  int? finishedLocationCount;
+  int? cancelledLocationCount;
+  int? openAuditLocationCount;
+  int? finishedAuditLocationCount;
 
 
 

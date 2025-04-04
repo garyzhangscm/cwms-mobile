@@ -14,21 +14,21 @@ part 'audit_count_result.g.dart';
 class AuditCountResult{
   AuditCountResult();
 
-  int id;
-  String batchId;
-  WarehouseLocation location;
-  Inventory inventory;
-  String lpn;
-  Item item;
-  int quantity;
-  int countQuantity;
-  int warehouseId;
-  Warehouse warehouse;
+  int? id;
+  String? batchId;
+  WarehouseLocation? location;
+  Inventory? inventory;
+  String? lpn;
+  Item? item;
+  int? quantity;
+  int? countQuantity;
+  int? warehouseId;
+  Warehouse? warehouse;
 
   // flag used by the client only.
   // set to true when adding new item
   // during the count
-  bool unexpectedItem;
+  bool? unexpectedItem;
 
 
   //不同的类使用不同的mixin即可

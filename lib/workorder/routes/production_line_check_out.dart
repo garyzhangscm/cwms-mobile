@@ -147,14 +147,14 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: Text(CWMSLocalizations.of(context).productionLineCheckOut),
+          title: Text(CWMSLocalizations.of(context)!.productionLineCheckOut),
           bottom: TabBar(
             controller: _tabController,
             tabs: [
               // check out by user
-              Tab(text: CWMSLocalizations.of(context).productionLineCheckOutByUser),
+              Tab(text: CWMSLocalizations.of(context)!.productionLineCheckOutByUser),
               // check out by production line
-              Tab(text: CWMSLocalizations.of(context).productionLineCheckOutByProductionLine),
+              Tab(text: CWMSLocalizations.of(context)!.productionLineCheckOutByProductionLine),
             ],
           ),
         ),
@@ -202,7 +202,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
               child: Column(
                   children: <Widget>[
                     buildTwoSectionInputRow(
-                      CWMSLocalizations.of(context).userName,
+                      CWMSLocalizations.of(context)!.userName,
                       TextFormField(
                         focusNode: _usernameFocusNode,
                         controller: _usernameController,
@@ -210,16 +210,16 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
                         textInputAction: TextInputAction.next,
                         validator: (v) {
                           if (_incorrectUsername) {
-                            return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).userName);
+                            return CWMSLocalizations.of(context)!.incorrectValue(CWMSLocalizations.of(context)!.userName);
                           }
                           return _currentUsername.isNotEmpty ? null :
-                             CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).userName);
+                             CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.userName);
                         },
                       ),
                     ),
                     _currentUsername.isEmpty ?
                         new Container() :
-                        buildTwoSectionInformationRow(CWMSLocalizations.of(context).userName, _currentUsername),
+                        buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.userName, _currentUsername),
                     // choose the production line that the user already checked in
                     SizedBox(
                       height: MediaQuery.of(context).size.height - 400 > _assignedProductionLine.length * 50.0 ?
@@ -256,10 +256,10 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
               child: Column(
                   children: <Widget>[
                     buildTwoSectionInputRow(
-                        CWMSLocalizations.of(context).productionLine,
+                        CWMSLocalizations.of(context)!.productionLine,
                         DropdownButton(
                           focusNode: _productionLineNode,
-                          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                          hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                           items: _getValidProductionLines(),
                           value: _selectedProductionLine == null ?  null : _selectedProductionLine,
                           elevation: 1,
@@ -351,7 +351,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
                   }
 
                 },
-            child: Text(CWMSLocalizations.of(context).productionLineCheckOut),
+            child: Text(CWMSLocalizations.of(context)!.productionLineCheckOut),
           )
         );
 
@@ -379,7 +379,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
               }
 
             },
-            child: Text(CWMSLocalizations.of(context).productionLineCheckOut),
+            child: Text(CWMSLocalizations.of(context)!.productionLineCheckOut),
           )
       );
 
@@ -419,7 +419,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
         Navigator.of(context).pop();
 
-        showToast(CWMSLocalizations.of(context).noCheckInProductionLineFoundForUser);
+        showToast(CWMSLocalizations.of(context)!.noCheckInProductionLineFoundForUser);
         return;
       }
 
@@ -472,7 +472,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
         Navigator.of(context).pop();
 
-        showToast(CWMSLocalizations.of(context).noCheckInUsersFoundForProductionLine);
+        showToast(CWMSLocalizations.of(context)!.noCheckInUsersFoundForProductionLine);
         return;
       }
       users.forEach((element) {
@@ -498,7 +498,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
     if (_currentUsername.isEmpty) {
 
-      showErrorDialog(context, CWMSLocalizations.of(context).pleaseSelectAUser);
+      showErrorDialog(context, CWMSLocalizations.of(context)!.pleaseSelectAUser);
       return;
     }
     showLoading(context);
@@ -508,7 +508,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
       if (iterable.isEmpty) {
 
         Navigator.of(context).pop();
-        showErrorDialog(context, CWMSLocalizations.of(context).pleaseSelectAProductionLine);
+        showErrorDialog(context, CWMSLocalizations.of(context)!.pleaseSelectAProductionLine);
         return;
       }
       Iterator<MapEntry<ProductionLine, bool>> iterator = iterable.iterator;
@@ -538,7 +538,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
     print("production line check out transaction saved!");
 
-    showToast(CWMSLocalizations.of(context).actionComplete);
+    showToast(CWMSLocalizations.of(context)!.actionComplete);
 
 
     _refreshCheckoutByUserPage();
@@ -548,7 +548,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
     if (_selectedProductionLine == null) {
 
-      showErrorDialog(context, CWMSLocalizations.of(context).pleaseSelectAProductionLine);
+      showErrorDialog(context, CWMSLocalizations.of(context)!.pleaseSelectAProductionLine);
       return;
     }
     showLoading(context);
@@ -559,7 +559,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
       if (iterable.isEmpty) {
 
         Navigator.of(context).pop();
-        showErrorDialog(context, CWMSLocalizations.of(context).pleaseSelectAProductionLine);
+        showErrorDialog(context, CWMSLocalizations.of(context)!.pleaseSelectAProductionLine);
         return;
       }
       Iterator<MapEntry<User, bool>> iterator = iterable.iterator;
@@ -589,7 +589,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
     print("production line check out transaction saved!");
 
-    showToast(CWMSLocalizations.of(context).actionComplete);
+    showToast(CWMSLocalizations.of(context)!.actionComplete);
 
 
     _refreshCheckoutByProductionLinePage();

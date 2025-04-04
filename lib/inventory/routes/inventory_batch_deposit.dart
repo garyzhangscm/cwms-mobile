@@ -21,7 +21,7 @@ import '../models/inventory_batch_deposit_sort_by_criteria.dart';
 // with or without any pre-assigned destination
 class InventoryBatchDepositPage extends StatefulWidget{
 
-  InventoryBatchDepositPage({Key key}) : super(key: key);
+  InventoryBatchDepositPage({Key? key}) : super(key: key);
 
 
   @override
@@ -34,20 +34,20 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   final _destinationLocationFieldController = TextEditingController();
 
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   // key: LPN
   // Value: inventory deposit request
-  Map<String, InventoryDepositRequest> _inventoryDepositRequests;
+  Map<String, InventoryDepositRequest> _inventoryDepositRequests = new Map();
   // key: LPN
   // Value: selected or not
-  Map<String, bool> _selectedLPNMap;
+  Map<String, bool> _selectedLPNMap = new Map();
 
 
-  InventoryBatchDepositSortByCriteria _selectedSortByCriteria;
+  InventoryBatchDepositSortByCriteria? _selectedSortByCriteria;
 
 
-  Timer _timer;  // timer to refresh inventory on RF every 2 second
+  Timer? _timer;  // timer to refresh inventory on RF every 2 second
 
   @override
   void initState() {
@@ -66,7 +66,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS ${CWMSLocalizations.of(context).batchDepositInventory}")),
+      appBar: AppBar(title: Text("CWMS ${CWMSLocalizations.of(context)!.batchDepositInventory}")),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -131,7 +131,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   Widget _buildSortByCriteria(BuildContext context) {
     return buildTwoSectionInputRow("Sort By",
         DropdownButton(
-          // hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+          // hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
           items: _getSortByCriteriaItems(),
           value: _selectedSortByCriteria,
           elevation: 1,
@@ -140,17 +140,17 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
             Icons.list,
             size: 20,
           ),
-          onChanged: (T) {
+          onChanged: (InventoryBatchDepositSortByCriteria? value) {
             //下拉菜单item点击之后的回调
             setState(() {
-              _selectedSortByCriteria = T;
+              _selectedSortByCriteria = value;
             });
           },
         )
     );
   }
 
-  List<DropdownMenuItem> _getSortByCriteriaItems() {
+  List<DropdownMenuItem<InventoryBatchDepositSortByCriteria>> _getSortByCriteriaItems() {
     return InventoryBatchDepositSortByCriteria.values.map(
             (e) => DropdownMenuItem(
               value: e,
@@ -271,11 +271,11 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   Widget _buildInventoryDepositRequestListTile(BuildContext context, int index) {
     String key = _inventoryDepositRequests.keys.elementAt(index);
 
-    printLongLogMessage("_inventoryDepositRequests[key].requestInProcess: ${_inventoryDepositRequests[key].requestInProcess}");
-    printLongLogMessage("_inventoryDepositRequests[key].requestResult: ${_inventoryDepositRequests[key].requestResult}");
-    if (_inventoryDepositRequests[key].requestInProcess == true) {
+    printLongLogMessage("_inventoryDepositRequests[key].requestInProcess: ${_inventoryDepositRequests[key]!.requestInProcess}");
+    printLongLogMessage("_inventoryDepositRequests[key].requestResult: ${_inventoryDepositRequests[key]!.requestResult}");
+    if (_inventoryDepositRequests[key]!.requestInProcess == true) {
       // show loading indicator if the inventory still reverse in progress
-      printLongLogMessage("show loading for index $index / ${_inventoryDepositRequests[key].lpn}");
+      printLongLogMessage("show loading for index $index / ${_inventoryDepositRequests[key]!.lpn!}");
       return SizedBox(
           height: 75,
           child:  Stack(
@@ -283,14 +283,14 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
             fit: StackFit.expand, //未定位widget占满Stack整个空间
             children: <Widget>[
               ListTile(
-                title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[key].lpn),
+                title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[key]!.lpn!),
                 subtitle:
                 Column(
                     children: <Widget>[
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context).item + ": ",
+                                CWMSLocalizations.of(context)!.item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -299,29 +299,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                                 )
                             ),
                             Text(
-                                _inventoryDepositRequests[key].itemName,
-                                textScaleFactor: .9,
-                                style: TextStyle(
-                                  height: 1.15,
-                                  color: Colors.blueGrey[700],
-                                  fontSize: 17,
-                                )
-                            ),
-                          ]
-                      ),
-                      Row(
-                          children: <Widget>[
-                            Text(
-                                CWMSLocalizations.of(context).quantity + ": ",
-                                textScaleFactor: .9,
-                                style: TextStyle(
-                                  height: 1.15,
-                                  color: Colors.blueGrey[700],
-                                  fontSize: 17,
-                                )
-                            ),
-                            Text(
-                                _inventoryDepositRequests[key].quantity.toString(),
+                                _inventoryDepositRequests[key]!.itemName!,
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -334,7 +312,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context).location + ": ",
+                                CWMSLocalizations.of(context)!.quantity + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -343,7 +321,29 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                                 )
                             ),
                             Text(
-                                _inventoryDepositRequests[key].currentLocationName,
+                                _inventoryDepositRequests[key]!.quantity.toString(),
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                          ]
+                      ),
+                      Row(
+                          children: <Widget>[
+                            Text(
+                                CWMSLocalizations.of(context)!.location + ": ",
+                                textScaleFactor: .9,
+                                style: TextStyle(
+                                  height: 1.15,
+                                  color: Colors.blueGrey[700],
+                                  fontSize: 17,
+                                )
+                            ),
+                            Text(
+                                _inventoryDepositRequests[key]!.currentLocationName!,
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -373,20 +373,20 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
           )
       );
     }
-    else if(_inventoryDepositRequests[key].requestResult == true) {
+    else if(_inventoryDepositRequests[key]!.requestResult == true) {
       return
         SizedBox(
             height: 75,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[key].lpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[key]!.lpn!),
               subtitle:
               Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).item + ": ",
+                              CWMSLocalizations.of(context)!.item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -395,29 +395,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                               )
                           ),
                           Text(
-                              _inventoryDepositRequests[key].itemName,
-                              textScaleFactor: .9,
-                              style: TextStyle(
-                                height: 1.15,
-                                color: Colors.blueGrey[700],
-                                fontSize: 17,
-                              )
-                          ),
-                        ]
-                    ),
-                    Row(
-                        children: <Widget>[
-                          Text(
-                              CWMSLocalizations.of(context).quantity + ": ",
-                              textScaleFactor: .9,
-                              style: TextStyle(
-                                height: 1.15,
-                                color: Colors.blueGrey[700],
-                                fontSize: 17,
-                              )
-                          ),
-                          Text(
-                              _inventoryDepositRequests[key].quantity.toString(),
+                              _inventoryDepositRequests[key]!.itemName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -430,7 +408,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).location + ": ",
+                              CWMSLocalizations.of(context)!.quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -439,7 +417,29 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                               )
                           ),
                           Text(
-                              _inventoryDepositRequests[key].currentLocationName,
+                              _inventoryDepositRequests[key]!.quantity.toString(),
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+                    Row(
+                        children: <Widget>[
+                          Text(
+                              CWMSLocalizations.of(context)!.location + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[key]!.currentLocationName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -458,20 +458,20 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         );
     }
     else {
-      double height = min(75 + (_inventoryDepositRequests[key].result.length / 50) * 15, 120);
+      double height = min(75 + (_inventoryDepositRequests[key]!.result!.length / 50) * 15, 120);
       return
         SizedBox(
             height: height,
             child:
             CheckboxListTile(
-              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[key].lpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[key]!.lpn!),
               subtitle:
                 Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).item + ": ",
+                              CWMSLocalizations.of(context)!.item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -480,29 +480,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                               )
                           ),
                           Text(
-                              _inventoryDepositRequests[key].itemName,
-                              textScaleFactor: .9,
-                              style: TextStyle(
-                                height: 1.15,
-                                color: Colors.blueGrey[700],
-                                fontSize: 17,
-                              )
-                          ),
-                        ]
-                    ),
-                    Row(
-                        children: <Widget>[
-                          Text(
-                              CWMSLocalizations.of(context).quantity + ": ",
-                              textScaleFactor: .9,
-                              style: TextStyle(
-                                height: 1.15,
-                                color: Colors.blueGrey[700],
-                                fontSize: 17,
-                              )
-                          ),
-                          Text(
-                              _inventoryDepositRequests[key].quantity.toString(),
+                              _inventoryDepositRequests[key]!.itemName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -515,7 +493,29 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                            CWMSLocalizations.of(context).location + ": ",
+                              CWMSLocalizations.of(context)!.quantity + ": ",
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                          Text(
+                              _inventoryDepositRequests[key]!.quantity.toString(),
+                              textScaleFactor: .9,
+                              style: TextStyle(
+                                height: 1.15,
+                                color: Colors.blueGrey[700],
+                                fontSize: 17,
+                              )
+                          ),
+                        ]
+                    ),
+                    Row(
+                        children: <Widget>[
+                          Text(
+                            CWMSLocalizations.of(context)!.location + ": ",
                             textScaleFactor: .9,
                             style: TextStyle(
                               height: 1.15,
@@ -524,7 +524,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                             )
                           ),
                           Text(
-                              _inventoryDepositRequests[key].currentLocationName,
+                              _inventoryDepositRequests[key]!.currentLocationName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -535,7 +535,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                           Padding(
                             padding: const EdgeInsets.only(left: 26.0),
                             child:  Text(
-                                CWMSLocalizations.of(context).nextLocation + ": ",
+                                CWMSLocalizations.of(context)!.nextLocation + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -545,7 +545,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                             ),
                           ),
                           Text(
-                              _inventoryDepositRequests[key].nextLocationName,
+                              _inventoryDepositRequests[key]!.nextLocationName!,
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -558,9 +558,9 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                   ]
               ),
               value: _selectedLPNMap.containsKey(key) ? _selectedLPNMap[key] : false,
-              onChanged: (bool selected) {
+              onChanged: (bool? selected) {
                 setState(() {
-                  _selectedLPNMap[key] = selected;
+                  _selectedLPNMap[key] = selected ?? false;
                 });
               },
               tileColor: Colors.white,
@@ -599,7 +599,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
             inventory.inventoryMovements[0].location == null) {
 
           WarehouseLocation nextLocation = await WarehouseLocationService.getWarehouseLocationById(
-              inventory.inventoryMovements[0].locationId
+              inventory.inventoryMovements[0]!.locationId!
           );
           inventory.inventoryMovements[0].location = nextLocation;
 
@@ -637,17 +637,17 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
 
     inventoryOnRF.forEach((inventory) {
       if (_inventoryDepositRequests.containsKey(inventory.lpn)) {
-        InventoryDepositRequest inventoryDepositRequest = _inventoryDepositRequests[inventory.lpn];
+        InventoryDepositRequest inventoryDepositRequest = _inventoryDepositRequests[inventory.lpn]!;
         inventoryDepositRequest.addInventory(inventory);
-        _inventoryDepositRequests[inventory.lpn] = inventoryDepositRequest;
+        _inventoryDepositRequests[inventory.lpn!] = inventoryDepositRequest;
       }
       else {
-        _inventoryDepositRequests[inventory.lpn] = InventoryDepositRequest.fromInventory(inventory);
-        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].currentLocationName: ${_inventoryDepositRequests[inventory.lpn].currentLocationName}");
+        _inventoryDepositRequests[inventory.lpn!] = InventoryDepositRequest.fromInventory(inventory);
+        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].currentLocationName: ${_inventoryDepositRequests[inventory.lpn]!.currentLocationName}");
 
-        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].nextLocationName: ${_inventoryDepositRequests[inventory.lpn].nextLocationName}");
-        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].itemName: ${_inventoryDepositRequests[inventory.lpn].itemName}");
-        _selectedLPNMap[inventory.lpn] = false;
+        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].nextLocationName: ${_inventoryDepositRequests[inventory.lpn]!.nextLocationName}");
+        printLongLogMessage("_inventoryDepositRequests[inventory.lpn].itemName: ${_inventoryDepositRequests[inventory.lpn]!.itemName}");
+        _selectedLPNMap[inventory.lpn!] = false;
       }
     });
 
@@ -661,7 +661,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
 
   List<InventoryDepositRequest> _getSelectedInventoryDepositRequests() {
     return _inventoryDepositRequests.entries.where((element) =>
-              _selectedLPNMap[element.key] && !isRequestProcessed(element.value))
+              _selectedLPNMap[element.key]! && !isRequestProcessed(element.value))
         .map((e) => e.value).toList();
   }
   List<InventoryDepositRequest> _getAllNonProcessedInventoryDepositRequests() {
@@ -678,7 +678,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   bool isRequestProcessed(InventoryDepositRequest inventoryDepositRequest) {
     return inventoryDepositRequest.requestInProcess != false ||
         inventoryDepositRequest.requestResult != false ||
-        inventoryDepositRequest.result.isNotEmpty;
+        inventoryDepositRequest.result!.isNotEmpty;
   }
 
   // check if all the inventory deposit request has destination. If not,
@@ -696,24 +696,24 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
     ).toList();
   }
 
-  Future<WarehouseLocation> _showDestinationLocationDialog(BuildContext context) async {
+  Future<WarehouseLocation?> _showDestinationLocationDialog(BuildContext context) async {
     _destinationLocationFieldController.clear();
 
-    return showDialog(
+    return showDialog<WarehouseLocation>(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text(CWMSLocalizations.of(context).nextLocation),
+            title: Text(CWMSLocalizations.of(context)!.nextLocation),
             content: TextField(
               controller: _destinationLocationFieldController,
             ),
             actions: <Widget>[
               ElevatedButton(
-                child: Text(CWMSLocalizations.of(context).cancel),
+                child: Text(CWMSLocalizations.of(context)!.cancel),
                 onPressed: () => Navigator.pop(context),
               ),
               ElevatedButton(
-                child: Text(CWMSLocalizations.of(context).confirm),
+                child: Text(CWMSLocalizations.of(context)!.confirm),
                 onPressed: () async {
                   if (_destinationLocationFieldController.text.isEmpty) {
                     showErrorToast("please fill in the destination location");
@@ -770,7 +770,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
       int inventoryId = inventoryDepositRequest.inventoryIdList.elementAt(i);
        // we will need to get the destination for the inventory from the inventory itself
       // if there're multiple destination for this LPN
-      if (inventoryDepositRequest.multipleNextLocationFlag) {
+      if (inventoryDepositRequest.multipleNextLocationFlag == true) {
         inventoryDepositRequest.currentLocationName = "=== Multiple Locations ===";
         Inventory inventory = inventoryOnRF.firstWhere((inventory) => inventory.id == inventoryId );
         if (inventory != null &&
@@ -781,7 +781,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
 
             await InventoryService.moveInventory(
                 inventoryId: inventoryId,
-                destinationLocation: inventory.inventoryMovements[0].location
+                destinationLocation: inventory.inventoryMovements[0].location!
             );
           }
           on WebAPICallException catch(ex) {
@@ -794,9 +794,9 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         try {
           await InventoryService.moveInventory(
               inventoryId: inventoryId,
-              destinationLocation: inventoryDepositRequest.nextLocation
+              destinationLocation: inventoryDepositRequest.nextLocation!
           );
-          inventoryDepositRequest.currentLocationName = inventoryDepositRequest.nextLocation.name;
+          inventoryDepositRequest.currentLocationName = inventoryDepositRequest.nextLocation!.name;
         }
         on WebAPICallException catch (ex) {
           return Tuple2<bool, String>(false, ex.errMsg());

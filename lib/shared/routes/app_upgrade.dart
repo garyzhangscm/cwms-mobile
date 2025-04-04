@@ -104,7 +104,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     // downloadingFileSize = _latestRFAppVersion.fileSize;
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).appUpgrade)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.appUpgrade)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -126,7 +126,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
         Row(
             children: <Widget>[
               Padding(padding: EdgeInsets.only(left: 10),
-                child: Text(CWMSLocalizations.of(context).newReleaseFound + ": ",
+                child: Text(CWMSLocalizations.of(context)!.newReleaseFound + ": ",
                     textAlign: TextAlign.left,
                     style: Theme.of(context).textTheme.headline6),
               ),
@@ -166,7 +166,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
         buildSingleButtonRow(context,
           ElevatedButton(
               onPressed: _onUpgrade,
-              child: Text(CWMSLocalizations.of(context).appUpgrade)
+              child: Text(CWMSLocalizations.of(context)!.appUpgrade)
           ),
         ),
       ],
@@ -228,7 +228,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
       showLogs: true,
     );
 
-    pr.style(message: CWMSLocalizations.of(context).startDownloadingAppNewVersion);
+    pr.style(message: CWMSLocalizations.of(context)!.startDownloadingAppNewVersion);
     if (!pr.isShowing()) {
       pr.show();
     }

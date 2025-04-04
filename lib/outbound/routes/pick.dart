@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -181,7 +181,7 @@ class _PickPageState extends State<PickPage> {
               _buildLocationInput(context),
               _buildLPNInput(context),
               buildTwoSectionInformationRowWithWidget(
-                  CWMSLocalizations.of(context).item,
+                  CWMSLocalizations.of(context)!.item,
                   _buildItemDisplayWidget(context, _currentPick)),
               // buildTwoSectionInformationRow("Item Number:", _currentPick.item.name),
               // add the batch pick quantity only if the quantity to be picked is more than the single pick
@@ -237,19 +237,19 @@ class _PickPageState extends State<PickPage> {
                   Column(
                       children: <Widget>[
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).item + ":",
+                            CWMSLocalizations.of(context)!.item + ":",
                             pick.item.name),
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).item + ":",
+                            CWMSLocalizations.of(context)!.item + ":",
                             pick.item.description),
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).color + ":",
+                            CWMSLocalizations.of(context)!.color + ":",
                             pick.color),
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).style + ":",
+                            CWMSLocalizations.of(context)!.style + ":",
                             pick.style),
                         buildTwoSectionInformationRow(
-                            CWMSLocalizations.of(context).productSize + ":",
+                            CWMSLocalizations.of(context)!.productSize + ":",
                             pick.productSize),
                         Global.currentInventoryConfiguration.inventoryAttribute1Enabled ?
                             buildTwoSectionInformationRow(
@@ -284,7 +284,7 @@ class _PickPageState extends State<PickPage> {
 
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).location,
+        CWMSLocalizations.of(context)!.location,
         _currentPick.confirmLocationFlag == true || _currentPick.confirmLocationCodeFlag == true ?
           Focus(
               focusNode: _sourceLocationFocusNode,
@@ -324,7 +324,7 @@ class _PickPageState extends State<PickPage> {
 
   Widget _buildLPNInput(BuildContext context) {
     return buildTwoSectionInputRow(
-      CWMSLocalizations.of(context).lpn,
+      CWMSLocalizations.of(context)!.lpn,
       _currentPick.confirmLpnFlag == true ?
       Focus(
           focusNode: _lpnFocusNode,
@@ -365,7 +365,7 @@ class _PickPageState extends State<PickPage> {
 
   Widget _buildQuantityInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).quantity,
+        CWMSLocalizations.of(context)!.quantity,
         Focus(
             focusNode: _quantityFocusNode,
             child:
@@ -397,8 +397,8 @@ class _PickPageState extends State<PickPage> {
 
     _pickErrorOptions = [
 
-      CWMSLocalizations.of(context).skip,
-      CWMSLocalizations.of(context).cancelPickAndReallocate,
+      CWMSLocalizations.of(context)!.skip,
+      CWMSLocalizations.of(context)!.cancelPickAndReallocate,
     ];
     _selectedPickErrorOption = null;
 
@@ -493,7 +493,7 @@ class _PickPageState extends State<PickPage> {
     /**
     ElevatedButton(
         onPressed: _skipCurrentPick,
-        child: Text(CWMSLocalizations.of(context).skip)
+        child: Text(CWMSLocalizations.of(context)!.skip)
     ),
         */
   }
@@ -505,10 +505,10 @@ class _PickPageState extends State<PickPage> {
 
               _onPickConfirm(_currentPick, int.parse(_quantityController.text));
             },
-            child: Text(CWMSLocalizations.of(context).confirm)
+            child: Text(CWMSLocalizations.of(context)!.confirm)
         ),
         _buildPickErrorButtons(context),
-        Badge(
+        badge.Badge(
             showBadge: true,
             padding: EdgeInsets.all(8),
             badgeColor: Colors.deepPurple,
@@ -521,7 +521,7 @@ class _PickPageState extends State<PickPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
                 )
             ),
 
@@ -534,10 +534,10 @@ class _PickPageState extends State<PickPage> {
   void _processPickError(String pickErrorOption) {
     printLongLogMessage("start to process pick error ${pickErrorOption}");
 
-    if (pickErrorOption == CWMSLocalizations.of(context).skip) {
+    if (pickErrorOption == CWMSLocalizations.of(context)!.skip) {
       _skipCurrentPick();
     }
-    else if (pickErrorOption == CWMSLocalizations.of(context).cancelPickAndReallocate) {
+    else if (pickErrorOption == CWMSLocalizations.of(context)!.cancelPickAndReallocate) {
       cancelPickAndReallocate();
     }
 
@@ -549,7 +549,7 @@ class _PickPageState extends State<PickPage> {
     // right location
     if (_sourceLocationController.text.isEmpty) {
       await showBlockedErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).location));
+          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.location));
       _sourceLocationControllerFocusNode.requestFocus();
       return;
     }
@@ -595,7 +595,7 @@ class _PickPageState extends State<PickPage> {
     // right location
     if (_lpnController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn));
+          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn));
       _lpnControllerFocusNode.requestFocus();
       return;
     }
@@ -638,7 +638,7 @@ class _PickPageState extends State<PickPage> {
     // right location
     if (_quantityController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).quantity));
+          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.quantity));
       _quantityControllerFocusNode.requestFocus();
       return;
     }
@@ -715,7 +715,7 @@ class _PickPageState extends State<PickPage> {
 
     if (confirmedQuantity > totalOpenQuantity) {
       showErrorDialog(context,
-        CWMSLocalizations.of(context).overPickNotAllowed);
+        CWMSLocalizations.of(context)!.overPickNotAllowed);
       return;
     }
 

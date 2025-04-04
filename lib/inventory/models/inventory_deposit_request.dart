@@ -1,13 +1,9 @@
-import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
+
+
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'inventory.dart';
-import 'inventory_movement.dart';
-import 'inventory_status.dart';
-import 'item.dart';
-import 'item_package_type.dart';
 
 
 
@@ -57,8 +53,8 @@ class InventoryDepositRequest{
     if (inventory.inventoryMovements != null &&
         inventory.inventoryMovements.isNotEmpty) {
       nextLocation = inventory.inventoryMovements[0].location;
-      nextLocationName = nextLocation.name;
-      nextLocationId = nextLocation.id;
+      nextLocationName = nextLocation!.name;
+      nextLocationId = nextLocation!.id;
     }
     else {
 
@@ -71,20 +67,20 @@ class InventoryDepositRequest{
 
     currentLocationName = inventory.location?.name;
 
-    itemName = inventory.item.name;
-    itemDescription = inventory.item.description;
+    itemName = inventory.item!.name;
+    itemDescription = inventory.item!.description;
 
     multipleItemFlag = false;
 
-    inventoryStatusName = inventory.inventoryStatus.name;
-    inventoryStatusDescription = inventory.inventoryStatus.description;
+    inventoryStatusName = inventory.inventoryStatus!.name;
+    inventoryStatusDescription = inventory.inventoryStatus!.description;
     multipleInventoryStatusFlag = false;
 
     quantity = inventory.quantity;
 
 
     inventoryIdList = {};
-    inventoryIdList.add(inventory.id);
+    inventoryIdList.add(inventory.id!);
 
 
     requestInProcess = false;
@@ -96,12 +92,12 @@ class InventoryDepositRequest{
   // add a inventory to the existing deposit request
   // we will assume the new inventory has the same LPN and next hop
   addInventory(Inventory inventory) {
-    if (itemName != inventory.item.name) {
+    if (itemName != inventory.item!.name) {
       itemName = "==MIXED ITEM==";
       itemDescription = "==MIXED ITEM==";
       multipleItemFlag = true;
     }
-    if (inventoryStatusName != inventory.inventoryStatus.name) {
+    if (inventoryStatusName != inventory.inventoryStatus!.name) {
       inventoryStatusName = "==MIXED STATUS==";
       inventoryStatusDescription = "==MIXED STATUS==";
       multipleInventoryStatusFlag = true;
@@ -110,10 +106,10 @@ class InventoryDepositRequest{
 
     // see if we have multiple locations
 
-    int newInventoryNextLocationId = null;
+    int? newInventoryNextLocationId;
     if (inventory.inventoryMovements != null &&
         inventory.inventoryMovements.isNotEmpty) {
-      newInventoryNextLocationId = nextLocation.id;
+      newInventoryNextLocationId = nextLocation!.id;
     }
     if (newInventoryNextLocationId != nextLocationId) {
 
@@ -127,38 +123,38 @@ class InventoryDepositRequest{
       nextLocationName = "==MIXED Location==";
     }
 
-    quantity += inventory.quantity;
-    inventoryIdList.add(inventory.id);
+    quantity = quantity! + inventory.quantity!;
+    inventoryIdList.add(inventory.id!);
 
 
 
   }
 
-  String lpn;
-  String newLpn;
+  String? lpn;
+  String? newLpn;
 
-  int nextLocationId;
-  WarehouseLocation nextLocation;
-  String nextLocationName;
-  bool multipleNextLocationFlag;
+  int? nextLocationId;
+  WarehouseLocation? nextLocation;
+  String? nextLocationName;
+  bool? multipleNextLocationFlag;
 
-  String currentLocationName;
+  String? currentLocationName;
 
-  String itemName;
-  String itemDescription;
-  bool multipleItemFlag;
+  String? itemName;
+  String? itemDescription;
+  bool? multipleItemFlag;
 
-  String inventoryStatusName;
-  String inventoryStatusDescription;
-  bool multipleInventoryStatusFlag;
+  String? inventoryStatusName;
+  String? inventoryStatusDescription;
+  bool? multipleInventoryStatusFlag;
 
-  int quantity;
+  int? quantity;
 
-  Set<int> inventoryIdList;
+  Set<int> inventoryIdList = new Set();
 
-  bool requestInProcess;
-  bool requestResult;
-  String result;
+  bool? requestInProcess;
+  bool? requestResult;
+  String? result;
 
 
 

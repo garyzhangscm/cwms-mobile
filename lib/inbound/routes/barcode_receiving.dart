@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inbound/models/receipt.dart';
@@ -16,14 +16,14 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/services/barcode_service.dart';
 import 'package:flutter/material.dart';
-import 'package:progress_dialog/progress_dialog.dart';
+import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 import '../../shared/models/barcode.dart';
 
 
 class BarcodeReceivingPage extends StatefulWidget{
 
-  BarcodeReceivingPage({Key key}) : super(key: key);
+  BarcodeReceivingPage({Key? key}) : super(key: key);
 
 
   @override
@@ -36,13 +36,13 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
   // input batch id
 
   List<Inventory>  _inventoryOnRF = [];
-  Inventory _lastReceivedInventory;
-  Receipt _lastReceivedReceipt;
+  Inventory? _lastReceivedInventory;
+  Receipt? _lastReceivedReceipt;
 
   TextEditingController _barcodeController = new TextEditingController();
   FocusNode _barcodeFocusNode = FocusNode();
 
-  ProgressDialog pr;
+  ProgressDialog? pr;
 
   @override
   void initState() {
@@ -134,21 +134,22 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
               Expanded(
                 child: Column(children: [
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).receiptNumber,
-                      _lastReceivedReceipt.number),
+                      _lastReceivedReceipt?.number ?? ""),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
-                      _lastReceivedInventory.lpn),
+                      _lastReceivedInventory?.lpn ?? ""),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                      _lastReceivedInventory.item.name),
+                      _lastReceivedInventory?.item.name ?? ""),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                      _lastReceivedInventory.item.description),
+                      _lastReceivedInventory?.item.description ?? ""),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity,
-                      _lastReceivedInventory.quantity.toString() + " " +
-                          ( _lastReceivedInventory.itemPackageType.stockItemUnitOfMeasure == null ?
-                         "" : _lastReceivedInventory.itemPackageType.stockItemUnitOfMeasure.unitOfMeasure.description)),
+                      (_lastReceivedInventory?.quantity.toString()  ?? "") + " " +
+                          (_lastReceivedInventory?.itemPackageType.stockItemUnitOfMeasure.unitOfMeasure.description ?? "")),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity,
-                      _getDisplayQuantity(_lastReceivedInventory).toString() + " " + _getDisplayUOM(_lastReceivedInventory)),
+                      _lastReceivedInventory == null ? "" :
+                          (_getDisplayQuantity(_lastReceivedInventory!).toString()
+                              + " " + _getDisplayUOM(_lastReceivedInventory!))),
                   buildTwoSectionInformationRow(CWMSLocalizations.of(context).inventoryStatus,
-                      _lastReceivedInventory.inventoryStatus.description),
+                      _lastReceivedInventory?.inventoryStatus.description ?? ""),
                 ]),
               ),
               // Expanded(child: Container(color: Colors.amber)),
@@ -177,7 +178,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
             .of(context)
             .startCamera),
       ),
-      Badge(
+      badge.Badge(
         showBadge: true,
         padding: EdgeInsets.all(8),
         badgeColor: Colors.deepPurple,
@@ -235,7 +236,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     final barcode = await Navigator.of(context)
         .pushNamed("qr_code_view");
 
-    bool result = await _processBarcode(barcode);
+    bool result = await _processBarcode(barcode.toString());
 
     if (result == true) {
       _barcodeController.clear();
@@ -316,18 +317,18 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     Receipt receipt = await ReceiptService.getReceiptById(int.parse(receiptIdString));
     ReceiptLine receiptLine = await ReceiptService.getReceiptLineById(int.parse(receiptLineIdString));
 
-    ItemPackageType itemPackageType;
+    ItemPackageType? itemPackageType;
     if (itemPackageTypeString == null || itemPackageTypeString.isEmpty) {
       // if item package type is not passed, get the default item package type from the item
 
-      itemPackageType = receiptLine.item.defaultItemPackageType != null ?
-          receiptLine.item.defaultItemPackageType :
-          receiptLine.item.itemPackageTypes.length == 1 ?
-              receiptLine.item.itemPackageTypes[0] : null;
+      itemPackageType = receiptLine.item?.defaultItemPackageType != null ?
+          receiptLine.item?.defaultItemPackageType :
+          receiptLine.item?.itemPackageTypes.length == 1 ?
+              receiptLine.item?.itemPackageTypes[0] : null;
     }
     else {
       itemPackageType = await ItemPackageTypeService.getItemPackageTypeByName(
-          receiptLine.item.id, itemPackageTypeString
+          receiptLine.item!.id!, itemPackageTypeString
       );
     }
     if (itemPackageType == null) {
@@ -485,7 +486,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
       return "";
     }
     else if (inventory.quantity % displayItemUnitOfMeasure.quantity == 0) {
-      return displayItemUnitOfMeasure.unitOfMeasure.description;
+      return displayItemUnitOfMeasure.unitOfMeasure.description ?? "";
     }
     else {
 

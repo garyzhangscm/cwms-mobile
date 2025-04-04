@@ -16,15 +16,15 @@ class ItemFamily{
 
   ItemFamily() ;
 
-  int id;
+  int? id;
 
-  String name;
-  String description;
+  String? name;
+  String? description;
 
 
 
-  int warehouseId;
-  int companyId;
+  int? warehouseId;
+  int? companyId;
 
 
 

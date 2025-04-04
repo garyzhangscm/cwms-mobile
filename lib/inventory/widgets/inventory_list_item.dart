@@ -97,36 +97,36 @@ class _InventoryListItemState extends State<InventoryListItem> {
           Column(
             children: <Widget>[
                _buildInformationRow(
-                  CWMSLocalizations.of(context).location,
+                  CWMSLocalizations.of(context)!.location,
                   widget.inventory.location.name),
               _buildInformationRow(
-                  CWMSLocalizations.of(context).lpn, widget.inventory.lpn),
+                  CWMSLocalizations.of(context)!.lpn, widget.inventory.lpn),
               _buildInformationRow(
-                  CWMSLocalizations.of(context).item, widget.inventory.item.name),
+                  CWMSLocalizations.of(context)!.item, widget.inventory.item.name),
               _buildInformationRow(
-                  CWMSLocalizations.of(context).item, widget.inventory.item.description),
+                  CWMSLocalizations.of(context)!.item, widget.inventory.item.description),
               _buildInformationRow(
-                  CWMSLocalizations.of(context).itemPackageType,
+                  CWMSLocalizations.of(context)!.itemPackageType,
                       widget.inventory.itemPackageType.description),
               _buildInformationRow(
-                  CWMSLocalizations.of(context).inventoryStatus,
+                  CWMSLocalizations.of(context)!.inventoryStatus,
                   widget.inventory.inventoryStatus.description),
               _buildInformationRow(
-                  CWMSLocalizations.of(context).quantity,
+                  CWMSLocalizations.of(context)!.quantity,
                   widget.inventory.quantity.toString()),
               widget.inventory.item.trackingColorFlag == true?
                   _buildInformationRow(
-                      CWMSLocalizations.of(context).color,
+                      CWMSLocalizations.of(context)!.color,
                       widget.inventory.color) :
                   Container(),
               widget.inventory.item.trackingStyleFlag == true?
                   _buildInformationRow(
-                      CWMSLocalizations.of(context).style,
+                      CWMSLocalizations.of(context)!.style,
                       widget.inventory.style) :
                   Container(),
               widget.inventory.item.trackingProductSizeFlag == true?
                   _buildInformationRow(
-                      CWMSLocalizations.of(context).productSize,
+                      CWMSLocalizations.of(context)!.productSize,
                       widget.inventory.productSize) :
                   Container(),
               widget.inventory.item.trackingInventoryAttribute1Flag == true && Global.currentInventoryConfiguration.inventoryAttribute1Enabled == true?

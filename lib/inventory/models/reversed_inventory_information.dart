@@ -1,14 +1,3 @@
-import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
-import 'package:cwms_mobile/workorder/models/work_order.dart';
-import 'package:json_annotation/json_annotation.dart';
-import 'package:cwms_mobile/common/models/client.dart';
-
-import 'inventory_movement.dart';
-import 'inventory_status.dart';
-import 'item.dart';
-import 'item_package_type.dart';
 
 class ReversedInventoryInformation{
   ReversedInventoryInformation(
@@ -38,17 +27,17 @@ class ReversedInventoryInformation{
     this.result = "";
   }
 
-  String lpn;
-  String clientName;
-  String itemName;
-  String itemPackageTypeName;
-  int quantity;
-  String locationName;
-  String workOrderNumber;
-  String receiptNumber;
-  bool reverseInProgress;
-  bool reverseResult;
-  String result;
+  String? lpn;
+  String? clientName;
+  String? itemName;
+  String? itemPackageTypeName;
+  int? quantity;
+  String? locationName;
+  String? workOrderNumber;
+  String? receiptNumber;
+  bool? reverseInProgress;
+  bool? reverseResult;
+  String? result;
 
 
 

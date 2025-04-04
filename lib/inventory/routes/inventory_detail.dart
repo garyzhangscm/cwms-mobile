@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 class InventoryDetailPage extends StatefulWidget{
 
-  InventoryDetailPage({Key key}) : super(key: key);
+  InventoryDetailPage({Key? key}) : super(key: key);
 
 
   @override
@@ -23,11 +23,11 @@ class _InventoryDetailPageState extends State<InventoryDetailPage> {
   @override
   Widget build(BuildContext context) {
 
-    List<Inventory> _inventories = ModalRoute.of(context).settings.arguments;
+    List<Inventory> _inventories = ModalRoute.of(context)?.settings.arguments as List<Inventory>;
     printLongLogMessage(">>>> start to show inventory details with ${_inventories.length} records");
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).inventory)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.inventory)),
         resizeToAvoidBottomInset: true,
       body:  _buildInventoryList(context, _inventories)
       //endDrawer: MyDrawer(),

@@ -20,7 +20,7 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 
 import '../../shared/global.dart';
 import '../models/pick_mode.dart';
@@ -110,7 +110,7 @@ class _PickByListPageState extends State<PickByListPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).listPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.listPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -141,7 +141,7 @@ class _PickByListPageState extends State<PickByListPage> {
                         autofocus: true,
                         focusNode: _pickListNumberFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context).pickList,
+                          labelText: CWMSLocalizations.of(context)!.pickList,
                           hintText: "please input pick list",
                           suffixIcon:
                           Row(
@@ -175,7 +175,7 @@ class _PickByListPageState extends State<PickByListPage> {
                     autofocus: true,
                     focusNode: _newLPNNumberFocusNode,
                     decoration: InputDecoration(
-                      labelText: CWMSLocalizations.of(context).lpn,
+                      labelText: CWMSLocalizations.of(context)!.lpn,
                       hintText: "please input a new lpn",
                       suffixIcon:
                       Row(
@@ -234,9 +234,9 @@ class _PickByListPageState extends State<PickByListPage> {
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _currentPickList != null && (!_requireNewLPN || _currentDestinationLPN.isNotEmpty) ? _startPickingForPick : null,
-                child: Text(CWMSLocalizations.of(context).start)
+                child: Text(CWMSLocalizations.of(context)!.start)
             ),
-            Badge(
+            badge.Badge(
               showBadge: true,
               padding: EdgeInsets.all(8),
               badgeColor: Colors.deepPurple,
@@ -249,7 +249,7 @@ class _PickByListPageState extends State<PickByListPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
                 ),
               ),
             )

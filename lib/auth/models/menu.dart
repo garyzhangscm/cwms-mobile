@@ -9,11 +9,11 @@ part 'menu.g.dart';
 class Menu{
   Menu();
 
-  String name;
-  String link;
-  String text;
-  String icon;
-  String i18n;
+  String? name;
+  String? link;
+  String? text;
+  String? icon;
+  String? i18n;
 
 
 

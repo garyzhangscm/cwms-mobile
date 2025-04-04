@@ -89,7 +89,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
         children: [
 
             buildSingleSectionInformationRow(
-              CWMSLocalizations.of(context).itemSamplingNumber,
+              CWMSLocalizations.of(context)!.itemSamplingNumber,
             ),
             buildSingleSectionInputRow(
               SystemControllerNumberTextBox(
@@ -103,11 +103,11 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
               ),
             ),
             buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context).item,
+                  CWMSLocalizations.of(context)!.item,
                   _currentItemSampling.item.name
             ),
             buildTwoSectionInformationRow(
-                CWMSLocalizations.of(context).item,
+                CWMSLocalizations.of(context)!.item,
                 _currentItemSampling == null ? "" : _currentItemSampling.item.description
             ),
             _buildItemSamplingImages(),
@@ -125,7 +125,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
         focusNode: _itemNameFocusNode,
         autofocus: true,
         decoration: InputDecoration(
-          labelText: CWMSLocalizations.of(context).item,
+          labelText: CWMSLocalizations.of(context)!.item,
         ),);
   }
 
@@ -138,15 +138,15 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
       buildThreeButtonRow(context,
         ElevatedButton(
             onPressed: _onItemNameScanned,
-            child: Text(CWMSLocalizations.of(context).confirm)
+            child: Text(CWMSLocalizations.of(context)!.confirm)
         ),
         ElevatedButton(
             onPressed: _onClear,
-            child: Text(CWMSLocalizations.of(context).clear)
+            child: Text(CWMSLocalizations.of(context)!.clear)
         ),
         ElevatedButton(
             onPressed: _currentItemSampling != null && !_newItemSampling ? _onAddNewItemSampling : null,
-            child: Text(CWMSLocalizations.of(context).add)
+            child: Text(CWMSLocalizations.of(context)!.add)
         ),
 
       ) ;
@@ -436,7 +436,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
           // ok we are supposed to create a new work order sample but it already exists, let's
           // raise an error
           Navigator.of(context).pop();
-          showErrorDialog(context, CWMSLocalizations.of(context).qcSampleNumberAlreadyExists);
+          showErrorDialog(context, CWMSLocalizations.of(context)!.qcSampleNumberAlreadyExists);
           return;
         }
 
@@ -471,7 +471,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
     }
 
     Navigator.of(context).pop();
-    showToast( CWMSLocalizations.of(context).qcSampleAdded);
+    showToast( CWMSLocalizations.of(context)!.qcSampleAdded);
     // we will allow the user to continue receiving with the same
     // receipt and line
     setState(() {

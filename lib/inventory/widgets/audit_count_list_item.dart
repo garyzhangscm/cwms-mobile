@@ -176,7 +176,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
         new Column(
             children: [
               // LPN Controller
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.lpn,
 
                   // if the cycle count result doesn't have item,
                   // it means the locaiton doesn't any inventory
@@ -207,7 +207,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                     Padding(
                       padding: const EdgeInsets.only(right: 25.0),
                       child:
-                        Text(CWMSLocalizations.of(context).lpn),
+                        Text(CWMSLocalizations.of(context)!.lpn),
                     ),
                     // if the cycle count result doesn't have item,
                     // it means the locaiton doesn't any inventory
@@ -232,7 +232,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               // Item controller
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).item,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.item,
 
                   // if the cycle count result doesn't have item,
                   // it means the locaiton doesn't any inventory
@@ -270,7 +270,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                     Padding(
                       padding: const EdgeInsets.only(right: 25.0),
                       child:
-                        Text(CWMSLocalizations.of(context).item),
+                        Text(CWMSLocalizations.of(context)!.item),
                     ),
                     // if the cycle count result doesn't have item,
                     // it means the locaiton doesn't any inventory
@@ -302,7 +302,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               // Item Description Controller
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).item,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.item,
                   widget.auditCountResult.unexpectedItem == true ?
                     Text(_unexpectedItem == null ? "" : _unexpectedItem.description)
                         :
@@ -318,7 +318,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                     Padding(
                       padding: const EdgeInsets.only(right: 25.0),
                       child:
-                        Text(CWMSLocalizations.of(context).item),
+                        Text(CWMSLocalizations.of(context)!.item),
                     ),
 
                     widget.auditCountResult.unexpectedItem == true ?
@@ -330,12 +330,12 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               // item package type
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).itemPackageType,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.itemPackageType,
                   widget.auditCountResult.unexpectedItem == true ?
                     Expanded(
                         child:
                         DropdownButtonFormField<ItemPackageType>(
-                            hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                            hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                             items: _getItemPackageTypeItems(),
                             value: _selectedItemPackageType,
                             elevation: 1,
@@ -354,7 +354,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                               // if we specify a item, either by manually input
                               // or an existing item, we will force the user to type in the quantity
                               if (v == null || v.name.isEmpty) {
-                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).itemPackageType);
+                                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.itemPackageType);
                               }
                               return null;
                             }
@@ -375,7 +375,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       Padding(
                         padding: const EdgeInsets.only(right: 25.0),
                         child:
-                          Text(CWMSLocalizations.of(context).itemPackageType,
+                          Text(CWMSLocalizations.of(context)!.itemPackageType,
                             textAlign: TextAlign.left,
                           ),
                       ),
@@ -383,7 +383,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       Expanded(
                           child:
                           DropdownButtonFormField<ItemPackageType>(
-                              hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                              hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                               items: _getItemPackageTypeItems(),
                               value: _selectedItemPackageType,
                               elevation: 1,
@@ -402,7 +402,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                                 // if we specify a item, either by manually input
                                 // or an existing item, we will force the user to type in the quantity
                                 if (v == null || v.name.isEmpty) {
-                                  return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).itemPackageType);
+                                  return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.itemPackageType);
                                 }
                                 return null;
                               }
@@ -417,12 +417,12 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               //Inventory Status
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).inventoryStatus,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.inventoryStatus,
                   widget.auditCountResult.unexpectedItem == true ?
                     Expanded(
                         child:
                         DropdownButtonFormField<InventoryStatus>(
-                            hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                            hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                             items: _getInventoryStatusItems(),
                             value: _selectedInventoryStatus,
                             elevation: 1,
@@ -442,7 +442,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                               // if we specify a item, either by manually input
                               // or an existing item, we will force the user to type in the quantity
                               if (v == null  || v.name.isEmpty) {
-                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).inventoryStatus);
+                                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.inventoryStatus);
                               }
                               return null;
                             }
@@ -463,7 +463,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       Padding(
                         padding: const EdgeInsets.only(right: 25.0),
                         child:
-                          Text(CWMSLocalizations.of(context).inventoryStatus,
+                          Text(CWMSLocalizations.of(context)!.inventoryStatus,
                             textAlign: TextAlign.left,
                           ),
                       ),
@@ -472,7 +472,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       Expanded(
                           child:
                           DropdownButtonFormField<InventoryStatus>(
-                              hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                              hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                               items: _getInventoryStatusItems(),
                               value: _selectedInventoryStatus,
                               elevation: 1,
@@ -492,7 +492,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                                 // if we specify a item, either by manually input
                                 // or an existing item, we will force the user to type in the quantity
                                 if (v == null  || v.name.isEmpty) {
-                                  return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).inventoryStatus);
+                                  return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.inventoryStatus);
                                 }
                                 return null;
                               }
@@ -505,7 +505,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               // count quantity
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).countQuantity,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.countQuantity,
                 TextFormField(
                     maxLength: 10,
                     textAlign: TextAlign.end,
@@ -519,7 +519,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       if (( _itemController.text.isNotEmpty ||
                           widget.auditCountResult.unexpectedItem != true ) &&
                           v.trim() == "") {
-                        return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).countQuantity);
+                        return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.countQuantity);
                       }
                       return null;
                     }),
@@ -534,7 +534,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       Padding(
                         padding: const EdgeInsets.only(right: 25.0),
                         child:
-                            Text(CWMSLocalizations.of(context).countQuantity),
+                            Text(CWMSLocalizations.of(context)!.countQuantity),
                       ),
                       new Expanded(
                         // flex: 3,
@@ -551,7 +551,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                               if (( _itemController.text.isNotEmpty ||
                                       widget.auditCountResult.unexpectedItem != true ) &&
                                   v.trim() == "") {
-                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).countQuantity);
+                                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.countQuantity);
                               }
                               return null;
                             }),

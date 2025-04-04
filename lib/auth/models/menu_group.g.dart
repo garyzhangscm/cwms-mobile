@@ -12,9 +12,8 @@ MenuGroup _$MenuGroupFromJson(Map<String, dynamic> json) {
     ..text = json['text'] as String
     ..i18n = json['i18n'] as String
     ..menuSubGroups = (json['children'] as List)
-        ?.map((e) =>
-            e == null ? null : MenuSubGroup.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+        .map((e) => MenuSubGroup.fromJson(e as Map<String, dynamic>))
+        .toList();
 }
 
 Map<String, dynamic> _$MenuGroupToJson(MenuGroup instance) => <String, dynamic>{

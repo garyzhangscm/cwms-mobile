@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
@@ -15,6 +16,10 @@ import 'package:cwms_mobile/shared/models/report_history.dart';
 import 'package:cwms_mobile/shared/services/printing.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
+
+
+import '../../shared/services/printer.dart';
 
 
 class InventoryService {
@@ -532,7 +537,7 @@ class InventoryService {
   // tryTime: we may need to wait for a while when print LPN labels
   // for work order producing or inbound receiving
   // as we may use asynchronously receiving for work order producing or inbound receiving
-  static Future<void> autoPrintLPNLabelByLpn(String lpn, {int tryTime = 10}) {
+  static Future<void> autoPrintLPNLabelByLpn(BuildContext context, String lpn, {int tryTime = 10}) {
 
     if (tryTime > 0) {
 
@@ -541,11 +546,11 @@ class InventoryService {
 
         if (inventoryList != null && inventoryList.isNotEmpty) {
 
-          autoPrintLPNLabel(inventoryList[0]);
+          autoPrintLPNLabel(context, inventoryList[0]);
         }
         else {
           Future.delayed(const Duration(milliseconds: 1000),
-                  () => autoPrintLPNLabelByLpn(lpn, tryTime: tryTime - 1));
+                  () => autoPrintLPNLabelByLpn(context, lpn, tryTime: tryTime - 1));
         }
       });
     }
@@ -553,14 +558,54 @@ class InventoryService {
 
   }
 
-  static Future<void> autoPrintLPNLabel(Inventory invenotry) async {
+  static Future<void> autoPrintLPNLabel(BuildContext context, Inventory invenotry) async {
 
 
         InventoryService.generateLPNLabel(invenotry).then((reportHistory) {
           PrintingService.downloadFile(reportHistory).then((filePath) {
+            /**
+            FlutterBluetoothPrinter.selectDevice(context).then((device) {
+
+                if (device != null){
+                  /// do print
+                  // controller?.print(address: device.address);
+                  printLongLogMessage("we will print $filePath from printer ${device.address}");
+                }
+            });
+                **/
+            PrinterService.getDefaultBluetoothPrinter2();
+
+            /*
+
+            PrinterService.getDefaultBluetoothPrinter().then((defaultPrinter) {
+              
+                printLongLogMessage("get default printer: ${defaultPrinter.name}");
+                printLongLogMessage("# address: ${defaultPrinter.address}");
+                printLongLogMessage("# connected: ${defaultPrinter.connected}");
+
+
+                BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+                bluetooth.isConnected.then((isConnected){
+                    printLongLogMessage("> bluetooth.isConnected: ${isConnected}");
+
+
+                    if (isConnected) {
+                      bluetooth.printNewLine().then((value) => printLongLogMessage("first line is printed"));
+                      bluetooth.printCustom("HEADER", 2, 1).then((value) => printLongLogMessage("head ier printed"));
+                      bluetooth.printNewLine().then((value) => printLongLogMessage("seond line is printed"));
+                      bluetooth
+                          .paperCut().then((value) => printLongLogMessage("paper cut"));
+                      printLongLogMessage("=== Printing is done  ====");
+                    }
+                });
+            });
+             */
+ /*
             PrintingService.sendFileToPrinter(filePath).then((value) => {
               printLongLogMessage("$filePath is printed")
             });
+
+  */
           });
         });
 

@@ -1,6 +1,5 @@
-import 'package:cwms_mobile/inventory/models/inventory_status.dart';
-import 'package:cwms_mobile/inventory/models/item.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
+
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'carrier_service_level.g.dart';
@@ -11,12 +10,12 @@ part 'carrier_service_level.g.dart';
 class CarrierServiceLevel{
   CarrierServiceLevel();
 
-  int id;
-  String name;
+  int? id;
+  String? name;
 
-  String description;
+  String? description;
 
-  String type;
+  String? type;
 
 
 

@@ -12,7 +12,7 @@ import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/material.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 
 import '../../shared/global.dart';
 import '../models/pick_mode.dart';
@@ -78,7 +78,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWave)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pickByWave)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -107,7 +107,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
                         autofocus: true,
                         focusNode: _waveNumberFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context).waveNumber,
+                          labelText: CWMSLocalizations.of(context)!.waveNumber,
                           hintText: "please input wave number",
                           suffixIcon:
                           Row(
@@ -136,13 +136,13 @@ class _PickByWavePageState extends State<PickByWavePage> {
         buildThreeButtonRow(context,
           ElevatedButton(
               onPressed: () => _onAddingWave(10),
-              child: Text(CWMSLocalizations.of(context).addWave)
+              child: Text(CWMSLocalizations.of(context)!.addWave)
           ),
           ElevatedButton(
               onPressed: _onStartingPicking,
-              child: Text(CWMSLocalizations.of(context).start)
+              child: Text(CWMSLocalizations.of(context)!.start)
           ),
-          Badge(
+          badge.Badge(
               showBadge: true,
               padding: EdgeInsets.all(8),
               badgeColor: Colors.deepPurple,
@@ -155,7 +155,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context).depositInventory),
+                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
                   ),
                 ),
           )

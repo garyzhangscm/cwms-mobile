@@ -18,7 +18,7 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 
 import '../../shared/global.dart';
 import '../models/pick_mode.dart';
@@ -100,7 +100,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pickByOrder)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -132,7 +132,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
                         autofocus: true,
                         focusNode: _orderNumberControllerFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context).orderNumber,
+                          labelText: CWMSLocalizations.of(context)!.orderNumber,
                           hintText: "please input order number",
                           suffixIcon:
                           Row(
@@ -161,19 +161,19 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
         buildTwoButtonRow(context,
           ElevatedButton(
               onPressed: () => _onAddingOrder(10),
-              child: Text(CWMSLocalizations.of(context).addOrder)
+              child: Text(CWMSLocalizations.of(context)!.addOrder)
           ),
           ElevatedButton(
               onPressed: _onChooseOrder,
-              child: Text(CWMSLocalizations.of(context).chooseOrder)
+              child: Text(CWMSLocalizations.of(context)!.chooseOrder)
           ),
         ),
         buildTwoButtonRow(context,
           ElevatedButton(
               onPressed: _onStartingPicking,
-              child: Text(CWMSLocalizations.of(context).start)
+              child: Text(CWMSLocalizations.of(context)!.start)
           ),
-          Badge(
+          badge.Badge(
               showBadge: true,
               padding: EdgeInsets.all(8),
               badgeColor: Colors.deepPurple,
@@ -186,7 +186,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context).depositInventory),
+                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
                   ),
                 ),
           )

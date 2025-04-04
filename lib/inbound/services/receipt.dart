@@ -64,7 +64,7 @@ class ReceiptService {
 
   }
 
-  static Future<Receipt> getReceiptByNumber(String receiptNumber) async {
+  static Future<Receipt?> getReceiptByNumber(String receiptNumber) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -78,9 +78,8 @@ class ReceiptService {
 
 
     List<Receipt> receipts
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : Receipt.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Receipt.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
@@ -117,9 +116,8 @@ class ReceiptService {
     // List<dynamic> responseData = responseString["data"];
 
     List<Receipt> receipts
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Receipt.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Receipt.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     print("get ${receipts.length} receipts");
 
@@ -139,7 +137,7 @@ class ReceiptService {
       bool kitInnerInventoryWithDefaultAttribute ,
       bool kitInnerInventoryAttributeFromKit  ) async {
 
-    printLongLogMessage("start to receiving inventory from receiptLine: ${receiptLine.item.toJson()}");
+    printLongLogMessage("start to receiving inventory from receiptLine: ${receiptLine.item?.toJson()}");
     if (lpn.isEmpty) {
       lpn = await SystemControlledNumberService.getNextAvailableId("lpn");
     }
@@ -200,7 +198,7 @@ class ReceiptService {
 
     Inventory inventory = new Inventory();
     inventory.lpn = lpn;
-    inventory.item = receiptLine.item;
+    inventory.item = receiptLine.item!;
     inventory.warehouseId = Global.currentWarehouse.id;
     inventory.quantity = quantity;
     // receive the inventory onto RF
@@ -211,8 +209,8 @@ class ReceiptService {
     inventory.inventoryStatus = inventoryStatus;
     inventory.itemPackageType = itemPackageType;
     inventory.locationId = inventory.location.id;
-    inventory.receiptId = receipt.id;
-    inventory.receiptLineId = receiptLine.id;
+    inventory.receiptId = receipt.id!;
+    inventory.receiptLineId = receiptLine.id!;
     inventory.inventoryMovements = [];
     inventory.color = color;
     inventory.productSize = productSize;
@@ -243,7 +241,7 @@ class ReceiptService {
         kitInnerInventory.item = kitInnerItem;
         kitInnerInventory.warehouseId = Global.currentWarehouse.id;
         // calculate the actual quantity based on the bill of material
-        BillOfMaterial billOfMaterial = receiptLine.item.billOfMaterial;
+        BillOfMaterial billOfMaterial = receiptLine.item!.billOfMaterial!;
         BillOfMaterialLine matchedBillOfMaterialLine =
             billOfMaterial.billOfMaterialLines.firstWhere((element) => element.itemId == kitInnerItem.id);
 
@@ -257,24 +255,24 @@ class ReceiptService {
         kitInnerInventory.inventoryStatus = inventoryStatus;
         // get the default item package type. Basically we don't care about the item package type
         // for any inventory inside the kit
-        kitInnerInventory.itemPackageType = kitInnerItem.defaultItemPackageType;
+        kitInnerInventory.itemPackageType = kitInnerItem.defaultItemPackageType!;
         kitInnerInventory.locationId = inventory.location.id;
-        kitInnerInventory.receiptId = receipt.id;
-        kitInnerInventory.receiptLineId = receiptLine.id;
+        kitInnerInventory.receiptId = receipt.id!;
+        kitInnerInventory.receiptLineId = receiptLine.id!;
         kitInnerInventory.inventoryMovements = [];
 
         // either we get the attribute from inner item's default value
         // or we get from the kit(outside) inventory
         if (kitInnerInventoryWithDefaultAttribute) {
 
-          kitInnerInventory.color = kitInnerItem.defaultColor;
-          kitInnerInventory.productSize = kitInnerItem.defaultProductSize;
-          kitInnerInventory.style = kitInnerItem.defaultStyle;
-          kitInnerInventory.attribute1 = kitInnerItem.defaultInventoryAttribute1;
-          kitInnerInventory.attribute2 = kitInnerItem.defaultInventoryAttribute2;
-          kitInnerInventory.attribute3 = kitInnerItem.defaultInventoryAttribute3;
-          kitInnerInventory.attribute4 = kitInnerItem.defaultInventoryAttribute4;
-          kitInnerInventory.attribute5 = kitInnerItem.defaultInventoryAttribute5;
+          kitInnerInventory.color = kitInnerItem.defaultColor ?? "";
+          kitInnerInventory.productSize = kitInnerItem.defaultProductSize ?? "";
+          kitInnerInventory.style = kitInnerItem.defaultStyle ?? "";
+          kitInnerInventory.attribute1 = kitInnerItem.defaultInventoryAttribute1 ?? "";
+          kitInnerInventory.attribute2 = kitInnerItem.defaultInventoryAttribute2 ?? "";
+          kitInnerInventory.attribute3 = kitInnerItem.defaultInventoryAttribute3 ?? "";
+          kitInnerInventory.attribute4 = kitInnerItem.defaultInventoryAttribute4 ?? "";
+          kitInnerInventory.attribute5 = kitInnerItem.defaultInventoryAttribute5 ?? "";
         }
         else {
 
@@ -325,9 +323,9 @@ class ReceiptService {
 
 
     inventoryList
-        = (responseString["data"] as List)?.map((e) =>
-        e == null ? null : Inventory.fromJson(e as Map<String, dynamic>))
-            ?.toList();
+        = (responseString["data"] as List)
+        .map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+            .toList();
 
     print("get ${inventoryList.length} Inventory");
 
@@ -339,12 +337,13 @@ class ReceiptService {
       ItemPackageType itemPackageType, LpnCaptureRequest lpnCaptureRequest) async {
 
     List<Inventory> inventoryList = [];
-    await lpnCaptureRequest.capturedLpn.forEach((element) async {
+    lpnCaptureRequest.capturedLpn.forEach((element) async {
       Inventory inventory = await _generateReceivedInventory(receipt, receiptLine,
-          element, inventoryStatus, itemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity,
+          element, inventoryStatus, itemPackageType, lpnCaptureRequest.lpnUnitOfMeasure!.quantity,
           "", "", "",
           "", "", "","", "",
       false, false);
+      inventoryList.add(inventory);
     });
 
     return inventoryList;

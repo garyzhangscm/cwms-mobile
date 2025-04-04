@@ -73,7 +73,7 @@ class _LaunchPageState extends State<LaunchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(CWMSLocalizations.of(context).chooseServer),
+        title: Text(CWMSLocalizations.of(context)!.chooseServer),
       ),
       resizeToAvoidBottomInset: true,
       body: Padding(

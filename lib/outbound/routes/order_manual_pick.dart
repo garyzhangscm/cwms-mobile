@@ -15,7 +15,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:flutter/services.dart';
 import '../../shared/global.dart';
 
@@ -91,7 +91,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).manualPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.manualPick)),
       resizeToAvoidBottomInset: true,
       body:
         Padding(
@@ -121,7 +121,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   }
   Widget _buildOrderNumberInput(BuildContext context) {
     return buildTwoSectionInputRow(
-              CWMSLocalizations.of(context).orderNumber,
+              CWMSLocalizations.of(context)!.orderNumber,
               TextFormField(
                   controller: _orderNumberController,
                   showCursor: true,
@@ -200,9 +200,9 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
               return ListTile(
 
                 title: Text(
-                    CWMSLocalizations.of(context).item + ':' + _currentOrder.orderLines[index].item.name),
+                    CWMSLocalizations.of(context)!.item + ':' + _currentOrder.orderLines[index].item.name),
                 subtitle: Text(
-                    CWMSLocalizations.of(context).expectedQuantity + ':' + _currentOrder.orderLines[index].openQuantity.toString()),
+                    CWMSLocalizations.of(context)!.expectedQuantity + ':' + _currentOrder.orderLines[index].openQuantity.toString()),
               );
             }),
       );
@@ -276,7 +276,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   Widget _buildPickToShipStageInput(BuildContext context) {
     return
       buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).pickToProductionLineInStage,
+        CWMSLocalizations.of(context)!.pickToProductionLineInStage,
 
         Checkbox(
           value: _pickToShipStage,
@@ -291,7 +291,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
   Widget _buildLPNInput(BuildContext context) {
     return  buildTwoSectionInputRow(
-      CWMSLocalizations.of(context).lpn+ ": ",
+      CWMSLocalizations.of(context)!.lpn+ ": ",
       Focus(
         child:
         SystemControllerNumberTextBox(
@@ -309,7 +309,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
               // otherwise, we will flow to next LPN Capture form to let the user capture
               // more LPNs
               if (v.trim().isEmpty) {
-                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
               }
 
               return null;
@@ -362,9 +362,9 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _currentOrder == null || !_readyToConfirm? null : _onConfirmButtonClick,
-                child: Text(CWMSLocalizations.of(context).confirm),
+                child: Text(CWMSLocalizations.of(context)!.confirm),
             ),
-            Badge(
+            badge.Badge(
               showBadge: true,
               padding: EdgeInsets.all(8),
               badgeColor: Colors.deepPurple,
@@ -377,7 +377,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context).depositInventory),
+                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
                   ),
                 ),
             )

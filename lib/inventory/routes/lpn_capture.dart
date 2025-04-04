@@ -67,7 +67,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
     _lpnCaptureRequest = ModalRoute.of(context).settings.arguments;
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).captureLPN)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.captureLPN)),
       resizeToAvoidBottomInset: true,
       body:  Padding(
                padding: const EdgeInsets.all(16.0),
@@ -75,33 +75,33 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
                  Column(
                     children: <Widget>[
                       buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context).item,
+                        CWMSLocalizations.of(context)!.item,
                         _lpnCaptureRequest.item.name,
                       ),
                       buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context).item,
+                        CWMSLocalizations.of(context)!.item,
                         _lpnCaptureRequest.item.description,
                       ),
                       buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context).itemPackageType,
+                        CWMSLocalizations.of(context)!.itemPackageType,
                         _lpnCaptureRequest.itemPackageType.description,
                       ),
                       buildFourSectionInformationRow(
-                        CWMSLocalizations.of(context).lpnUnitOfMeasure,
+                        CWMSLocalizations.of(context)!.lpnUnitOfMeasure,
                         _lpnCaptureRequest.lpnUnitOfMeasure.unitOfMeasure.name,
-                        CWMSLocalizations.of(context).quantity,
+                        CWMSLocalizations.of(context)!.quantity,
                         _lpnCaptureRequest.lpnUnitOfMeasure.quantity.toString()
                       ),
                       buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context).requestedLPNQuantity,
+                        CWMSLocalizations.of(context)!.requestedLPNQuantity,
                         _lpnCaptureRequest.requestedLPNQuantity.toString(),
                       ),
                       buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context).capturedLPNQuantity,
+                        CWMSLocalizations.of(context)!.capturedLPNQuantity,
                         _lpnCaptureRequest.capturedLpn.length.toString()
                       ),
                       buildTwoSectionInputRow(
-                        CWMSLocalizations.of(context).lpn,
+                        CWMSLocalizations.of(context)!.lpn,
                         Focus(
                           child:
                             SystemControllerNumberTextBox(
@@ -153,11 +153,11 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
 
         ElevatedButton(
             onPressed: _onCancel,
-            child: Text(CWMSLocalizations.of(context).cancel)
+            child: Text(CWMSLocalizations.of(context)!.cancel)
         ),
         ElevatedButton(
             onPressed: _lpnCaptureRequest.capturedLpn.length == _lpnCaptureRequest.requestedLPNQuantity ? _onConfirm : null,
-            child: Text(CWMSLocalizations.of(context).confirm)
+            child: Text(CWMSLocalizations.of(context)!.confirm)
         ),
     );
   }
@@ -169,7 +169,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
       return;
     }
     if (_lpnCaptureRequest.capturedLpn.length == _lpnCaptureRequest.requestedLPNQuantity) {
-      showToast(CWMSLocalizations.of(context).enoughLPNCaptured);
+      showToast(CWMSLocalizations.of(context)!.enoughLPNCaptured);
       return;
     }
 

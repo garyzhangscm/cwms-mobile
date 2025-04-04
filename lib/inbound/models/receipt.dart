@@ -22,23 +22,23 @@ class Receipt{
     number = "";
     client = null;
     supplier = null;
-    receiptLines = new List<ReceiptLine>();
+    receiptLines = [];
     allowUnexpectedItem = false;
     receiptStatus = ReceiptStatus.OPEN;
   }
 
-  int id;
-  String number;
+  int? id;
+  String? number;
 
-  Client client;
-  Supplier supplier;
-  List<ReceiptLine> receiptLines;
+  Client? client;
+  Supplier? supplier;
+  List<ReceiptLine> receiptLines = [];
 
-  bool allowUnexpectedItem;
-  ReceiptStatus receiptStatus;
+  bool? allowUnexpectedItem;
+  ReceiptStatus? receiptStatus;
 
-  int totalExpectedQuantity;
-  int totalReceivedQuantity;
+  int? totalExpectedQuantity;
+  int? totalReceivedQuantity;
 
 
 

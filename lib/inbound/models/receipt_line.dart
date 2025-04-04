@@ -19,17 +19,17 @@ class ReceiptLine{
     overReceivingPercent = 0.0;
   }
 
-  int id;
-  String number;
+  int? id;
+  String? number;
 
-  Item item;
-  int expectedQuantity;
-  int receivedQuantity;
-  int arrivedQuantity;
-  int overReceivingQuantity;
-  double overReceivingPercent;
+  Item? item;
+  int? expectedQuantity;
+  int? receivedQuantity;
+  int? arrivedQuantity;
+  int? overReceivingQuantity;
+  double? overReceivingPercent;
 
-  int itemPackageTypeId;
+  int? itemPackageTypeId;
 
 
 

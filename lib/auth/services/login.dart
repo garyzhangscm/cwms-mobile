@@ -35,6 +35,5 @@ class LoginService {
       throw(loginResponseWrapper.message);
     }
 
-    return null;
   }
 }

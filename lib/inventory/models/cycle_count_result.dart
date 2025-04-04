@@ -13,20 +13,20 @@ part 'cycle_count_result.g.dart';
 class CycleCountResult{
   CycleCountResult();
 
-  int id;
-  String batchId;
-  int locationId;
-  WarehouseLocation location;
-  int warehouseId;
-  Warehouse warehouse;
+  int? id;
+  String? batchId;
+  int? locationId;
+  WarehouseLocation? location;
+  int? warehouseId;
+  Warehouse? warehouse;
 
-  Item item;
-  int quantity;
-  int countQuantity;
+  Item? item;
+  int? quantity;
+  int? countQuantity;
   // flag used by the client only.
   // set to true when adding new item
   // during the count
-  bool unexpectedItem;
+  bool? unexpectedItem;
 
   //不同的类使用不同的mixin即可
   factory CycleCountResult.fromJson(Map<String, dynamic> json) => _$CycleCountResultFromJson(json);

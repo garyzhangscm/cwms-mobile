@@ -29,15 +29,15 @@ class LpnCaptureRequest{
     this.newLPNOnly = newLPNOnly;
   }
 
-  Item item;
-  ItemPackageType itemPackageType;
-  ItemUnitOfMeasure lpnUnitOfMeasure;
+  Item? item;
+  ItemPackageType? itemPackageType;
+  ItemUnitOfMeasure? lpnUnitOfMeasure;
 
-  int requestedLPNQuantity;
-  Set<String> capturedLpn;
+  int? requestedLPNQuantity;
+  Set<String> capturedLpn = new Set();
 
-  bool result;
-  bool newLPNOnly;
+  bool? result;
+  bool? newLPNOnly;
 
   factory LpnCaptureRequest.fromJson(Map<String, dynamic> json) => _$LpnCaptureRequestFromJson(json);
   Map<String, dynamic> toJson() => _$LpnCaptureRequestToJson(this);

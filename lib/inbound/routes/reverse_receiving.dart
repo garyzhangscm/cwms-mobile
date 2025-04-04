@@ -9,16 +9,14 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/services/barcode_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import '../../shared/services/barcode_service.dart';
 import '../../shared/models/barcode.dart';
 
 import '../../shared/http_client.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class ReverseReceivingPage extends StatefulWidget{
 
-  ReverseReceivingPage({Key key}) : super(key: key);
+  ReverseReceivingPage({Key? key}) : super(key: key);
 
 
   @override
@@ -158,8 +156,8 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
       String locationName = "";
 
       inventories.forEach((inventory) {
-        clientNames.add(inventory.client == null ? "" : inventory.client.name);
-        itemNames.add(inventory.item.name);
+        clientNames.add(inventory.client.name ?? "");
+        itemNames.add(inventory.item.name ?? "");
         itemPackageTypeNames.add(inventory.itemPackageType.name);
         totalQuantity += inventory.quantity;
         locationName = inventory.locationName;
@@ -308,7 +306,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
               ),
             ),
             validator: (v) {
-              return v.trim().isNotEmpty ?
+              return v!.trim().isNotEmpty ?
               null :
               CWMSLocalizations.of(context).missingField(
                   CWMSLocalizations.of(context).lpn);

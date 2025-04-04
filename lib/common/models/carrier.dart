@@ -1,6 +1,5 @@
-import 'package:cwms_mobile/inventory/models/inventory_status.dart';
-import 'package:cwms_mobile/inventory/models/item.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
+
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'carrier.g.dart';
@@ -11,22 +10,22 @@ part 'carrier.g.dart';
 class Carrier{
   Carrier();
 
-  int id;
-  String name;
+  int? id;
+  String? name;
 
-  String description;
+  String? description;
 
-  String contactorFirstname;
-  String contactorLastname;
+  String? contactorFirstname;
+  String? contactorLastname;
 
-  String addressCountry;
-  String addressState;
-  String addressCounty;
-  String addressCity;
-  String addressDistrict;
-  String addressLine1;
-  String addressLine2;
-  String addressPostcode;
+  String? addressCountry;
+  String? addressState;
+  String? addressCounty;
+  String? addressCity;
+  String? addressDistrict;
+  String? addressLine1;
+  String? addressLine2;
+  String? addressPostcode;
 
 
 

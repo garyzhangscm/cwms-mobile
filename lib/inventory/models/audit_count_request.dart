@@ -14,21 +14,21 @@ part 'audit_count_request.g.dart';
 class AuditCountRequest{
   AuditCountRequest();
 
-  int id;
-  String batchId;
+  int? id;
+  String? batchId;
 
-  int locationId;
-  WarehouseLocation location;
+  int? locationId;
+  WarehouseLocation? location;
 
-  int warehouseId;
-  Warehouse warehouse;
+  int? warehouseId;
+  Warehouse? warehouse;
 
 
   // how many times this audit count has been skiped
   // if the audit count is skipped, then we will put it
   // to the last in the queue so as the user can skip
   // this count request for now and come back later
-  int skippedCount;
+  int? skippedCount;
 
 
   //不同的类使用不同的mixin即可

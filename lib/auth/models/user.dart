@@ -9,18 +9,18 @@ part 'user.g.dart';
 class User{
   User();
 
-  int companyId;
-  String username;
-  String password;
+  int? companyId;
+  String? username;
+  String? password;
 
-  String firstname;
-  String lastname;
+  String? firstname;
+  String? lastname;
 
   // current login token
-  String token;
-  String refreshToken;
+  String? token;
+  String? refreshToken;
 
-  String login;
+  String? login;
 
 
 

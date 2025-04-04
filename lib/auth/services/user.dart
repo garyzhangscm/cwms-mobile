@@ -12,7 +12,7 @@ import '../../shared/functions.dart';
 
 class UserService {
   // 登录接口，登录成功后返回用户信息
-  static Future<User> findUser(int companyId, String username) async {
+  static Future<User?> findUser(int companyId, String username) async {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
@@ -31,9 +31,8 @@ class UserService {
     }
 
     List<User> users
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : User.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => User.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // we should only have user with the specific name
     if (users.length > 0) {

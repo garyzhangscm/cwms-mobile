@@ -36,9 +36,9 @@ Item _$ItemFromJson(Map<String, dynamic> json) {
       ? null
       : ItemPackageType.fromJson(json['defaultItemPackageType'] as Map<String, dynamic>)
     ..itemPackageTypes = (json['itemPackageTypes'] as List)
-        ?.map(
-          (e) => e == null ? null : ItemPackageType.fromJson(e as Map<String, dynamic>))
-              ?.toList()
+        .map(
+          (e) => ItemPackageType.fromJson(e as Map<String, dynamic>))
+              .toList()
     ..kitItemFlag = json['kitItemFlag'] == null
         ? false : json['kitItemFlag'] as bool
     ..billOfMaterialId = json['billOfMaterialId'] == null
@@ -47,9 +47,9 @@ Item _$ItemFromJson(Map<String, dynamic> json) {
         ? null
         : BillOfMaterial.fromJson(json['billOfMaterial'] as Map<String, dynamic>)
     ..kitInnerItems = (json['kitInnerItems'] as List)
-        ?.map(
-            (e) => e == null ? null : Item.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+        .map(
+            (e) =>  Item.fromJson(e as Map<String, dynamic>))
+        .toList();
     /**
     ..client = json['client'] == null
         ? null

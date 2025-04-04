@@ -1,8 +1,6 @@
-import 'dart:convert';
 
 import 'package:cwms_mobile/auth/models/menu_group.dart';
 import 'package:cwms_mobile/shared/global.dart';
-import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_response.dart';
 
 
@@ -21,9 +19,8 @@ class MenuService {
 
       Map<String, dynamic> responseData = response.data;
       List<MenuGroup> menuGroups
-      = (responseData['menu'] as List)?.map((e) =>
-      e == null ? null : MenuGroup.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseData['menu'] as List).map((e) => MenuGroup.fromJson(e as Map<String, dynamic>))
+          .toList();
       return menuGroups[0];
 
   }

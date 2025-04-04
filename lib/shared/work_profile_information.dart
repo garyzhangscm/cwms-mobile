@@ -34,7 +34,7 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workProfile)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.workProfile)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -61,7 +61,7 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
                         }
 
                       },
-                      child: Text(CWMSLocalizations.of(context).confirm),
+                      child: Text(CWMSLocalizations.of(context)!.confirm),
                     ),
                 ),
               ),

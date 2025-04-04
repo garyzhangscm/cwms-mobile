@@ -22,7 +22,7 @@ import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:flutter/services.dart';
 
 
@@ -101,7 +101,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pickByWorkOrder)),
       resizeToAvoidBottomInset: true,
       body:
         Padding(
@@ -137,12 +137,12 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   }
   Widget _buildWorkOrderNumberInput(BuildContext context) {
     return buildTwoSectionInputRow(
-              CWMSLocalizations.of(context).workOrderNumber,
+              CWMSLocalizations.of(context)!.workOrderNumber,
               _getWorkOrderInputWidget(context));
   }
   Widget _buildProductionLineTextBox(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).productionLine,
+        CWMSLocalizations.of(context)!.productionLine,
         _getProductionLineInputWidget(context));
   }
 
@@ -201,9 +201,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
               return ListTile(
 
                 title: Text(
-                    CWMSLocalizations.of(context).item + ':' + _currentWorkOrder.workOrderLines[index].item.name),
+                    CWMSLocalizations.of(context)!.item + ':' + _currentWorkOrder.workOrderLines[index].item.name),
                 subtitle: Text(
-                    CWMSLocalizations.of(context).expectedQuantity + ':' + _currentWorkOrder.workOrderLines[index].openQuantity.toString()),
+                    CWMSLocalizations.of(context)!.expectedQuantity + ':' + _currentWorkOrder.workOrderLines[index].openQuantity.toString()),
               );
             }),
       );
@@ -442,9 +442,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
   Widget _buildProductionLineAssignmentSelection(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).productionLine,
+        CWMSLocalizations.of(context)!.productionLine,
         DropdownButton(
-          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+          hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
           items: _getProductionLineAssignmentItems(),
           value: _selectedProductionLineAssignment,
           elevation: 1,
@@ -492,7 +492,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   Widget _buildPickToProductionInput(BuildContext context) {
     return
       buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).pickToProductionLineInStage,
+        CWMSLocalizations.of(context)!.pickToProductionLineInStage,
 
         Checkbox(
           value: _pickToProductionLineInStage,
@@ -508,7 +508,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   Widget _buildLPNInput(BuildContext context) {
     return
       buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).lpn,
+        CWMSLocalizations.of(context)!.lpn,
         Focus(
             child:
             RawKeyboardListener(
@@ -536,7 +536,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                     showKeyboard: false,
                     validator: (v) {
                       if (v.trim().isEmpty) {
-                        return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                        return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
                       }
 
                       return null;
@@ -603,9 +603,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _currentWorkOrder == null ? null : _onWorkOrderMaualPickConfirm,
-                child: Text(CWMSLocalizations.of(context).confirm),
+                child: Text(CWMSLocalizations.of(context)!.confirm),
             ),
-            Badge(
+            badge.Badge(
               showBadge: true,
               padding: EdgeInsets.all(8),
               badgeColor: Colors.deepPurple,
@@ -618,7 +618,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context).depositInventory),
+                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
                   ),
                 ),
             )

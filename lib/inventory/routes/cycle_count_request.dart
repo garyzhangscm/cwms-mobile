@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 
 class CycleCountRequestPage extends StatefulWidget{
 
-  CycleCountRequestPage({Key key}) : super(key: key);
+  CycleCountRequestPage({Key? key}) : super(key: key);
 
 
   @override
@@ -28,14 +28,14 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
   GlobalKey _formKey = new GlobalKey<FormState>();
   List<CycleCountResult> _inventorySummaries = [];
 
-  CycleCountRequest _cycleCountRequest;
+  CycleCountRequest? _cycleCountRequest;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _cycleCountRequest = ModalRoute.of(context).settings.arguments;
+    _cycleCountRequest = ModalRoute.of(context)?.settings.arguments as CycleCountRequest;
 
-    CycleCountRequestService.getInventorySummariesForCounts(_cycleCountRequest.id)
+    CycleCountRequestService.getInventorySummariesForCounts(_cycleCountRequest!.id!)
         .then((inventorySummaries) {
 
       setState(() {
@@ -79,9 +79,9 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
     return
       BottomNavigationBar(
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: CWMSLocalizations.of(context).confirmCycleCount),
-          BottomNavigationBarItem(icon: Icon(Icons.next_plan), label: CWMSLocalizations.of(context).skipCycleCount),
-          BottomNavigationBarItem(icon: Icon(Icons.cancel), label: CWMSLocalizations.of(context).cancelCycleCount),
+          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: CWMSLocalizations.of(context)!.confirmCycleCount),
+          BottomNavigationBarItem(icon: Icon(Icons.next_plan), label: CWMSLocalizations.of(context)!.skipCycleCount),
+          BottomNavigationBarItem(icon: Icon(Icons.cancel), label: CWMSLocalizations.of(context)!.cancelCycleCount),
 
         ],
         currentIndex: 0,
@@ -105,9 +105,9 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
   }
   void _onAddItem() {
     CycleCountResult _newCycleCountResult = new CycleCountResult();
-    _newCycleCountResult.batchId = _cycleCountRequest.batchId;
-    _newCycleCountResult.location = _cycleCountRequest.location;
-    _newCycleCountResult.locationId = _cycleCountRequest.location.id;
+    _newCycleCountResult.batchId = _cycleCountRequest?.batchId;
+    _newCycleCountResult.location = _cycleCountRequest?.location;
+    _newCycleCountResult.locationId = _cycleCountRequest?.location?.id;
     _newCycleCountResult.warehouseId = Global.currentWarehouse.id;
     _newCycleCountResult.warehouse = Global.currentWarehouse;
     _newCycleCountResult.item = null;
@@ -168,7 +168,7 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
   void _onConfirmCycleCount() async {
     // since the user is able to confirm the cycle count, let's assume the user is
     // already in the location
-    Global.setLastActivityLocation(_cycleCountRequest.location);
+    Global.setLastActivityLocation(_cycleCountRequest!.location!);
 
     FormState formState = _formKey.currentState as FormState;
 
@@ -183,7 +183,7 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
     );
 
 
-    await CycleCountRequestService.confirmCycleCount(_cycleCountRequest, _inventorySummaries);
+    await CycleCountRequestService.confirmCycleCount(_cycleCountRequest!, _inventorySummaries);
 
     // hide the loading page
     Navigator.of(context).pop();
@@ -215,10 +215,10 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
     showLoading(context);
     // since the user is able to cancel the cycle count, let's assume the user is
     // already in the location
-    Global.setLastActivityLocation(_cycleCountRequest.location);
+    Global.setLastActivityLocation(_cycleCountRequest!.location!);
 
 
-    await CycleCountRequestService.cancelCycleCount(_cycleCountRequest);
+    await CycleCountRequestService.cancelCycleCount(_cycleCountRequest!);
     //return true to the previous page
 
     // hide the loading page

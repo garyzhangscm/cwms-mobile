@@ -84,7 +84,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                CWMSLocalizations.of(context).item + ": ",
+                                CWMSLocalizations.of(context)!.item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -106,7 +106,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                  CWMSLocalizations.of(context).inventoryStatus + ": ",
+                                  CWMSLocalizations.of(context)!.inventoryStatus + ": ",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,
@@ -128,7 +128,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                  CWMSLocalizations.of(context).quantity + ": ",
+                                  CWMSLocalizations.of(context)!.quantity + ": ",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,

@@ -15,17 +15,17 @@ part 'inventory_movement.g.dart';
 class InventoryMovement{
   InventoryMovement();
 
-  int id;
+  int? id;
 
 
 
-  int locationId;
-  WarehouseLocation location;
+  int? locationId;
+  WarehouseLocation? location;
 
-  int sequence;
+  int? sequence;
 
-  int warehouseId;
-  Warehouse warehouse;
+  int? warehouseId;
+  Warehouse? warehouse;
 
 
 

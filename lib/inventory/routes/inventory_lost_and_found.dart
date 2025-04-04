@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
@@ -19,7 +19,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:progress_dialog/progress_dialog.dart';
+import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 import '../../shared/models/barcode.dart';
 import '../../shared/services/barcode_service.dart';
@@ -27,7 +27,7 @@ import '../../shared/services/barcode_service.dart';
 
 class InventoryLostFoundPage extends StatefulWidget{
 
-  InventoryLostFoundPage({Key key}) : super(key: key);
+  InventoryLostFoundPage({Key? key}) : super(key: key);
 
 
   @override
@@ -51,14 +51,14 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   FocusNode _quantityFocusNode = FocusNode();
   FocusNode _lpnFocusNode = FocusNode();
 
-  List<InventoryStatus> _validInventoryStatus;
-  InventoryStatus _selectedInventoryStatus;
-  ItemPackageType _selectedItemPackageType;
-  ItemUnitOfMeasure _selectedItemUnitOfMeasure;
-  Item _currentItem;
+  List<InventoryStatus> _validInventoryStatus = [];
+  InventoryStatus? _selectedInventoryStatus;
+  ItemPackageType? _selectedItemPackageType;
+  ItemUnitOfMeasure? _selectedItemUnitOfMeasure;
+  Item? _currentItem;
   bool _readyToConfirm = true;
 
-  ProgressDialog _progressDialog;
+  ProgressDialog? _progressDialog;
 
   List<Inventory>  inventoryOnRF = [];
 
@@ -135,7 +135,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               });
             }
             else
-            if (_currentItem == null || _currentItem.name != _itemController.text) {
+            if (_currentItem == null || _currentItem?.name != _itemController.text) {
               printLongLogMessage("start to parse the barcode ${_itemController.text}");
               Barcode barcode = BarcodeService.parseBarcode(_itemController.text);
 
@@ -177,7 +177,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).inventoryAdjust)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.inventoryAdjust)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -186,11 +186,11 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
           child: Column(
             children: <Widget>[
               // show RF as the destination location of the adjust LPN
-              buildTwoSectionInformationRow(CWMSLocalizations.of(context).location,
+              buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.location,
                   Global.lastLoginRFCode),
 
               // ask the user to input item number
-              buildTwoSectionInputRow(CWMSLocalizations.of(context).item,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.item,
                 Focus(
                     child: ItemQuery(
                         itemNumberController: _itemController,
@@ -206,8 +206,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                           }
                         },
                         validator: (v) {
-                          if (v.trim().isEmpty) {
-                            return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).item);
+                          if (v!.trim().isEmpty) {
+                            return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.item);
                           }
 
                           return null;
@@ -236,12 +236,12 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               ),
               // Allow the user to choose item package type
               buildTwoSectionInputRow(
-                  CWMSLocalizations.of(context).itemPackageType,
+                  CWMSLocalizations.of(context)!.itemPackageType,
 
                   _getItemPackageTypeItems().isEmpty ?
                   Container() :
                   DropdownButton(
-                    // hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                    // hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                     items: _getItemPackageTypeItems(),
                     value: _selectedItemPackageType,
                     elevation: 1,
@@ -250,19 +250,19 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                       Icons.list,
                       size: 20,
                     ),
-                    onChanged: (T) {
+                    onChanged: (ItemPackageType? value) {
                       //下拉菜单item点击之后的回调
                       setState(() {
-                        _selectedItemPackageType = T;
+                        _selectedItemPackageType = value;
                       });
                     },
                   )
               ),
               // Allow the user to choose inventory status
               buildTwoSectionInputRow(
-                  CWMSLocalizations.of(context).inventoryStatus,
+                  CWMSLocalizations.of(context)!.inventoryStatus,
                   DropdownButton(
-                    //  hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                    //  hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                     items: _getInventoryStatusItems(),
                     value: _selectedInventoryStatus,
                     elevation: 1,
@@ -271,16 +271,16 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                       Icons.list,
                       size: 20,
                     ),
-                    onChanged: (T) {
+                    onChanged: (InventoryStatus? value) {
                       //下拉菜单item点击之后的回调
                       setState(() {
-                        _selectedInventoryStatus = T;
+                        _selectedInventoryStatus = value;
                       });
                     },
                   )
               ),
               buildThreeSectionInputRow(
-                  CWMSLocalizations.of(context).quantity,
+                  CWMSLocalizations.of(context)!.quantity,
                   TextFormField(
                       keyboardType: TextInputType.number,
                       controller: _quantityController,
@@ -297,7 +297,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                       ),
                       // 校验ITEM NUMBER（不能为空）
                       validator: (v) {
-                        if (v.trim().isEmpty) {
+                        if (v!.trim().isEmpty) {
                           return "please type in quantity";
                         }
 
@@ -306,7 +306,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                   _getItemUnitOfMeasures().isEmpty ?
                   Container() :
                   DropdownButton(
-                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                    hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                     items: _getItemUnitOfMeasures(),
                     value: _selectedItemUnitOfMeasure,
                     elevation: 1,
@@ -315,16 +315,16 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                       Icons.list,
                       size: 20,
                     ),
-                    onChanged: (T) {
+                    onChanged: (ItemUnitOfMeasure? value) {
                       //下拉菜单item点击之后的回调
                       setState(() {
-                        _selectedItemUnitOfMeasure = T;
+                        _selectedItemUnitOfMeasure = value;
                       });
                     },
                   )
               ),
               buildTwoSectionInputRow(
-                CWMSLocalizations.of(context).lpn+ ": ",
+                CWMSLocalizations.of(context)!.lpn+ ": ",
                 Focus(
                   child:
                   SystemControllerNumberTextBox(
@@ -338,8 +338,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                         // if we only need one LPN, then make sure the user input the LPN in this form.
                         // otherwise, we will flow to next LPN Capture form to let the user capture
                         // more LPNs
-                        if (v.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
-                          return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
+                        if (v!.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
+                          return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
                         }
 
                         return null;
@@ -362,7 +362,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
         ElevatedButton(
           onPressed: !_readyToConfirm || _currentItem == null ? null :
               () {
-            if (_formKey.currentState.validate() && _readyToConfirm) {
+            if (_formKey.currentState!.validate() && _readyToConfirm) {
 
               _readyToConfirm = false;
               printLongLogMessage("2. _readyToConfirm = ${_readyToConfirm} ");
@@ -377,7 +377,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               .of(context)
               .confirm),
         ),
-        Badge(
+        badge.Badge(
           showBadge: true,
           padding: EdgeInsets.all(8),
           badgeColor: Colors.deepPurple,
@@ -390,7 +390,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               width: MediaQuery.of(context).size.width,
               child: ElevatedButton(
                 onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                child: Text(CWMSLocalizations.of(context).depositInventory),
+                child: Text(CWMSLocalizations.of(context)!.depositInventory),
               ),
             ),
         )
@@ -412,22 +412,22 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     }
 
     if (parameters.containsKey("itemName")) {
-      ItemService.getItemByName(parameters["itemName"]).then((item) => {
+      ItemService.getItemByName(parameters["itemName"]!).then((item) => {
           setState(() {
               _currentItem = item;
-              _itemController.text = item.name;
+              _itemController.text = item.name!;
           })
       });
     }
 
 
     if (parameters.containsKey("quantity")) {
-      _quantityController.text = parameters["quantity"];
+      _quantityController.text = parameters["quantity"]!;
     }
 
 
     if (parameters.containsKey("lpn")) {
-      _lpnController.text = parameters["lpn"];
+      _lpnController.text = parameters["lpn"]!;
     }
 
 
@@ -435,39 +435,39 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     _inventoryAttributesFromBarcode.clear();
 
     if (parameters.containsKey("color")) {
-      _inventoryAttributesFromBarcode["color"] = parameters["color"];
+      _inventoryAttributesFromBarcode["color"] = parameters["color"]!;
     }
     if (parameters.containsKey("productSize")) {
-      _inventoryAttributesFromBarcode["productSize"] = parameters["productSize"];
+      _inventoryAttributesFromBarcode["productSize"] = parameters["productSize"]!;
     }
     if (parameters.containsKey("style")) {
-      _inventoryAttributesFromBarcode["style"] = parameters["style"];
+      _inventoryAttributesFromBarcode["style"] = parameters["style"]!;
     }
 
     if (parameters.containsKey("inventoryAttribute1")) {
-      _inventoryAttributesFromBarcode["attribute1"] = parameters["inventoryAttribute1"];
+      _inventoryAttributesFromBarcode["attribute1"] = parameters["inventoryAttribute1"]!;
     }
     if (parameters.containsKey("inventoryAttribute2")) {
-      _inventoryAttributesFromBarcode["attribute2"] = parameters["inventoryAttribute2"];
+      _inventoryAttributesFromBarcode["attribute2"] = parameters["inventoryAttribute2"]!;
     }
     if (parameters.containsKey("inventoryAttribute3")) {
-      _inventoryAttributesFromBarcode["attribute3"] = parameters["inventoryAttribute3"];
+      _inventoryAttributesFromBarcode["attribute3"] = parameters["inventoryAttribute3"]!;
     }
     if (parameters.containsKey("inventoryAttribute4")) {
-      _inventoryAttributesFromBarcode["attribute4"] = parameters["inventoryAttribute4"];
+      _inventoryAttributesFromBarcode["attribute4"] = parameters["inventoryAttribute4"]!;
     }
     if (parameters.containsKey("inventoryAttribute5")) {
-      _inventoryAttributesFromBarcode["attribute5"] = parameters["inventoryAttribute5"];
+      _inventoryAttributesFromBarcode["attribute5"] = parameters["inventoryAttribute5"]!;
     }
 
     // whether the kit inner inventory attribute from
     // the kit item's default attribute, or from the container's inventory attribute
     if (parameters.containsKey("kitInnerInventoryWithDefaultAttribute")) {
-      _inventoryAttributesFromBarcode["kitInnerInventoryWithDefaultAttribute"] = parameters["kitInnerInventoryWithDefaultAttribute"];
+      _inventoryAttributesFromBarcode["kitInnerInventoryWithDefaultAttribute"] = parameters["kitInnerInventoryWithDefaultAttribute"]!;
     }
 
     if (parameters.containsKey("kitInnerInventoryAttributeFromKit")) {
-      _inventoryAttributesFromBarcode["kitInnerInventoryAttributeFromKit"] = parameters["kitInnerInventoryAttributeFromKit"];
+      _inventoryAttributesFromBarcode["kitInnerInventoryAttributeFromKit"] = parameters["kitInnerInventoryAttributeFromKit"]!;
     }
 
 
@@ -482,18 +482,18 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
     int lpnCount = 0;
 
-    if (_selectedItemPackageType.trackingLpnUOM == null) {
+    if (_selectedItemPackageType?.trackingLpnUOM == null) {
       // the tracking LPN UOM is not defined for this item package type, so we don't know
       // how to calculate how many LPNs we may need based on the UOM and quantity
       lpnCount = 1;
     }
-    else if (_selectedItemUnitOfMeasure.quantity == _selectedItemPackageType.trackingLpnUOM.quantity) {
+    else if (_selectedItemUnitOfMeasure?.quantity == _selectedItemPackageType?.trackingLpnUOM?.quantity) {
       // we are receiving at LPN uom level, then see what's the quantity the user specify
       lpnCount = totalQuantity;
     }
-    else if (_selectedItemUnitOfMeasure.quantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
+    else if (_selectedItemUnitOfMeasure!.quantity! > _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
       // we are receiving at some higher level, see how many LPN uom we will need
-      lpnCount = (totalQuantity * _selectedItemUnitOfMeasure.quantity / _selectedItemPackageType.trackingLpnUOM.quantity) as int;
+      lpnCount = (totalQuantity * _selectedItemUnitOfMeasure!.quantity! / _selectedItemPackageType!.trackingLpnUOM!.quantity!) as int;
     }
     else {
       // we are receiving at some lower level than the tracking LPN UOM,
@@ -505,21 +505,21 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
   }
 
-  List<DropdownMenuItem> _getItemUnitOfMeasures() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<ItemUnitOfMeasure>> _getItemUnitOfMeasures() {
+    List<DropdownMenuItem<ItemUnitOfMeasure>> items = [];
 
-    if ( _selectedItemPackageType == null || _selectedItemPackageType.itemUnitOfMeasures == null ||
-        _selectedItemPackageType.itemUnitOfMeasures.length == 0) {
+    if ( _selectedItemPackageType == null || _selectedItemPackageType?.itemUnitOfMeasures == null ||
+        _selectedItemPackageType?.itemUnitOfMeasures.length == 0) {
       // if the user has not selected any item package type yet
       // return nothing
       return items;
     }
 
-    for (int i = 0; i < _selectedItemPackageType.itemUnitOfMeasures.length; i++) {
+    for (int i = 0; i < _selectedItemPackageType!.itemUnitOfMeasures.length; i++) {
 
       items.add(DropdownMenuItem(
-        value:  _selectedItemPackageType.itemUnitOfMeasures[i],
-        child: Text( _selectedItemPackageType.itemUnitOfMeasures[i].unitOfMeasure.name),
+        value:  _selectedItemPackageType?.itemUnitOfMeasures[i],
+        child: Text( _selectedItemPackageType!.itemUnitOfMeasures[i].unitOfMeasure?.name ?? ""),
       ));
     }
 
@@ -530,12 +530,12 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     // then we know that we just changed the item package type or item, so we will need
     // to refresh the _selectedItemUnitOfMeasure to the default inbound receiving uom as well
     if (_selectedItemUnitOfMeasure == null ||
-        !_selectedItemPackageType.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
+        !_selectedItemPackageType!.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
       // if the user has not select any item unit of measure yet, then
       // default the value to the one marked as 'default for inbound receiving'
 
-      _selectedItemUnitOfMeasure = _selectedItemPackageType.itemUnitOfMeasures
-          .firstWhere((element) => element.id == _selectedItemPackageType.defaultInboundReceivingUOM.id);
+      _selectedItemUnitOfMeasure = _selectedItemPackageType?.itemUnitOfMeasures
+          .firstWhere((element) => element.id == _selectedItemPackageType?.defaultInboundReceivingUOM?.id);
     }
 
     return items;
@@ -550,8 +550,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   }
 
 
-  List<DropdownMenuItem> _getInventoryStatusItems() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
+    List<DropdownMenuItem<InventoryStatus>> items = [];
     if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
       return items;
     }
@@ -560,7 +560,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     for (int i = 0; i < _validInventoryStatus.length; i++) {
       items.add(DropdownMenuItem(
         value: _validInventoryStatus[i],
-        child: Text(_validInventoryStatus[i].description),
+        child: Text(_validInventoryStatus[i].description ?? ""),
       ));
     }
 
@@ -575,28 +575,28 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     return items;
   }
 
-  List<DropdownMenuItem> _getItemPackageTypeItems() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<ItemPackageType>> _getItemPackageTypeItems() {
+    List<DropdownMenuItem<ItemPackageType>> items = [];
 
 
-    if (_currentItem != null && _currentItem.itemPackageTypes.length > 0) {
+    if (_currentItem != null && _currentItem!.itemPackageTypes.length > 0) {
       // _selectedItemPackageType = item.itemPackageTypes[0];
 
-      for (int i = 0; i < _currentItem.itemPackageTypes.length; i++) {
+      for (int i = 0; i < _currentItem!.itemPackageTypes.length; i++) {
 
         items.add(DropdownMenuItem(
-          value: _currentItem.itemPackageTypes[i],
-          child: Text(_currentItem.itemPackageTypes[i].description),
+          value: _currentItem?.itemPackageTypes[i],
+          child: Text(_currentItem!.itemPackageTypes[i].description ?? ""),
         ));
       }
 
-      if (_currentItem.itemPackageTypes.length == 1 ||
+      if (_currentItem?.itemPackageTypes.length == 1 ||
           _selectedItemPackageType == null) {
         // if we only have one item package type for this item, then
         // default the selection to it
         // if the user has not select any item package type yet, then
         // default the value to the first option as well
-        _selectedItemPackageType = _currentItem.itemPackageTypes[0];
+        _selectedItemPackageType = _currentItem?.itemPackageTypes[0];
       }
     }
     return items;
@@ -674,9 +674,9 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
 
     Map<String, String> inventoryAttributes = new Map();
-    if (_needCaptureInventoryAttribute(_currentItem)) {
+    if (_needCaptureInventoryAttribute(_currentItem!)) {
 
-      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentItem.name}");
+      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentItem!.name}");
       printLongLogMessage("_inventoryAttributesFromBarcode.isNotEmpty? ${_inventoryAttributesFromBarcode.isNotEmpty}");
 
       if (_inventoryAttributesFromBarcode.isNotEmpty) {
@@ -697,7 +697,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
     // refresh the work order to reflect the produced quantity
 
-    Inventory inventory = await createInventory(lpn, confirmedQuantity * _selectedItemUnitOfMeasure.quantity,
+    Inventory inventory = await createInventory(lpn, confirmedQuantity * _selectedItemUnitOfMeasure!.quantity!,
         inventoryAttributes);
     try {
       await InventoryService.addInventory(inventory);
@@ -720,10 +720,10 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     inventory.item = _currentItem;
     // in 3pl environment, let's set the inventory's client id based on the item
     // client id
-    if (_currentItem.clientId != null) {
-      printLongLogMessage("current item belongs to client ${_currentItem.clientId}" +
+    if (_currentItem!.clientId != null) {
+      printLongLogMessage("current item belongs to client ${_currentItem!.clientId}" +
       ", we will setup the inventory with the same client id");
-      inventory.clientId = _currentItem.clientId;
+      inventory.clientId = _currentItem!.clientId;
     }
     inventory.quantity = quantity;
     WarehouseLocation rfLocation = await WarehouseLocationService.getWarehouseLocationByName(
@@ -773,9 +773,9 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
         printLongLogMessage("add current LPN $lpn first so that the user don't have to scan in again");
       }
       LpnCaptureRequest lpnCaptureRequest = new LpnCaptureRequest.withData(
-          _currentItem,
-          _selectedItemPackageType,
-          _selectedItemPackageType.trackingLpnUOM,
+          _currentItem!,
+          _selectedItemPackageType!,
+          _selectedItemPackageType!.trackingLpnUOM!,
           lpnCount, capturedLpn,
           true
       );
@@ -828,9 +828,9 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     }
 
     Map<String, String> inventoryAttributes = new Map();
-    if (_needCaptureInventoryAttribute(_currentItem)) {
+    if (_needCaptureInventoryAttribute(_currentItem!)) {
 
-      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentItem.name}");
+      printLongLogMessage("we will need to capture the inventory attribute for current item ${_currentItem!.name}");
       printLongLogMessage("_inventoryAttributesFromBarcode.isNotEmpty? ${_inventoryAttributesFromBarcode.isNotEmpty}");
 
       if (_inventoryAttributesFromBarcode.isNotEmpty) {
@@ -859,12 +859,12 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
       while(lpnIterator.moveNext()) {
         String lpn = lpnIterator.current;
         double progress = currentLPNIndex * 100 / totalLPNCount;
-        String message = CWMSLocalizations.of(context).receivingCurrentLpn + ": " +
+        String message = CWMSLocalizations.of(context)!.receivingCurrentLpn + ": " +
             lpn + ", " + currentLPNIndex.toString() + " / " + totalLPNCount.toString();
 
-        _progressDialog.update(progress: progress, message: message);
+        _progressDialog!.update(progress: progress, message: message);
 
-        Inventory inventory = await createInventory(lpn, lpnCaptureRequest.lpnUnitOfMeasure.quantity, inventoryAttributes);
+        Inventory inventory = await createInventory(lpn, lpnCaptureRequest!.lpnUnitOfMeasure!.quantity!, inventoryAttributes);
 
         await InventoryService.addInventory(inventory);
 
@@ -879,8 +879,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
     }
 
-    if (_progressDialog.isShowing()) {
-      _progressDialog.hide();
+    if (_progressDialog!.isShowing()) {
+      _progressDialog!.hide();
     }
 
     Navigator.of(context).pop();
@@ -893,14 +893,14 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
     _progressDialog = new ProgressDialog(
       context,
-      type: ProgressDialogType.Normal,
+      type: ProgressDialogType.normal,
       isDismissible: false,
       showLogs: true,
     );
 
-    _progressDialog.style(message: CWMSLocalizations.of(context).receivingMultipleLpns);
-    if (!_progressDialog.isShowing()) {
-      _progressDialog.show();
+    _progressDialog!.style(message: CWMSLocalizations.of(context)!.receivingMultipleLpns);
+    if (!_progressDialog!.isShowing()) {
+      _progressDialog!.show();
     }
   }
   _refreshScreenAfterAdjust() {
@@ -966,7 +966,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     // full assigned to the lpnController.
 
     printLongLogMessage("lpn controller lost focus, its value is ${_lpnController.text}");
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       print("form validation passed");
       _onInventoryAdjustConfirm(
           int.parse(_quantityController.text),

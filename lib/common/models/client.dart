@@ -11,22 +11,22 @@ part 'client.g.dart';
 class Client{
   Client();
 
-  int id;
-  String name;
+  int? id;
+  String? name;
 
-  String description;
+  String? description;
 
-  String contactorFirstname;
-  String contactorLastname;
+  String? contactorFirstname;
+  String? contactorLastname;
 
-  String addressCountry;
-  String addressState;
-  String addressCounty;
-  String addressCity;
-  String addressDistrict;
-  String addressLine1;
-  String addressLine2;
-  String addressPostcode;
+  String? addressCountry;
+  String? addressState;
+  String? addressCounty;
+  String? addressCity;
+  String? addressDistrict;
+  String? addressLine1;
+  String? addressLine2;
+  String? addressPostcode;
 
 
 

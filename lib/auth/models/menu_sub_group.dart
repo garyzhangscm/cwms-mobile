@@ -10,13 +10,13 @@ part 'menu_sub_group.g.dart';
 class MenuSubGroup{
   MenuSubGroup();
 
-  String name;
-  String text;
-  String icon;
-  String i18n;
-  String link;
+  String? name;
+  String? text;
+  String? icon;
+  String? i18n;
+  String? link;
 
-  List<Menu> menus;
+  List<Menu> menus = [];
 
 
 

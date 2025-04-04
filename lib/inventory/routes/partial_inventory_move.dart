@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
@@ -146,7 +146,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   }
 
   Widget _buildLPNController(BuildContext context) {
-    return buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
+    return buildTwoSectionInputRow(CWMSLocalizations.of(context)!.lpn,
         TextFormField(
             controller: _lpnController,
             autofocus: true,
@@ -162,8 +162,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             validator: (v) {
               return v.trim().isNotEmpty ?
               null :
-              CWMSLocalizations.of(context).missingField(
-                  CWMSLocalizations.of(context).lpn);
+              CWMSLocalizations.of(context)!.missingField(
+                  CWMSLocalizations.of(context)!.lpn);
             })
     );
   }
@@ -183,13 +183,13 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   }
   Widget _buildItemInformation(BuildContext context, String itemName) {
     return buildTwoSectionInformationRow(
-        CWMSLocalizations.of(context).item,
+        CWMSLocalizations.of(context)!.item,
         itemName);
   }
 
   Widget _builItemController(BuildContext context) {
     return DropdownButton(
-      // hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+      // hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
       items: _getItemNames(),
       value: _selectedItemName,
       elevation: 1,
@@ -212,18 +212,18 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     if (_itemMap.containsKey(_selectedItemName)) {
 
       return buildTwoSectionInformationRow(
-          CWMSLocalizations.of(context).item,
+          CWMSLocalizations.of(context)!.item,
           _itemMap.putIfAbsent(_selectedItemName, () => null).description);
     }
 
     return buildTwoSectionInformationRow(
-        CWMSLocalizations.of(context).item, "");
+        CWMSLocalizations.of(context)!.item, "");
   }
 
   _buildQuantityController(BuildContext context) {
     return
       buildThreeSectionInputRow(
-        CWMSLocalizations.of(context).quantity,
+        CWMSLocalizations.of(context)!.quantity,
         TextFormField(
             keyboardType: TextInputType.number,
             controller: _quantityController,
@@ -245,7 +245,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         _getItemUnitOfMeasures().isEmpty ?
           Container() :
           DropdownButton(
-            hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+            hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
             items: _getItemUnitOfMeasures(),
             value: _selectedItemUnitOfMeasure,
             elevation: 1,
@@ -353,7 +353,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     if (inventories.isEmpty) {
 
       Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context).noInventoryFound);
+      showToast(CWMSLocalizations.of(context)!.noInventoryFound);
       _clearLPN();
       return;
     }
@@ -395,10 +395,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
           onPressed: _lpnController.text.isNotEmpty && _selectedItemName != "" &&
                      _selectedItemUnitOfMeasure != null && _quantityController.text.isNotEmpty ?
               _onAddingLPN : null,
-          child: Text(CWMSLocalizations.of(context).add),
+          child: Text(CWMSLocalizations.of(context)!.add),
         ),
 
-        Badge(
+        badge.Badge(
           showBadge: true,
           padding: EdgeInsets.all(8),
           badgeColor: Colors.deepPurple,
@@ -411,7 +411,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             width: MediaQuery.of(context).size.width,
             child: ElevatedButton(
               onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-              child: Text(CWMSLocalizations.of(context).depositInventory),
+              child: Text(CWMSLocalizations.of(context)!.depositInventory),
             ),
           ),
         )
@@ -435,7 +435,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 // onPressed: _onAddingLPN,
-                child: Text(CWMSLocalizations.of(context).add),
+                child: Text(CWMSLocalizations.of(context)!.add),
               ),
 
           ),
@@ -454,7 +454,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                 child:
                   ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context).depositInventory),
+                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
                   ),
               )
           ),
@@ -528,14 +528,14 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             fit: StackFit.expand, //未定位widget占满Stack整个空间
             children: <Widget>[
               ListTile(
-                title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn),
+                title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn),
                 subtitle:
                 Column(
                     children: <Widget>[
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context).item + ": ",
+                                CWMSLocalizations.of(context)!.item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -557,7 +557,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context).quantity + ": ",
+                                CWMSLocalizations.of(context)!.quantity + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -602,7 +602,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             height: 95,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].newLpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].newLpn),
               subtitle:
                 Column(
                   children: <Widget>[
@@ -631,7 +631,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).item + ": ",
+                              CWMSLocalizations.of(context)!.item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -653,7 +653,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).quantity + ": ",
+                              CWMSLocalizations.of(context)!.quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -691,14 +691,14 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             height: height,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn),
               subtitle:
               Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).item + ": ",
+                              CWMSLocalizations.of(context)!.item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -720,7 +720,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context).quantity + ": ",
+                              CWMSLocalizations.of(context)!.quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -742,7 +742,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                     Row(
                         children: <Widget>[
                           Flexible(
-                            child: Text(CWMSLocalizations.of(context).result + ": " + _inventoryDepositRequests[index].result.toString(),
+                            child: Text(CWMSLocalizations.of(context)!.result + ": " + _inventoryDepositRequests[index].result.toString(),
                                 maxLines: 3,
                                 style: TextStyle(
                                     color: Colors.lightBlue,
@@ -816,7 +816,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
       _lpnFocusNode.requestFocus();
 
-      // showToast(CWMSLocalizations.of(context).actionComplete);
+      // showToast(CWMSLocalizations.of(context)!.actionComplete);
   }
 
 

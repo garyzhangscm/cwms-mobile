@@ -21,11 +21,12 @@ import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 
 import '../../shared/models/rf.dart';
+import '../../shared/services/printer.dart';
 import '../../warehouse_layout/models/warehouse_location.dart';
 
 class LoginPage extends StatefulWidget{
 
-  LoginPage({Key key}) : super(key: key);
+  LoginPage({Key? key}) : super(key: key);
 
 
   @override
@@ -41,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController _rfCodeController = new TextEditingController();
   TextEditingController _currentLocationController = new TextEditingController();
   List<Warehouse> _validWarehouses = [];
-  Warehouse selectedWarehouse;
+  Warehouse? selectedWarehouse;
   bool pwdShow = false;
   GlobalKey _formKey = new GlobalKey<FormState>();
 
@@ -72,6 +73,9 @@ class _LoginPageState extends State<LoginPage> {
     _rfCodeController = TextEditingController(
         text: Global.getLastLoginRFCode());
 
+
+    PrinterService.getDefaultBluetoothPrinter3();
+
   }
 
   @override
@@ -79,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).login)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.login)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -132,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
               onChanged:(value){
                 //重新构建页面
                 setState(() {
-                  _rememberMe=value;
+                  _rememberMe = value!;
                 });
               },
 
@@ -163,7 +167,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           //
           validator: (v) {
-            return v
+            return v!
                 .trim()
                 .length > 0 ? null : "Please input a valid RF";
           }
@@ -185,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           //
           validator: (v) {
-            return v
+            return v!
                 .trim()
                 .length > 0 ? null : "Please input a valid location";
           }
@@ -211,7 +215,7 @@ class _LoginPageState extends State<LoginPage> {
       obscureText: !pwdShow,
       //校验密码（不能为空）
       validator: (v) {
-        return v.trim().isNotEmpty ? null : "password is required";
+        return v!.trim().isNotEmpty ? null : "password is required";
       },
     );
   }
@@ -227,7 +231,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             // 校验用户名（不能为空）
             validator: (v) {
-              return v.trim().isNotEmpty ? null : "username is required";
+              return v!.trim().isNotEmpty ? null : "username is required";
             }),
         onFocusChange: (hasFocus) {
           if(!hasFocus) {
@@ -250,7 +254,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           // 校验company code（不能为空）
           validator: (v) {
-            return v.trim().isNotEmpty ? null : "company code is required";
+            return v!.trim().isNotEmpty ? null : "company code is required";
           }),
       onFocusChange: (hasFocus) {
         if(!hasFocus) {
@@ -292,13 +296,13 @@ class _LoginPageState extends State<LoginPage> {
                   );
                 }).toList(),
                 hint: Text("empty warehouse",style: TextStyle(color: Color(0xFF8B8B8B),fontSize: 15),),  // setting hint
-                onChanged: (String value){
+                onChanged: (String? value){
                   setState(() {
                     selectedWarehouse = _validWarehouses.firstWhere((warehouse) => warehouse.name == value);
 
                   });
                 },
-                value: selectedWarehouse == null ? null :  selectedWarehouse.id.toString(),  // displaying the selected value
+                value: selectedWarehouse == null ? null :  selectedWarehouse!.id.toString(),  // displaying the selected value
               ),
             )
         ),
@@ -344,8 +348,8 @@ class _LoginPageState extends State<LoginPage> {
           _rfCodeController.text = Global.getLastLoginRFCode();
 
           _companyCodeController.text = Global.getAutoLoginCompany().code;
-          _unameController.text = user.username;
-          _pwdController.text = user.password;
+          _unameController.text = user.username!;
+          _pwdController.text = user.password!;
           _rememberMe = true;
         });
 
@@ -404,8 +408,8 @@ class _LoginPageState extends State<LoginPage> {
     if ((_formKey.currentState as FormState).validate()) {
       print("start to login");
       showLoading(context);
-      User user;
-      int companyId;
+      User? user;
+      int? companyId;
 
       WarehouseLocation currentLocation;
 
@@ -424,7 +428,7 @@ class _LoginPageState extends State<LoginPage> {
 
           printLongLogMessage("start to validate rf code ${_rfCodeController.text}");
           bool isRFCodeValid = await
-              RFService.valdiateRFCode(companyId, selectedWarehouse.id, _rfCodeController.text);
+              RFService.valdiateRFCode(companyId, selectedWarehouse!.id, _rfCodeController.text);
 
           if (!isRFCodeValid) {
 
@@ -438,7 +442,7 @@ class _LoginPageState extends State<LoginPage> {
           print("start to validate the location ${_currentLocationController.text}");
           bool isLocationValid = await
               WarehouseLocationService.valdiateLocation(
-                  companyId, selectedWarehouse.id, _currentLocationController.text);
+                  companyId, selectedWarehouse!.id, _currentLocationController.text);
 
           if (!isLocationValid) {
 
@@ -466,9 +470,9 @@ class _LoginPageState extends State<LoginPage> {
 
         // setup current user
         Global.setCurrentUser(user);
-        Global.setCurrentWarehouse(selectedWarehouse);
+        Global.setCurrentWarehouse(selectedWarehouse!);
         // setup current company
-        Global.lastLoginCompanyId = companyId;
+        Global.lastLoginCompanyId = companyId!;
         Global.lastLoginCompanyCode = _companyCodeController.text;
 
 
@@ -484,14 +488,14 @@ class _LoginPageState extends State<LoginPage> {
         // setup the rf and location
 
         RF rf = await RFService.getRFByCodeAndWarehouseId(
-            selectedWarehouse.id, _rfCodeController.text);
+            selectedWarehouse!.id, _rfCodeController.text);
 
         WarehouseLocation currentLocation = await WarehouseLocationService.getWarehouseLocationByWarehouseIdAndName(
-                  selectedWarehouse.id, _currentLocationController.text);
+                  selectedWarehouse!.id, _currentLocationController.text);
 
         Global.setLastActivityLocation(currentLocation);
         printLongLogMessage("start to change rf ${rf.rfCode}'s current location to ${currentLocation.id} / ${currentLocation.name}");
-        rf = await RFService.changeRFLocation(selectedWarehouse.id, rf.id, currentLocation.id);
+        rf = await RFService.changeRFLocation(selectedWarehouse!.id, rf.id, currentLocation.id);
         print(">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation.name}");
 
         Global.setLastLoginRF(rf);
@@ -503,7 +507,7 @@ class _LoginPageState extends State<LoginPage> {
           user.password = _pwdController.text;
           user.companyId = companyId;
           Global.addAutoLoginUser(user);
-          Global.setAutoLoginWarehouse(selectedWarehouse);
+          Global.setAutoLoginWarehouse(selectedWarehouse!);
           CompanyService.getCompanyByCode(_companyCodeController.text)
               .then((company)  {
                 Global.setAutoLoginCompany(company);
@@ -595,7 +599,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.of(context).pop();
 
       if (warehouses == null || warehouses.isEmpty) {
-        showErrorToast(CWMSLocalizations.of(context).cannotFindWarehouse);
+        showErrorToast(CWMSLocalizations.of(context)!.cannotFindWarehouse);
         setState(() {
           _validWarehouses = [];
           selectedWarehouse = null;

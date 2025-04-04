@@ -11,12 +11,12 @@ Widget buildBottomNavigationBar(BuildContext context) {
         BottomNavigationBarItem(
           // icon: Icon(Icons.home, color: Colors.blue),
             icon: new Image.asset("assets/images/icon-bottom-nav-home.png", height: 25),
-            label:  CWMSLocalizations.of(context).home,
+            label:  CWMSLocalizations.of(context)!.home,
         ),
         BottomNavigationBarItem(
           //   icon: Icon(Icons.account_circle, color: Colors.blue),
             icon: new Image.asset("assets/images/icon-bottom-nav-me.png", height: 25),
-            label:   CWMSLocalizations.of(context).account,
+            label:   CWMSLocalizations.of(context)!.account,
         )
       ],
       currentIndex: 0,

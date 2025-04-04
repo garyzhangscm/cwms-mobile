@@ -16,7 +16,7 @@ import '../../shared/models/barcode.dart';
 // with or without any pre-assigned destination
 class InboundQCPage extends StatefulWidget{
 
-  InboundQCPage({Key key}) : super(key: key);
+  InboundQCPage({Key? key}) : super(key: key);
 
 
   @override
@@ -29,11 +29,11 @@ class _InboundQCPageState extends State<InboundQCPage> {
   // allow user to scan in LPN
   TextEditingController _lpnController = new TextEditingController();
 
-  String _itemName;
-  String _itemDescription;
-  String _lpn;
+  String _itemName = "";
+  String _itemDescription = "";
+  String _lpn = "";
   bool _readyForQCResult = false;
-  Inventory _inventoryForQC;
+  Inventory? _inventoryForQC;
   int _selectedInventoryIndex = 0;
 
 
@@ -156,7 +156,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
     showLoading(context);
     try {
       List<QCInspectionRequest> qcInspectionRequests =
-          await InventoryService.getPendingQCInspectionRequest(_inventoryForQC);
+          await InventoryService.getPendingQCInspectionRequest(_inventoryForQC!);
 
       printLongLogMessage("find ${qcInspectionRequests.length} qc request");
       Navigator.of(context).pop();
@@ -210,14 +210,14 @@ class _InboundQCPageState extends State<InboundQCPage> {
         if (inventoryList.length == 1) {
           // ok, we find only one
           _inventoryForQC = inventoryList.first;
-          setupDisplay(_inventoryForQC);
+          setupDisplay(_inventoryForQC!);
         }
         else if (inventoryList.length > 1) {
           // now we only allow qc by inventory, prompt dialog to let the user
           // choose only one inventory
           _showInventoryDialog(inventoryList);
           if (_inventoryForQC != null) {
-            setupDisplay(_inventoryForQC);
+            setupDisplay(_inventoryForQC!);
           }
         }
 
@@ -238,8 +238,8 @@ class _InboundQCPageState extends State<InboundQCPage> {
     setState(() {
 
 
-      _itemName = inventory.item.name;
-      _itemDescription = inventory.item.description;
+      _itemName = inventory.item.name ?? "";
+      _itemDescription = inventory.item.description ?? "";
       _lpn = inventory.lpn;
 
       // check if the inventory needs qc
@@ -336,7 +336,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
                           fontSize: 17,
                         ),
                       ),
-                      subtitle: Text(inventoryList[index].item.description),
+                      subtitle: Text(inventoryList[index].item.description ?? ""),
                     )
                 );
 

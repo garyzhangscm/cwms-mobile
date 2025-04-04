@@ -29,9 +29,8 @@ class ReasonCodeService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
-    return (responseString["data"] as List)?.map((e) =>
-    e == null ? null : ReasonCode.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    return (responseString["data"] as List).map((e) => ReasonCode.fromJson(e as Map<String, dynamic>))
+        .toList();
 
   }
 

@@ -13,9 +13,9 @@ QCRule _$QCRuleFromJson(Map<String, dynamic> json) {
     ..name = json['name'] as String
     ..description = json['description'] as String
     ..qcRuleItems = (json['qcRuleItems'] as List)
-        ?.map(
-            (e) => e == null ? null : QCRuleItem.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+        .map(
+            (e) => QCRuleItem.fromJson(e as Map<String, dynamic>))
+        .toList();
 }
 
 Map<String, dynamic> _$QCRuleToJson(QCRule instance) => <String, dynamic>{

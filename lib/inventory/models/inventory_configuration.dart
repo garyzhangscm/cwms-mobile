@@ -1,16 +1,6 @@
-import 'package:cwms_mobile/inbound/models/receipt_line.dart';
-import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
-import 'package:cwms_mobile/workorder/models/work_order.dart';
-import 'package:json_annotation/json_annotation.dart';
-import 'package:cwms_mobile/common/models/client.dart';
 
-import '../../inbound/models/receipt.dart';
-import 'inventory_movement.dart';
-import 'inventory_status.dart';
-import 'item.dart';
-import 'item_package_type.dart';
+import 'package:json_annotation/json_annotation.dart';
+
 
 // user.g.dart 将在我们运行生成命令后自动生成
 part 'inventory_configuration.g.dart';
@@ -21,41 +11,41 @@ part 'inventory_configuration.g.dart';
 class InventoryConfiguration{
   InventoryConfiguration() ;
 
-  int id;
+  int? id;
 
-  int companyId;
-  int warehouseId;
+  int? companyId;
+  int? warehouseId;
 
-  String lpnValidationRule;
+  String? lpnValidationRule;
 
-  String inventoryAttribute1DisplayName;
-  bool inventoryAttribute1Enabled;
-  String inventoryAttribute2DisplayName;
-  bool inventoryAttribute2Enabled;
-  String inventoryAttribute3DisplayName;
-  bool inventoryAttribute3Enabled;
-  String inventoryAttribute4DisplayName;
-  bool inventoryAttribute4Enabled;
-  String inventoryAttribute5DisplayName;
-  bool inventoryAttribute5Enabled;
+  String? inventoryAttribute1DisplayName;
+  bool? inventoryAttribute1Enabled;
+  String? inventoryAttribute2DisplayName;
+  bool? inventoryAttribute2Enabled;
+  String? inventoryAttribute3DisplayName;
+  bool? inventoryAttribute3Enabled;
+  String? inventoryAttribute4DisplayName;
+  bool? inventoryAttribute4Enabled;
+  String? inventoryAttribute5DisplayName;
+  bool? inventoryAttribute5Enabled;
 
   getInventoryAttributeDisplayName(String attributeName) {
 
     String displayName = attributeName;
-    if (attributeName == "attribute1" && inventoryAttribute1DisplayName.isNotEmpty) {
-      displayName = inventoryAttribute1DisplayName;
+    if (attributeName == "attribute1" && inventoryAttribute1DisplayName!.isNotEmpty) {
+      displayName = inventoryAttribute1DisplayName!;
     }
-    else if (attributeName == "attribute2" && inventoryAttribute2DisplayName.isNotEmpty) {
-      displayName = inventoryAttribute2DisplayName;
+    else if (attributeName == "attribute2" && inventoryAttribute2DisplayName!.isNotEmpty) {
+      displayName = inventoryAttribute2DisplayName!;
     }
-    else if (attributeName == "attribute3" && inventoryAttribute3DisplayName.isNotEmpty) {
-      displayName = inventoryAttribute3DisplayName;
+    else if (attributeName == "attribute3" && inventoryAttribute3DisplayName!.isNotEmpty) {
+      displayName = inventoryAttribute3DisplayName!;
     }
-    else if (attributeName == "attribute4" && inventoryAttribute4DisplayName.isNotEmpty) {
-      displayName =  inventoryAttribute4DisplayName;
+    else if (attributeName == "attribute4" && inventoryAttribute4DisplayName!.isNotEmpty) {
+      displayName =  inventoryAttribute4DisplayName!;
     }
-    else if (attributeName == "attribute5" && inventoryAttribute5DisplayName.isNotEmpty) {
-      displayName = inventoryAttribute5DisplayName;
+    else if (attributeName == "attribute5" && inventoryAttribute5DisplayName!.isNotEmpty) {
+      displayName = inventoryAttribute5DisplayName!;
     }
     return displayName;
 

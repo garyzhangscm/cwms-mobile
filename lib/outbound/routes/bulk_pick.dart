@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -112,7 +112,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).bulkPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.bulkPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -133,7 +133,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).location,
+        CWMSLocalizations.of(context)!.location,
       _currentBulkPick.confirmLocationFlag == true || _currentBulkPick.confirmLocationCodeFlag == true ?
           Focus(
               focusNode: _sourceLocationFocusNode,
@@ -170,7 +170,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
   Widget _buildLPNInput(BuildContext context) {
     return buildTwoSectionInputRow(
-      CWMSLocalizations.of(context).lpn,
+      CWMSLocalizations.of(context)!.lpn,
         _currentBulkPick.confirmLpnFlag == true ?
       Focus(
           focusNode: _lpnFocusNode,
@@ -207,7 +207,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
   Widget _buildQuantityInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).quantity,
+        CWMSLocalizations.of(context)!.quantity,
         Focus(
             focusNode: _quantityFocusNode,
             child:
@@ -243,13 +243,13 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
               _onPickConfirm(_currentBulkPick, int.parse(_quantityController.text));
             },
-            child: Text(CWMSLocalizations.of(context).confirm)
+            child: Text(CWMSLocalizations.of(context)!.confirm)
         ),
         ElevatedButton(
             onPressed: _skipCurrentPick,
-            child: Text(CWMSLocalizations.of(context).skip)
+            child: Text(CWMSLocalizations.of(context)!.skip)
         ),
-        Badge(
+        badge.Badge(
             showBadge: true,
             padding: EdgeInsets.all(8),
             badgeColor: Colors.deepPurple,
@@ -262,7 +262,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
                 )
             ),
 
@@ -279,7 +279,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
     // right location
     if (_sourceLocationController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).location));
+          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.location));
       _sourceLocationControllerFocusNode.requestFocus();
       return;
     }
@@ -315,7 +315,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
     // right location
     if (_lpnController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn));
+          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn));
       _lpnControllerFocusNode.requestFocus();
       return;
     }
@@ -365,7 +365,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
     // right location
     if (_quantityController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).quantity));
+          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.quantity));
       _quantityControllerFocusNode.requestFocus();
       return;
     }
@@ -414,13 +414,13 @@ class _BulkPickPageState extends State<BulkPickPage> {
     // over pick for bulk pick is not allowed
     if (confirmedQuantity > _currentBulkPick.quantity - _currentBulkPick.pickedQuantity) {
       showErrorDialog(context,
-        CWMSLocalizations.of(context).overPickNotAllowed);
+        CWMSLocalizations.of(context)!.overPickNotAllowed);
       return;
     }
     // partial pick for bulk pick is not allowed
     if (confirmedQuantity < _currentBulkPick.quantity) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context).partailBulkPickNotAllowed);
+          CWMSLocalizations.of(context)!.partailBulkPickNotAllowed);
       return;
     }
 

@@ -17,9 +17,9 @@ Receipt _$ReceiptFromJson(Map<String, dynamic> json) {
         ? null
         : Supplier.fromJson(json['supplier'] as Map<String, dynamic>)
     ..receiptLines = (json['receiptLines'] as List)
-        ?.map(
-            (e) => e == null ? null : ReceiptLine.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) => ReceiptLine.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..allowUnexpectedItem = json['allowUnexpectedItem'] as bool
     ..receiptStatus = receiptStatusFromString(json['receiptStatus'] as String);
 }

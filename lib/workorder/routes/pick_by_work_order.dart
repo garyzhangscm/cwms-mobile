@@ -20,7 +20,7 @@ import 'package:cwms_mobile/workorder/widgets/work_order_list_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 
 
 class PickByWorkOrderPage extends StatefulWidget{
@@ -90,7 +90,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pickByWorkOrder)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -142,19 +142,19 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
         buildTwoButtonRow(context,
           ElevatedButton(
               onPressed: _onAddingWorkOrder,
-              child: Text(CWMSLocalizations.of(context).addWorkOrder)
+              child: Text(CWMSLocalizations.of(context)!.addWorkOrder)
           ),
           ElevatedButton(
               onPressed: _onChooseWorkOrder,
-              child: Text(CWMSLocalizations.of(context).chooseWorkOrder),
+              child: Text(CWMSLocalizations.of(context)!.chooseWorkOrder),
           ),
         ),
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _onStartingPicking,
-                child: Text(CWMSLocalizations.of(context).start),
+                child: Text(CWMSLocalizations.of(context)!.start),
             ),
-            Badge(
+            badge.Badge(
               showBadge: true,
               padding: EdgeInsets.all(8),
               badgeColor: Colors.deepPurple,
@@ -167,7 +167,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
                       onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                      child: Text(CWMSLocalizations.of(context).depositInventory),
+                      child: Text(CWMSLocalizations.of(context)!.depositInventory),
                     ),
                 ),
             )
@@ -193,7 +193,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
               color: Theme.of(context).primaryColor,
               onPressed: _onAddingWorkOrder,
               textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).addWorkOrder),
+              child: Text(CWMSLocalizations.of(context)!.addWorkOrder),
             ),
 
           ),
@@ -204,7 +204,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
               color: Theme.of(context).primaryColor,
               onPressed: _onChooseWorkOrder,
               textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).chooseWorkOrder),
+              child: Text(CWMSLocalizations.of(context)!.chooseWorkOrder),
             ),
 
           ),
@@ -214,7 +214,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
               color: Theme.of(context).primaryColor,
               onPressed: _onStartingPicking,
               textColor: Colors.white,
-              child: Text(CWMSLocalizations.of(context).start),
+              child: Text(CWMSLocalizations.of(context)!.start),
             ),
           ),
           Padding(
@@ -232,7 +232,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
                   color: inventoryOnRF.length == 0 ? Colors.grey : Theme.of(context).primaryColor,
                   textColor: inventoryOnRF.length == 0 ? Colors.black : Colors.white,
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context).depositInventory),
+                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
                 ),
               )
           ),

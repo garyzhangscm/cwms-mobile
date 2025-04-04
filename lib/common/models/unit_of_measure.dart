@@ -11,10 +11,10 @@ part 'unit_of_measure.g.dart';
 class UnitOfMeasure{
   UnitOfMeasure();
 
-  int id;
-  String name;
+  int? id;
+  String? name;
 
-  String description;
+  String? description;
 
 
 

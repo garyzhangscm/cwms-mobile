@@ -10,13 +10,13 @@ part 'reason_code.g.dart';
 class ReasonCode{
   ReasonCode();
 
-  int id;
-  String name;
+  int? id;
+  String? name;
 
-  String description;
+  String? description;
 
 
-  ReasonCodeType type;
+  ReasonCodeType? type;
 
 
 

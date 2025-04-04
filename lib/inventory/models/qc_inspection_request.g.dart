@@ -23,9 +23,9 @@ QCInspectionRequest _$QCInspectionRequestFromJson(Map<String, dynamic> json) {
         ? null
         : DateTime.parse(json['qcTime'] as String)
     ..qcInspectionRequestItems = (json['qcInspectionRequestItems'] as List)
-        ?.map(
-            (e) => e == null ? null : QCInspectionRequestItem.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+        .map(
+            (e) =>  QCInspectionRequestItem.fromJson(e as Map<String, dynamic>))
+        .toList();
 }
 
 Map<String, dynamic> _$QCInspectionRequestToJson(QCInspectionRequest instance) => <String, dynamic>{

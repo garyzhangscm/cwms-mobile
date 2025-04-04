@@ -11,11 +11,11 @@ part 'menu_group.g.dart';
 class MenuGroup{
   MenuGroup();
 
-  String name;
-  String text;
-  String i18n;
+  String? name;
+  String? text;
+  String? i18n;
 
-  List<MenuSubGroup> menuSubGroups;
+  List<MenuSubGroup> menuSubGroups = [];
 
 
 

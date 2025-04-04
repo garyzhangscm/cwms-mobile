@@ -7,9 +7,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ReceiptLineListItem extends StatefulWidget {
-  ReceiptLineListItem({this.index, this.receiptLine,
+  ReceiptLineListItem({required this.index, required this.receiptLine,
           this.highlighted: false,
-          @required this.onToggleHightlighted}
+          required this.onToggleHightlighted}
        ) : super(key: ValueKey(receiptLine.number));
 
   final ValueChanged<bool> onToggleHightlighted;
@@ -66,7 +66,7 @@ class _ReceiptLineListItemState extends State<ReceiptLineListItem> {
                   //     widget.order.totalOpenPickQuantity == 0 ?
                   //                Colors.grey : Colors.white,
                   title: Text(
-                    widget.receiptLine.item.name,
+                    widget.receiptLine.item!.name ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,

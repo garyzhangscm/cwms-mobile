@@ -123,16 +123,16 @@ class MyDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context).version + ": " + Global.currentAPPVersion),
+              title: Text(CWMSLocalizations.of(context)!.version + ": " + Global.currentAPPVersion),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context).warehouse + ": " + Global.currentWarehouse.name),
+              title: Text(CWMSLocalizations.of(context)!.warehouse + ": " + Global.currentWarehouse.name),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context).rfCode + ": " + Global.getLastLoginRFCode()),
+              title: Text(CWMSLocalizations.of(context)!.rfCode + ": " + Global.getLastLoginRFCode()),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context).currentLocation + ": " + Global.getLastLoginRF().currentLocationName),
+              title: Text(CWMSLocalizations.of(context)!.currentLocation + ": " + Global.getLastLoginRF().currentLocationName),
             ),
           ],
         );

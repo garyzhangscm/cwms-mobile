@@ -2,7 +2,6 @@ import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request_action.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/services/cycle_count_batch.dart';
 import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/widgets/count_batch_list_item.dart';
@@ -15,7 +14,7 @@ import 'package:flutter/material.dart';
 
 class CycleCountBatchPage extends StatefulWidget{
 
-  CycleCountBatchPage({Key key}) : super(key: key);
+  CycleCountBatchPage({Key? key}) : super(key: key);
 
 
   @override
@@ -38,7 +37,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
   List<CycleCountRequest> _assignedCycleCountRequests = [];
 
 
-  CycleCountRequest _currentCycleCountRequest;
+  CycleCountRequest? _currentCycleCountRequest;
 
   @override
   void initState() {
@@ -92,7 +91,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
         ),
         // 校验用户名（不能为空）
         validator: (v) {
-          return v.trim().isNotEmpty ? null : "batch ID is required";
+          return v!.trim().isNotEmpty ? null : "batch ID is required";
         });
   }
 
@@ -117,7 +116,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onAddingCountBatch,
-                child: Text(CWMSLocalizations.of(context).addCountBatch),
+                child: Text(CWMSLocalizations.of(context)!.addCountBatch),
               ),
 
           ),
@@ -130,7 +129,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onChooseCountBatch,
-                child: Text(CWMSLocalizations.of(context).chooseCountBatch),
+                child: Text(CWMSLocalizations.of(context)!.chooseCountBatch),
               ),
 
           ),
@@ -143,7 +142,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onStartingCycleCount,
-                child: Text(CWMSLocalizations.of(context).start),
+                child: Text(CWMSLocalizations.of(context)!.start),
               ),
           ),
         ],
@@ -218,7 +217,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
     // only continue if the order is not in the list yet
 
 
-    if (!_batchAlreadyInList(cycleCountBatch.batchId)) {
+    if (!_batchAlreadyInList(cycleCountBatch.batchId!)) {
 
       setState(() {
         _assignedBatches.add(cycleCountBatch);
@@ -233,7 +232,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
 
     List<CycleCountRequest> cycleCountRequests =
         await CycleCountRequestService.getCycleCountRequestByBatchId(
-            cycleCountBatch.batchId);
+            cycleCountBatch.batchId!);
     _assignedCycleCountRequests.addAll(cycleCountRequests);
   }
 
@@ -308,7 +307,6 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
                   index: index,
                   countBatch: countBatchesWithOpenCycleCount[index],
                   displayOnlyFlag: true,
-                  onRemove:  null,
                   cycleCountFlag: true,
                   auditCountFlag: false,
                   onToggleHightlighted:  (selected) => _selectCountBatchFromList(selected, countBatchesWithOpenCycleCount[index])
@@ -345,12 +343,12 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
     // and start counting
 
     showLoading(context);
-    CycleCountRequest nextCycleCountRequest = await _getNextLocationForCount();
+    CycleCountRequest? nextCycleCountRequest = await _getNextLocationForCount();
     if (nextCycleCountRequest == null) {
       // no more cycle count left
       // 隐藏loading框
       Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context).noMoreCycleCountInBatch);
+      showToast(CWMSLocalizations.of(context)!.noMoreCycleCountInBatch);
       _refreshCycleCountBatchQuantities();
       return;
     }
@@ -370,7 +368,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
     if ((result as CycleCountRequestAction) == CycleCountRequestAction.SKIPPED) {
         // if the user skip the current location, let's just add the count
         // and put it back to the list
-        nextCycleCountRequest.skippedCount++;
+        nextCycleCountRequest.skippedCount = nextCycleCountRequest.skippedCount! + 1;
     }
     else {
         // The user just finished / cancelled the previous cycle count, let's continue with next one
@@ -388,7 +386,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
 
     _assignedBatches.forEach((cycleCountBatch) {
       CycleCountBatchService.getCycleCountBatchByBatchId(
-          cycleCountBatch.batchId
+          cycleCountBatch.batchId!
       ).then((newCycleCountBatch) {
         setState((){
           cycleCountBatch.openLocationCount = newCycleCountBatch.openLocationCount;
@@ -403,7 +401,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
     });
   }
 
-  Future<CycleCountRequest> _getNextLocationForCount() async {
+  Future<CycleCountRequest?> _getNextLocationForCount() async {
     // printLongLogMessage("_assignedCycleCountRequests.isEmpty: ${_assignedCycleCountRequests.isEmpty}");
     if (_assignedCycleCountRequests.isEmpty) {
       // nothing has been assigned yet

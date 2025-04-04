@@ -19,9 +19,9 @@ LpnCaptureRequest _$LpnCaptureRequestFromJson(Map<String, dynamic> json) {
         : ItemUnitOfMeasure.fromJson(json['lpnUnitOfMeasure'] as Map<String, dynamic>)
     ..requestedLPNQuantity = json['requestedLPNQuantity'] as int
     ..capturedLpn = (json['capturedLpn'] as List)
-        ?.map(
-            (e) => e == null ? null :  (e as String))
-        ?.toSet()
+        .map(
+            (e) =>  (e as String))
+        .toSet()
     ..result = json['result'] as bool;
 }
 

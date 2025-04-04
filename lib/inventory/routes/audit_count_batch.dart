@@ -2,11 +2,8 @@ import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/audit_count_request.dart';
 import 'package:cwms_mobile/inventory/models/audit_count_request_action.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/services/audit_count_request.dart';
 import 'package:cwms_mobile/inventory/services/cycle_count_batch.dart';
-import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/widgets/count_batch_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -17,7 +14,7 @@ import 'package:flutter/material.dart';
 
 class AuditCountBatchPage extends StatefulWidget{
 
-  AuditCountBatchPage({Key key}) : super(key: key);
+  AuditCountBatchPage({Key? key}) : super(key: key);
 
 
   @override
@@ -40,7 +37,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
   List<AuditCountRequest> _assignedAuditCountRequests = [];
 
 
-  AuditCountRequest _currentAuditCountRequest;
+  AuditCountRequest? _currentAuditCountRequest;
 
   @override
   void initState() {
@@ -59,7 +56,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).auditCount)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.auditCount)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -94,7 +91,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
         ),
         // 校验用户名（不能为空）
         validator: (v) {
-          return v.trim().isNotEmpty ? null : "batch ID is required";
+          return v!.trim().isNotEmpty ? null : "batch ID is required";
         });
   }
 
@@ -119,7 +116,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onAddingCountBatch,
-                child: Text(CWMSLocalizations.of(context).addCountBatch),
+                child: Text(CWMSLocalizations.of(context)!.addCountBatch),
               ),
 
           ),
@@ -132,7 +129,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onChooseCountBatch,
-                child: Text(CWMSLocalizations.of(context).chooseCountBatch),
+                child: Text(CWMSLocalizations.of(context)!.chooseCountBatch),
               ),
 
           ),
@@ -145,7 +142,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onStartingAuditCount,
-                child: Text(CWMSLocalizations.of(context).start),
+                child: Text(CWMSLocalizations.of(context)!.start),
               ),
           ),
         ],
@@ -220,7 +217,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
     // only continue if the order is not in the list yet
 
 
-    if (!_batchAlreadyInList(cycleCountBatch.batchId)) {
+    if (!_batchAlreadyInList(cycleCountBatch.batchId!)) {
 
       setState(() {
         _assignedBatches.add(cycleCountBatch);
@@ -235,7 +232,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
 
     List<AuditCountRequest> auditCountRequests =
         await AuditCountRequestService.getOpenAuditCountRequestByBatchId(
-            cycleCountBatch.batchId);
+            cycleCountBatch.batchId!);
     _assignedAuditCountRequests.addAll(auditCountRequests);
   }
 
@@ -311,7 +308,6 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
                   displayOnlyFlag: true,
                   cycleCountFlag: false,
                   auditCountFlag: true,
-                  onRemove:  null,
                   onToggleHightlighted:  (selected) => _selectCountBatchFromList(selected, countBatchesWithOpenAuditCount[index])
               );
             }),
@@ -346,12 +342,12 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
     // and start counting
 
     showLoading(context);
-    AuditCountRequest nextAuditCountRequest = await _getNextLocationForAuditCount();
+    AuditCountRequest? nextAuditCountRequest = await _getNextLocationForAuditCount();
     if (nextAuditCountRequest == null) {
       // no more cycle count left
       // 隐藏loading框
       Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context).noMoreAuditCountInBatch);
+      showToast(CWMSLocalizations.of(context)!.noMoreAuditCountInBatch);
       _refreshCycleCountBatchQuantities();
       return;
     }
@@ -373,7 +369,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
 
       // if the user skip the current location, let's just add the count
       // and put it back to the list
-      nextAuditCountRequest.skippedCount++;
+      nextAuditCountRequest.skippedCount = nextAuditCountRequest.skippedCount! +1;
     }
     else {
       // The user just finished the previous cycle count, let's continue with next one
@@ -393,7 +389,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
 
     _assignedBatches.forEach((cycleCountBatch) {
       CycleCountBatchService.getCycleCountBatchByBatchId(
-          cycleCountBatch.batchId
+          cycleCountBatch.batchId!
       ).then((newCycleCountBatch) {
         setState((){
           cycleCountBatch.openLocationCount = newCycleCountBatch.openLocationCount;
@@ -408,7 +404,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
     });
   }
 
-  Future<AuditCountRequest> _getNextLocationForAuditCount() async {
+  Future<AuditCountRequest?> _getNextLocationForAuditCount() async {
      printLongLogMessage("_assignedAuditCountRequests.isEmpty: ${_assignedAuditCountRequests.isEmpty}");
     if (_assignedAuditCountRequests.isEmpty) {
       // nothing has been assigned yet
