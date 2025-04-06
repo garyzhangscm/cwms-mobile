@@ -14,15 +14,15 @@ part 'rf_app_version.g.dart';
 class RFAppVersion {
   RFAppVersion();
 
-  int  id;
-  String versionNumber;
-  String fileName;
-  int fileSize;
-  bool isLatestVersion;
-  int companyId;
+  int?  id;
+  String? versionNumber;
+  String? fileName;
+  int? fileSize;
+  bool? isLatestVersion;
+  int? companyId;
 
-  String releaseNote;
-  DateTime releaseDate;
+  String? releaseNote;
+  DateTime? releaseDate;
 
 
 

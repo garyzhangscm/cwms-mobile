@@ -18,16 +18,16 @@ class CWMSSiteInformation {
   // http://xxx.xxx.xxx:port/
   // which stands for the root of
   // all web service call
-  String url;
+  String? url;
 
   // only default server can be 'auto connect'
-  bool autoConnectFlag;
+  bool? autoConnectFlag;
 
-  bool singleCompanySite;
-  String defaultCompanyCode;
-  String rfAppVersion;
+  bool? singleCompanySite;
+  String? defaultCompanyCode;
+  String? rfAppVersion;
 
-  CWMSApplicationInformation cwmsApplicationInformation;
+  CWMSApplicationInformation? cwmsApplicationInformation;
 
 
 
@@ -48,19 +48,19 @@ class CWMSSiteInformation {
           .toList();
 
 
-  bool isAutoConnect() {
+  bool? isAutoConnect() {
 
     return autoConnectFlag;
   }
 
-  CWMSApplicationInformation getCWMSApplicationInformation() {
+  CWMSApplicationInformation? getCWMSApplicationInformation() {
     return cwmsApplicationInformation;
   }
 
-  String getDefaultCompanyCode() {
+  String? getDefaultCompanyCode() {
     return defaultCompanyCode;
   }
-  bool isSingleCompanySite() {
+  bool? isSingleCompanySite() {
 
     return singleCompanySite;
   }

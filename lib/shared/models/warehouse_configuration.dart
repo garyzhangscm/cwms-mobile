@@ -16,15 +16,15 @@ class WarehouseConfiguration {
   WarehouseConfiguration();
 
 
-  bool threePartyLogisticsFlag;
-  bool listPickEnabledFlag;
+  bool? threePartyLogisticsFlag;
+  bool? listPickEnabledFlag;
 
-  PrintingStrategy printingStrategy;
+  PrintingStrategy? printingStrategy;
 
 
-  bool newLPNPrintLabelAtReceivingFlag;
-  bool newLPNPrintLabelAtProducingFlag;
-  bool newLPNPrintLabelAtAdjustmentFlag;
+  bool? newLPNPrintLabelAtReceivingFlag;
+  bool? newLPNPrintLabelAtProducingFlag;
+  bool? newLPNPrintLabelAtAdjustmentFlag;
 
 
 

@@ -21,15 +21,15 @@ class RFConfiguration {
 
   }
 
-  bool workOrderValidatePartialLPNPick;
+  bool? workOrderValidatePartialLPNPick;
 
-  bool outboundOrderValidatePartialLPNPick;
-  bool pickToProductionLineInStage;
-  bool receiveToStage;
-  bool listPickBatchPicking;
-  String printerName;
+  bool? outboundOrderValidatePartialLPNPick;
+  bool? pickToProductionLineInStage;
+  bool? receiveToStage;
+  bool? listPickBatchPicking;
+  String? printerName;
 
-  bool autoDepositForLpnWithSameDestination;
+  bool? autoDepositForLpnWithSameDestination;
 
 
   //不同的类使用不同的mixin即可

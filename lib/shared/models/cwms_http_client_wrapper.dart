@@ -39,12 +39,12 @@ class CWMSHttpClientAdapter {
 
     Future<CWMSHttpResponse?> post(String uri,
         {data,
-            required Map<String, dynamic> queryParameters,
-            required Options options,
-            required CancelToken cancelToken,
-            required ProgressCallback onSendProgress,
-            required ProgressCallback onReceiveProgress,
-            required CWMSHttpTransformer httpTransformer}) async {
+            Map<String, dynamic>? queryParameters,
+            Options? options,
+            CancelToken? cancelToken,
+            ProgressCallback? onSendProgress,
+            ProgressCallback? onReceiveProgress,
+            CWMSHttpTransformer? httpTransformer}) async {
 
         try{
 
@@ -125,10 +125,10 @@ class CWMSHttpClientAdapter {
 
     Future<CWMSHttpResponse> put(String uri,
         {data,
-          required Map<String, dynamic> queryParameters,
-          required Options options,
-          required CancelToken cancelToken,
-          required CWMSHttpTransformer httpTransformer}) async {
+          Map<String, dynamic>? queryParameters,
+          Options? options,
+          CancelToken? cancelToken,
+          CWMSHttpTransformer? httpTransformer}) async {
 
             var response = await _dio.put(
                 uri,
@@ -166,16 +166,16 @@ class CWMSHttpClientAdapter {
 
     }
     CWMSHttpResponse handleResponse(Response response,
-        {required CWMSHttpTransformer httpTransformer}) {
+        {CWMSHttpTransformer? httpTransformer}) {
         httpTransformer ??= CWMSDefaultHttpTransformer.getInstance();
 
         CWMSHttpResponse cwmsHttpResponse = parseResponse(response, httpTransformer: httpTransformer);
 
-        if (!cwmsHttpResponse.ok) {
+        if (cwmsHttpResponse.ok != true) {
 
             BadRequestException ex = BadRequestException(
-                message: cwmsHttpResponse.error.message,
-                code: cwmsHttpResponse.error.code);
+                message: cwmsHttpResponse.error?.message,
+                code: cwmsHttpResponse.error?.code);
 
 
             throw ex;

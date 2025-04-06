@@ -299,7 +299,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     }
     showLoading(context);
 
-    InventoryStatus inventoryStatus;
+    InventoryStatus? inventoryStatus;
     if (inventoryStatusString == null || inventoryStatusString.isEmpty) {
       // if inventory status is not passed in, receive by default available inventory status
       inventoryStatus = await InventoryStatusService.getAvaiableInventoryStatus();

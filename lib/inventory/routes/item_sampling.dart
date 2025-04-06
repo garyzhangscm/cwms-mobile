@@ -183,7 +183,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
         // let's create one
         if (_currentItemSampling == null) {
 
-          Item item = await ItemService.getItemByName(itemName);
+          Item? item = await ItemService.getItemByName(itemName);
           if (item == null) {
             Navigator.of(context).pop();
             showErrorDialog(context, "can't find item by name " + itemName);
@@ -429,7 +429,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
     if (_newItemSampling == true) {
       // we are adding a new work order qc sample, make sure the number doesn't exists yet
       try {
-        ItemSampling itemSampling =
+        ItemSampling? itemSampling =
         await ItemSamplingService.getItemSamplingByNumber(_currentItemSampling!.number!);
         if (itemSampling != null) {
           // ok we are supposed to create a new work order sample but it already exists, let's

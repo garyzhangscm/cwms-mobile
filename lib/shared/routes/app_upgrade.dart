@@ -15,14 +15,14 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:progress_dialog/progress_dialog.dart';
+import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 import '../global.dart';
 
 
 class AppUpgradePage extends StatefulWidget{
 
-  AppUpgradePage({Key key}) : super(key: key);
+  AppUpgradePage({Key? key}) : super(key: key);
 
 
   @override
@@ -32,12 +32,12 @@ class AppUpgradePage extends StatefulWidget{
 
 class _AppUpgradePageState extends State<AppUpgradePage> {
 
-  RFAppVersion _latestRFAppVersion;
+  RFAppVersion? _latestRFAppVersion;
 
-  ProgressDialog pr;
+  ProgressDialog? pr;
   ReceivePort _port = ReceivePort();
 
-  String _appLocalPath;
+  String? _appLocalPath;
 
   String message = "";
 
@@ -100,7 +100,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
   @override
   Widget build(BuildContext context) {
 
-    _latestRFAppVersion  = ModalRoute.of(context).settings.arguments;
+    _latestRFAppVersion  = ModalRoute.of(context)?.settings.arguments as RFAppVersion?;
     // downloadingFileSize = _latestRFAppVersion.fileSize;
 
     return Scaffold(
@@ -128,11 +128,11 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
               Padding(padding: EdgeInsets.only(left: 10),
                 child: Text(CWMSLocalizations.of(context)!.newReleaseFound + ": ",
                     textAlign: TextAlign.left,
-                    style: Theme.of(context).textTheme.headline6),
+                    style: Theme.of(context).textTheme.titleLarge),
               ),
-              Text(_latestRFAppVersion.versionNumber,
+              Text(_latestRFAppVersion?.versionNumber ?? "",
                   textAlign: TextAlign.left,
-                  style: Theme.of(context).textTheme.headline6),
+                  style: Theme.of(context).textTheme.titleLarge),
             ]
         ),
     );
@@ -145,9 +145,9 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
             children: <Widget>[
               Padding(padding: EdgeInsets.only(left: 10),
                 child:
-                  Text(_latestRFAppVersion.releaseNote,
+                  Text(_latestRFAppVersion?.releaseNote ?? "",
                       textAlign: TextAlign.left,
-                      style: Theme.of(context).textTheme.bodyText1,
+                      style: Theme.of(context).textTheme.bodyLarge,
 
                       maxLines: 15
                   )
@@ -206,8 +206,8 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     if (hasPermission) {
       printLongLogMessage("We got permission! Let's start update the APP");
       String apkUrl =
-          Global.currentServer.url +
-              "/resource/rf-apk-files?versionNumber=" + _latestRFAppVersion.versionNumber  +
+          Global.currentServer.url! +
+              "/resource/rf-apk-files?versionNumber=" + (_latestRFAppVersion?.versionNumber ?? "")  +
               "&companyId=" + Global.lastLoginCompanyId.toString();
       printLongLogMessage("start to download from $apkUrl");
 
@@ -223,27 +223,27 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     // show progress dialog
     pr = new ProgressDialog(
       context,
-      type: ProgressDialogType.Download,
+      type: ProgressDialogType.download,
       isDismissible: true,
       showLogs: true,
     );
 
-    pr.style(message: CWMSLocalizations.of(context)!.startDownloadingAppNewVersion);
-    if (!pr.isShowing()) {
-      pr.show();
+    pr?.style(message: CWMSLocalizations.of(context)!.startDownloadingAppNewVersion);
+    if (!pr!.isShowing()) {
+      pr?.show();
     }
     // remove the file with the same name from the downloading directory
     _displayResultMessage("start to remove the existing download files from " +
-        _appLocalPath + "/" + _latestRFAppVersion.fileName);
-    await _removeExistingDownloadedFile(_appLocalPath + "/" + _latestRFAppVersion.fileName);
+        _appLocalPath! + "/" + (_latestRFAppVersion!.fileName ?? ""));
+    await _removeExistingDownloadedFile(_appLocalPath! + "/" +  (_latestRFAppVersion!.fileName ?? ""));
 
     printLongLogMessage("start to download the apk and saved to ${_appLocalPath}");
     _displayResultMessage("start to download the apk and saved to ${_appLocalPath}");
     await FlutterDownloader.enqueue(
       url: serverUrl,
       // url: 'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf',
-      savedDir: _appLocalPath,
-      fileName: _latestRFAppVersion.fileName,
+      savedDir: _appLocalPath!,
+      fileName: _latestRFAppVersion?.fileName ?? "",
       showNotification: true,
       openFileFromNotification: true,
       // saveInPublicStorage: false,
@@ -282,26 +282,26 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
       // before I can figure out a better way to handle this, we will have the file size saved
       // in the rfAppVersion object so that we can calcuate the percentage of the files that is
       // already downloaded
-      progress = progress * 100 ~/ _latestRFAppVersion.fileSize;
-      pr.update(progress: double.parse(progress.toString()), message: "下载中，请稍后…");
+      progress = progress * 100 ~/ _latestRFAppVersion!.fileSize!;
+      pr?.update(progress: double.parse(progress.toString()), message: "下载中，请稍后…");
     }
     if (status == DownloadTaskStatus.failed) {
-      if (pr.isShowing()) {
-        pr.hide();
+      if (pr!.isShowing()) {
+        pr?.hide();
       }
     }
 
     if (status == DownloadTaskStatus.complete) {
-      if (pr.isShowing()) {
-        pr.hide();
+      if (pr!.isShowing()) {
+        pr!.hide();
       }
       _installApk();
     }
   }
   /// 安装apk
   Future<Null> _installApk() async {
-    printLongLogMessage("start to install apk from " + _appLocalPath + '/' + _latestRFAppVersion.fileName);
-    await OpenFile.open(_appLocalPath + '/' + _latestRFAppVersion.fileName);
+    printLongLogMessage("start to install apk from " + _appLocalPath! + '/' + _latestRFAppVersion!.fileName!);
+    await OpenFile.open(_appLocalPath! + '/' + _latestRFAppVersion!.fileName!);
   }
 
 
@@ -349,7 +349,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
 
   Future<void> _prepareSaveDir() async {
     _appLocalPath = (await _findLocalPath());
-    final savedDir = Directory(_appLocalPath);
+    final savedDir = Directory(_appLocalPath!);
     printLongLogMessage("we will save to local folder: ${_appLocalPath}");
     bool hasExisted = await savedDir.exists();
     if (!hasExisted) {
@@ -362,7 +362,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     var externalStorageDirPath;
     if (Platform.isAndroid) {
       final directory = await getExternalStorageDirectory();
-      externalStorageDirPath = directory.path;
+      externalStorageDirPath = directory!.path!;
     } else if (Platform.isIOS) {
       externalStorageDirPath =
           (await getApplicationDocumentsDirectory()).absolute.path;

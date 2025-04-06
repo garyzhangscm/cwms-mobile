@@ -1,31 +1,18 @@
 
-import 'dart:collection';
 import 'dart:core';
 import 'dart:developer';
 import 'dart:io';
-import 'dart:isolate';
-import 'dart:ui';
 
-import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:cwms_mobile/shared/models/rf_app_version.dart';
-import 'package:device_info/device_info.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:progress_dialog/progress_dialog.dart';
 
-import '../global.dart';
 
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class QRCodeView extends StatefulWidget{
 
-  QRCodeView({Key key}) : super(key: key);
+  QRCodeView({Key? key}) : super(key: key);
 
 
   @override

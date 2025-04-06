@@ -454,16 +454,16 @@ class InventoryService {
     printLongLogMessage("start to validate new lpn ${lpn}");
 
 
-    CWMSHttpResponse response = await Global.httpClient.post(
+    CWMSHttpResponse? response = await Global.httpClient.post(
         "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse.id}",
         queryParameters: {"lpn": lpn}
     );
 
 
-    printLongLogMessage("validate LPN result: ${response.data}");
-    if (response.data != null && response.data.toString().isNotEmpty) {
+    printLongLogMessage("validate LPN result: ${response?.data}");
+    if (response?.data != null && response!.data.toString().isNotEmpty) {
       // return error message
-      return response.data.toString();
+      return response!.data.toString();
     }
 
 

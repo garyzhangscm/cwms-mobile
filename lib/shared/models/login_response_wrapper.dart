@@ -1,15 +1,13 @@
-import 'package:json_annotation/json_annotation.dart';
-import 'dart:convert';
 
 
 class LoginResponseWrapper {
 
 
-  int result ;
+  int? result ;
 
-  String message;
+  String? message;
 
-  Map<String, dynamic> user ;
+  Map<String, dynamic>? user ;
 
   LoginResponseWrapper({this.result, this.message, this.user});
 

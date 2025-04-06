@@ -13,7 +13,7 @@ WarehouseConfiguration _$WarehouseConfigurationFromJson(Map<String, dynamic> jso
     ..newLPNPrintLabelAtReceivingFlag = json['newLPNPrintLabelAtReceivingFlag'] == null ? false : json['newLPNPrintLabelAtReceivingFlag'] as bool
     ..newLPNPrintLabelAtProducingFlag = json['newLPNPrintLabelAtProducingFlag'] == null ? false : json['newLPNPrintLabelAtProducingFlag'] as bool
     ..newLPNPrintLabelAtAdjustmentFlag = json['newLPNPrintLabelAtAdjustmentFlag'] == null ? false : json['newLPNPrintLabelAtAdjustmentFlag'] as bool
-    ..printingStrategy = json['printingStrategy'] == null ? false : printingStrategyFromString(json['printingStrategy'] as String);
+    ..printingStrategy = (json['printingStrategy'] == null ? false : printingStrategyFromString(json['printingStrategy'] as String)) as PrintingStrategy?;
   ;
 }
 

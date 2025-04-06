@@ -10,11 +10,11 @@ part 'http_response_wrapper.g.dart';
 class HttpResponseWrapper {
 
 
-  int result ;
+  int? result ;
 
-  String message;
+  String? message;
 
-  Map<String, dynamic> data ;
+  Map<String, dynamic>? data ;
 
   HttpResponseWrapper({this.result, this.message, this.data});
 

@@ -15,20 +15,20 @@ class ReportHistory {
 
   ReportHistory();
 
-  int id;
-  int warehouseId;
+  int? id;
+  int? warehouseId;
 
-  DateTime printedDate;
-  String printedUsername;
-
-
-  String description;
+  DateTime? printedDate;
+  String? printedUsername;
 
 
-  ReportType type;
-  String fileName;
+  String? description;
 
-  ReportOrientation reportOrientation;
+
+  ReportType? type;
+  String? fileName;
+
+  ReportOrientation? reportOrientation;
 
 
 

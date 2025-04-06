@@ -13,13 +13,13 @@ class OrderListItem extends StatefulWidget {
        required this.onPriorityChanged,
        required this.onSharedFlagChanged,
        required this.onRemove,
-       required this.onToggleHightlighted}
+       this.onToggleHightlighted}
        ) : super(key: ValueKey(order.number));
 
   final ValueChanged<Order> onPriorityChanged;
   final ValueChanged<Order> onSharedFlagChanged;
   final ValueChanged<int> onRemove;
-  final ValueChanged<bool> onToggleHightlighted;
+  final ValueChanged<bool>? onToggleHightlighted;
 
   final int index;
   final Order order;
@@ -61,7 +61,7 @@ class _OrderListItemState extends State<OrderListItem> {
       setState(() {
         widget.highlighted = !widget.highlighted;
       });
-      widget.onToggleHightlighted(widget.highlighted);
+      widget.onToggleHightlighted!(widget.highlighted);
     }
   }
 

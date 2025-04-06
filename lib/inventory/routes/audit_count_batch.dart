@@ -202,7 +202,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
     if (_batchIdController.text.isNotEmpty &&
         !_batchAlreadyInList(_batchIdController.text)) {
 
-      CycleCountBatch cycleCountBatch  =
+      CycleCountBatch? cycleCountBatch  =
           await CycleCountBatchService.getCycleCountBatchByBatchId(
               _batchIdController.text);
 
@@ -392,11 +392,11 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
           cycleCountBatch.batchId!
       ).then((newCycleCountBatch) {
         setState((){
-          cycleCountBatch.openLocationCount = newCycleCountBatch.openLocationCount;
-          cycleCountBatch.finishedLocationCount = newCycleCountBatch.finishedLocationCount;
-          cycleCountBatch.cancelledLocationCount = newCycleCountBatch.cancelledLocationCount;
-          cycleCountBatch.openAuditLocationCount = newCycleCountBatch.openAuditLocationCount;
-          cycleCountBatch.finishedAuditLocationCount = newCycleCountBatch.finishedAuditLocationCount;
+          cycleCountBatch.openLocationCount = newCycleCountBatch?.openLocationCount;
+          cycleCountBatch.finishedLocationCount = newCycleCountBatch?.finishedLocationCount;
+          cycleCountBatch.cancelledLocationCount = newCycleCountBatch?.cancelledLocationCount;
+          cycleCountBatch.openAuditLocationCount = newCycleCountBatch?.openAuditLocationCount;
+          cycleCountBatch.finishedAuditLocationCount = newCycleCountBatch?.finishedAuditLocationCount;
         });
 
       });

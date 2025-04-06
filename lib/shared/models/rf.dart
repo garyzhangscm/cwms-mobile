@@ -13,19 +13,19 @@ class RF {
 
   RF();
 
-  int id;
+  int? id;
 
-  int warehouseId;
+  int? warehouseId;
 
-  String rfCode;
+  String? rfCode;
 
-  int currentLocationId;
+  int? currentLocationId;
 
-  String currentLocationName;
+  String? currentLocationName;
 
-  WarehouseLocation currentLocation;
+  WarehouseLocation? currentLocation;
 
-  String printerName;
+  String? printerName;
 
 
 

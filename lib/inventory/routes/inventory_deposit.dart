@@ -453,7 +453,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   Future<InventoryDepositRequest?> _getNextInventoryToDeposit([String? lpn]) async {
 
     printLongLogMessage("inventory_deposit / _getNextInventoryToDeposit with lpn ${lpn}");
-    InventoryDepositRequest inventoryDepositRequest;
+    InventoryDepositRequest? inventoryDepositRequest;
     if (lpn != null && lpn.isNotEmpty) {
       printLongLogMessage(" inventory_deposit / _getNextInventoryToDeposit: LPN is passed in, will just return this LPN");
       inventoryDepositRequest = InventoryService.getNextInventoryDepositRequest(
@@ -468,35 +468,35 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     printLongLogMessage(" inventory_deposit / _getNextInventoryToDeposit: let's see if we will need to split the LPN due to different destination on the same LPN");
     List<Inventory> inventorySameLPNDifferentDestinationLocation =
         inventoryOnRF.where((inventory) {
-          if (inventory.lpn != inventoryDepositRequest.lpn) {
+          if (inventory.lpn != inventoryDepositRequest?.lpn) {
             // inventory has a different LPN return false;
             return false;
           }
           // make sure the inventory goes to the same destination
-          if (inventoryDepositRequest.nextLocationId == null &&
+          if (inventoryDepositRequest?.nextLocationId == null &&
               inventory.getNextDepositLocaiton() != null) {
-            printLongLogMessage(" lpn ${inventoryDepositRequest.lpn}'s next location id is null " +
+            printLongLogMessage(" lpn ${inventoryDepositRequest?.lpn}'s next location id is null " +
                 " but current inventory ${inventory.id} / ${inventory.lpn}'s next location is ${inventory.getNextDepositLocaiton()?.name}, "
                     " will need to SPLIT");
             return true;
           }
-          else if (inventoryDepositRequest.nextLocationId != null &&
+          else if (inventoryDepositRequest?.nextLocationId != null &&
               inventory.getNextDepositLocaiton() == null) {
-            printLongLogMessage(" lpn ${inventoryDepositRequest.lpn}'s next location id is NOT null(${inventoryDepositRequest.nextLocationId}) " +
+            printLongLogMessage(" lpn ${inventoryDepositRequest?.lpn}'s next location id is NOT null(${inventoryDepositRequest?.nextLocationId}) " +
                 " but current inventory ${inventory.id} / ${inventory.lpn}'s next location NULL, "
                     " will need to SPLIT");
             return true;
           }
-          else if (inventoryDepositRequest.nextLocationId != null &&
+          else if (inventoryDepositRequest?.nextLocationId != null &&
               inventory.getNextDepositLocaiton() != null &&
-              inventoryDepositRequest.nextLocationId !=
+              inventoryDepositRequest?.nextLocationId !=
                   inventory.getNextDepositLocaiton()?.id) {
-            printLongLogMessage(" lpn ${inventoryDepositRequest.lpn}'s next location id is ${inventoryDepositRequest.nextLocationId} " +
+            printLongLogMessage(" lpn ${inventoryDepositRequest?.lpn}'s next location id is ${inventoryDepositRequest?.nextLocationId} " +
                 " but current inventory ${inventory.id} / ${inventory.lpn}'s next location ID is ${inventory.getNextDepositLocaiton()?.id}, "
                     " will need to SPLIT");
             return true;
           }
-          printLongLogMessage("current inventory ${inventory.id} / ${inventory.lpn} has the same next location as the other inventory in the same LPN ${inventoryDepositRequest.lpn}, "
+          printLongLogMessage("current inventory ${inventory.id} / ${inventory.lpn} has the same next location as the other inventory in the same LPN ${inventoryDepositRequest?.lpn}, "
                   " no need to SPLIT");
           // inventory has the same LPN and same destination
           return false;
