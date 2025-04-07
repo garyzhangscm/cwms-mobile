@@ -246,7 +246,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
                     Image.file(File(_localFile[imageUrl]!))
                         :
                     Image.network(
-                        Global.currentServer.url + "inventory/item-sampling/images/${Global.currentWarehouse.id}/${_currentItemSampling!.item!.id}/${_currentItemSampling!.number}/$imageUrl",
+                        Global.currentServer.url! + "inventory/item-sampling/images/${Global.currentWarehouse.id}/${_currentItemSampling!.item!.id}/${_currentItemSampling!.number}/$imageUrl",
                         fit: BoxFit.cover, width: 1000,
                         headers: {
                           HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",

@@ -86,7 +86,7 @@ class _ListPickPageState extends State<ListPickPage> {
         // allow the user to input barcode
 
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d) {
+        if (barcode.is_2d!) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
@@ -194,7 +194,7 @@ class _ListPickPageState extends State<ListPickPage> {
         }
       );
     }
-    else if (Global.getRFConfiguration.listPickBatchPicking) {
+    else if (Global.getRFConfiguration.listPickBatchPicking == true) {
       // if we will need to batch picking, then combine the picks with
       // same attribute into one and allow the user to batch picking
       setState(() {

@@ -333,13 +333,13 @@ class InventoryService {
     String printerName = "";
 
     if (Global.getLastLoginRF() != null && Global.getLastLoginRF().printerName != null &&
-        Global.getLastLoginRF().printerName.isNotEmpty) {
-      printerName = Global.getLastLoginRF().printerName;
+        Global.getLastLoginRF().printerName?.isNotEmpty == true) {
+      printerName = Global.getLastLoginRF().printerName!;
     }
     else if (Global.getRFConfiguration.printerName  != null &&
-        Global.getRFConfiguration.printerName.isNotEmpty)  {
+        Global.getRFConfiguration.printerName!.isNotEmpty)  {
       // if the RF doesn't have the default printer, then check if we can get one from the RF configuration
-      printerName = Global.getRFConfiguration.printerName;
+      printerName = Global.getRFConfiguration.printerName!;
     }
 
     Dio httpClient = CWMSHttpClient.getDio();

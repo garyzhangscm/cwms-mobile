@@ -12,12 +12,12 @@ import '../models/warehouse_configuration.dart';
 
 class WarehouseConfigurationService {
 
-  static Future<WarehouseConfiguration> getWarehouseConfiguration() async {
+  static Future<WarehouseConfiguration?> getWarehouseConfiguration() async {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
-        Global.currentServer.url + "/layout/warehouse-configuration/by-warehouse/${Global.currentWarehouse.id}",
+        Global.currentServer.url! + "/layout/warehouse-configuration/by-warehouse/${Global.currentWarehouse.id}",
         queryParameters: {"warehouseId": Global.currentWarehouse.id}
     );
 

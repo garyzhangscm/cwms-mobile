@@ -105,7 +105,7 @@ class _PickPageState extends State<PickPage> {
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
         printLongLogMessage("barcode.is_2d?: ${barcode.is_2d}");
-        if (barcode.is_2d) {
+        if (barcode.is_2d == true) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = _getLPNFrom2DBarcode(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
@@ -157,7 +157,7 @@ class _PickPageState extends State<PickPage> {
 
   String _getLPNFrom2DBarcode(Barcode barcode) {
     String lpn = "";
-    barcode.result.forEach((k, v) {
+    barcode.result!.forEach((k, v) {
       if (k.toLowerCase() == "lpn" && v != "") {
         lpn = v;
       }

@@ -7,19 +7,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class SystemControllerNumberTextBox extends StatefulWidget {
-  SystemControllerNumberTextBox({this.type, this.controller, this.validator, this.readOnly,
+  SystemControllerNumberTextBox({required this.type, required this.controller, this.validator, required this.readOnly,
   this.showKeyboard = true, this.focusNode, this.autofocus = true, this.onValueChanged, this.onClear}
        ) : super(key: ValueKey(type));
 
 
   final String type;
   final TextEditingController controller;
-  final FormFieldValidator<String> validator;
-  FormFieldValidator<String> onValueChanged;
-  FormFieldValidator<String> onClear;
+  final FormFieldValidator<String>? validator;
+  FormFieldValidator<String>? onValueChanged;
+  FormFieldValidator<String>? onClear;
   final bool readOnly;
 
-  final FocusNode focusNode;
+  final FocusNode? focusNode;
   final bool autofocus;
   bool showKeyboard;
 
@@ -39,9 +39,9 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
   void initState() {
     super.initState();
 
-    widget.focusNode.addListener(() {
-      print("widget.focusNode.hasFocus: ${widget.focusNode.hasFocus}");
-      if (widget.focusNode.hasFocus) {
+    widget.focusNode?.addListener(() {
+      print("widget.focusNode.hasFocus: ${widget.focusNode?.hasFocus}");
+      if (widget.focusNode!.hasFocus) {
         // if we tab out, then add the LPN to the list
         _showKeyBoard(widget.showKeyboard);
         // _itemFocusNode.requestFocus();
@@ -55,7 +55,10 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
         .then((value)  {
           printLongLogMessage("Get the next number for ${widget.type}, value is ${value}");
           widget.controller.text = value;
-          widget.onValueChanged(value);
+          if (widget.onValueChanged != null) {
+
+            widget.onValueChanged!(value);
+          }
     });
   }
   _clearField() {
@@ -64,7 +67,10 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
 
     _showKeyBoard(false);
 
-    widget.onClear("");
+    if (widget.onClear != null) {
+
+      widget.onClear!("");
+    }
   }
   _changeKeyboardType() {
 

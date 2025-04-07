@@ -18,15 +18,15 @@ import 'cwms_http_transformer.dart';
 class CWMSHttpClientAdapter {
     CWMSDio _dio;
 
-    CWMSHttpClientAdapter({required BaseOptions options, required CWMSHttpConfig dioConfig})
+    CWMSHttpClientAdapter({BaseOptions? options, CWMSHttpConfig? dioConfig})
         : _dio = CWMSDio(options: options, dioConfig: dioConfig);
 
     Future<CWMSHttpResponse> get(String uri,
-        {required Map<String, dynamic> queryParameters,
-            required Options options,
-            required CancelToken cancelToken,
-            required ProgressCallback onReceiveProgress,
-            required CWMSHttpTransformer httpTransformer}) async {
+        {Map<String, dynamic>? queryParameters,
+            Options? options,
+            CancelToken? cancelToken,
+            ProgressCallback? onReceiveProgress,
+            CWMSHttpTransformer? httpTransformer}) async {
             var response = await _dio.get(
                 uri,
                 queryParameters: queryParameters,

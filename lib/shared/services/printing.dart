@@ -49,7 +49,7 @@ class PrintingService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.put(
-        Global.currentServer.url + "/resource/printing-requests/by-report-history",
+        Global.currentServer.url! + "/resource/printing-requests/by-report-history",
         queryParameters: {"warehouseId": Global.currentWarehouse.id,
           "reportHistoryId": reportHistory.id,
           "printerName": printerName,
@@ -85,7 +85,7 @@ class PrintingService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.post(
-        Global.currentServer.url + "/resource/report-histories/print/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/${reportHistory.type.name}/${reportHistory.fileName}",
+        Global.currentServer.url! + "/resource/report-histories/print/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/${reportHistory.type?.name}/${reportHistory.fileName}",
         queryParameters: queryParameters
     );
 
@@ -114,7 +114,7 @@ class PrintingService {
 
     final status = await Permission.storage.request();
     if (status.isGranted) {
-      Directory directory;
+      Directory? directory;
       if (Platform.isAndroid) {
         // dirloc = "/sdcard/download/NHB/";
         directory = await getTemporaryDirectory();
@@ -122,7 +122,7 @@ class PrintingService {
         directory = await getDownloadsDirectory();
       }
 
-      String tempFilePath = "${directory.path}/${reportHistory.fileName}";
+      String tempFilePath = "${directory?.path}/${reportHistory.fileName}";
 
       printLongLogMessage(
           'Save report file to temporary folder: ${tempFilePath}');
@@ -158,7 +158,7 @@ class PrintingService {
           return tempFilePath;
       } catch (e) {
         printLongLogMessage('catch catch catch');
-        printLongLogMessage(e);
+        printLongLogMessage(e.toString());
         return "";
       }
     }

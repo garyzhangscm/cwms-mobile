@@ -19,7 +19,7 @@ class RFService {
     // 2. we don't have to have the auth token. all the */validate/** endpoint won't
     //    probably requires auth info
     Response response = await Dio().get(
-        Global.currentServer.url + "resource/validate/rf",
+        Global.currentServer.url! + "resource/validate/rf",
         queryParameters: {
           "warehouseId": warehouseId,
           "rfCode": rfCode},
@@ -60,7 +60,7 @@ class RFService {
     // 2. we don't have to have the auth token. all the */validate/** endpoint won't
     //    probably requires auth info
     Response response = await httpClient.get(
-        Global.currentServer.url + "resource/rfs",
+        Global.currentServer.url! + "resource/rfs",
         queryParameters: {
           "warehouseId": warehouseId,
           "rfCode": rfCode}
@@ -90,7 +90,7 @@ class RFService {
 
   static Future<RF> changeCurrentRFLocation(int locationId) async {
     return changeRFLocation(Global.currentWarehouse.id,
-        Global.getLastLoginRF().id, locationId);
+        Global.getLastLoginRF().id!, locationId);
   }
   static Future<RF> changeRFLocation(int warehouseId, int id, int locationId) async {
 
@@ -104,7 +104,7 @@ class RFService {
     printLongLogMessage("we will change the rf ${id}'s location to ${locationId}");
 
     Response response = await httpClient.post(
-        Global.currentServer.url + "resource/rfs/${id}/change-location",
+        Global.currentServer.url! + "resource/rfs/${id}/change-location",
         queryParameters: {
           "warehouseId": warehouseId,
           "locationId": locationId,

@@ -54,8 +54,8 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     // check if this is a single company site
 
-    if (Global.geturrentServer() != null && Global.geturrentServer().isSingleCompanySite()) {
-      defaultCompanyCode = Global.geturrentServer().getDefaultCompanyCode();
+    if (Global.geturrentServer() != null && Global.geturrentServer().isSingleCompanySite() == true) {
+      defaultCompanyCode = Global.geturrentServer().getDefaultCompanyCode()!;
 
     }
     else {
@@ -495,8 +495,8 @@ class _LoginPageState extends State<LoginPage> {
 
         Global.setLastActivityLocation(currentLocation);
         printLongLogMessage("start to change rf ${rf.rfCode}'s current location to ${currentLocation.id} / ${currentLocation.name}");
-        rf = await RFService.changeRFLocation(selectedWarehouse!.id, rf.id, currentLocation.id);
-        print(">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation.name}");
+        rf = await RFService.changeRFLocation(selectedWarehouse!.id, rf.id!, currentLocation.id);
+        print(">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation?.name}");
 
         Global.setLastLoginRF(rf);
 
@@ -638,7 +638,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     String currentVersion = await _getCurrentVersion();
-    String serverVersion = latestAppVersion.versionNumber;
+    String serverVersion = latestAppVersion.versionNumber!;
 
     printLongLogMessage("current version: ${currentVersion}");
     printLongLogMessage("server version: ${serverVersion}");

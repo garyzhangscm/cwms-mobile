@@ -22,8 +22,8 @@ class QRCodeView extends StatefulWidget{
 
 class _QRCodeViewState extends State<QRCodeView> {
 
-  Barcode result;
-  QRViewController controller;
+  Barcode? result;
+  QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   bool returnInProcess = false;
@@ -34,9 +34,9 @@ class _QRCodeViewState extends State<QRCodeView> {
   void reassemble() {
     super.reassemble();
     if (Platform.isAndroid) {
-      controller.pauseCamera();
+      controller?.pauseCamera();
     }
-    controller.resumeCamera();
+    controller?.resumeCamera();
   }
 
   @override
@@ -60,7 +60,7 @@ class _QRCodeViewState extends State<QRCodeView> {
                 children: <Widget>[
                   if (result != null)
                     Text(
-                        'Barcode Type: ${describeEnum(result.format)}   Data: ${result.code}')
+                        'Barcode Type: ${result?.format.name}   Data: ${result?.code}')
                   else
                     const Text('Scan a code'),
                   Row(
@@ -93,7 +93,7 @@ class _QRCodeViewState extends State<QRCodeView> {
                               builder: (context, snapshot) {
                                 if (snapshot.data != null) {
                                   return Text(
-                                      'Camera facing ${describeEnum(snapshot.data)}');
+                                      'Camera facing ${snapshot.data}');
                                 } else {
                                   return const Text('loading');
                                 }
@@ -173,8 +173,8 @@ class _QRCodeViewState extends State<QRCodeView> {
           // so we will setup the locker here so that we will
           // only return once
           returnInProcess = true;
-          printLongLogMessage("return to the last page with data : ${result.code}");
-          Navigator.pop(context, result.code);
+          printLongLogMessage("return to the last page with data : ${result?.code}");
+          Navigator.pop(context, result?.code);
 
         }
       });

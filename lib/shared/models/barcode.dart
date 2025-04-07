@@ -11,11 +11,11 @@ class Barcode {
 
   Barcode(this.is_2d, this.result, this.value);
 
-  bool is_2d;
+  bool? is_2d;
   // result for parsing 2d barcode
-  Map<String, String> result;
+  Map<String, String>? result;
 
-  String value;
+  String? value;
 
 
 }

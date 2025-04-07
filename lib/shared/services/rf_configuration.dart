@@ -22,12 +22,12 @@ import 'package:dio/dio.dart';
 
 class RFConfigurationService {
 
-  static Future<RFConfiguration> getRFConfiguration(String rfCode) async {
+  static Future<RFConfiguration?> getRFConfiguration(String rfCode) async {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
-        Global.currentServer.url + "/resource/rf-configurations",
+        Global.currentServer.url! + "/resource/rf-configurations",
         queryParameters: {"warehouseId": Global.currentWarehouse.id,
         "rfCode": rfCode}
     );

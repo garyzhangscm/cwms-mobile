@@ -493,8 +493,8 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     }
     else {
       // sort the pick first so skipped pick will come last
-      printLongLogMessage("start to sort the picks based on rf's current location ${Global.getLastLoginRF().currentLocation.name} with pick sequence ${Global.getLastLoginRF().currentLocation.pickSequence}");
-      PickService.sortPicks(assignedPicks, Global.getLastLoginRF().currentLocation, true);
+      printLongLogMessage("start to sort the picks based on rf's current location ${Global.getLastLoginRF().currentLocation!.name} with pick sequence ${Global.getLastLoginRF().currentLocation?.pickSequence}");
+      PickService.sortPicks(assignedPicks, Global.getLastLoginRF().currentLocation!, true);
 
       print(" =====   after sort, we have picks      =====");
       assignedPicks.forEach((pick) {

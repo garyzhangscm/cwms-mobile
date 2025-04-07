@@ -33,31 +33,31 @@ const _themes = <MaterialColor>[
 ];
 
 class Global {
-  static SharedPreferences _prefs;
+  static SharedPreferences? _prefs;
   // current connection
-  static CWMSSiteInformation currentServer;
+  static CWMSSiteInformation? currentServer;
   // current Login
-  static User currentUser;
-  static String currentUsername;
-  static User autoLoginUser;
+  static User? currentUser;
+  static String? currentUsername;
+  static User? autoLoginUser;
 
-  static String lastLoginRFCode;
-  static RF lastLoginRF;
+  static String? lastLoginRFCode;
+  static RF? lastLoginRF;
 
-  static Warehouse currentWarehouse;
-  static Warehouse autoLoginWarehouse;
-  static Company _autoLoginCompany;
+  static Warehouse? currentWarehouse;
+  static Warehouse? autoLoginWarehouse;
+  static Company? _autoLoginCompany;
 
   // Server from history, saved in SharedPreferences
-  static List<CWMSSiteInformation> servers;
+  static List<CWMSSiteInformation>? servers;
 
-  static String lastLoginCompanyCode;
+  static String? lastLoginCompanyCode;
 
-  static int lastLoginCompanyId;
+  static int? lastLoginCompanyId;
 
-  static String currentAPPVersion;
+  static String? currentAPPVersion;
 
-  static InventoryConfiguration currentInventoryConfiguration;
+  static InventoryConfiguration? currentInventoryConfiguration;
 
   static Profile profile = Profile();
 
@@ -70,11 +70,11 @@ class Global {
   // Last activity location;
   // The system will use this information to assign
   // next activity
-  static WarehouseLocation _lastActivityLocation;
+  static WarehouseLocation? _lastActivityLocation;
   // whether we need to move forward (1) or backward(-1)
-  static int _lastActivityDirection;
+  static int? _lastActivityDirection;
 
-  static CWMSHttpClientAdapter httpClient;
+  static CWMSHttpClientAdapter? httpClient;
 
 
   // 是否为release版
@@ -97,7 +97,7 @@ class Global {
 
 
     // initial profile
-    var _profile = _prefs.getString("profile");
+    var _profile = _prefs?.getString("profile");
     if (_profile != null) {
       try {
         profile = Profile.fromJson(jsonDecode(_profile));
@@ -118,8 +118,8 @@ class Global {
 
 
     // hard code company id to -1
-    lastLoginCompanyId = _prefs.getInt("lastLoginCompanyId");
-    lastLoginCompanyCode = _prefs.getString("lastLoginCompanyCode");
+    lastLoginCompanyId = _prefs?.getInt("lastLoginCompanyId");
+    lastLoginCompanyCode = _prefs?.getString("lastLoginCompanyCode");
 
     // initial download flugin
     // await FlutterDownloader.initialize(
@@ -137,12 +137,12 @@ class Global {
     );
   }
   static _initServers() {
-    var _servers = _prefs.getString("servers");
+    var _servers = _prefs?.getString("servers");
     if (_servers != null ) {
       try {
         List<dynamic> serverList = jsonDecode(_servers);
         if (serverList.isEmpty) {
-          servers = List<CWMSSiteInformation>();
+          servers = <CWMSSiteInformation>[];
         }
         else {
           servers = CWMSSiteInformation.decodeServers(_servers);
@@ -153,13 +153,13 @@ class Global {
       }
     }
     else {
-      servers = List<CWMSSiteInformation>();
+      servers = <CWMSSiteInformation>[];
     }
 
   }
 
   static _initAutoLoginUser(){
-    var _user = _prefs.getString("auto_login_user");
+    var _user = _prefs?.getString("auto_login_user");
     print("_initAutoLingUser: ${_user}");
     if (_user != null ) {
       try {
@@ -171,11 +171,11 @@ class Global {
   }
 
   static _clearAutoLoginUser() {
-    _prefs.setString("auto_login_user", "");
+    _prefs?.setString("auto_login_user", "");
   }
 
   static _initAutoLoginWarehouse(){
-    var _warehouse = _prefs.getString("auto_login_warehouse");
+    var _warehouse = _prefs?.getString("auto_login_warehouse");
     print("_initAutoLingWarehouse: ${_warehouse}");
     if (_warehouse != null ) {
       try {
@@ -193,11 +193,11 @@ class Global {
   }
 
   static _clearAutoLoginWarehouse() {
-    _prefs.setString("auto_login_warehouse", "");
+    _prefs?.setString("auto_login_warehouse", "");
   }
 
   static _initAutoLoginCompany(){
-    var _company = _prefs.getString("auto_login_company");
+    var _company = _prefs?.getString("auto_login_company");
     print("_initAutoLingCompany: ${_company}");
     if (_company != null ) {
       try {
@@ -209,14 +209,14 @@ class Global {
   }
 
   static _clearAutoLoginCompany() {
-    _prefs.setString("auto_login_company", "");
+    _prefs?.setString("auto_login_company", "");
   }
 
   static _initLastLoginRFCode(){
-    lastLoginRFCode = _prefs.getString("last_login_rf_code");
+    lastLoginRFCode = _prefs?.getString("last_login_rf_code");
   }
   static _initLastLoginRF(){
-    var _lastLoginRF = _prefs.getString("last_login_rf");
+    var _lastLoginRF = _prefs?.getString("last_login_rf");
     if (_lastLoginRF != null) {
       try {
         lastLoginRF = RF.fromJson(jsonDecode(_lastLoginRF));
@@ -228,34 +228,34 @@ class Global {
   }
 
   static String getLastLoginRFCode(){
-    return lastLoginRFCode;
+    return lastLoginRFCode!;
   }
   static setLastLoginRFCode(String rfCode){
     lastLoginRFCode = rfCode;
 
-    _prefs.setString("last_login_rf_code", lastLoginRFCode);
+    _prefs?.setString("last_login_rf_code", lastLoginRFCode!);
   }
   static RF getLastLoginRF(){
-    return lastLoginRF;
+    return lastLoginRF!;
   }
   static setLastLoginRF(RF rf){
     lastLoginRF = rf;
 
-    _prefs.setString("last_login_rf", jsonEncode(rf.toJson()));
+    _prefs?.setString("last_login_rf", jsonEncode(rf.toJson()));
   }
 
   static Warehouse getAutoLoginWarehouse(){
-    return autoLoginWarehouse;
+    return autoLoginWarehouse!;
   }
   static Company getAutoLoginCompany(){
-    return _autoLoginCompany;
+    return _autoLoginCompany!;
   }
 
 
   static setAutoLoginWarehouse(Warehouse warehouse)  async {
 
     _prefs = await SharedPreferences.getInstance();
-    _prefs.setString("auto_login_warehouse", json.encode(warehouse.toJson()));
+    _prefs?.setString("auto_login_warehouse", json.encode(warehouse.toJson()));
 
     print("set auto loginc warehouse to ${json.encode(warehouse.toJson())}");
     autoLoginWarehouse = warehouse;
@@ -264,7 +264,7 @@ class Global {
   static setAutoLoginCompany(Company company)  async {
 
     _prefs = await SharedPreferences.getInstance();
-    _prefs.setString("auto_login_company", json.encode(company.toJson()));
+    _prefs?.setString("auto_login_company", json.encode(company.toJson()));
 
     print("set auto loginc warehouse to ${json.encode(company.toJson())}");
     _autoLoginCompany = company;
@@ -274,7 +274,7 @@ class Global {
   static addServer(CWMSSiteInformation server) async {
 
     CWMSSiteInformation matchedServer
-      = servers.firstWhere((element) => element.url.compareTo(server.url) == 0, orElse: () => null);
+      = servers!.firstWhere((element) => element.url?.compareTo(server!.url!) == 0);
 
     if (matchedServer != null) {
       // OK, we get a matched server, let's update it based on the new configuration
@@ -282,8 +282,8 @@ class Global {
       if (matchedServer.cwmsApplicationInformation == null) {
         matchedServer.cwmsApplicationInformation = new CWMSApplicationInformation();
       }
-      matchedServer.cwmsApplicationInformation.name = server.cwmsApplicationInformation.name;
-      matchedServer.cwmsApplicationInformation.version = server.cwmsApplicationInformation.version;
+      matchedServer.cwmsApplicationInformation!.name = server.cwmsApplicationInformation!.name;
+      matchedServer.cwmsApplicationInformation!.version = server.cwmsApplicationInformation!.version;
     }
     else {
       // we will save the new server.
@@ -292,16 +292,16 @@ class Global {
       // we will only have one auto connect server
       if (server.autoConnectFlag == true) {
 
-        CWMSSiteInformation autoConnectServer = getAutoConnectServer();
+        CWMSSiteInformation? autoConnectServer = getAutoConnectServer();
         if (autoConnectServer != null) {
           autoConnectServer.autoConnectFlag = false;
         }
       }
-      servers.add(server);
+      servers!.add(server);
     }
 
     _prefs = await SharedPreferences.getInstance();
-    _prefs.setString("servers", CWMSSiteInformation.encodeServers(servers));
+    _prefs?.setString("servers", CWMSSiteInformation.encodeServers(servers!));
 
   }
 
@@ -310,16 +310,16 @@ class Global {
     currentServer = server;
   }
   static CWMSSiteInformation geturrentServer() {
-    return currentServer;
+    return currentServer!;
   }
 
 
-  static CWMSSiteInformation getAutoConnectServer() {
-    if (servers == null || servers.isEmpty) {
+  static CWMSSiteInformation? getAutoConnectServer() {
+    if (servers == null || servers!.isEmpty == true) {
       return null;
     }
     else {
-      return servers.firstWhere((element) => element.isAutoConnect(), orElse: () => null);
+      return servers!.firstWhere((element) => element.isAutoConnect() == true);
     }
   }
 
@@ -331,10 +331,10 @@ class Global {
   static addAutoLoginUser(User user) async{
     print("start to add user to the auto login: ${user.username}");
     _prefs = await SharedPreferences.getInstance();
-    _prefs.setString("auto_login_user", json.encode(user.toJson()));
+    _prefs?.setString("auto_login_user", json.encode(user.toJson()));
 
 
-    var _user = _prefs.getString("auto_login_user");
+    var _user = _prefs?.getString("auto_login_user");
     print("after adding  auto login: ${_user}");
   }
 
@@ -343,17 +343,17 @@ class Global {
   }
 
   static int getLastLoginCompanyId() {
-    return lastLoginCompanyId;
+    return lastLoginCompanyId!;
   }
   static setLastLoginCompanyId(int _lastLoginCompanyId) {
-    _prefs.setInt("lastLoginCompanyId", _lastLoginCompanyId);
+    _prefs?.setInt("lastLoginCompanyId", _lastLoginCompanyId);
     lastLoginCompanyId = _lastLoginCompanyId;
   }
   static String getLastLoginCompanyCode() {
-    return lastLoginCompanyCode;
+    return lastLoginCompanyCode!;
   }
   static setLastLoginCompanyCode(String _lastLoginCompanyCode) {
-    _prefs.setString("lastLoginCompanyCode", _lastLoginCompanyCode);
+    _prefs?.setString("lastLoginCompanyCode", _lastLoginCompanyCode);
     lastLoginCompanyCode = _lastLoginCompanyCode;
   }
 
@@ -371,12 +371,12 @@ class Global {
   static void setupHttpClient() {
     CWMSHttpConfig dioConfig =
         CWMSHttpConfig(
-          baseUrl: Global.currentServer.url,
+          baseUrl: Global.currentServer!.url!,
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+            HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser!.token}",
             "rfCode": Global.lastLoginRFCode,
-            "warehouseId": Global.currentWarehouse.id,
+            "warehouseId": Global.currentWarehouse!.id,
             "companyId": Global.lastLoginCompanyId
           },);
     httpClient = CWMSHttpClientAdapter(dioConfig: dioConfig);
@@ -386,11 +386,11 @@ class Global {
 
 // 持久化Profile信息
   static saveProfile() =>
-      _prefs.setString("profile", jsonEncode(profile.toJson()));
+      _prefs?.setString("profile", jsonEncode(profile.toJson()));
 
 
   static WarehouseLocation getLastActivityLocation() {
-    return _lastActivityLocation;
+    return _lastActivityLocation!;
   }
 
   static void setLastActivityLocation(WarehouseLocation location) {

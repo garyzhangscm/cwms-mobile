@@ -29,10 +29,10 @@ class LoginService {
 
     if (loginResponseWrapper.result == 0) {
       // ok, we can connect to the server. Add it to the history
-      return User.fromJson(loginResponseWrapper.user);
+      return User.fromJson(loginResponseWrapper.user!);
     }
     else {
-      throw(loginResponseWrapper.message);
+      throw(loginResponseWrapper.message!);
     }
 
   }

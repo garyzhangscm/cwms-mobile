@@ -73,10 +73,10 @@ class BarcodeService {
 
     // for non 2d barcode, let's get just the value
     // which is the value that the user scan in
-    if(!barcode.is_2d || barcode.result == null || !barcode.result.containsKey(fieldName)) {
-      return barcode.value;
+    if(barcode.is_2d == false || barcode.result == null || !barcode.result!.containsKey(fieldName)) {
+      return barcode.value!;
     }
-    return barcode.result[fieldName];
+    return barcode.result![fieldName]!;
   }
 
   static String getLPN(Barcode barcode) {

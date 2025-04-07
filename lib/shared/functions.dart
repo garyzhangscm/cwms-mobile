@@ -216,7 +216,7 @@ showWarningDialog(BuildContext context, String message) {
 }
 
 
-Future<bool>  showYesNoDialog(BuildContext context, String title, String message,
+Future<bool?>  showYesNoDialog(BuildContext context, String title, String message,
     Function yesOnPressed, Function noOnPressed) {
 
   Widget okButton = TextButton(
@@ -247,7 +247,7 @@ Future<bool>  showYesNoDialog(BuildContext context, String title, String message
   );
 
   // show the dialog
-  return showDialog(
+  return showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
       return alert;
@@ -255,7 +255,7 @@ Future<bool>  showYesNoDialog(BuildContext context, String title, String message
   );
 }
 
-Future<bool>  showYesNoCancelDialog(BuildContext context, String title, String message,
+Future<bool?>  showYesNoCancelDialog(BuildContext context, String title, String message,
     Function yesOnPressed, Function noOnPressed, Function cancelOnPressed) {
 
   Widget yesButton = TextButton(
@@ -294,7 +294,7 @@ Future<bool>  showYesNoCancelDialog(BuildContext context, String title, String m
   );
 
   // show the dialog
-  return showDialog(
+  return showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
       return alert;
