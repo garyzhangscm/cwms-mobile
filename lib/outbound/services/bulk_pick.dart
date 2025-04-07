@@ -61,7 +61,7 @@ class BulkPickService {
     Response response = await httpClient.get(
         "outbound/bulk-picks",
         queryParameters: {"number": number,
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse!.id
         }
     );
 
@@ -99,7 +99,7 @@ class BulkPickService {
     Response response = await httpClient.post(
         "outbound/bulk-picks/${id}/acknowledge",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse!.id
         }
     );
 
@@ -125,7 +125,7 @@ class BulkPickService {
     Response response = await httpClient.post(
         "outbound/bulk-picks/${id}/unacknowledge",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse!.id
         }
     );
 

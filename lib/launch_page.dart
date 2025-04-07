@@ -19,7 +19,7 @@ import 'dart:convert';
 
 class LaunchPage extends StatefulWidget{
 
-  LaunchPage({Key key}) : super(key: key);
+  LaunchPage({Key? key}) : super(key: key);
 
 
   @override
@@ -30,9 +30,9 @@ class LaunchPage extends StatefulWidget{
 class _LaunchPageState extends State<LaunchPage> {
 
   // AutoConnect to certian server
-  bool _autoConnect;
+  bool _autoConnect = false;
 
-  TextEditingController _serverURLController;
+  TextEditingController? _serverURLController;
 
   final _formKey= new GlobalKey<FormState>();
 
@@ -41,7 +41,7 @@ class _LaunchPageState extends State<LaunchPage> {
   @override
   void initState(){
     super.initState();
-    CWMSSiteInformation server = Global.getAutoConnectServer();
+    CWMSSiteInformation? server = Global.getAutoConnectServer();
     print("get auto connect server? ${server == null? '' : server.url}");
 
     if (kDebugMode) {
@@ -59,7 +59,7 @@ class _LaunchPageState extends State<LaunchPage> {
       // _serverURLController =  TextEditingController(text: server.url);
       _serverURLController =  TextEditingController(text: server.url);
 
-      _autoConnect = server.autoConnectFlag;
+      _autoConnect = server.autoConnectFlag ?? false;
       _onAutoConnect(server);
     }
     else {
@@ -101,7 +101,7 @@ class _LaunchPageState extends State<LaunchPage> {
                   ),
                   //
                   validator: (v) {
-                    return v
+                    return v!
                         .trim()
                         .length > 0 ? null : "Please input a valid server";
                   }
@@ -115,7 +115,7 @@ class _LaunchPageState extends State<LaunchPage> {
                       onChanged:(value){
                         //重新构建页面
                         setState(() {
-                          _autoConnect=value;
+                          _autoConnect= value ?? false;
                         });
                       },
 
@@ -140,8 +140,8 @@ class _LaunchPageState extends State<LaunchPage> {
                 child: Text("Connect"),
                 // shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
                 onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                     _onConnect(_serverURLController.text, _autoConnect);
+                  if (_formKey.currentState!.validate()) {
+                     _onConnect(_serverURLController!.text, _autoConnect);
 
                   }
                 },
@@ -153,12 +153,12 @@ class _LaunchPageState extends State<LaunchPage> {
     );
   }
   _clearField() {
-    _serverURLController.text = "";
+    _serverURLController!.text = "";
   }
 
   void _onAutoConnect(CWMSSiteInformation server) async  {
 
-    _onConnect(server.url, true);
+    _onConnect(server.url ?? "", true);
 
   }
   // connect to the server
@@ -168,7 +168,7 @@ class _LaunchPageState extends State<LaunchPage> {
 
 
       // showLoading(context);
-      CWMSSiteInformation server;
+      CWMSSiteInformation? server;
       try {
         print("start to connect to $serverUrl");
         Response response = await Dio().get(
@@ -183,7 +183,7 @@ class _LaunchPageState extends State<LaunchPage> {
         if (httpResponseWrapper.result == 0) {
           // ok, we can connect to the server. Add it to the history
           //
-          server = CWMSSiteInformation.fromJson(httpResponseWrapper.data);
+          server = CWMSSiteInformation.fromJson(httpResponseWrapper.data!);
 
           print("extracted the server");
           // The server will return the name / description / version

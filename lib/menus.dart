@@ -22,7 +22,7 @@ class Menus extends StatefulWidget {
 class _MenusState extends State<Menus> {
 
 
-  MenuGroup _menuGroup;
+  MenuGroup? _menuGroup;
 
   @override
   void initState() {
@@ -104,7 +104,7 @@ class _MenusState extends State<Menus> {
         crossAxisCount: 2,
         childAspectRatio: .90,
         children: List.generate(
-            _menuGroup == null ? 0 : _menuGroup.menuSubGroups.length,
+            _menuGroup == null ? 0 : _menuGroup!.menuSubGroups.length,
                 (index) {
           return Card(
             child: InkWell(
@@ -119,14 +119,14 @@ class _MenusState extends State<Menus> {
                       // FlutterLogo(),
                       Image(
                         image: NetworkImage(
-                            Global.currentServer.url + "resource/assets/images/mobile/" + _menuGroup.menuSubGroups[index].icon),
+                            Global.currentServer!.url! + "resource/assets/images/mobile/" + _menuGroup!.menuSubGroups[index].icon!),
                           //  "http://k8s-staging-zuulserv-707034e5d3-1316291729.us-west-1.elb.amazonaws.com/api/resource/assets/images/mobile/menu_outbound.jpg"),
                         width: 100.0,
                       ),
                       Text(CWMSLocalizations.of(context)
                           .getMenuDisplayText(
-                          _menuGroup.menuSubGroups[index].i18n,
-                          _menuGroup.menuSubGroups[index].text))],
+                          _menuGroup!.menuSubGroups[index].i18n!,
+                          _menuGroup!.menuSubGroups[index].text!))],
                   ),
                 ),
             ),
@@ -157,17 +157,17 @@ class _MenusState extends State<Menus> {
   }
   void _onPressed(int index){
 
-    printLongLogMessage("${_menuGroup.menuSubGroups[index].name}: ${_menuGroup.menuSubGroups[index].link}");
+    printLongLogMessage("${_menuGroup!.menuSubGroups[index].name}: ${_menuGroup!.menuSubGroups[index].link}");
 
-    if (_menuGroup.menuSubGroups[index].link != null && _menuGroup.menuSubGroups[index].link.isNotEmpty) {
+    if (_menuGroup!.menuSubGroups[index].link != null && _menuGroup!.menuSubGroups[index].link!.isNotEmpty == true) {
 
-      printLongLogMessage("flow to page ${_menuGroup.menuSubGroups[index].link}");
-      Navigator.of(context).pushNamed(_menuGroup.menuSubGroups[index].link);
+      printLongLogMessage("flow to page ${_menuGroup!.menuSubGroups[index].link}");
+      Navigator.of(context).pushNamed(_menuGroup!.menuSubGroups[index].link!);
     }
     else {
 
-      printLongLogMessage("flow to sub menu ${_menuGroup.menuSubGroups[index].name}");
-      Navigator.of(context).pushNamed("sub_menus_page", arguments: _menuGroup.menuSubGroups[index]);
+      printLongLogMessage("flow to sub menu ${_menuGroup!.menuSubGroups[index].name}");
+      Navigator.of(context).pushNamed("sub_menus_page", arguments: _menuGroup!.menuSubGroups[index]);
     }
 
 

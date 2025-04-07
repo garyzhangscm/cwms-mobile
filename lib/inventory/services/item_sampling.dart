@@ -17,7 +17,7 @@ class ItemSamplingService {
 
     Response response = await httpClient.get(
         "/inventory/item-sampling",
-      queryParameters: {'warehouseId': Global.currentWarehouse.id,
+      queryParameters: {'warehouseId': Global.currentWarehouse!.id,
           'itemName': itemName,
       "currentSampleOnly": true}
     );
@@ -52,7 +52,7 @@ class ItemSamplingService {
 
     Response response = await httpClient.get(
         "/inventory/item-sampling",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id,
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id,
           'number': number}
     );
 
@@ -85,7 +85,7 @@ class ItemSamplingService {
 
     Response response = await httpClient.put(
         "/inventory/item-sampling",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id},
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id},
       data: itemSampling
     );
 
@@ -108,7 +108,7 @@ class ItemSamplingService {
 
     Response response = await httpClient.post(
         "/inventory/item-sampling/${itemSampling.id}",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id},
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id},
         data: itemSampling
     );
 

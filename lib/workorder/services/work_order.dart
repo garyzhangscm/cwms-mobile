@@ -14,7 +14,7 @@ import 'package:dio/dio.dart';
 
 class WorkOrderService {
   // Get all cycle count requests by batch id
-  static Future<WorkOrder> getWorkOrderByNumber(String workOrderNumber, {loadDetails : true}) async {
+  static Future<WorkOrder?> getWorkOrderByNumber(String workOrderNumber, {loadDetails : true}) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("Start to get work order by ${workOrderNumber}");
@@ -22,16 +22,15 @@ class WorkOrderService {
         "workorder/work-orders",
         queryParameters: {"number": workOrderNumber,
           "loadDetails" : loadDetails,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     printLongLogMessage("response from getWorkOrderByNumber: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     List<WorkOrder> workOrders
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : WorkOrder.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => WorkOrder.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
@@ -68,7 +67,7 @@ class WorkOrderService {
 
     Response response = await httpClient.get(
         "workorder/work-orders-with-open-pick",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id}
     );
 
     // print("response from Order: $response");
@@ -76,9 +75,8 @@ class WorkOrderService {
     // List<dynamic> responseData = responseString["data"];
 
     List<WorkOrder> workOrders
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : WorkOrder.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+    = (responseString["data"] as List).map((e) =>  WorkOrder.fromJson(e as Map<String, dynamic>))
+          .toList();
 
     print("get ${workOrders.length} work orders");
 
@@ -123,11 +121,11 @@ class WorkOrderService {
     workOrder.totalLineConsumedQuantity = 0;
 
     workOrder.workOrderLines.forEach((workOrderLine)  {
-      workOrder.totalLineExpectedQuantity = workOrder.totalLineExpectedQuantity + workOrderLine.expectedQuantity;
-      workOrder.totalLineOpenQuantity = workOrder.totalLineOpenQuantity + workOrderLine.openQuantity;
-      workOrder.totalLineInprocessQuantity = workOrder.totalLineInprocessQuantity + workOrderLine.inprocessQuantity;
-      workOrder.totalLineDeliveredQuantity = workOrder.totalLineDeliveredQuantity + workOrderLine.deliveredQuantity;
-      workOrder.totalLineConsumedQuantity = workOrder.totalLineConsumedQuantity + workOrderLine.consumedQuantity;
+      workOrder.totalLineExpectedQuantity = workOrder.totalLineExpectedQuantity! + workOrderLine.expectedQuantity!;
+      workOrder.totalLineOpenQuantity = workOrder.totalLineOpenQuantity! + workOrderLine.openQuantity!;
+      workOrder.totalLineInprocessQuantity = workOrder.totalLineInprocessQuantity! + workOrderLine.inprocessQuantity!;
+      workOrder.totalLineDeliveredQuantity = workOrder.totalLineDeliveredQuantity! + workOrderLine.deliveredQuantity!;
+      workOrder.totalLineConsumedQuantity = workOrder.totalLineConsumedQuantity! + workOrderLine.consumedQuantity!;
     });
 
 
@@ -142,7 +140,7 @@ class WorkOrderService {
 
     Response response = await httpClient.post(
         "workorder/work-orders/${workOrderId}/generate-manual-pick",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id,
           "lpn": lpn,
           "productionLineId": productionLineId,
           "rfCode":Global.getLastLoginRFCode(),
@@ -158,9 +156,8 @@ class WorkOrderService {
     }
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     print("get ${picks.length} picks by manual picking for work order $workOrderId, lpn: $lpn");
 
@@ -174,7 +171,7 @@ class WorkOrderService {
 
     Response response = await httpClient.post(
         "workorder/work-orders/${workOrderId}/process-manual-pick",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id,
           "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
     );
 
@@ -187,9 +184,8 @@ class WorkOrderService {
     }
 
     List<Pick> picks
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Pick.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Pick.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     print("get ${picks.length} picks by manual picking for work order $workOrderId, lpn: $lpn");
 
@@ -208,7 +204,7 @@ class WorkOrderService {
 
     Response response = await httpClient.get(
         "workorder/work-orders/${workOrderId}/get-manual-pick-quantity",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id,
           "lpn": lpn, "productionLineId": productionLineId, "rfCode":Global.getLastLoginRFCode()}
     );
 
@@ -236,7 +232,7 @@ class WorkOrderService {
     Response response = await httpClient.post(
       "workorder/work-orders/${workOrderId}/reverse-production",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
           "lpn": lpn,
           "rfCode":Global.getLastLoginRFCode()}
 

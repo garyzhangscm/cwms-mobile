@@ -25,13 +25,13 @@ part 'work_order_qc_result.g.dart';
 class WorkOrderQCResult{
   WorkOrderQCResult();
 
-  int id;
-  String number;
-  int warehouseId;
-  WorkOrderQCSample workOrderQCSample;
-  QCInspectionResult qcInspectionResult;
-  String qcUsername;
-  String qcRFCode;
+  int? id;
+  String? number;
+  int? warehouseId;
+  WorkOrderQCSample? workOrderQCSample;
+  QCInspectionResult? qcInspectionResult;
+  String? qcUsername;
+  String? qcRFCode;
 
 
 

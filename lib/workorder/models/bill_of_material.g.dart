@@ -13,9 +13,9 @@ BillOfMaterial _$BillOfMaterialFromJson(Map<String, dynamic> json) {
     ..number = json['number'] as String
     ..description = json['description'] as String
     ..billOfMaterialLines = (json['billOfMaterialLines'] as List)
-        ?.map(
-            (e) => e == null ? null : BillOfMaterialLine.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) =>   BillOfMaterialLine.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)

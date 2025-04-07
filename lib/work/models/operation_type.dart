@@ -8,11 +8,11 @@ part 'operation_type.g.dart';
 class OperationType{
   OperationType();
 
-  int id;
+  int? id;
 
-  String name;
-  String description;
-  int defaultPriority;
+  String? name;
+  String? description;
+  int? defaultPriority;
 
 
 

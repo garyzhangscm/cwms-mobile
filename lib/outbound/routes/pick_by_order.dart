@@ -13,12 +13,12 @@ import 'package:cwms_mobile/outbound/services/order.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart' as badge;
+import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
 import '../models/pick_mode.dart';
@@ -461,7 +461,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
       Set<int> pickIdSet =  orderPick.value;
       // check if the pick belongs to the current order
       if (pickIdSet.contains(pick.id)) {
-        order = assignedOrders.firstWhere((assignedOrder) => assignedOrder.number == orderNumber);
+        order = assignedOrders.firstWhereOrNull((assignedOrder) => assignedOrder.number == orderNumber);
         if (order != null) {
           // we found such order, let's return
           break;

@@ -21,7 +21,7 @@ import 'package:image_picker/image_picker.dart';
 
 class WorkOrderQCSamplingPage extends StatefulWidget{
 
-  WorkOrderQCSamplingPage({Key key}) : super(key: key);
+  WorkOrderQCSamplingPage({Key? key}) : super(key: key);
 
 
   @override
@@ -36,10 +36,10 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
   TextEditingController _qcSampleNumberController = new TextEditingController();
 
   // existing work order QC samples for current production line
-  WorkOrderQCSample _workOrderQCSample;
+  WorkOrderQCSample? _workOrderQCSample;
 
 
-  ProductionLineAssignment _productionLineAssignment;
+  ProductionLineAssignment? _productionLineAssignment;
 
   FocusNode _productionLineFocusNode = FocusNode();
   FocusNode _qcSampleNumberFocusNode = FocusNode();
@@ -102,11 +102,11 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
               ),
               buildTwoSectionInformationRow(
                   CWMSLocalizations.of(context)!.productionLine,
-                  _productionLineAssignment == null ? "" : _productionLineAssignment.productionLine.name
+                  _productionLineAssignment?.productionLine?.name ?? ""
               ),
               buildTwoSectionInformationRow(
                 CWMSLocalizations.of(context)!.workOrderNumber,
-                _productionLineAssignment == null ? "" : _productionLineAssignment.workOrderNumber
+                  _productionLineAssignment?.workOrderNumber ?? ""
               ),
               buildSingleSectionInformationRow(
                 CWMSLocalizations.of(context)!.workOrderQCSampleNumber,
@@ -120,7 +120,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
                     showKeyboard: false,
                     focusNode: _qcSampleNumberFocusNode,
                     autofocus: true,
-                    onValueChanged: (value) => _qcSampleNumberChanged(value)
+                    onValueChanged: (value) => _qcSampleNumberChanged(value!)
                   ),
               ),
               // build existing QC Images
@@ -161,7 +161,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
         setState(() {
           _productionLineAssignment;
-          _loadWorkOrderQCSample(_productionLineAssignment);
+          _loadWorkOrderQCSample(_productionLineAssignment!);
         });
     }
     on WebAPICallException catch(ex) {
@@ -179,11 +179,11 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
     try {
 
-      _workOrderQCSample = await WorkOrderQCService.getWorkOrderQCSampleByProductionLineAssignment(productionLineAssignment.id);
+      _workOrderQCSample = await WorkOrderQCService.getWorkOrderQCSampleByProductionLineAssignment(productionLineAssignment!.id!);
       if (_workOrderQCSample == null) {
 
         printLongLogMessage("we can't get qc samples from production line id: ${productionLineAssignment.id}, we will create one");
-        _workOrderQCSample = new WorkOrderQCSample.fromProductionLineAssignment(_productionLineAssignment);
+        _workOrderQCSample = new WorkOrderQCSample.fromProductionLineAssignment(_productionLineAssignment!);
         _newWorkOrderQCSample = true;
       }
       else {
@@ -202,18 +202,18 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
             },
             () {
               // the user press No, we will create a new QC sample
-              _workOrderQCSample = new WorkOrderQCSample.fromProductionLineAssignment(_productionLineAssignment);
+              _workOrderQCSample = new WorkOrderQCSample.fromProductionLineAssignment(_productionLineAssignment!);
               _newWorkOrderQCSample = true;
 
             });
       }
 
       printLongLogMessage("_newWorkOrderQCSample? $_newWorkOrderQCSample");
-      printLongLogMessage("_workOrderQCSample.number? ${_workOrderQCSample.number}");
+      printLongLogMessage("_workOrderQCSample!.number? ${_workOrderQCSample?.number}");
       setState(() {
         _workOrderQCSample;
         _newWorkOrderQCSample;
-        _qcSampleNumberController.text = _workOrderQCSample.number;
+        _qcSampleNumberController.text = _workOrderQCSample!.number!;
       });
     }
     on WebAPICallException catch(ex) {
@@ -247,15 +247,15 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
                           // check if we will need to load from local storage or network
                           // _localFile map stores the file name as the key and the file path as the value
                           _localFile.containsKey(imageUrl) ?
-                          Image.file(File(_localFile[imageUrl]))
+                          Image.file(File(_localFile[imageUrl]!))
                               :
                           Image.network(
-                              Global.currentServer.url + "workorder/qc-samples/images/${Global.currentWarehouse.id}/${_workOrderQCSample.productionLineAssignment.id}/$imageUrl",
+                              Global.currentServer!.url! + "workorder/qc-samples/images/${Global.currentWarehouse!.id}/${_workOrderQCSample!.productionLineAssignment!.id!}/$imageUrl",
                               fit: BoxFit.cover, width: 1000,
                               headers: {
-                                HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
-                                "rfCode": Global.lastLoginRFCode,
-                                "warehouseId": Global.currentWarehouse.id.toString(),
+                                HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser!.token}",
+                                "rfCode": Global.lastLoginRFCode!,
+                                "warehouseId": Global.currentWarehouse!.id.toString(),
                                 "companyId": Global.lastLoginCompanyId.toString()
                               }),
                           Positioned(
@@ -289,12 +289,12 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
         _localFile.remove(imageFileName);
 
         // remove the file from the list and fix the comma
-        _workOrderQCSample.imageUrls = _workOrderQCSample.imageUrls.replaceAll(imageFileName, "");
-        if (_workOrderQCSample.imageUrls.startsWith(",")) {
-          _workOrderQCSample.imageUrls = _workOrderQCSample.imageUrls.substring(1);
+        _workOrderQCSample!.imageUrls = _workOrderQCSample!.imageUrls!.replaceAll(imageFileName, "");
+        if (_workOrderQCSample!.imageUrls!.startsWith(",")) {
+          _workOrderQCSample!.imageUrls = _workOrderQCSample!.imageUrls!.substring(1);
         }
-        if (_workOrderQCSample.imageUrls.endsWith(",")) {
-          _workOrderQCSample.imageUrls = _workOrderQCSample.imageUrls.substring(0, _workOrderQCSample.imageUrls.length - 1);
+        if (_workOrderQCSample!.imageUrls!.endsWith(",")) {
+          _workOrderQCSample!.imageUrls = _workOrderQCSample!.imageUrls!.substring(0, _workOrderQCSample!.imageUrls!.length - 1);
         }
       });
 
@@ -306,9 +306,9 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
     List<String>  qcSampleImageUrls = [];
 
     if (_workOrderQCSample != null &&
-        _workOrderQCSample.imageUrls.isNotEmpty) {
+        _workOrderQCSample!.imageUrls!.isNotEmpty) {
       // we have files from the server, let's add it to the list
-      qcSampleImageUrls.addAll(_workOrderQCSample.imageUrls.split(","));
+      qcSampleImageUrls.addAll(_workOrderQCSample!.imageUrls!.split(","));
     }
     // add the local uploaded file
     if (_localFile.isNotEmpty) {
@@ -381,7 +381,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
     showLoading(context);
     printLongLogMessage("start to upload file ${imageFile.path}");
     String filename = await uploadFile(imageFile,
-        "workorder/qc-samples/${_productionLineAssignment.id}/images");
+        "workorder/qc-samples/${_productionLineAssignment!.id}/images");
 
     setState(() {
       printLongLogMessage("we get picked file: ${imageFile.path}, server file name is ${filename}");
@@ -391,11 +391,11 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
       /**
        * for files uploaded from the local, we will add to the _workOrderQCSample when the user click
        * confirm button
-      if (_workOrderQCSample.imageUrls.isEmpty) {
-        _workOrderQCSample.imageUrls = filename;
+      if (_workOrderQCSample!.imageUrls.isEmpty) {
+        _workOrderQCSample!.imageUrls = filename;
       }
       else {
-        _workOrderQCSample.imageUrls = _workOrderQCSample.imageUrls + "," + filename;
+        _workOrderQCSample!.imageUrls = _workOrderQCSample!.imageUrls + "," + filename;
       }
           **/
     });
@@ -405,11 +405,11 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
   _onConfirm() async {
     // setup the image list for the _workOrderQCSample object
     if (_localFile.isNotEmpty) {
-      if (_workOrderQCSample.imageUrls.isEmpty) {
-        _workOrderQCSample.imageUrls = _localFile.keys.join(",");
+      if (_workOrderQCSample!.imageUrls!.isEmpty) {
+        _workOrderQCSample!.imageUrls = _localFile.keys.join(",");
       }
       else {
-        _workOrderQCSample.imageUrls += "," + _localFile.keys.join(",");
+        _workOrderQCSample!.imageUrls = _workOrderQCSample!.imageUrls! + "," + _localFile.keys.join(",");
       }
     }
 
@@ -419,13 +419,13 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
     // make sure the number doesn't exists yet
     showLoading(context);
-    _workOrderQCSample.number = _qcSampleNumberController.text;
+    _workOrderQCSample!.number = _qcSampleNumberController.text;
 
     if (_newWorkOrderQCSample == true) {
       // we are adding a new work order qc sample, make sure the number doesn't exists yet
       try {
-        WorkOrderQCSample workOrderQCSample =
-            await WorkOrderQCService.getWorkOrderQCSampleByNumber(_workOrderQCSample.number);
+        WorkOrderQCSample? workOrderQCSample =
+            await WorkOrderQCService.getWorkOrderQCSampleByNumber(_workOrderQCSample!.number!);
         if (workOrderQCSample != null) {
           // ok we are supposed to create a new work order sample but it already exists, let's
           // raise an error
@@ -446,7 +446,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
     }
 
     try {
-        await WorkOrderQCService.addWorkOrderQCSample(_workOrderQCSample);
+        await WorkOrderQCService.addWorkOrderQCSample(_workOrderQCSample!);
 
     }
     on WebAPICallException catch(ex) {

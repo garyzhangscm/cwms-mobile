@@ -21,7 +21,7 @@ class PickService {
     Response response = await httpClient.get(
         "outbound/picks",
         queryParameters: {
-          "number": number, "warehouseId": Global.currentWarehouse.id}
+          "number": number, "warehouseId": Global.currentWarehouse!.id}
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());
@@ -43,7 +43,7 @@ class PickService {
 
     Response response = await httpClient.get(
         "outbound/picks",
-        queryParameters: {"orderId": orderId, "warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"orderId": orderId, "warehouseId": Global.currentWarehouse!.id}
     );
 
     // print("response from Pick by Order: $response");
@@ -71,7 +71,7 @@ class PickService {
 
     Response response = await httpClient.get(
         "outbound/picks",
-        queryParameters: {"workOrderLineIds": workOrderLineIds, "warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"workOrderLineIds": workOrderLineIds, "warehouseId": Global.currentWarehouse!.id}
     );
 
     // print("response from Pick by work order: $response");
@@ -94,7 +94,7 @@ class PickService {
 
     Response response = await httpClient.get(
         "outbound/picks",
-        queryParameters: {"waveId": waveId, "warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"waveId": waveId, "warehouseId": Global.currentWarehouse!.id}
     );
 
     // print("response from Pick by Order: $response");
@@ -132,8 +132,8 @@ class PickService {
             return 1;
           }
           else {
-            return pickA.sourceLocation!.pickSequence.compareTo(
-                pickB.sourceLocation!.pickSequence
+            return pickA.sourceLocation!.pickSequence!.compareTo(
+                pickB.sourceLocation!.pickSequence!
             );
           }
         });
@@ -155,8 +155,8 @@ class PickService {
             return 1;
           }
           else {
-            return pickB.sourceLocation!.pickSequence.compareTo(
-                pickA.sourceLocation!.pickSequence
+            return pickB.sourceLocation!.pickSequence!.compareTo(
+                pickA.sourceLocation!.pickSequence!
             );
           }
         });
@@ -182,7 +182,7 @@ class PickService {
           int pickBSourceLocationPickSequence = pickB.sourceLocation?.pickSequence == null ?
               0: pickB.sourceLocation!.pickSequence!;
           int currentLocationPickSequence = currentLocation.pickSequence == null ?
-              0: currentLocation.pickSequence;
+              0: currentLocation.pickSequence!;
 
            if (pickASourceLocationPickSequence == currentLocationPickSequence) {
              return -1;
@@ -239,7 +239,7 @@ class PickService {
 
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
     queryParameters["quantity"] = confirmQuantity;
     queryParameters["nextLocationName"] = nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName;
     if (lpn.isNotEmpty) {
@@ -361,7 +361,7 @@ class PickService {
     Response response = await httpClient.post(
         "outbound/pick/${id}/acknowledge",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
           "rfCode": Global.lastLoginRFCode,
         }
     );
@@ -388,7 +388,7 @@ class PickService {
     Response response = await httpClient.post(
         "outbound/pick/${id}/unacknowledge",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse!.id
         }
     );
 
@@ -417,7 +417,7 @@ class PickService {
     Response response = await httpClient.post(
         "outbound/pick/${id}/acknowledgeable-by-current-user",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
           "rfCode": Global.lastLoginRFCode,
         }
     );
@@ -448,7 +448,7 @@ class PickService {
         "outbound/picks",
         queryParameters: {
           "pickIds": pickIds,
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
           "reallocate": reallocate,
           "skipOriginalLocation": skipOriginalLocation}
     );

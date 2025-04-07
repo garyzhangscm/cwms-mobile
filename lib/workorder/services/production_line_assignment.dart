@@ -15,14 +15,14 @@ import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart
 import 'package:dio/dio.dart';
 
 class ProductionLineAssignmentService {
-  static Future<ProductionLineAssignment> getProductionLineAssignmentByProductionLine(ProductionLine productionLine) async {
+  static Future<ProductionLineAssignment?> getProductionLineAssignmentByProductionLine(ProductionLine productionLine) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("start to get assignment by productionLineId: ${productionLine.id}");
     Response response = await httpClient.get(
         "workorder/production-line-assignments",
         queryParameters: {"productionLineId": productionLine.id,
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse!.id
         }
     );
 
@@ -34,9 +34,8 @@ class ProductionLineAssignmentService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ProductionLineAssignment> productionLineAssignments
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : ProductionLineAssignment.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => ProductionLineAssignment.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
@@ -49,14 +48,14 @@ class ProductionLineAssignmentService {
 
   }
 
-  static Future<ProductionLineAssignment> getProductionLineAssignmentByProductionLineName(String productionLineName) async {
+  static Future<ProductionLineAssignment?> getProductionLineAssignmentByProductionLineName(String productionLineName) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("start to get assignment by productionLineNumber: ${productionLineName}");
     Response response = await httpClient.get(
         "workorder/production-line-assignments",
         queryParameters: {"productionLineNames": productionLineName,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getProductionLineAssignmentByProductionLineName: $response");
@@ -67,9 +66,8 @@ class ProductionLineAssignmentService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ProductionLineAssignment> productionLineAssignments
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : ProductionLineAssignment.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => ProductionLineAssignment.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
@@ -92,7 +90,7 @@ class ProductionLineAssignmentService {
     Response response = await httpClient.get(
         "workorder/production-line-assignments/assigned-work-orders",
         queryParameters: {
-        "warehouseId": Global.currentWarehouse.id, "productionLineId": productionLine.id}
+        "warehouseId": Global.currentWarehouse!.id, "productionLineId": productionLine.id}
     );
 
     // printLongLogMessage("response from getAssignedWorkOrderByProductionLine: $response");
@@ -103,9 +101,8 @@ class ProductionLineAssignmentService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<WorkOrder> workOrders
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : WorkOrder.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => WorkOrder.fromJson(e as Map<String, dynamic>))
+          .toList();
 
     return workOrders;
 

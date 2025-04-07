@@ -14,6 +14,7 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
 import '../models/pick_list.dart';
@@ -86,7 +87,7 @@ class _ListPickPageState extends State<ListPickPage> {
         // allow the user to input barcode
 
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d!) {
+        if (barcode.is_2d == true) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
@@ -169,7 +170,7 @@ class _ListPickPageState extends State<ListPickPage> {
     setState(() {
 
       // return the first pick that has open quantity
-      _currentPick = _currentPickList?.picks.firstWhere((pick) => pick.quantity! > pick.pickedQuantity!);
+      _currentPick = _currentPickList?.picks.firstWhereOrNull((pick) => pick.quantity! > pick.pickedQuantity!);
     });
     if (_currentPick == null) {
       // there's no available pick in the list, show message and return

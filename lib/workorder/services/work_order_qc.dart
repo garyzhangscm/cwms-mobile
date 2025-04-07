@@ -20,14 +20,14 @@ import 'package:flutter/cupertino.dart';
 
 class WorkOrderQCService {
   // Get all cycle count requests by batch id
-  static Future<WorkOrderQCSample> getWorkOrderQCSampleByNumber(String workOrderQCSampleNumber) async {
+  static Future<WorkOrderQCSample?> getWorkOrderQCSampleByNumber(String workOrderQCSampleNumber) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("Start to get work order sample by ${workOrderQCSampleNumber}");
     Response response = await httpClient.get(
         "workorder/qc-samples",
         queryParameters: {"number": workOrderQCSampleNumber,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getWorkOrderQCSampleByNumber: $response");
@@ -39,9 +39,8 @@ class WorkOrderQCService {
     }
 
     List<WorkOrderQCSample> workOrderQCSamples
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : WorkOrderQCSample.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => WorkOrderQCSample.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     printLongLogMessage("get QC samples: ${workOrderQCSamples.length}");
     // Sort the picks according to the current location. We
@@ -55,14 +54,14 @@ class WorkOrderQCService {
 
   }
 
-  static Future<WorkOrderQCSample> getWorkOrderQCSampleByProductionLineAssignment(int productionLineAssignmentId) async {
+  static Future<WorkOrderQCSample?> getWorkOrderQCSampleByProductionLineAssignment(int productionLineAssignmentId) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("Start to get work order sample by production line assignment id: ${productionLineAssignmentId}");
     Response response = await httpClient.get(
         "workorder/qc-samples",
         queryParameters: {"productionLineAssignmentId": productionLineAssignmentId,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getWorkOrderQCSampleByProductionLineAssignment: $response");
@@ -74,9 +73,8 @@ class WorkOrderQCService {
     }
 
     List<WorkOrderQCSample> workOrderQCSamples
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : WorkOrderQCSample.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => WorkOrderQCSample.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     printLongLogMessage("get QC samples: ${workOrderQCSamples.length}");
     // Sort the picks according to the current location. We
@@ -123,7 +121,7 @@ class WorkOrderQCService {
         queryParameters: {"workOrderQCSampleId": workOrderQCSampleId,
           "ruleIds": ruleIds,
           "qcQuantity": qcQuantity,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getWorkOrderQCInspectionRequest: $response");
@@ -157,9 +155,8 @@ class WorkOrderQCService {
     }
 
     List<WorkOrderQCRuleConfiguration> workOrderQCRuleConfigurationList =
-        (responseString["data"] as List)?.map((e) =>
-                e == null ? null : WorkOrderQCRuleConfiguration.fromJson(e as Map<String, dynamic>))
-                    ?.toList();
+        (responseString["data"] as List).map((e) => WorkOrderQCRuleConfiguration.fromJson(e as Map<String, dynamic>))
+                    .toList();
 
     printLongLogMessage("get ${workOrderQCRuleConfigurationList.length} configuration ");
     for (var workOrderQCRuleConfiguration in workOrderQCRuleConfigurationList) {
@@ -178,7 +175,7 @@ class WorkOrderQCService {
     Response response = await httpClient.put(
         "workorder/qc-samples",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id},
+          "warehouseId": Global.currentWarehouse!.id},
         data:  workOrderQCSample
     );
 

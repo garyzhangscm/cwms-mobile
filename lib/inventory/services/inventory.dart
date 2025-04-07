@@ -26,11 +26,11 @@ class InventoryService {
   static Future<List<Inventory>> getInventoryOnCurrentRF() async {
     Dio httpClient = CWMSHttpClient.getDio();
 
-    printLongLogMessage("will get inventory on ${Global.getLastLoginRFCode()} from warehouse ${Global.currentWarehouse.id}");
+    printLongLogMessage("will get inventory on ${Global.getLastLoginRFCode()} from warehouse ${Global.currentWarehouse!.id}");
     Response response = await httpClient.get(
         "/inventory/inventories",
       queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
           'location': Global.getLastLoginRFCode()}
     );
 
@@ -203,7 +203,7 @@ class InventoryService {
         String itemName = "", int? quantity, String unitOfMeasure = ""}) async {
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
 
     if (inventoryId != null) {
       queryParameters["inventoryId"] = inventoryId;
@@ -265,7 +265,7 @@ class InventoryService {
 
     Response response = await httpClient.get(
         "inventory/inventory/$inventoryId",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from receipt: $response");
@@ -292,7 +292,7 @@ class InventoryService {
 
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
 
     if (locationName.isNotEmpty) {
       queryParameters["location"] = locationName;
@@ -345,7 +345,7 @@ class InventoryService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
     if (printerName.isNotEmpty) {
 
       queryParameters["printerName"] = printerName;
@@ -391,7 +391,7 @@ class InventoryService {
         }
 
         Response response = await httpClient.put(
-        "inventory/inventory-adj?warehouseId=${Global.currentWarehouse.id}",
+        "inventory/inventory-adj?warehouseId=${Global.currentWarehouse!.id}",
         queryParameters:params,
         data: inventory
         );
@@ -417,8 +417,8 @@ class InventoryService {
       params["comment"] = comment;
     }
 
-    CWMSHttpResponse response = await Global.httpClient.put(
-        "inventory/inventory-adj?warehouseId=${Global.currentWarehouse.id}",
+    CWMSHttpResponse response = await Global.httpClient!.put(
+        "inventory/inventory-adj?warehouseId=${Global.currentWarehouse!.id}",
         queryParameters:params,
         data: inventory
     );
@@ -436,7 +436,7 @@ class InventoryService {
         Dio httpClient = CWMSHttpClient.getDio();
 
         Response response = await httpClient.post(
-        "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse.id}",
+        "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse!.id}",
         queryParameters: {"lpn": lpn}
         );
 
@@ -454,8 +454,8 @@ class InventoryService {
     printLongLogMessage("start to validate new lpn ${lpn}");
 
 
-    CWMSHttpResponse? response = await Global.httpClient.post(
-        "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse.id}",
+    CWMSHttpResponse? response = await Global.httpClient!.post(
+        "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse!.id}",
         queryParameters: {"lpn": lpn}
     );
 
@@ -513,8 +513,8 @@ class InventoryService {
 
 
     Response response = await httpClient.post(
-        "/inventory/inventories/${Global.currentWarehouse.id}/${inventory.lpn}/lpn-label",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id},
+        "/inventory/inventories/${Global.currentWarehouse!.id}/${inventory.lpn}/lpn-label",
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id},
     );
 
     // printLongLogMessage("get response from allocateLocation ${response.toString()}");
@@ -569,7 +569,6 @@ class InventoryService {
                 }
             });
                 **/
-            PrinterService.getDefaultBluetoothPrinter2();
 
             /*
 
@@ -615,7 +614,7 @@ class InventoryService {
 
     Response response = await httpClient.get(
         "/inventory/qc-inspection-requests/pending",
-      queryParameters: {'warehouseId': Global.currentWarehouse.id,
+      queryParameters: {'warehouseId': Global.currentWarehouse!.id,
         'inventoryId': inventory.id},
     );
 
@@ -648,7 +647,7 @@ class InventoryService {
         queryParameters: {
           "reverseQCQuantity": reverseQCQuantity,
           "allowReuseLPN": allowReuseLPN,
-          'warehouseId': Global.currentWarehouse.id,
+          'warehouseId': Global.currentWarehouse!.id,
         }
     );
 
@@ -685,11 +684,11 @@ class InventoryService {
     Dio httpClient = CWMSHttpClient.getDio();
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
 
     queryParameters["itemId"] = itemId;
     queryParameters["inventoryStatusId"] = inventoryStatusId;
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
 
     if (lpn.isNotEmpty) {
       queryParameters["lpn"] = lpn;
@@ -741,7 +740,7 @@ class InventoryService {
     Dio httpClient = CWMSHttpClient.getDio();
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
 
     queryParameters["newLPN"] = newLPN;
     queryParameters["mergeWithExistingInventory"] = mergeWithExistingInventory;
@@ -772,7 +771,7 @@ class InventoryService {
     Dio httpClient = CWMSHttpClient.getDio();
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
 
     queryParameters["ids"] = inventoryIds;
     queryParameters["newLPN"] = newLPN;
@@ -809,7 +808,7 @@ class InventoryService {
 
     Response response = await httpClient.post(
       "/inventory/inventories/qc-inspection-requests/manual",
-      queryParameters: {'warehouseId': Global.currentWarehouse.id,
+      queryParameters: {'warehouseId': Global.currentWarehouse!.id,
         'inventoryId': inventory.id},
     );
 

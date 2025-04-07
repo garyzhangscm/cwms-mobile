@@ -23,38 +23,38 @@ part 'work_order.g.dart';
 class WorkOrder{
   WorkOrder();
 
-  int id;
-  String number;
+  int? id;
+  String? number;
 
 
-  Item item;
-  int itemId;
+  Item? item;
+  int? itemId;
 
-  int warehouseId;
-  Warehouse warehouse;
+  int? warehouseId;
+  Warehouse? warehouse;
 
-  List<WorkOrderLine> workOrderLines;
+  List<WorkOrderLine> workOrderLines =[];
 
-  WorkOrderStatus status;
+  WorkOrderStatus? status;
 
-  int expectedQuantity;
-  int producedQuantity;
-
-
-  int totalLineExpectedQuantity;
-  int totalLineOpenQuantity;
-  int totalLineInprocessQuantity;
-  int totalLineDeliveredQuantity;
-  int totalLineConsumedQuantity;
+  int? expectedQuantity;
+  int? producedQuantity;
 
 
-  bool consumeByBomOnly;
+  int? totalLineExpectedQuantity;
+  int? totalLineOpenQuantity;
+  int? totalLineInprocessQuantity;
+  int? totalLineDeliveredQuantity;
+  int? totalLineConsumedQuantity;
 
-  BillOfMaterial consumeByBom;
-  MaterialConsumeTiming materialConsumeTiming;
+
+  bool? consumeByBomOnly;
+
+  BillOfMaterial? consumeByBom;
+  MaterialConsumeTiming? materialConsumeTiming;
 
 
-  List<ProductionLineAssignment> productionLineAssignments;
+  List<ProductionLineAssignment> productionLineAssignments = [];
 
   //不同的类使用不同的mixin即可
   factory WorkOrder.fromJson(Map<String, dynamic> json) => _$WorkOrderFromJson(json);

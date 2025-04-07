@@ -40,7 +40,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
         // allow the user to input barcode
 
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d) {
+        if (barcode.is_2d == true) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");

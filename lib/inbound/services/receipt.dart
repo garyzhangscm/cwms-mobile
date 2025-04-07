@@ -18,7 +18,7 @@ import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/models/bill_of_material_line.dart';
 import 'package:dio/dio.dart';
 
-import '../../inventory/models/item.dart';
+import 'package:collection/collection.dart';
 
 class ReceiptService {
 
@@ -27,7 +27,7 @@ class ReceiptService {
 
     Response response = await httpClient.get(
         "inbound/receipts/${receiptId}",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from receipt: $response");
@@ -48,7 +48,7 @@ class ReceiptService {
 
     Response response = await httpClient.get(
         "inbound/receipts/receipt-lines/$receiptLineId",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from receipt: $response");
@@ -70,7 +70,7 @@ class ReceiptService {
     Response response = await httpClient.get(
         "inbound/receipts",
         queryParameters: {"number": receiptNumber,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     printLongLogMessage("response from getReceiptByNumber: $response");
@@ -107,7 +107,7 @@ class ReceiptService {
 
     Response response = await httpClient.get(
         "inbound/receipts",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id,
             "receipt_status_list": openReceiptStatuses}
     );
 
@@ -199,13 +199,13 @@ class ReceiptService {
     Inventory inventory = new Inventory();
     inventory.lpn = lpn;
     inventory.item = receiptLine.item!;
-    inventory.warehouseId = Global.currentWarehouse.id;
+    inventory.warehouseId = Global.currentWarehouse!.id;
     inventory.quantity = quantity;
     // receive the inventory onto RF
     inventory.location = await WarehouseLocationService.getWarehouseLocationByName(
-        Global.lastLoginRFCode
+        Global.lastLoginRFCode!
     );
-    print("inventory's location: ${inventory.location?.locationGroup.locationGroupType.virtual}");
+    print("inventory's location: ${inventory.location?.locationGroup?.locationGroupType?.virtual}");
     inventory.inventoryStatus = inventoryStatus;
     inventory.itemPackageType = itemPackageType;
     inventory.locationId = inventory.location?.id;
@@ -239,14 +239,14 @@ class ReceiptService {
         Inventory kitInnerInventory = new Inventory();
         kitInnerInventory.lpn = lpn;
         kitInnerInventory.item = kitInnerItem;
-        kitInnerInventory.warehouseId = Global.currentWarehouse.id;
+        kitInnerInventory.warehouseId = Global.currentWarehouse!.id;
         // calculate the actual quantity based on the bill of material
         BillOfMaterial billOfMaterial = receiptLine.item!.billOfMaterial!;
-        BillOfMaterialLine matchedBillOfMaterialLine =
-            billOfMaterial.billOfMaterialLines.firstWhere((element) => element.itemId == kitInnerItem.id);
+        BillOfMaterialLine? matchedBillOfMaterialLine =
+            billOfMaterial.billOfMaterialLines.firstWhereOrNull((element) => element.itemId == kitInnerItem.id);
 
         kitInnerInventory.quantity =
-        (quantity * matchedBillOfMaterialLine.expectedQuantity / billOfMaterial.expectedQuantity) as int;
+        (quantity * matchedBillOfMaterialLine!.expectedQuantity! / billOfMaterial!.expectedQuantity!) as int;
 
         // receive the inventory onto RF
         kitInnerInventory.location = inventory.location;

@@ -80,7 +80,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
         // allow the user to input barcode
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d) {
+        if (barcode.is_2d == true) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
@@ -847,10 +847,10 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       // or a pickup and deposit location
       printLongLogMessage("inventoryDepositRequest.nextLocation: ${inventoryDepositRequest.nextLocation == null ? "" : inventoryDepositRequest.nextLocation?.id} " +
           "/ ${inventoryDepositRequest.nextLocation == null ? "" : inventoryDepositRequest.nextLocation?.name}");
-      printLongLogMessage("destinationLocation: ${destinationLocation.id} / ${destinationLocation.name}, P&D? ${destinationLocation.locationGroup.locationGroupType.pickupAndDeposit}");
+      printLongLogMessage("destinationLocation: ${destinationLocation.id} / ${destinationLocation.name}, P&D? ${destinationLocation.locationGroup?.locationGroupType?.pickupAndDeposit}");
       if (inventoryDepositRequest.nextLocation != null &&
           destinationLocation.id != inventoryDepositRequest.nextLocation?.id &&
-          destinationLocation.locationGroup.locationGroupType.pickupAndDeposit == false) {
+          destinationLocation.locationGroup?.locationGroupType?.pickupAndDeposit == false) {
 
           throw new WebAPICallException("should only deposit to  ${inventoryDepositRequest.nextLocation?.name} or a Pickup and Deposit location");
       }
@@ -901,7 +901,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     Navigator.of(context).pop();
 
     showToast("inventory deposit");
-    RFService.changeCurrentRFLocation(destinationLocation.id).then((value) => printLongLogMessage("current RF's location is changed to ${destinationLocation.name}"));
+    RFService.changeCurrentRFLocation(destinationLocation.id!).then((value) => printLongLogMessage("current RF's location is changed to ${destinationLocation.name}"));
 
     return true;
     
@@ -920,7 +920,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     ).then((destinationLocation) async {
       if (inventoryDepositRequest.nextLocation != null &&
           destinationLocation.id != inventoryDepositRequest.nextLocation?.id &&
-          destinationLocation.locationGroup.locationGroupType.pickupAndDeposit == false) {
+          destinationLocation.locationGroup?.locationGroupType?.pickupAndDeposit == false) {
 
         throw new WebAPICallException("should only deposit to  ${inventoryDepositRequest.nextLocation?.name} or a Pickup and Deposit location");
 

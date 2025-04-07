@@ -17,7 +17,7 @@ class ReasonCodeService {
     printLongLogMessage("get reason code by type $type");
     Response response = await httpClient.get(
         "/common/reason-codes",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id,
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id,
           'type': type}
     );
 

@@ -20,7 +20,7 @@ class CycleCountRequestService {
 
     printLongLogMessage("start to get data from /inventory/cycle-count-request/batch/$batchId/open");
     Response response = await httpClient.get(
-        "/inventory/cycle-count-request/batch/${Global.currentWarehouse.id}/$batchId/open"
+        "/inventory/cycle-count-request/batch/${Global.currentWarehouse!.id}/$batchId/open"
     );
 
     printLongLogMessage("reponse from cycle count request: $response");

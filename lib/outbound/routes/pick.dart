@@ -251,25 +251,25 @@ class _PickPageState extends State<PickPage> {
                         buildTwoSectionInformationRow(
                             CWMSLocalizations.of(context)!.productSize + ":",
                             pick.productSize ?? ""),
-                        Global.currentInventoryConfiguration.inventoryAttribute1Enabled == true?
+                        Global.currentInventoryConfiguration?.inventoryAttribute1Enabled == true?
                             buildTwoSectionInformationRow(
-                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute1") + ":",
+                                Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute1") + ":",
                                 pick.inventoryAttribute1 ?? "") : Container(),
-                        Global.currentInventoryConfiguration.inventoryAttribute2Enabled  == true?
+                        Global.currentInventoryConfiguration?.inventoryAttribute2Enabled  == true?
                         buildTwoSectionInformationRow(
-                            Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute2") + ":",
+                            Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute2") + ":",
                             pick.inventoryAttribute2 ?? "") : Container(),
-                        Global.currentInventoryConfiguration.inventoryAttribute3Enabled  == true?
+                        Global.currentInventoryConfiguration?.inventoryAttribute3Enabled  == true?
                             buildTwoSectionInformationRow(
-                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute3") + ":",
+                                Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute3") + ":",
                                 pick.inventoryAttribute3 ?? "") : Container(),
-                        Global.currentInventoryConfiguration.inventoryAttribute4Enabled  == true?
+                        Global.currentInventoryConfiguration?.inventoryAttribute4Enabled  == true?
                             buildTwoSectionInformationRow(
-                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute4") + ":",
+                                Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute4") + ":",
                                 pick.inventoryAttribute4 ?? "") : Container(),
-                        Global.currentInventoryConfiguration.inventoryAttribute5Enabled  == true?
+                        Global.currentInventoryConfiguration?.inventoryAttribute5Enabled  == true?
                             buildTwoSectionInformationRow(
-                                Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute5") + ":",
+                                Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute5") + ":",
                                 pick.inventoryAttribute5 ?? "") : Container(),
                       ]
                   ),

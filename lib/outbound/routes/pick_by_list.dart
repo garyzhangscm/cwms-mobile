@@ -6,21 +6,18 @@ import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_list.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
-import 'package:cwms_mobile/outbound/services/order.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/services/pick_list.dart';
-import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart' as badge;
+import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
 import '../models/pick_mode.dart';
@@ -436,7 +433,7 @@ class _PickByListPageState extends State<PickByListPage> {
       PickService.sortPicks(_currentPickList!.picks, Global.getLastActivityLocation(), Global.isMovingForward());
       // get the first available pick and then group the quantity all together from the same location, for the same
       // inventory
-      _currentPick = _currentPickList!.picks.firstWhere((pick) => pick.quantity! > pick!.pickedQuantity!);
+      _currentPick = _currentPickList!.picks.firstWhereOrNull((pick) => pick.quantity! > pick!.pickedQuantity!);
       if (_currentPick != null) {
         _currentPick!.batchPickQuantity = 0;
         _currentPick!.batchedPicks = [];

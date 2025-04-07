@@ -7,21 +7,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class WorkOrderListItem extends StatefulWidget {
-  WorkOrderListItem({this.index, this.workOrder,
+  WorkOrderListItem({required this.index, required this.workOrder,
        this.highPriorityFlag: false,
        this.sharedFlag: false,
        this.displayOnlyFlag: false,
        this.highlighted: false,
-       @required this.onPriorityChanged,
-       @required this.onSharedFlagChanged,
-       @required this.onRemove,
-       @required this.onToggleHightlighted}
+       this.onPriorityChanged,
+       this.onSharedFlagChanged,
+       this.onRemove,
+       this.onToggleHightlighted}
        ) : super(key: ValueKey(workOrder.number));
 
-  final ValueChanged<WorkOrder> onPriorityChanged;
-  final ValueChanged<WorkOrder> onSharedFlagChanged;
-  final ValueChanged<int> onRemove;
-  final ValueChanged<bool> onToggleHightlighted;
+  final ValueChanged<WorkOrder>? onPriorityChanged;
+  final ValueChanged<WorkOrder>? onSharedFlagChanged;
+  final ValueChanged<int>? onRemove;
+  final ValueChanged<bool>? onToggleHightlighted;
 
   final int index;
   final WorkOrder workOrder;
@@ -41,20 +41,20 @@ class WorkOrderListItem extends StatefulWidget {
 class _WorkOrderListItemState extends State<WorkOrderListItem> {
 
   void _togglePriority() {
-    if (!widget.displayOnlyFlag) {
+    if (!widget.displayOnlyFlag && widget.onPriorityChanged != null) {
 
-      widget.onPriorityChanged(widget.workOrder);
+      widget.onPriorityChanged!(widget.workOrder);
     }
   }
 
   void _toggleSharedFlag() {
-    if (!widget.displayOnlyFlag) {
-      widget.onSharedFlagChanged(widget.workOrder);
+    if (!widget.displayOnlyFlag && widget.onSharedFlagChanged != null) {
+      widget.onSharedFlagChanged!(widget.workOrder);
     }
   }
   void _removeOrderFromlist() {
-    if (!widget.displayOnlyFlag) {
-      widget.onRemove(widget.index);
+    if (!widget.displayOnlyFlag  && widget.onRemove != null ) {
+      widget.onRemove!(widget.index);
     }
   }
   void _onToggleHightlighted() {
@@ -63,7 +63,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
       setState(() {
         widget.highlighted = !widget.highlighted;
       });
-      widget.onToggleHightlighted(widget.highlighted);
+      widget.onToggleHightlighted!(widget.highlighted);
     }
   }
 
@@ -96,7 +96,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
                   //     widget.order.totalOpenPickQuantity == 0 ?
                   //                Colors.grey : Colors.white,
                   title: Text(
-                    widget.workOrder.number,
+                    widget.workOrder.number ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,

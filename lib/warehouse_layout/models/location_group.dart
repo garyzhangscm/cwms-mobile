@@ -14,19 +14,19 @@ part 'location_group.g.dart';
 class LocationGroup{
   LocationGroup();
 
-  int id;
-  String name;
-  String description;
-  Warehouse warehouse;
+  int? id;
+  String? name;
+  String? description;
+  Warehouse? warehouse;
 
-  bool pickable;
-  bool storable;
-  bool countable;
-  bool adjustable;
-  bool trackingVolume;
+  bool? pickable;
+  bool? storable;
+  bool? countable;
+  bool? adjustable;
+  bool? trackingVolume;
 
 
-  LocationGroupType locationGroupType;
+  LocationGroupType? locationGroupType;
 
   //不同的类使用不同的mixin即可
   factory LocationGroup.fromJson(Map<String, dynamic> json) => _$LocationGroupFromJson(json);

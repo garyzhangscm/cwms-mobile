@@ -206,7 +206,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     if (hasPermission) {
       printLongLogMessage("We got permission! Let's start update the APP");
       String apkUrl =
-          Global.currentServer.url! +
+          Global.currentServer!.url! +
               "/resource/rf-apk-files?versionNumber=" + (_latestRFAppVersion?.versionNumber ?? "")  +
               "&companyId=" + Global.lastLoginCompanyId.toString();
       printLongLogMessage("start to download from $apkUrl");

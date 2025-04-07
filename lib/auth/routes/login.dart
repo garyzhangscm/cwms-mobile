@@ -19,6 +19,7 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
+import 'package:collection/collection.dart';
 
 import '../../shared/models/rf.dart';
 import '../../shared/services/printer.dart';
@@ -59,12 +60,12 @@ class _LoginPageState extends State<LoginPage> {
 
     }
     else {
-      defaultCompanyCode = Global.lastLoginCompanyCode;
+      defaultCompanyCode = Global.lastLoginCompanyCode!;
     }
     _companyCodeController.text = defaultCompanyCode;
     // check if auto login
     if (Global.autoLoginUser != null) {
-      _processAutoLogin(Global.autoLoginUser);
+      _processAutoLogin(Global.autoLoginUser!);
     }
     _validWarehouses = [];
     if (_companyCodeController.text.isNotEmpty) {
@@ -74,7 +75,6 @@ class _LoginPageState extends State<LoginPage> {
         text: Global.getLastLoginRFCode());
 
 
-    PrinterService.getDefaultBluetoothPrinter3();
 
   }
 
@@ -292,13 +292,13 @@ class _LoginPageState extends State<LoginPage> {
                   print("get name from warehouse:${warehouse.id} / ${warehouse.name}");
                   return new DropdownMenuItem<String>(
                     value: warehouse.id.toString(),
-                    child: new Text(warehouse.name),
+                    child: new Text(warehouse.name ?? ""),
                   );
                 }).toList(),
                 hint: Text("empty warehouse",style: TextStyle(color: Color(0xFF8B8B8B),fontSize: 15),),  // setting hint
                 onChanged: (String? value){
                   setState(() {
-                    selectedWarehouse = _validWarehouses.firstWhere((warehouse) => warehouse.name == value);
+                    selectedWarehouse = _validWarehouses.firstWhereOrNull((warehouse) => warehouse.name == value);
 
                   });
                 },
@@ -334,8 +334,8 @@ class _LoginPageState extends State<LoginPage> {
 
       // make sure the rf is still valid
       bool isRFCodeValid = await
-          RFService.valdiateRFCode(Global.getAutoLoginCompany().id,
-              Global.getAutoLoginWarehouse().id, Global.getLastLoginRFCode());
+          RFService.valdiateRFCode(Global.getAutoLoginCompany().id!,
+              Global.getAutoLoginWarehouse().id!, Global.getLastLoginRFCode());
       if (!isRFCodeValid) {
 
         print("auto login fail as rf code ${Global.getLastLoginRFCode()} is not valid");
@@ -347,7 +347,7 @@ class _LoginPageState extends State<LoginPage> {
           selectedWarehouse = Global.getAutoLoginWarehouse();
           _rfCodeController.text = Global.getLastLoginRFCode();
 
-          _companyCodeController.text = Global.getAutoLoginCompany().code;
+          _companyCodeController.text = Global.getAutoLoginCompany().code!;
           _unameController.text = user.username!;
           _pwdController.text = user.password!;
           _rememberMe = true;
@@ -428,7 +428,7 @@ class _LoginPageState extends State<LoginPage> {
 
           printLongLogMessage("start to validate rf code ${_rfCodeController.text}");
           bool isRFCodeValid = await
-              RFService.valdiateRFCode(companyId, selectedWarehouse!.id, _rfCodeController.text);
+              RFService.valdiateRFCode(companyId, selectedWarehouse!.id!, _rfCodeController.text);
 
           if (!isRFCodeValid) {
 
@@ -442,7 +442,7 @@ class _LoginPageState extends State<LoginPage> {
           print("start to validate the location ${_currentLocationController.text}");
           bool isLocationValid = await
               WarehouseLocationService.valdiateLocation(
-                  companyId, selectedWarehouse!.id, _currentLocationController.text);
+                  companyId, selectedWarehouse!.id!, _currentLocationController.text);
 
           if (!isLocationValid) {
 
@@ -488,14 +488,14 @@ class _LoginPageState extends State<LoginPage> {
         // setup the rf and location
 
         RF rf = await RFService.getRFByCodeAndWarehouseId(
-            selectedWarehouse!.id, _rfCodeController.text);
+            selectedWarehouse!.id!, _rfCodeController.text);
 
         WarehouseLocation currentLocation = await WarehouseLocationService.getWarehouseLocationByWarehouseIdAndName(
-                  selectedWarehouse!.id, _currentLocationController.text);
+                  selectedWarehouse!.id!, _currentLocationController.text);
 
         Global.setLastActivityLocation(currentLocation);
         printLongLogMessage("start to change rf ${rf.rfCode}'s current location to ${currentLocation.id} / ${currentLocation.name}");
-        rf = await RFService.changeRFLocation(selectedWarehouse!.id, rf.id!, currentLocation.id);
+        rf = await RFService.changeRFLocation(selectedWarehouse!.id!, rf.id!, currentLocation.id!);
         print(">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation?.name}");
 
         Global.setLastLoginRF(rf);
@@ -510,8 +510,8 @@ class _LoginPageState extends State<LoginPage> {
           Global.setAutoLoginWarehouse(selectedWarehouse!);
           CompanyService.getCompanyByCode(_companyCodeController.text)
               .then((company)  {
-                Global.setAutoLoginCompany(company);
-                printLongLogMessage("auto login company is setup to ${company.name}");
+                Global.setAutoLoginCompany(company!);
+                printLongLogMessage("auto login company is setup to ${company!.name}");
               });
 
         }
@@ -522,7 +522,7 @@ class _LoginPageState extends State<LoginPage> {
         // load the rf configuration
         try {
 
-          RFConfigurationService.getRFConfiguration(Global.lastLoginRFCode).then((rfConfiguration) {
+          RFConfigurationService.getRFConfiguration(Global.lastLoginRFCode!).then((rfConfiguration) {
               // if the configuration is not setup yet, use the default one
             // which should be already setup when we launch the app
               if (rfConfiguration != null) {
@@ -553,7 +553,7 @@ class _LoginPageState extends State<LoginPage> {
 
         }
 
-        RFAppVersion latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode);
+        RFAppVersion? latestRFAppVersion = await RFAppVersionService.getLatestRFAppVersion(Global.lastLoginRFCode!);
 
         printLongLogMessage("latestRFAppVersion: ${latestRFAppVersion == null ? "N/A" : latestRFAppVersion.versionNumber}");
 

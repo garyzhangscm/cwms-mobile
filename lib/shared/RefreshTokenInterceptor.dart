@@ -21,7 +21,7 @@ class RefreshTokenInterceptor extends Interceptor {
     if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
 
       Global.logout();
-      Navigator.popUntil(NavigationService.navigatorKey.currentContext, ModalRoute.withName('login_page'));
+      Navigator.popUntil(NavigationService.navigatorKey.currentContext!, ModalRoute.withName('login_page'));
     }
   }
 }

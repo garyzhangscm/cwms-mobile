@@ -525,7 +525,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
     printLongLogMessage("pick.confirmLocationCodeFlag: ${pick.confirmLocationCodeFlag}");
     if (pick.confirmLocationFlag == false &&
         pick.confirmLocationCodeFlag == false) {
-      _sourceLocationController.text = pick.sourceLocation!.name;
+      _sourceLocationController.text = pick.sourceLocation!.name ?? "";
     }
     if (pick.quantity! > pick.pickedQuantity!) {
 

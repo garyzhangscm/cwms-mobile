@@ -12,17 +12,17 @@ WorkOrderProduceTransaction _$WorkOrderProduceTransactionFromJson(Map<String, dy
         ? null
         : WorkOrder.fromJson(json['workOrdr'] as Map<String, dynamic>)
     ..workOrderLineConsumeTransactions = (json['workOrderLineConsumeTransactions'] as List)
-        ?.map(
-            (e) => e == null ? null : WorkOrderLineConsumeTransaction.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) => WorkOrderLineConsumeTransaction.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..workOrderProducedInventories = (json['workOrderProducedInventories'] as List)
-        ?.map(
-            (e) => e == null ? null : WorkOrderProducedInventory.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) =>   WorkOrderProducedInventory.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..workOrderKPITransactions = (json['workOrderKPITransactions'] as List)
-        ?.map(
-            (e) => e == null ? null : WorkOrderKPITransaction.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) => WorkOrderKPITransaction.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..consumeByBomQuantity = json['consumeByBomQuantity'] as bool
     ..rfCode =  json['rfCode'] == null ? null :json['rfCode'] as String
     ..productionLine = json['productionLine'] == null

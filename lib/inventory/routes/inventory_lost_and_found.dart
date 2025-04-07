@@ -20,6 +20,7 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
+import 'package:collection/collection.dart';
 
 import '../../shared/models/barcode.dart';
 import '../../shared/services/barcode_service.dart';
@@ -101,8 +102,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
         print("barcode.is_2d? ${barcode.is_2d}");
 
         // first check if it is a barcode scanned in
-        if (barcode.is_2d) {
-          _processBarcode(barcode.result).then(
+        if (barcode.is_2d == true) {
+          _processBarcode(barcode.result!).then(
                   (successful) {
 
                 if (successful) {
@@ -143,8 +144,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               print("barcode.is_2d? ${barcode.is_2d}");
 
                 // first check if it is a barcode scanned in
-                if (barcode.is_2d) {
-                  _processBarcode(barcode.result).then(
+                if (barcode.is_2d == true) {
+                  _processBarcode(barcode.result!).then(
                           (successful) {
 
                         if (successful) {
@@ -187,7 +188,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
             children: <Widget>[
               // show RF as the destination location of the adjust LPN
               buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.location,
-                  Global.lastLoginRFCode),
+                  Global.lastLoginRFCode!),
 
               // ask the user to input item number
               buildTwoSectionInputRow(CWMSLocalizations.of(context)!.item,
@@ -407,7 +408,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     if (parameters.containsKey("inventoryStatusId")) {
       setState(() {
 
-        _selectedInventoryStatus = _validInventoryStatus.firstWhere((inventoryStatus) => inventoryStatus.id.toString() == parameters["inventoryStatusId"]);
+        _selectedInventoryStatus = _validInventoryStatus.firstWhereOrNull
+          ((inventoryStatus) => inventoryStatus.id.toString() == parameters["inventoryStatusId"]);
       });
     }
 
@@ -535,7 +537,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
       // default the value to the one marked as 'default for inbound receiving'
 
       _selectedItemUnitOfMeasure = _selectedItemPackageType?.itemUnitOfMeasures
-          .firstWhere((element) => element.id == _selectedItemPackageType?.defaultInboundReceivingUOM?.id);
+          .firstWhereOrNull((element) => element.id == _selectedItemPackageType?.defaultInboundReceivingUOM?.id);
     }
 
     return items;
@@ -727,12 +729,12 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     }
     inventory.quantity = quantity;
     WarehouseLocation rfLocation = await WarehouseLocationService.getWarehouseLocationByName(
-        Global.lastLoginRFCode
+        Global.lastLoginRFCode!
     );
     inventory.location = rfLocation;
     inventory.locationId = rfLocation.id;
     inventory.lpn = lpn;
-    inventory.warehouseId = Global.currentWarehouse.id;
+    inventory.warehouseId = Global.currentWarehouse!.id;
     inventory.inventoryStatus = _selectedInventoryStatus;
     inventory.itemPackageType = _selectedItemPackageType;
     inventory.virtual = false;

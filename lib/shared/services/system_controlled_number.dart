@@ -25,7 +25,7 @@ class SystemControlledNumberService {
 
     Response response = await httpClient.get(
         "`common/system-controlled-number/${type}/next",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id}
     );
 
     // print("response from receipt: $response");

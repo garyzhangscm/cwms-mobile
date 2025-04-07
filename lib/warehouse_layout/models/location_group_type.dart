@@ -12,23 +12,23 @@ part 'location_group_type.g.dart';
 class LocationGroupType{
   LocationGroupType();
 
-  int id;
-  String name;
-  String description;
+  int? id;
+  String? name;
+  String? description;
 
-  bool fourWallInventory;
-  bool virtual;
-  bool receivingStage;
-  bool shippingStage;
-  bool productionLine;
-  bool productionLineInbound;
-  bool productionLineOutbound;
-  bool dock;
-  bool yard;
-  bool storage;
-  bool pickupAndDeposit;
-  bool trailer;
-  bool qcArea;
+  bool? fourWallInventory;
+  bool? virtual;
+  bool? receivingStage;
+  bool? shippingStage;
+  bool? productionLine;
+  bool? productionLineInbound;
+  bool? productionLineOutbound;
+  bool? dock;
+  bool? yard;
+  bool? storage;
+  bool? pickupAndDeposit;
+  bool? trailer;
+  bool? qcArea;
 
   //不同的类使用不同的mixin即可
   factory LocationGroupType.fromJson(Map<String, dynamic> json) => _$LocationGroupTypeFromJson(json);

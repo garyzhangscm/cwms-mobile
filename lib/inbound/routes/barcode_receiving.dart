@@ -251,12 +251,12 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     try {
 
       Barcode barcodeResult = BarcodeService.parseBarcode(barcode);
-      if (!barcodeResult.is_2d || barcodeResult.result.isEmpty) {
+      if (barcodeResult.is_2d == false || barcodeResult.result?.isEmpty == true) {
         Navigator.of(context).pop();
         await showBlockedErrorDialog(context, "Can't parse the barcode " + barcode);
         return false;
       }
-      parameters = barcodeResult.result;
+      parameters = barcodeResult.result!;
     }
     on Exception catch(ex) {
 

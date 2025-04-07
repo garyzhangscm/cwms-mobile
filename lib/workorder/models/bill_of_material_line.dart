@@ -13,16 +13,16 @@ part 'bill_of_material_line.g.dart';
 class BillOfMaterialLine{
   BillOfMaterialLine();
 
-  int id;
-  String number;
+  int? id;
+  String? number;
 
-  Item item;
-  int itemId;
+  Item? item;
+  int? itemId;
 
-  double expectedQuantity;
+  double? expectedQuantity;
 
-  int inventoryStatusId;
-  InventoryStatus inventoryStatus;
+  int? inventoryStatusId;
+  InventoryStatus? inventoryStatus;
 
 
 

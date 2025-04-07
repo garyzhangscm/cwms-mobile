@@ -26,8 +26,8 @@ class ProductionLineActivityService {
         "workorder/production-line-activities/check_in",
         queryParameters: {
           "warehouseId": productionLineActivity.warehouseId,
-          "workOrderId": productionLineActivity.workOrder.id,
-          "productionLineId": productionLineActivity.productionLine.id,
+          "workOrderId": productionLineActivity.workOrder!.id,
+          "productionLineId": productionLineActivity.productionLine!.id,
           "username": productionLineActivity.username,
           "workingTeamMemberCount": productionLineActivity.workingTeamMemberCount}
     );
@@ -56,8 +56,8 @@ class ProductionLineActivityService {
         "workorder/production-line-activities/check_out",
         queryParameters: {
           "warehouseId": productionLineActivity.warehouseId,
-          "workOrderId": productionLineActivity.workOrder.id,
-          "productionLineId": productionLineActivity.productionLine.id,
+          "workOrderId": productionLineActivity.workOrder!.id,
+          "productionLineId": productionLineActivity.productionLine!.id,
           "username": productionLineActivity.username,
           "workingTeamMemberCount": productionLineActivity.workingTeamMemberCount}
     );

@@ -26,9 +26,9 @@ part 'work_order_qc_rule_configuration_rule.g.dart';
 class WorkOrderQCRuleConfigurationRule{
   WorkOrderQCRuleConfigurationRule();
 
-  int id;
-  int qcRuleId;
-  QCRule qcRule;
+  int? id;
+  int? qcRuleId;
+  QCRule? qcRule;
 
 
 

@@ -45,7 +45,7 @@ import 'package:badges/badges.dart';
 
 class WorkOrderQCPage extends StatefulWidget{
 
-  WorkOrderQCPage({Key key}) : super(key: key);
+  WorkOrderQCPage({Key? key}) : super(key: key);
 
 
   @override
@@ -57,13 +57,12 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
 
   // input batch id
   TextEditingController _workOrderQCSampleNumberController = new TextEditingController();
-  String _workOrderQCSampleNumber;
-  String _workOrderNumber;
-  String _productionLineName;
-  String _itemName;
-  String _itemDescription;
-  WorkOrderQCSample _workOrderQCSample;
-  final CarouselController _controller = CarouselController();
+  String _workOrderQCSampleNumber = "";
+  String _workOrderNumber = "";
+  String _productionLineName = "";
+  String _itemName = "";
+  String _itemDescription = "";
+  WorkOrderQCSample? _workOrderQCSample;
 
   bool _readyForQCResult = false;
 
@@ -183,10 +182,10 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
   List<String> _getQCSampleImageUrls() {
 
     if (_workOrderQCSample == null ||
-        _workOrderQCSample.imageUrls.isEmpty) {
+        _workOrderQCSample!.imageUrls?.isEmpty == true) {
       return [];
     }
-    return _workOrderQCSample.imageUrls.split(",");
+    return _workOrderQCSample!.imageUrls!.split(",");
 
   }
   List<Widget> _getQCSampleImages() {
@@ -202,13 +201,13 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
                       child: Stack(
                         children: <Widget>[
                           Image.network(
-                             Global.currentServer.url + "/qc-samples/images/${Global.currentWarehouse.id}/${_workOrderQCSample.productionLineAssignment.id}/${imageUrl}",
+                             Global.currentServer!.url! + "/qc-samples/images/${Global.currentWarehouse!.id}/${_workOrderQCSample!.productionLineAssignment!.id!}/${imageUrl}",
                              fit: BoxFit.cover,
                              width: 1000.0,
                               headers: {
-                                HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
-                                "rfCode": Global.lastLoginRFCode,
-                                "warehouseId": Global.currentWarehouse.id.toString(),
+                                HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser!.token}",
+                                "rfCode": Global.lastLoginRFCode!,
+                                "warehouseId": Global.currentWarehouse!.id.toString(),
                                 "companyId": Global.lastLoginCompanyId.toString()
                               }),
                           Positioned(
@@ -255,12 +254,12 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
                 child: Center(
                     child:
                     Image.network(
-                        Global.currentServer.url + "workorder/qc-samples/images/${Global.currentWarehouse.id}/${_workOrderQCSample.productionLineAssignment.id}/${imageUrl}",
+                        Global.currentServer!.url! + "workorder/qc-samples/images/${Global.currentWarehouse!.id}/${_workOrderQCSample!.productionLineAssignment!.id}/${imageUrl}",
                         fit: BoxFit.cover, width: 1000,
                         headers: {
-                          HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
-                          "rfCode": Global.lastLoginRFCode,
-                          "warehouseId": Global.currentWarehouse.id.toString(),
+                          HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser!.token}",
+                          "rfCode": Global.lastLoginRFCode!,
+                          "warehouseId": Global.currentWarehouse!.id.toString(),
                           "companyId": Global.lastLoginCompanyId.toString()
                         })),
               ))
@@ -284,24 +283,24 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
           return;
       }
 
-      if (_workOrderQCSample.productionLineAssignment.workOrder == null &&
-          _workOrderQCSample.productionLineAssignment.workOrderId != null) {
+      if (_workOrderQCSample?.productionLineAssignment?.workOrder == null &&
+          _workOrderQCSample?.productionLineAssignment?.workOrderId != null) {
 
-          _workOrderQCSample.productionLineAssignment.workOrder =
-              await WorkOrderService.getWorkOrderById(_workOrderQCSample.productionLineAssignment.workOrderId);
+          _workOrderQCSample!.productionLineAssignment?.workOrder =
+              await WorkOrderService.getWorkOrderById(_workOrderQCSample!.productionLineAssignment!.workOrderId!);
 
 
       }
-      if (_workOrderQCSample.productionLineAssignment.workOrder.item == null &&
-          _workOrderQCSample.productionLineAssignment.workOrder.itemId != null) {
+      if (_workOrderQCSample?.productionLineAssignment?.workOrder?.item == null &&
+          _workOrderQCSample?.productionLineAssignment?.workOrder?.itemId != null) {
 
-          _workOrderQCSample.productionLineAssignment.workOrder.item =
-                await ItemService.getItemById(_workOrderQCSample.productionLineAssignment.workOrder.itemId);
+          _workOrderQCSample!.productionLineAssignment!.workOrder!.item =
+                await ItemService.getItemById(_workOrderQCSample!.productionLineAssignment!.workOrder!.itemId!);
       }
 
 
 
-      setupDisplay(_workOrderQCSample);
+      setupDisplay(_workOrderQCSample!);
       // 隐藏loading框
       Navigator.of(context).pop();
 
@@ -333,13 +332,13 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
 
     setState(() {
 
-      _workOrderQCSampleNumber = workOrderQCSample.number;
-      _workOrderNumber = workOrderQCSample.productionLineAssignment.workOrder.number;
-      _productionLineName = workOrderQCSample.productionLineAssignment.productionLine.name;
+      _workOrderQCSampleNumber = workOrderQCSample.number!;
+      _workOrderNumber = workOrderQCSample.productionLineAssignment!.workOrder!.number!;
+      _productionLineName = workOrderQCSample.productionLineAssignment!.productionLine!.name!;
 
 
-      _itemName = workOrderQCSample.productionLineAssignment.workOrder.item.name;
-      _itemDescription = workOrderQCSample.productionLineAssignment.workOrder.item.description;
+      _itemName = workOrderQCSample.productionLineAssignment!.workOrder!.item!.name!;
+      _itemDescription = workOrderQCSample.productionLineAssignment!.workOrder!.item!.description!;
       _readyForQCResult = true;
 
       _workOrderQCSampleNumberController.clear();
@@ -409,7 +408,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
     try {
 
       List<WorkOrderQCRuleConfiguration> matchedWorkOrderQCRuleConfiguration
-          = await WorkOrderQCService.getMatchedWorkOrderQCRuleConfiguration(_workOrderQCSample.id);
+          = await WorkOrderQCService.getMatchedWorkOrderQCRuleConfiguration(_workOrderQCSample!.id!);
 
       if (matchedWorkOrderQCRuleConfiguration.length == 0) {
           // no matched work order qc rule configuration
@@ -425,11 +424,11 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
 
       // get the quantity we needs to QC for the work order, based on the configuration.
       // if we have multiple matched configuration, then get the max number
-      int qcQuantity = matchedWorkOrderQCRuleConfiguration.map((e) => e.qcQuantity).reduce(max);
+      int qcQuantity = matchedWorkOrderQCRuleConfiguration.map((e) => e.qcQuantity!).reduce(max);
       printLongLogMessage("1. we will start  qc request with quantity ${qcQuantity}");
 
       QCInspectionRequest qcInspectionRequest =
-          await WorkOrderQCService.getWorkOrderQCInspectionRequest(_workOrderQCSample.id, ruleIds, qcQuantity);
+          await WorkOrderQCService.getWorkOrderQCInspectionRequest(_workOrderQCSample!.id!, ruleIds, qcQuantity);
       printLongLogMessage("we will qc quantity ${qcInspectionRequest.qcQuantity}");
 
       Navigator.of(context).pop();
@@ -450,7 +449,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
   }
   WorkOrderQCResult _getWorkOrderQCResult(bool qcPassed) {
     WorkOrderQCResult workOrderQCResult = new WorkOrderQCResult();
-    workOrderQCResult.warehouseId = Global.currentWarehouse.id;
+    workOrderQCResult.warehouseId = Global.currentWarehouse!.id;
     workOrderQCResult.workOrderQCSample = _workOrderQCSample;
     workOrderQCResult.qcInspectionResult =
         qcPassed ? QCInspectionResult.PASS : QCInspectionResult.FAIL;

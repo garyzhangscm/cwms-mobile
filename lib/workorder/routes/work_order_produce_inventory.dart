@@ -28,7 +28,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:progress_dialog/progress_dialog.dart';
+import 'package:collection/collection.dart';
+import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 import '../../shared/global.dart';
 import '../../shared/models/printing_strategy.dart';
@@ -37,7 +38,7 @@ import '../../shared/models/printing_strategy.dart';
 
 class WorkOrderProduceInventoryPage extends StatefulWidget{
 
-  WorkOrderProduceInventoryPage({Key key}) : super(key: key);
+  WorkOrderProduceInventoryPage({Key? key}) : super(key: key);
 
 
   @override
@@ -52,24 +53,24 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
 
-  WorkOrder _currentWorkOrder;
-  ProductionLine _currentProductionLine;
+  WorkOrder? _currentWorkOrder;
+  ProductionLine? _currentProductionLine;
 
-  List<InventoryStatus> _validInventoryStatus;
-  InventoryStatus _selectedInventoryStatus;
-  ItemPackageType _selectedItemPackageType;
-  ItemUnitOfMeasure _selectedItemUnitOfMeasure;
-  ProgressDialog _progressDialog;
+  List<InventoryStatus> _validInventoryStatus = [];
+  InventoryStatus? _selectedInventoryStatus;
+  ItemPackageType? _selectedItemPackageType;
+  ItemUnitOfMeasure? _selectedItemUnitOfMeasure;
+  ProgressDialog? _progressDialog;
 
-  BillOfMaterial _matchedBillOfMaterial;
+  BillOfMaterial? _matchedBillOfMaterial;
   FocusNode lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
   FocusNode quantityFocusNode = FocusNode();
   bool _readyToConfirm = true; // whether we can confirm the produced inventory
 
 
-  List<ReasonCode> _validReasonCodes;
-  ReasonCode _selectedReasonCode;
+  List<ReasonCode> _validReasonCodes = [];
+  ReasonCode? _selectedReasonCode;
 
   // we will force the user to receive by LPN quantity
   bool _forceLPNReceiving = true;
@@ -115,7 +116,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   @override
   void didChangeDependencies() {
 
-    Map arguments  = ModalRoute.of(context).settings.arguments as Map ;
+    Map arguments  = ModalRoute.of(context)?.settings.arguments as Map ;
     _currentWorkOrder = arguments['workOrder'];
 
     _currentProductionLine = arguments['productionLine'];
@@ -126,12 +127,12 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     if (_matchedBillOfMaterial != null) {
       return;
     }
-    else if (_currentWorkOrder.consumeByBom != null) {
-      _matchedBillOfMaterial = _currentWorkOrder.consumeByBom;
+    else if (_currentWorkOrder?.consumeByBom != null) {
+      _matchedBillOfMaterial = _currentWorkOrder?.consumeByBom;
     }
     else {
 
-      BillOfMaterialService.findMatchedBillOfMaterial(_currentWorkOrder).then((value) => _matchedBillOfMaterial = value);
+      BillOfMaterialService.findMatchedBillOfMaterial(_currentWorkOrder!).then((value) => _matchedBillOfMaterial = value);
 
     }
 
@@ -155,10 +156,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
               buildTwoSectionInformationRowWithWidget(
                   CWMSLocalizations.of(context)!.workOrderNumber,
-                  _getWorkOrderDisplayWidget(context, _currentWorkOrder)),
+                  _getWorkOrderDisplayWidget(context, _currentWorkOrder!)),
               buildTwoSectionInformationRowWithWidget(
                   CWMSLocalizations.of(context)!.item,
-                  _getItemDisplayWidget(context, _currentWorkOrder.item)),
+                  _getItemDisplayWidget(context, _currentWorkOrder!.item!)),
 /**
               buildTwoSectionInformationRow(
                   CWMSLocalizations.of(context)!.expectedQuantity,
@@ -185,10 +186,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                       Icons.list,
                       size: 20,
                     ),
-                    onChanged: (T) {
+                    onChanged: (ItemPackageType? value) {
                       //下拉菜单item点击之后的回调
                       setState(() {
-                        _selectedItemPackageType = T;
+                        _selectedItemPackageType = value;
                       });
                     },
                   )
@@ -206,16 +207,17 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                       Icons.list,
                       size: 20,
                     ),
-                    onChanged: (T) {
+                    onChanged: (InventoryStatus? value) {
                       //下拉菜单item点击之后的回调
                       setState(() {
-                        _selectedInventoryStatus = T;
+                        _selectedInventoryStatus = value;
                       });
                     },
                   )
               ),
               _selectedInventoryStatus != null &&
-                  (_selectedInventoryStatus.reasonRequiredWhenProducing == true ||  _selectedInventoryStatus.reasonOptionalWhenProducing) ?
+                  (_selectedInventoryStatus?.reasonRequiredWhenProducing == true
+                      ||  _selectedInventoryStatus?.reasonOptionalWhenProducing == true) ?
                   _buildReasonCodeDropdown() : Container(),
               /***
                *
@@ -243,9 +245,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     buildFourSectionRow(
                       Checkbox(
                           value: !_forceLPNReceiving,
-                          onChanged: (bool value) {
+                          onChanged: (bool? value) {
                             setState(() {
-                              _forceLPNReceiving = !value;
+                              _forceLPNReceiving = (value == false);
                             });
                           },
                       ),
@@ -282,7 +284,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                                   ),
                                   // 校验ITEM NUMBER（不能为空）
                                   validator: (v) {
-                                    if (v.trim().isEmpty) {
+                                    if (v!.trim().isEmpty) {
                                       return "please type in quantity";
                                     }
                                     return null;
@@ -294,7 +296,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                           SizedBox(
                               width: 60,
                               child:
-                                Text(_getLPNUOMName(), textAlign: TextAlign.left )
+                                Text(_getLPNUOMName() ?? "",
+                                    textAlign: TextAlign.left )
                           )
                             :
                           SizedBox(
@@ -316,10 +319,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                                         height: 0,
                                         color: Colors.deepPurpleAccent,
                                       ),
-                                      onChanged: (T) {
+                                      onChanged: (ItemUnitOfMeasure? value) {
                                         //下拉菜单item点击之后的回调
                                         setState(() {
-                                          _selectedItemUnitOfMeasure = T;
+                                          _selectedItemUnitOfMeasure = value;
                                         });
                                       },
                                     )
@@ -353,7 +356,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             readOnly: false,
                             showKeyboard: false,
                             validator: (v) {
-                              if (v.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity) == 1) {
+                              if (v!.trim().isEmpty &&
+                                  _getRequiredLPNCount(int.parse(_quantityController.text) * _selectedItemUnitOfMeasure!.quantity!) == 1) {
                                 return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
                               }
 
@@ -380,7 +384,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
           _readyToConfirm = false;
 
 
-          if (_formKey.currentState.validate()) {
+          if (_formKey.currentState!.validate()) {
             _onWorkOrderProduceConfirm();
 /**
             print("1. _readyToConfirm? $_readyToConfirm");
@@ -415,10 +419,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
             Icons.list,
             size: 20,
           ),
-          onChanged: (T) {
+          onChanged: (ReasonCode? value) {
             //下拉菜单item点击之后的回调
             setState(() {
-              _selectedReasonCode = T;
+              _selectedReasonCode = value;
             });
           },
         )
@@ -427,39 +431,39 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
 
 
-  String _getLPNUOMName() {
+  String? _getLPNUOMName() {
 
-    ItemUnitOfMeasure lpnUOM = _getLPNUOM();
+    ItemUnitOfMeasure? lpnUOM = _getLPNUOM();
     if ( lpnUOM == null) {
       return "";
     }
-    return lpnUOM.unitOfMeasure.name;
+    return lpnUOM.unitOfMeasure?.name;
 
   }
-  ItemUnitOfMeasure _getLPNUOM() {
+  ItemUnitOfMeasure? _getLPNUOM() {
 
-    if ( _selectedItemPackageType == null || _selectedItemPackageType.itemUnitOfMeasures == null ||
-        _selectedItemPackageType.itemUnitOfMeasures.length == 0 || _selectedItemPackageType.trackingLpnUOM == null) {
+    if ( _selectedItemPackageType == null || _selectedItemPackageType?.itemUnitOfMeasures == null ||
+        _selectedItemPackageType?.itemUnitOfMeasures.length == 0 || _selectedItemPackageType?.trackingLpnUOM == null) {
       return null;
     }
-    return _selectedItemPackageType.trackingLpnUOM;
+    return _selectedItemPackageType?.trackingLpnUOM;
 
   }
-  List<DropdownMenuItem> _getItemUnitOfMeasures() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<ItemUnitOfMeasure>> _getItemUnitOfMeasures() {
+    List<DropdownMenuItem<ItemUnitOfMeasure>> items = [];
 
-    if ( _selectedItemPackageType == null || _selectedItemPackageType.itemUnitOfMeasures == null ||
-        _selectedItemPackageType.itemUnitOfMeasures.length == 0) {
+    if ( _selectedItemPackageType == null || _selectedItemPackageType?.itemUnitOfMeasures == null ||
+        _selectedItemPackageType?.itemUnitOfMeasures.length == 0) {
       // if the user has not selected any item package type yet
       // return nothing
       return items;
     }
 
-    for (int i = 0; i < _selectedItemPackageType.itemUnitOfMeasures.length; i++) {
+    for (int i = 0; i < _selectedItemPackageType!.itemUnitOfMeasures.length; i++) {
 
       items.add(DropdownMenuItem(
-        value:  _selectedItemPackageType.itemUnitOfMeasures[i],
-        child: Text( _selectedItemPackageType.itemUnitOfMeasures[i].unitOfMeasure.name),
+        value:  _selectedItemPackageType?.itemUnitOfMeasures[i],
+        child: Text( _selectedItemPackageType?.itemUnitOfMeasures[i].unitOfMeasure?.name ?? ""),
       ));
     }
 
@@ -470,14 +474,14 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // then we know that we just changed the item package type or item, so we will need
     // to refresh the _selectedItemUnitOfMeasure to the default inbound receiving uom as well
     if (_selectedItemUnitOfMeasure == null ||
-        !_selectedItemPackageType.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
+        !_selectedItemPackageType!.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
       // if the user has not select any item unit of measure yet, then
       // default the value to the one marked as 'default for inbound receiving'
 
       // printLongLogMessage("_currentWorkOrder.item: ${_currentWorkOrder.item.toJson()}");
       // printLongLogMessage("_selectedItemPackageType: ${_selectedItemPackageType.toJson()}");
-      _selectedItemUnitOfMeasure = _selectedItemPackageType.itemUnitOfMeasures
-          .firstWhere((element) => element.id == _selectedItemPackageType.defaultWorkOrderReceivingUOM.id);
+      _selectedItemUnitOfMeasure = _selectedItemPackageType?.itemUnitOfMeasures
+          .firstWhereOrNull((element) => element.id == _selectedItemPackageType?.defaultWorkOrderReceivingUOM?.id);
     }
 
     return items;
@@ -491,14 +495,14 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                   recognizer: new TapGestureRecognizer()
                     ..onTap = () {
                       showInformationDialog(
-                        context, item.name, Column(
+                        context, item.name ?? "", Column(
                           children: <Widget>[
                             buildTwoSectionInformationRow(
                                 CWMSLocalizations.of(context)!.item,
-                                _currentWorkOrder.item.name),
+                                _currentWorkOrder?.item?.name ?? ""),
                             buildTwoSectionInformationRow(
                                 CWMSLocalizations.of(context)!.item,
-                                _currentWorkOrder.item.description),
+                                _currentWorkOrder?.item?.description ?? ""),
 
                           ]),
                           verticalPadding: 175.0,
@@ -517,7 +521,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
           recognizer: new TapGestureRecognizer()
             ..onTap = () {
               showInformationDialog(
-                  context, workOrder.number, Column(
+                  context, workOrder.number ?? "", Column(
                   children: <Widget>[
 
                     buildTwoSectionInformationRow(
@@ -525,7 +529,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                         workOrder.expectedQuantity.toString()),
                     buildTwoSectionInformationRow(
                         CWMSLocalizations.of(context)!.billOfMaterial,
-                        _matchedBillOfMaterial == null ? "" : _matchedBillOfMaterial.number),
+                        _matchedBillOfMaterial?.number ?? ""),
                     // show the matched BOM
                     buildTwoSectionInformationRow(
                         CWMSLocalizations.of(context)!.producedQuantity,
@@ -542,9 +546,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
 
 
-  List<DropdownMenuItem> _getReasonCodeItems() {
+  List<DropdownMenuItem<ReasonCode>> _getReasonCodeItems() {
 
-    List<DropdownMenuItem> items = [];
+    List<DropdownMenuItem<ReasonCode>> items = [];
     if (_validReasonCodes == null || _validReasonCodes.length == 0) {
       _selectedReasonCode = null;
       return items;
@@ -554,15 +558,15 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     for (int i = 0; i < _validReasonCodes.length; i++) {
       items.add(DropdownMenuItem(
         value: _validReasonCodes[i],
-        child: Text(_validReasonCodes[i].name),
+        child: Text(_validReasonCodes[i].name ?? ""),
       ));
     }
     return items;
   }
 
 
-  List<DropdownMenuItem> _getInventoryStatusItems() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
+    List<DropdownMenuItem<InventoryStatus>> items = [];
     if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
       return items;
     }
@@ -571,7 +575,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     for (int i = 0; i < _validInventoryStatus.length; i++) {
       items.add(DropdownMenuItem(
         value: _validInventoryStatus[i],
-        child: Text(_validInventoryStatus[i].description),
+        child: Text(_validInventoryStatus[i].description ?? ""),
       ));
     }
 
@@ -586,28 +590,28 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     return items;
   }
 
-  List<DropdownMenuItem> _getItemPackageTypeItems() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<ItemPackageType>> _getItemPackageTypeItems() {
+    List<DropdownMenuItem<ItemPackageType>> items = [];
 
 
-    if (_currentWorkOrder.item.itemPackageTypes.length > 0) {
+    if ((_currentWorkOrder?.item?.itemPackageTypes.length ?? 0) > 0) {
       // _selectedItemPackageType = _currentWorkOrder.item.itemPackageTypes[0];
 
-      for (int i = 0; i < _currentWorkOrder.item.itemPackageTypes.length; i++) {
+      for (int i = 0; i < _currentWorkOrder!.item!.itemPackageTypes.length; i++) {
 
         // printLongLogMessage("_currentWorkOrder.item.itemPackageTypes[i]: ${_currentWorkOrder.item.itemPackageTypes[i].toJson()}");
         items.add(DropdownMenuItem(
-          value: _currentWorkOrder.item.itemPackageTypes[i],
-          child: Text(_currentWorkOrder.item.itemPackageTypes[i].description),
+          value: _currentWorkOrder!.item!.itemPackageTypes[i],
+          child: Text(_currentWorkOrder!.item!.itemPackageTypes[i]!.description ?? ""),
         ));
       }
-      if (_currentWorkOrder.item.itemPackageTypes.length == 1 ||
+      if (_currentWorkOrder!.item!.itemPackageTypes.length == 1 ||
           _selectedItemPackageType == null) {
         // if we only have one item package type for this item, then
         // default the selection to it
         // if the user has not select any item package type yet, then
         // default the value to the first option as well
-        _selectedItemPackageType = _currentWorkOrder.item.itemPackageTypes[0];
+        _selectedItemPackageType = _currentWorkOrder!.item!.itemPackageTypes[0];
       }
     }
     return items;
@@ -622,9 +626,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     WorkOrderProduceTransaction workOrderProduceTransaction =
         await generateWorkOrderProduceTransaction(
-        _lpnController.text, _selectedInventoryStatus,
-        _selectedItemPackageType, int.parse(_quantityController.text),
-            _getReasonCodeForProducingInventory()
+        _lpnController.text, _selectedInventoryStatus!,
+        _selectedItemPackageType!, int.parse(_quantityController.text),
+            _getReasonCodeForProducingInventory()!
     );
 
     Navigator.of(context).pop();
@@ -686,7 +690,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // full assigned to the lpnController.
 
     // printLongLogMessage("lpn controller lost focus, its value is ${_lpnController.text}");
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
         // set ready to confirm to fail so other trigger point
         // won't process the receiving request
         // the issue happens when we have 2 trigger point to process
@@ -718,7 +722,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
       // if we force the user to receiving by LPN, then default the
       // receiving quantity to one LPN UOM's quantity
-      ItemUnitOfMeasure lpnUOM = _getLPNUOM();
+      ItemUnitOfMeasure? lpnUOM = _getLPNUOM();
       if (lpnUOM == null) {
 
         showErrorDialog(context, "LPN UOM is not setup for the item. please specify the quantity");
@@ -727,18 +731,18 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         return;
 
       }
-      inventoryQuantity = lpnUOM.quantity;
+      inventoryQuantity = lpnUOM.quantity!;
     }
     else {
-      inventoryQuantity = int.parse(_quantityController.text) * _selectedItemUnitOfMeasure.quantity;
+      inventoryQuantity = int.parse(_quantityController.text) * _selectedItemUnitOfMeasure!.quantity!;
     }
 
     // if the inventory status requires reason, then make sure the user input one
-    if (_selectedInventoryStatus != null && _selectedInventoryStatus.reasonRequiredWhenProducing == true &&
+    if (_selectedInventoryStatus != null && _selectedInventoryStatus?.reasonRequiredWhenProducing == true &&
         _selectedReasonCode == null) {
 
       showErrorDialog(context, "Reason for the inventory " +
-          (_selectedInventoryStatus != null ? _selectedInventoryStatus.name : "") +
+          ( _selectedInventoryStatus?.name ?? "") +
           " is required, please choose the reason!");
       // reset ready to confirm flag so the operators can confirm the produce again
       _readyToConfirm = true;
@@ -748,7 +752,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     try {
 
-      _confirmWorkOrderProduce(_currentWorkOrder,
+      _confirmWorkOrderProduce(_currentWorkOrder!,
           inventoryQuantity,
           _lpnController.text);
     }
@@ -816,7 +820,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   Future<bool> _validateQuantityForSingleLPN(int inventoryQuantity) async {
 
-    if (_selectedItemPackageType.trackingLpnUOM == null) {
+    if (_selectedItemPackageType?.trackingLpnUOM == null) {
       // the tracking LPN UOM is not defined for this item package type
       // so no matter what's the quantity the user input, we will always
       // take it as PASS
@@ -826,7 +830,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // the user to make sure it is not a typo. Since we already define the LPN
     // uom, normally the quantity of the single LPN won't exceed the standard
     // lpn UOM's quantity
-    if (inventoryQuantity > _selectedItemPackageType.trackingLpnUOM.quantity) {
+    if (inventoryQuantity > _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
       // bool continueWithExceedQuantity = await showYesNoDialog(context, "lpn validation", "lpn quantity exceed the standard quantity, continue?");
       bool continueWithExceedQuantity = false;
       await showYesNoDialog(context, CWMSLocalizations.of(context)!.lpnQuantityExceedWarningTitle, CWMSLocalizations.of(context)!.lpnQuantityExceedWarningMessage,
@@ -867,8 +871,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     WorkOrderProduceTransaction workOrderProduceTransaction =
         generateWorkOrderProduceTransaction(
-            lpn, _selectedInventoryStatus,
-            _selectedItemPackageType, inventoryQuantity,
+            lpn, _selectedInventoryStatus!,
+            _selectedItemPackageType!, inventoryQuantity,
             _getReasonCodeForProducingInventory()
         );
 
@@ -912,9 +916,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   }
 
-  ReasonCode _getReasonCodeForProducingInventory() {
+  ReasonCode? _getReasonCodeForProducingInventory() {
     if (_selectedInventoryStatus != null && (
-        _selectedInventoryStatus.reasonRequiredWhenProducing == true || _selectedInventoryStatus.reasonOptionalWhenProducing
+        _selectedInventoryStatus?.reasonRequiredWhenProducing == true ||
+            _selectedInventoryStatus?.reasonOptionalWhenProducing == true
     )) {
       return _selectedReasonCode;
     }
@@ -957,9 +962,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         capturedLpn.add(lpn);
       }
       LpnCaptureRequest lpnCaptureRequest = new LpnCaptureRequest.withData(
-          _currentWorkOrder.item,
-          _selectedItemPackageType,
-          _selectedItemPackageType.trackingLpnUOM,
+          _currentWorkOrder!.item!,
+          _selectedItemPackageType!,
+          _selectedItemPackageType!.trackingLpnUOM!,
           lpnCount, capturedLpn,
           true
       );
@@ -1023,12 +1028,12 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         String message = CWMSLocalizations.of(context)!.receivingCurrentLpn + ": " +
             lpn + ", " + currentLPNIndex.toString() + " / " + totalLPNCount.toString();
 
-        _progressDialog.update(progress: progress, message: message);
+        _progressDialog!.update(progress: progress, message: message);
 
         WorkOrderProduceTransaction workOrderProduceTransaction =
             generateWorkOrderProduceTransaction(
-                lpn, _selectedInventoryStatus,
-              _selectedItemPackageType, lpnCaptureRequest.lpnUnitOfMeasure.quantity,
+                lpn, _selectedInventoryStatus!,
+              _selectedItemPackageType!, lpnCaptureRequest!.lpnUnitOfMeasure!.quantity!,
                 _getReasonCodeForProducingInventory()
           );
 
@@ -1046,8 +1051,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     }
 
-    if (_progressDialog.isShowing()) {
-      _progressDialog.hide();
+    if (_progressDialog!.isShowing()) {
+      _progressDialog!.hide();
     }
 
     Navigator.of(context).pop();
@@ -1060,14 +1065,14 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     _progressDialog = new ProgressDialog(
       context,
-      type: ProgressDialogType.Normal,
+      type: ProgressDialogType.normal,
       isDismissible: false,
       showLogs: true,
     );
 
-    _progressDialog.style(message: CWMSLocalizations.of(context)!.receivingMultipleLpns);
-    if (!_progressDialog.isShowing()) {
-      _progressDialog.show();
+    _progressDialog!.style(message: CWMSLocalizations.of(context)!.receivingMultipleLpns);
+    if (!_progressDialog!.isShowing()) {
+      _progressDialog!.show();
     }
   }
   _refreshScreenAfterProducing() {
@@ -1101,14 +1106,14 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     int lpnCount = 0;
 
-    if (_selectedItemPackageType.trackingLpnUOM == null) {
+    if (_selectedItemPackageType!.trackingLpnUOM == null) {
       // the tracking LPN UOM is not defined for this item package type, so we don't know
       // how to calculate how many LPNs we may need based on the UOM and quantity
       lpnCount = 1;
     }
-    else if (_selectedItemUnitOfMeasure.quantity >= _selectedItemPackageType.trackingLpnUOM.quantity) {
+    else if (_selectedItemUnitOfMeasure!.quantity! >= _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
       // we are receiving at LPN uom level, then see what's the quantity the user specify
-      lpnCount = totalQuantity ~/ _selectedItemPackageType.trackingLpnUOM.quantity;
+      lpnCount = totalQuantity ~/ _selectedItemPackageType!.trackingLpnUOM!.quantity!;
     }
     else {
       // we are receiving at some lower level than the tracking LPN UOM,
@@ -1121,11 +1126,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
 
   _refreshWorkOrderInformation() {
-    WorkOrderService.getWorkOrderByNumber(_currentWorkOrder.number)
+    WorkOrderService.getWorkOrderByNumber(_currentWorkOrder!.number!)
         .then((workOrder)  { 
 
             setState(() {
-              _currentWorkOrder.producedQuantity = workOrder.producedQuantity;
+              _currentWorkOrder!.producedQuantity = workOrder?.producedQuantity;
             });
         });
 
@@ -1133,7 +1138,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   }
   WorkOrderProduceTransaction generateWorkOrderProduceTransaction(
       String lpn, InventoryStatus selectedInventoryStatus,
-      ItemPackageType selectedItemPackageType, int quantity, ReasonCode reasonCode)   {
+      ItemPackageType selectedItemPackageType, int quantity, ReasonCode? reasonCode)   {
     WorkOrderProduceTransaction workOrderProduceTransaction = new WorkOrderProduceTransaction();
     workOrderProduceTransaction.workOrder = _currentWorkOrder;
     workOrderProduceTransaction.productionLine = _currentProductionLine;
@@ -1149,7 +1154,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     workOrderProducedInventory.inventoryStatusId = selectedInventoryStatus.id;
     workOrderProducedInventory.itemPackageType = selectedItemPackageType;
     workOrderProducedInventory.itemPackageTypeId = selectedItemPackageType.id;
-    List<WorkOrderProducedInventory> workOrderProducedInventoryList = new List<WorkOrderProducedInventory>();
+    List<WorkOrderProducedInventory> workOrderProducedInventoryList = [];
     workOrderProducedInventoryList.add(workOrderProducedInventory);
 
     workOrderProduceTransaction.workOrderProducedInventories = workOrderProducedInventoryList;

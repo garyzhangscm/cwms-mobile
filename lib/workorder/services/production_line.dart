@@ -17,14 +17,14 @@ import 'package:dio/dio.dart';
 
 class ProductionLineService {
   // Get all cycle count requests by batch id
-  static Future<ProductionLine> getProductionLineByNumber(String productionLineName,
+  static Future<ProductionLine?> getProductionLineByNumber(String productionLineName,
       {bool loadDetails = true, bool loadWorkOrderDetails = true}) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
         "workorder/production-lines",
         queryParameters: {"name": productionLineName,
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
         'loadDetails' : loadDetails,
         'loadWorkOrderDetails': loadWorkOrderDetails}
     );
@@ -37,9 +37,8 @@ class ProductionLineService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ProductionLine> productionLines
-    = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : ProductionLine.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => ProductionLine.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // Sort the picks according to the current location. We
     // will assign the closed pick to the user
@@ -59,7 +58,7 @@ class ProductionLineService {
     Response response = await httpClient.get(
         "workorder/production-line/assigned",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
         "loadDetails": loadDetails}
     );
 
@@ -71,9 +70,8 @@ class ProductionLineService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     List<ProductionLine> productionLines
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : ProductionLine.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => ProductionLine.fromJson(e as Map<String, dynamic>))
+          .toList();
     printLongLogMessage("We get ${productionLines.length} assigned production lines");
 
     return productionLines;
@@ -90,7 +88,7 @@ class ProductionLineService {
           "productionLineId": productionLineId,
           "username": username,
           "currentUsername": Global.currentUsername,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from checkInUser: $response");
@@ -116,7 +114,7 @@ class ProductionLineService {
           "productionLineId": productionLineId,
           "username": username,
           "currentUsername": Global.currentUsername,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from checkOutUser: $response");
@@ -139,7 +137,7 @@ class ProductionLineService {
         "workorder/labor/checked_in_production_lines",
         queryParameters: {
           "username": username,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from findAllCheckedInProductionLines: $response");
@@ -152,9 +150,8 @@ class ProductionLineService {
 
 
     List<ProductionLine> productionLines
-      = (responseString["data"] as List)?.map((e) =>
-      e == null ? null : ProductionLine.fromJson(e as Map<String, dynamic>))
-          ?.toList();
+      = (responseString["data"] as List).map((e) => ProductionLine.fromJson(e as Map<String, dynamic>))
+          .toList();
     printLongLogMessage("We get ${productionLines.length}  production lines that the user check in");
 
     return productionLines;
@@ -169,7 +166,7 @@ class ProductionLineService {
         "workorder/labor/checked_in_users",
         queryParameters: {
           "productionLineId": productionLine.id,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from findAllCheckedInUsers: $response");
@@ -182,9 +179,8 @@ class ProductionLineService {
 
 
     List<User> users
-        = (responseString["data"] as List)?.map((e) =>
-        e == null ? null : User.fromJson(e as Map<String, dynamic>))
-            ?.toList();
+        = (responseString["data"] as List).map((e) => User.fromJson(e as Map<String, dynamic>))
+            .toList();
     printLongLogMessage("We get ${users.length}  users that checked in ${productionLine.name}");
 
     return users;

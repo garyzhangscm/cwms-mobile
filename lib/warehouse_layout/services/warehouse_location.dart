@@ -37,7 +37,7 @@ class WarehouseLocationService {
   }
 
   static Future<WarehouseLocation> getWarehouseLocationByName(String locationName) async {
-    return getWarehouseLocationByWarehouseIdAndName(Global.currentWarehouse.id, locationName);
+    return getWarehouseLocationByWarehouseIdAndName(Global.currentWarehouse!.id!, locationName);
   }
   static Future<WarehouseLocation> getWarehouseLocationByWarehouseIdAndName(int warehouseId, String locationName) async {
 
@@ -62,9 +62,8 @@ class WarehouseLocationService {
     }
 
     List<WarehouseLocation> locations
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : WarehouseLocation.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => WarehouseLocation.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // we should only have one location returned since we qualify by
     // name and warehouse id
@@ -84,7 +83,7 @@ class WarehouseLocationService {
 
     Response response = await httpClient.get(
         "/layout/locations",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id,
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id,
           'code': locationCode}
     );
 
@@ -100,9 +99,8 @@ class WarehouseLocationService {
     }
 
     List<WarehouseLocation> locations
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : WarehouseLocation.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => WarehouseLocation.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // we should only have one location returned since we qualify by
     // name and warehouse id
@@ -119,9 +117,8 @@ class WarehouseLocationService {
       WarehouseLocation firstLocation,
       WarehouseLocation secondLocation) {
     if (_getBestLocationForNextActivity(
-            currentLocation.pickSequence == null ? 0 : currentLocation.pickSequence,
-            firstLocation.pickSequence == null ? 0 : firstLocation.pickSequence,
-            secondLocation.pickSequence == null ? 0 : secondLocation.pickSequence) > 0) {
+        currentLocation.pickSequence ?? 0, firstLocation.pickSequence ?? 0,
+        secondLocation.pickSequence ?? 0) > 0) {
       return secondLocation;
     }
     else {
@@ -134,9 +131,9 @@ class WarehouseLocationService {
       WarehouseLocation firstLocation,
       WarehouseLocation secondLocation) {
     if (_getBestLocationForNextActivity(
-        currentLocation.countSequence == null ? 0 : currentLocation.countSequence,
-        firstLocation.countSequence == null ? 0 : firstLocation.countSequence,
-        secondLocation.countSequence == null ? 0 : secondLocation.countSequence) > 0) {
+        currentLocation.countSequence ?? 0,
+        firstLocation.countSequence ?? 0,
+        secondLocation.countSequence ?? 0) > 0) {
       return secondLocation;
     }
     else {
@@ -148,9 +145,9 @@ class WarehouseLocationService {
       WarehouseLocation firstLocation,
       WarehouseLocation secondLocation) {
     if (_getBestLocationForNextActivity(
-        currentLocation.putawaySequence == null ? 0 : currentLocation.putawaySequence,
-        firstLocation.putawaySequence == null ? 0 : firstLocation.putawaySequence,
-        secondLocation.putawaySequence == null ? 0 : secondLocation.putawaySequence) > 0) {
+        currentLocation.putawaySequence ?? 0,
+        firstLocation.putawaySequence ?? 0,
+        secondLocation.putawaySequence ?? 0) > 0) {
       return secondLocation;
     }
     else {
@@ -208,7 +205,7 @@ class WarehouseLocationService {
     // 2. we don't have to have the auth token. all the */validate/** endpoint won't
     //    probably requires auth info
     Response response = await Dio().get(
-        Global.currentServer.url + "/layout/validate/locations",
+        Global.currentServer!.url! + "/layout/validate/locations",
         queryParameters: {
           "warehouseId": warehouseId,
           "locationName": locationName},

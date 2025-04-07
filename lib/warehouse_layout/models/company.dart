@@ -10,10 +10,10 @@ part 'company.g.dart';
 class Company{
   Company();
 
-  int id;
-  String code;
-  String name;
-  String description;
+  int? id;
+  String? code;
+  String? name;
+  String? description;
 
   //不同的类使用不同的mixin即可
   factory Company.fromJson(Map<String, dynamic> json) => _$CompanyFromJson(json);

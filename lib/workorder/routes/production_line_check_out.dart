@@ -41,7 +41,7 @@ import 'package:intl/intl.dart';
 
 class ProductionLineCheckOutPage extends StatefulWidget{
 
-  ProductionLineCheckOutPage({Key key}) : super(key: key);
+  ProductionLineCheckOutPage({Key? key}) : super(key: key);
 
 
   @override
@@ -54,20 +54,20 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
   // when check out by username
 
   TextEditingController _usernameController = new TextEditingController();
-  FocusNode _usernameFocusNode;
+  FocusNode _usernameFocusNode  = FocusNode();
   bool _incorrectUsername = false;
   String _currentUsername = "";
   Map<ProductionLine, bool> _assignedProductionLine = {  };
   final  _userFormKey = GlobalKey<FormState>();
 
   // when check out by productoin line
-  List<ProductionLine> _validProductionLines;
-  ProductionLine _selectedProductionLine;
-  FocusNode _productionLineNode;
+  List<ProductionLine> _validProductionLines = [];
+  ProductionLine? _selectedProductionLine;
+  FocusNode? _productionLineNode;
   Map<User, bool> _assignedUsers = {  };
   final  _productionLineFormKey = GlobalKey<FormState>();
 
-  TabController _tabController;
+  TabController? _tabController;
 
   List<WorkOrderLabor> _workOrderLaborResults = [];
 
@@ -77,12 +77,10 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
   void initState() {
     super.initState();
 
-    _usernameFocusNode = FocusNode();
-    _incorrectUsername = false;
 
 
     _tabController = TabController(vsync: this, length: 2);
-    _tabController.addListener(_handleTabSelection);
+    _tabController?.addListener(_handleTabSelection);
 
     // loading the production line that the user checked in
     // after we scan in the username
@@ -99,8 +97,8 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
   }
 
   void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
-      switch (_tabController.index) {
+    if (_tabController?.indexIsChanging == true) {
+      switch (_tabController!.index!) {
         case 0:
           // clear the input
           _refreshCheckoutByUserPage();
@@ -228,11 +226,11 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
                         new ListView(
                           children: _assignedProductionLine.keys.map((ProductionLine productionLine) {
                             return new CheckboxListTile(
-                              title: new Text(productionLine.name),
+                              title: new Text(productionLine.name ?? ""),
                               value: _assignedProductionLine[productionLine],
-                              onChanged: (bool value) {
+                              onChanged: (bool? value) {
                                 setState(() {
-                                  _assignedProductionLine[productionLine] = value;
+                                  _assignedProductionLine[productionLine] = value ?? false;
                                 });
                               },
                             );
@@ -268,12 +266,12 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
                             Icons.list,
                             size: 20,
                           ),
-                          onChanged: (T) {
+                          onChanged: (ProductionLine? value) {
                             //下拉菜单item点击之后的回调
                             setState(() {
-                              _selectedProductionLine = T;
+                              _selectedProductionLine = value;
 
-                              _loadCheckInUsernamesByProductionLine(_selectedProductionLine);
+                              _loadCheckInUsernamesByProductionLine(_selectedProductionLine!);
                             });
                           },
                         )
@@ -287,11 +285,11 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
                         new ListView(
                           children: _assignedUsers.keys.map((User user) {
                             return new CheckboxListTile(
-                              title: new Text(user.username + " (" + user.firstname + ", " + user.lastname + ")"),
+                              title: new Text(user.username! + " (" + (user.firstname ?? "") + ", " + (user.lastname ?? "") + ")"),
                               value: _assignedUsers[user],
-                              onChanged: (bool value) {
+                              onChanged: (bool? value) {
                                 setState(() {
-                                  _assignedUsers[user] = value;
+                                  _assignedUsers[user] = value ?? false;
                                 });
                               },
                             );
@@ -305,8 +303,8 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
   }
 
 
-  List<DropdownMenuItem> _getValidProductionLines() {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<ProductionLine>> _getValidProductionLines() {
+    List<DropdownMenuItem<ProductionLine>> items = [];
     if (_validProductionLines == null || _validProductionLines.length == 0) {
       return items;
     }
@@ -314,7 +312,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
     for (int i = 0; i < _validProductionLines.length; i++) {
       items.add(DropdownMenuItem(
         value: _validProductionLines[i],
-        child: Text(_validProductionLines[i].name),
+        child: Text(_validProductionLines[i].name ?? ""),
       ));
     }
 
@@ -345,7 +343,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
                   // error and start validate the form from a
                   // clear start
                   _incorrectUsername = false;
-                  if (_userFormKey.currentState.validate()) {
+                  if (_userFormKey.currentState!.validate()) {
                     print("form validation passed");
                     _onStartCheckOutByUser();
                   }
@@ -373,7 +371,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
               // clear the data we use to manually show the
               // error and start validate the form from a
               // clear start
-              if (_productionLineFormKey.currentState.validate()) {
+              if (_productionLineFormKey.currentState!.validate()) {
                 print("form validation passed");
                 _onStartCheckOutByProductionLine();
               }
@@ -394,7 +392,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
       _assignedProductionLine.clear();
     });
     // make sure the user is a valid user
-    User user = await UserService.findUser(Global.lastLoginCompanyId, username);
+    User? user = await UserService.findUser(Global.lastLoginCompanyId!, username);
     if (user == null) {
       setState(() {
 
@@ -404,7 +402,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
       Navigator.of(context).pop();
       _usernameFocusNode.requestFocus();
       _incorrectUsername = true;
-      _userFormKey.currentState.validate();
+      _userFormKey.currentState?.validate();
       return;
     }
 
@@ -446,7 +444,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
     setState(() {
 
       _incorrectUsername = false;
-      _currentUsername = user.username;
+      _currentUsername = user.username!;
       _usernameController.clear();
     });
 
@@ -517,7 +515,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
         ProductionLine productionLine = iterator.current.key;
         WorkOrderLabor _workOrderLabor =
-            await ProductionLineService.checkOutUser(productionLine.id, _currentUsername);
+            await ProductionLineService.checkOutUser(productionLine.id!, _currentUsername);
         setState(() {
           _workOrderLaborResults.add(_workOrderLabor);
         });
@@ -568,7 +566,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
 
         User user = iterator.current.key;
         WorkOrderLabor _workOrderLabor =
-            await ProductionLineService.checkOutUser(_selectedProductionLine.id, user.username);
+            await ProductionLineService.checkOutUser(_selectedProductionLine!.id!, user.username!);
         setState(() {
           _workOrderLaborResults.add(_workOrderLabor);
         });

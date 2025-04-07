@@ -19,13 +19,13 @@ WorkOrder _$WorkOrderFromJson(Map<String, dynamic> json) {
         ? null
         : Warehouse.fromJson(json['warehouse'] as Map<String, dynamic>)
     ..workOrderLines = (json['workOrderLines'] as List)
-        ?.map(
-            (e) => e == null ? null : WorkOrderLine.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) => WorkOrderLine.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..productionLineAssignments = (json['productionLineAssignments'] as List)
-        ?.map(
-            (e) => e == null ? null : ProductionLineAssignment.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) =>  ProductionLineAssignment.fromJson(e as Map<String, dynamic>))
+        .toList()
     ..status =  json['status'] == null
         ? null
         : EnumToString.fromString(WorkOrderStatus.values, json['status'] as String)

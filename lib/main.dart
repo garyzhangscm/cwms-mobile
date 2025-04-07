@@ -1,4 +1,4 @@
-import 'dart:io';
+
 
 import 'package:cwms_mobile/inbound/routes/barcode_receiving.dart';
 import 'package:cwms_mobile/inbound/routes/inbound_qc.dart';
@@ -84,11 +84,12 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: LocaleModel()),
       ],
       child: Consumer2<ThemeModel, LocaleModel>(
-        builder: (BuildContext context, themeModel, localeModel, Widget child) {
+        builder: (BuildContext context, themeModel, localeModel, Widget? child) {
           return MaterialApp(
-            theme: ThemeData(
-              primarySwatch: themeModel.theme,
-            ),
+            // theme: ThemeData(
+            //  primarySwatch: themeModel.theme,
+            //),
+
             navigatorKey: navigatorKey,
             onGenerateTitle: (context) {
               return CWMSLocalizations
@@ -110,7 +111,7 @@ class MyApp extends StatelessWidget {
               CWMSLocalizationsDelegate()
             ],
             localeResolutionCallback:
-                (Locale _locale, Iterable<Locale> supportedLocales) {
+                (Locale? _locale, Iterable<Locale> supportedLocales) {
               if (localeModel.getLocale() != null) {
                 //如果已经选定语言，则不跟随系统
                 return localeModel.getLocale();
@@ -119,7 +120,7 @@ class MyApp extends StatelessWidget {
                 //跟随系统
                 Locale locale;
                 if (supportedLocales.contains(_locale)) {
-                  locale = _locale;
+                  locale = _locale!;
                 }
                 else {
                   //如果系统语言不是中文简体或美国英语，则默认使用美国英语

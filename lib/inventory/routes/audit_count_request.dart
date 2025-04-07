@@ -55,7 +55,7 @@ class _AuditCountRequestPageState extends State<AuditCountRequestPage> {
 
             auditCountResult.inventory =  new Inventory();
             auditCountResult.inventory?.location = _auditCountRequest?.location;
-            auditCountResult.inventory?.warehouseId =  Global.currentWarehouse.id;
+            auditCountResult.inventory?.warehouseId =  Global.currentWarehouse!.id;
             auditCountResult.unexpectedItem = true;
             printLongLogMessage("DONE setup audit count result for ${auditCountResult.id}");
       });
@@ -126,13 +126,13 @@ class _AuditCountRequestPageState extends State<AuditCountRequestPage> {
     auditCountResult.location = _auditCountRequest?.location;
     auditCountResult.inventory =  new Inventory();
     auditCountResult.inventory?.location = _auditCountRequest?.location;
-    auditCountResult.inventory?.warehouseId =  Global.currentWarehouse.id;
+    auditCountResult.inventory?.warehouseId =  Global.currentWarehouse!.id;
     auditCountResult.lpn = "";
     auditCountResult.item = new Item();
     auditCountResult.quantity = 0;
     auditCountResult.countQuantity = 0;
-    auditCountResult.warehouseId = Global.currentWarehouse.id;
-    auditCountResult.warehouse = Global.currentWarehouse;
+    auditCountResult.warehouseId = Global.currentWarehouse!.id;
+    auditCountResult.warehouse = Global.currentWarehouse!;
     auditCountResult.unexpectedItem = true;
     return auditCountResult;
   }

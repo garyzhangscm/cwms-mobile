@@ -489,7 +489,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
           PickService.confirmPick(
                 picks[i], (picks[i].quantity! - picks[i].pickedQuantity!), lpn: _lpnController.text,
-                nextLocationName: shipStageLocation.name).then((value) {
+                nextLocationName: shipStageLocation.name!).then((value) {
 
                   showToast("pick confirmed");
             } , onError: (e) {

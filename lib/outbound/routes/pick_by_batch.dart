@@ -13,6 +13,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badge;
+import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
 import '../models/pick_mode.dart';
@@ -316,7 +317,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
       PickService.sortPicks(_currentPickBatch, Global.getLastActivityLocation(), Global.isMovingForward());
       // get the first available pick and then group the quantity all together from the same location, for the same
       // inventory
-      _currentPick = _currentPickBatch.firstWhere((pick) => pick.quantity! > pick!.pickedQuantity!);
+      _currentPick = _currentPickBatch.firstWhereOrNull((pick) => pick.quantity! > pick!.pickedQuantity!);
       if (_currentPick != null) {
         // Batch picking means we will group all picks but we won't do
         // the actual batch picking in the location. Instead, if the user would like to do a batch picking

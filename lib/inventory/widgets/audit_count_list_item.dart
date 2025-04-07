@@ -2,8 +2,7 @@
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/audit_count_result.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
+
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/inventory/models/item_package_type.dart';
@@ -14,6 +13,7 @@ import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class AuditCountListItem extends StatefulWidget {
@@ -100,8 +100,8 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
     printLongLogMessage("item package type name changed to $value");
 
     if (_unexpectedItem != null ) {
-      ItemPackageType itemPackageType
-          = _unexpectedItem!.itemPackageTypes.firstWhere(
+      ItemPackageType? itemPackageType
+          = _unexpectedItem!.itemPackageTypes.firstWhereOrNull(
               (itemPackageType) => itemPackageType.name == value);
       if (itemPackageType != null) {
           widget.onItemPackageTypeValueChange!(itemPackageType);

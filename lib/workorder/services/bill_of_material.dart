@@ -15,7 +15,7 @@ import 'package:dio/dio.dart';
 
 class BillOfMaterialService {
   // Get all cycle count requests by batch id
-  static Future<BillOfMaterial> findMatchedBillOfMaterial(WorkOrder workOrder) async {
+  static Future<BillOfMaterial?> findMatchedBillOfMaterial(WorkOrder workOrder) async {
     Dio httpClient = CWMSHttpClient.getDio();
     printLongLogMessage("findMatchedBillOfMaterial by work order id ${workOrder.id}");
 

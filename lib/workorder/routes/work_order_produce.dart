@@ -17,11 +17,12 @@ import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
 
 
 class WorkOrderProducePage extends StatefulWidget{
 
-  WorkOrderProducePage({Key key}) : super(key: key);
+  WorkOrderProducePage({Key? key}) : super(key: key);
 
 
   @override
@@ -41,10 +42,10 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
   FocusNode _productionLineFocusNode = FocusNode();
   FocusNode _productionLineControllerFocusNode = FocusNode();
 
-  WorkOrder _currentWorkOrder;
-  ProductionLine _scannedProductionLine;
-  ProductionLine _assignedProductionLine;
-  ProductionLineAssignment _selectedProductionLineAssignment;
+  WorkOrder? _currentWorkOrder;
+  ProductionLine? _scannedProductionLine;
+  ProductionLine? _assignedProductionLine;
+  ProductionLineAssignment? _selectedProductionLineAssignment;
 
 
   @override
@@ -262,11 +263,11 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
             Icons.list,
             size: 20,
           ),
-          onChanged: (T) {
+          onChanged: (ProductionLineAssignment? value) {
             //下拉菜单item点击之后的回调
             setState(() {
-              _selectedProductionLineAssignment = T;
-              _assignedProductionLine = _selectedProductionLineAssignment.productionLine;
+              _selectedProductionLineAssignment = value;
+              _assignedProductionLine = _selectedProductionLineAssignment?.productionLine;
 
             });
           },
@@ -274,31 +275,31 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     );
   }
 
-  List<DropdownMenuItem> _getProductionLineAssignmentItems()  {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<ProductionLineAssignment>> _getProductionLineAssignmentItems()  {
+    List<DropdownMenuItem<ProductionLineAssignment>> items = [];
 
-    if (_currentWorkOrder.productionLineAssignments == null || _currentWorkOrder.productionLineAssignments.length == 0) {
+    if (_currentWorkOrder?.productionLineAssignments == null || _currentWorkOrder?.productionLineAssignments.length == 0) {
       return items;
     }
 
     // _selectedInventoryStatus = _validInventoryStatus[0];
-    for (int i = 0; i < _currentWorkOrder.productionLineAssignments.length; i++) {
+    for (int i = 0; i < _currentWorkOrder!.productionLineAssignments.length; i++) {
       items.add(DropdownMenuItem(
-        value: _currentWorkOrder.productionLineAssignments[i],
-        child: Text(_currentWorkOrder.productionLineAssignments[i].productionLine.name),
+        value: _currentWorkOrder?.productionLineAssignments[i],
+        child: Text(_currentWorkOrder?.productionLineAssignments[i].productionLine?.name ?? ""),
       ));
     }
 
-    if (_currentWorkOrder.productionLineAssignments.length == 1 ||
+    if (_currentWorkOrder?.productionLineAssignments.length == 1 ||
         _selectedProductionLineAssignment == null) {
       // if we only have one valid inventory status, then
       // default the selection to it
       // if the user has not select any inventdry status yet, then
       // default the value to the first option as well
-      _selectedProductionLineAssignment = _currentWorkOrder.productionLineAssignments[0];
+      _selectedProductionLineAssignment = _currentWorkOrder?.productionLineAssignments[0];
 
-      printLongLogMessage("setup the _assignedProductionLine to ${_selectedProductionLineAssignment.productionLine.name}");
-      _assignedProductionLine = _selectedProductionLineAssignment.productionLine;
+      printLongLogMessage("setup the _assignedProductionLine to ${_selectedProductionLineAssignment?.productionLine?.name}");
+      _assignedProductionLine = _selectedProductionLineAssignment?.productionLine;
     }
     return items;
   }
@@ -348,9 +349,9 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
       return;
     }
 
-    printLongLogMessage("get production line: ${_scannedProductionLine.name}");
+    printLongLogMessage("get production line: ${_scannedProductionLine?.name}");
     try {
-      _currentWorkOrder = await _getAssignedWorkOrder(_scannedProductionLine);
+      _currentWorkOrder = await _getAssignedWorkOrder(_scannedProductionLine!);
 
     }
     on WebAPICallException catch(ex) {
@@ -360,13 +361,13 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     }
     _assignedProductionLine = _scannedProductionLine;
 
-    printLongLogMessage("get work order: ${_currentWorkOrder.number}");
-    _workOrderNumberController.text = _currentWorkOrder.number;
+    printLongLogMessage("get work order: ${_currentWorkOrder?.number}");
+    _workOrderNumberController.text = _currentWorkOrder?.number ?? "";
     Navigator.of(context).pop();
 
-    if (_currentWorkOrder.item == null) {
+    if (_currentWorkOrder?.item == null) {
 
-      ItemService.getItemById(_currentWorkOrder.itemId).then((item) => _currentWorkOrder.item = item);
+      ItemService.getItemById(_currentWorkOrder!.itemId!).then((item) => _currentWorkOrder!.item = item);
     }
 
     setState(()  {
@@ -429,20 +430,20 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
       return;
     }
     // make sure the work order already have production line assigned
-    if(_currentWorkOrder.productionLineAssignments.isEmpty) {
+    if(_currentWorkOrder?.productionLineAssignments.isEmpty == true) {
 
-      showErrorDialog(context, "Work order " + _currentWorkOrder.number + " doesn't have any production line assigned yet");
+      showErrorDialog(context, "Work order " + (_currentWorkOrder?.number ?? "") + " doesn't have any production line assigned yet");
       setState(()  {
         _currentWorkOrder = null;
       });
       return;
     }
-    if (_currentWorkOrder.status == WorkOrderStatus.CANCELLED || _currentWorkOrder.status == WorkOrderStatus.CLOSED
-           || _currentWorkOrder.status == WorkOrderStatus.COMPLETED) {
+    if (_currentWorkOrder!.status == WorkOrderStatus.CANCELLED || _currentWorkOrder!.status == WorkOrderStatus.CLOSED
+           || _currentWorkOrder!.status == WorkOrderStatus.COMPLETED) {
 
 
-      showErrorDialog(context, "Work order ${_currentWorkOrder.number} " +
-          " is already ${_currentWorkOrder.status.toString().split(".").last}");
+      showErrorDialog(context, "Work order ${_currentWorkOrder!.number} " +
+          " is already ${_currentWorkOrder!.status.toString().split(".").last}");
       setState(()  {
         _currentWorkOrder = null;
       });
@@ -451,9 +452,9 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
     //printLongLogMessage("start to work on work order ${_currentWorkOrder.number} with item ${_currentWorkOrder.item.id}");
 
-    if (_currentWorkOrder.item == null) {
+    if (_currentWorkOrder!.item == null) {
 
-      ItemService.getItemById(_currentWorkOrder.itemId).then((item) => _currentWorkOrder.item = item);
+      ItemService.getItemById(_currentWorkOrder!.itemId!).then((item) => _currentWorkOrder!.item = item);
     }
 
     setState(()  {
@@ -497,9 +498,9 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
   }
 
 
-  Future<WorkOrder> _getAssignedWorkOrder(ProductionLine productionLine) async {
+  Future<WorkOrder?> _getAssignedWorkOrder(ProductionLine productionLine) async {
 
-    WorkOrder assignedWorkOrder;
+    WorkOrder? assignedWorkOrder;
     List<WorkOrder> workOrders =
         await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
 
@@ -525,7 +526,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     else {
       // see if the work order number specified by the user matches any of the work order that
       // assigned to the production
-      assignedWorkOrder = workOrders.firstWhere((workOrder) => _workOrderNumberController.text == workOrder.number);
+      assignedWorkOrder = workOrders.firstWhereOrNull((workOrder) => _workOrderNumberController.text == workOrder.number);
     }
     // make sure the assigned work has BOM assigned.
     // right now we are only allow the user to consume the material by BOM

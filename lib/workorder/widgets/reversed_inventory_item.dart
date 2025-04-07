@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import '../../inventory/models/reversed_inventory_information.dart';
 
 class ReversedInventoryItem extends StatefulWidget {
-  ReversedInventoryItem({this.index, this.reversedInventoryInformation, }
+  ReversedInventoryItem({required this.index, required this.reversedInventoryInformation, }
        ) : super(key: ValueKey(index));
 
 
@@ -66,7 +66,7 @@ class _ReversedInventoryItemState extends State<ReversedInventoryItem> {
       child: Material(
         // If the user highlight the widget, display green
         // otherwise if there's no open pick, display grey
-        color: widget.reversedInventoryInformation.reverseResult ? Colors.lightGreen: Colors.white,
+        color: widget.reversedInventoryInformation.reverseResult == true ? Colors.lightGreen: Colors.white,
         shape: BorderDirectional(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
@@ -85,7 +85,7 @@ class _ReversedInventoryItemState extends State<ReversedInventoryItem> {
                   //     widget.order.totalOpenPickQuantity == 0 ?
                   //                Colors.grey : Colors.white,
                   title: Text(
-                    widget.reversedInventoryInformation.lpn,
+                    widget.reversedInventoryInformation.lpn ?? "",
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,
@@ -109,7 +109,7 @@ class _ReversedInventoryItemState extends State<ReversedInventoryItem> {
                                 )
                               ),
                               Text(
-                                  widget.reversedInventoryInformation.itemName,
+                                  widget.reversedInventoryInformation.itemName ?? "",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,

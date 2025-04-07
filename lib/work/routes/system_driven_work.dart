@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'package:collection/collection.dart';
 
 import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -16,6 +17,7 @@ import 'package:cwms_mobile/work/models/work-task-type.dart';
 import 'package:cwms_mobile/work/models/work_task.dart';
 import 'package:cwms_mobile/work/services/work_task_service.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 import '../../outbound/models/pick.dart';
 import '../../outbound/models/pick_list.dart';
@@ -25,7 +27,7 @@ import '../../shared/global.dart';
 
 class SystemDrivenWork extends StatefulWidget{
 
-  SystemDrivenWork({Key key}) : super(key: key);
+  SystemDrivenWork({Key? key}) : super(key: key);
 
 
   @override
@@ -35,10 +37,10 @@ class SystemDrivenWork extends StatefulWidget{
 
 class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
-  WorkTask _currentWorkTask;
+  WorkTask? _currentWorkTask;
   List<Inventory>  _inventoryOnRF = [];
 
-  Timer _timer;  // timer to load the next work every 10 second
+  Timer? _timer;  // timer to load the next work every 10 second
 
   String _currentWorkTaskSourceLocationName = "";
 
@@ -50,9 +52,9 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     _timer?.cancel();
 
     if (_currentWorkTask != null) {
-      printLongLogMessage("we will need to unaknowledge the current work task ${_currentWorkTask.number}");
-      WorkTaskService.unacknowledgeWorkTask(_currentWorkTask, false).then((value) =>
-          printLongLogMessage("Current work task ${_currentWorkTask.number} is unaknowledged")
+      printLongLogMessage("we will need to unaknowledge the current work task ${_currentWorkTask!.number}");
+      WorkTaskService.unacknowledgeWorkTask(_currentWorkTask!, false).then((value) =>
+          printLongLogMessage("Current work task ${_currentWorkTask!.number} is unaknowledged")
       );
     }
 
@@ -159,9 +161,9 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
                         Expanded(
                           child: Column(children: [
                             buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.number,
-                                _currentWorkTask == null ? "" : _currentWorkTask.number),
+                                 _currentWorkTask?.number ?? ""),
                             buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.type,
-                                _currentWorkTask == null ? "" : _currentWorkTask.type.name),
+                                _currentWorkTask?.type?.name ?? ""),
                             buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.sourceLocation, _currentWorkTaskSourceLocationName),
                           ]),
                         ),
@@ -218,10 +220,10 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
         _currentWorkTaskSourceLocationName = "";
       });
     }
-    else if(_currentWorkTask.type == WorkTaskType.LIST_PICK) {
+    else if(_currentWorkTask?.type == WorkTaskType.LIST_PICK) {
       // list pick may have multiple source location, let's get the
       // first location of the pick in the list
-      PickListService.getPickListByNumber(_currentWorkTask.referenceNumber).then((pickList) {
+      PickListService.getPickListByNumber(_currentWorkTask!.referenceNumber!).then((pickList) {
 
         if (pickList.picks.isEmpty) {
           _currentWorkTaskSourceLocationName = "";
@@ -229,8 +231,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
         // sort the picks
         PickService.sortPicks(pickList.picks, Global.getLastActivityLocation(), Global.isMovingForward());
-        Pick nextPick = pickList.picks.firstWhere((pick) => pick.quantity > pick.pickedQuantity,
-            orElse: () => null);
+        Pick? nextPick = pickList.picks.firstWhereOrNull((pick) => pick.quantity! > pick.pickedQuantity!);
         if (nextPick == null) {
           setState(() {
 
@@ -240,7 +241,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
         else {
           setState(() {
 
-            _currentWorkTaskSourceLocationName  = nextPick.sourceLocation.name;
+            _currentWorkTaskSourceLocationName  = nextPick.sourceLocation!.name!;
           });
         }
 
@@ -252,7 +253,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     else {
       setState(() {
 
-        _currentWorkTaskSourceLocationName = _currentWorkTask.sourceLocation.name;
+        _currentWorkTaskSourceLocationName = _currentWorkTask!.sourceLocation!.name!;
       });
     }
   }
@@ -295,7 +296,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
   Future<void> _skipWorkTask() async {
 
     showLoading(context);
-    await WorkTaskService.unacknowledgeWorkTask(_currentWorkTask, true);
+    await WorkTaskService.unacknowledgeWorkTask(_currentWorkTask!, true);
 
     Navigator.of(context).pop();
 
@@ -330,21 +331,21 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
       return;
     }
 
-    printLongLogMessage("start to acknowlege current work task ${_currentWorkTask.number} of type ${_currentWorkTask.type}");
+    printLongLogMessage("start to acknowlege current work task ${_currentWorkTask!.number} of type ${_currentWorkTask!.type}");
 
-    if (_currentWorkTask.type == WorkTaskType.BULK_PICK) {
+    if (_currentWorkTask!.type == WorkTaskType.BULK_PICK) {
 
-      _startBulkPick(_currentWorkTask);
-
-    }
-    else if (_currentWorkTask.type == WorkTaskType.LIST_PICK) {
-
-      _startListPick(_currentWorkTask);
+      _startBulkPick(_currentWorkTask!);
 
     }
-    else if (_currentWorkTask.type == WorkTaskType.PICK) {
+    else if (_currentWorkTask!.type == WorkTaskType.LIST_PICK) {
 
-      _startSinglePick(_currentWorkTask);
+      _startListPick(_currentWorkTask!);
+
+    }
+    else if (_currentWorkTask!.type == WorkTaskType.PICK) {
+
+      _startSinglePick(_currentWorkTask!);
 
     }
   }
@@ -353,7 +354,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     BulkPick bulkPick;
     showLoading(context);
     try {
-      bulkPick = await BulkPickService.getBulkPickByNumber(workTask.referenceNumber);
+      bulkPick = await BulkPickService.getBulkPickByNumber(workTask.referenceNumber!);
     }
     on WebAPICallException catch(ex) {
       // ok it is possible that the actual work is already cancelled but the work task is still present,
@@ -369,13 +370,13 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     Navigator.of(context).pop();
     if (bulkPick.pickedQuantity == bulkPick.quantity) {
-      _completeWorkTask(_currentWorkTask);
+      _completeWorkTask(_currentWorkTask!);
       _refresh();
       return;
     }
     printLongLogMessage("bulk pick: ${bulkPick.number}");
     printLongLogMessage("bulk pick source location id: ${bulkPick.sourceLocationId}");
-    printLongLogMessage("bulk pick source location: ${bulkPick.sourceLocation == null ? 'N/A' : bulkPick.sourceLocation.name}");
+    printLongLogMessage("bulk pick source location: ${bulkPick.sourceLocation == null ? 'N/A' : bulkPick.sourceLocation!.name}");
     Map argumentMap = new HashMap();
     argumentMap['bulkPick'] = bulkPick;
     argumentMap['pickMode'] = PickMode.SYSTEM_DRIVEN;
@@ -393,7 +394,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     PickList pickList;
     showLoading(context);
     try {
-      pickList = await PickListService.getPickListByNumber(workTask.referenceNumber);
+      pickList = await PickListService.getPickListByNumber(workTask.referenceNumber!);
     }
     on WebAPICallException catch(ex) {
       // ok it is possible that the actual work is already cancelled but the work task is still present,
@@ -409,8 +410,8 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     Navigator.of(context).pop();
     // if all the picks in the list are already done, then complate the work task
-    if (!pickList.picks.any((pick) => pick.pickedQuantity < pick.quantity)) {
-      _completeWorkTask(_currentWorkTask);
+    if (!pickList.picks.any((pick) => pick.pickedQuantity! < pick!.quantity!)) {
+      _completeWorkTask(_currentWorkTask!);
       _refresh();
       return;
     }
@@ -430,10 +431,10 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
   }
 
   Future<void> _startSinglePick(WorkTask workTask) async {
-    Pick pick;
+    Pick? pick;
     showLoading(context);
     try {
-      pick = await PickService.getPicksByNumber(workTask.referenceNumber);
+      pick = await PickService.getPicksByNumber(workTask.referenceNumber!);
     }
     on WebAPICallException catch(ex) {
 
@@ -449,15 +450,15 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     Navigator.of(context).pop();
 
-    if (pick.pickedQuantity == pick.quantity) {
-      _completeWorkTask(_currentWorkTask);
+    if (pick?.pickedQuantity == pick?.quantity) {
+      _completeWorkTask(_currentWorkTask!);
       _refresh();
       return;
     }
 
-    printLongLogMessage("pick: ${pick.number}");
-    printLongLogMessage("pick source location id: ${pick.sourceLocationId}");
-    printLongLogMessage("pick source location: ${pick.sourceLocation == null ? 'N/A' : pick.sourceLocation.name}");
+    printLongLogMessage("pick: ${pick?.number}");
+    printLongLogMessage("pick source location id: ${pick?.sourceLocationId}");
+    printLongLogMessage("pick source location: ${pick?.sourceLocation == null ? 'N/A' : pick?.sourceLocation?.name}");
     Map argumentMap = new HashMap();
     argumentMap['pick'] = pick;
     argumentMap['pickMode'] = PickMode.SYSTEM_DRIVEN;
@@ -468,7 +469,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     if (result ==  null) {
       // the user press Return, let's unacknowledge the work task and then start with the next work task
-      await WorkTaskService.unacknowledgeWorkTask(_currentWorkTask, true);
+      await WorkTaskService.unacknowledgeWorkTask(_currentWorkTask!, true);
     }
 
     // get the next work task

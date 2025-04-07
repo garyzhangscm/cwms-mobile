@@ -45,7 +45,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d) {
+        if (barcode.is_2d == true) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");

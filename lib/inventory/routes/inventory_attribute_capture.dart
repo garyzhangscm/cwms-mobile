@@ -154,24 +154,24 @@ class _InventoryAttributeCapturePageState extends State<InventoryAttributeCaptur
 
     String displayName = attributeName;
     if (attributeName == "attribute1" &&
-            Global.currentInventoryConfiguration.inventoryAttribute1DisplayName!.isNotEmpty) {
-        displayName = Global.currentInventoryConfiguration.inventoryAttribute1DisplayName!;
+            Global.currentInventoryConfiguration!.inventoryAttribute1DisplayName!.isNotEmpty) {
+        displayName = Global.currentInventoryConfiguration!.inventoryAttribute1DisplayName!;
     }
     else if (attributeName == "attribute2" &&
-      Global.currentInventoryConfiguration.inventoryAttribute2DisplayName!.isNotEmpty) {
-        displayName = Global.currentInventoryConfiguration.inventoryAttribute2DisplayName!;
+      Global.currentInventoryConfiguration!.inventoryAttribute2DisplayName!.isNotEmpty) {
+        displayName = Global.currentInventoryConfiguration!.inventoryAttribute2DisplayName!;
     }
     else if (attributeName == "attribute3" &&
-        Global.currentInventoryConfiguration.inventoryAttribute3DisplayName!.isNotEmpty) {
-          displayName = Global.currentInventoryConfiguration.inventoryAttribute3DisplayName!;
+        Global.currentInventoryConfiguration!.inventoryAttribute3DisplayName!.isNotEmpty) {
+          displayName = Global.currentInventoryConfiguration!.inventoryAttribute3DisplayName!;
     }
     else if (attributeName == "attribute4" &&
-        Global.currentInventoryConfiguration.inventoryAttribute4DisplayName!.isNotEmpty) {
-        displayName = Global.currentInventoryConfiguration.inventoryAttribute4DisplayName!;
+        Global.currentInventoryConfiguration!.inventoryAttribute4DisplayName!.isNotEmpty) {
+        displayName = Global.currentInventoryConfiguration!.inventoryAttribute4DisplayName!;
     }
     else if (attributeName == "attribute5" &&
-        Global.currentInventoryConfiguration.inventoryAttribute5DisplayName!.isNotEmpty) {
-          displayName = Global.currentInventoryConfiguration.inventoryAttribute5DisplayName!;
+        Global.currentInventoryConfiguration!.inventoryAttribute5DisplayName!.isNotEmpty) {
+          displayName = Global.currentInventoryConfiguration!.inventoryAttribute5DisplayName!;
     }
     return displayName;
 

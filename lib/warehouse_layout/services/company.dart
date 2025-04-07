@@ -26,10 +26,10 @@ class CompanyService {
 
     return company;
   }
-  static Future<int> validateCompanyByCode(String code) async {
+  static Future<int?> validateCompanyByCode(String code) async {
 
     Response response = await Dio().get(
-        Global.currentServer.url + "layout/companies/validate",
+        Global.currentServer!.url! + "layout/companies/validate",
         queryParameters:{"code": code});
     print("get response: $response");
 
@@ -46,7 +46,7 @@ class CompanyService {
     }
 
   }
-  static Future<Company> getCompanyByCode(String code) async {
+  static Future<Company?> getCompanyByCode(String code) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -59,9 +59,8 @@ class CompanyService {
     List<dynamic> responseData = responseString["data"];
 
     List<Company> _companies
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Company.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) => Company.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     // company code is supposed to be unique.
     if (_companies.isEmpty) {

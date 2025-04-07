@@ -24,11 +24,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
 
 
 class WorkOrderManualPickPage extends StatefulWidget{
 
-  WorkOrderManualPickPage({Key key}) : super(key: key);
+  WorkOrderManualPickPage({Key? key}) : super(key: key);
 
 
   @override
@@ -49,9 +50,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   FocusNode _productionLineControllerFocusNode = FocusNode();
 
 
-  WorkOrder _currentWorkOrder;
-  ProductionLineAssignment _selectedProductionLineAssignment;
-  ProductionLine _scannedProductionLine;
+  WorkOrder? _currentWorkOrder;
+  ProductionLineAssignment? _selectedProductionLineAssignment;
+  ProductionLine? _scannedProductionLine;
 
   bool _readyToConfirm = true;
 
@@ -67,7 +68,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF = [];
 
   @override
   void initState() {
@@ -195,15 +196,16 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     return
       Expanded(
         child: ListView.builder(
-            itemCount: _currentWorkOrder.workOrderLines.length,
+            itemCount: _currentWorkOrder!.workOrderLines.length,
             itemBuilder: (BuildContext context, int index) {
 
               return ListTile(
 
                 title: Text(
-                    CWMSLocalizations.of(context)!.item + ':' + _currentWorkOrder.workOrderLines[index].item.name),
+                    CWMSLocalizations.of(context).item + ':' + (_currentWorkOrder?.workOrderLines[index].item?.name ?? "")),
                 subtitle: Text(
-                    CWMSLocalizations.of(context)!.expectedQuantity + ':' + _currentWorkOrder.workOrderLines[index].openQuantity.toString()),
+                    CWMSLocalizations.of(context).expectedQuantity + ':' +
+                        (_currentWorkOrder?.workOrderLines[index].openQuantity.toString() ?? "")),
               );
             }),
       );
@@ -336,9 +338,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       showErrorDialog(context, "Can't find work order by number " + _workOrderNumberController.text);
     }
     // make sure the work order already have production line assigned
-    if(_currentWorkOrder.productionLineAssignments.isEmpty) {
+    if(_currentWorkOrder?.productionLineAssignments.isEmpty == true) {
 
-      showErrorDialog(context, "Work order " + _currentWorkOrder.number + " doesn't have any production line assigned yet");
+      showErrorDialog(context, "Work order " + (_currentWorkOrder?.number ?? "") + " doesn't have any production line assigned yet");
       _currentWorkOrder = null;
       return;
     }
@@ -385,9 +387,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       return;
     }
 
-    printLongLogMessage("get production line: ${_scannedProductionLine.name}");
+    printLongLogMessage("get production line: ${_scannedProductionLine?.name}");
     try {
-      _currentWorkOrder = await _getAssignedWorkOrder(_scannedProductionLine);
+      _currentWorkOrder = await _getAssignedWorkOrder(_scannedProductionLine!);
 
     }
     on WebAPICallException catch(ex) {
@@ -396,8 +398,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       return;
     }
 
-    printLongLogMessage("get work order: ${_currentWorkOrder.number}");
-    _workOrderNumberController.text = _currentWorkOrder.number;
+    printLongLogMessage("get work order: ${_currentWorkOrder?.number}");
+    _workOrderNumberController.text = (_currentWorkOrder?.number ?? "");
     Navigator.of(context).pop();
 
     _lpnController.text = "";
@@ -407,9 +409,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     });
   }
 
-  Future<WorkOrder> _getAssignedWorkOrder(ProductionLine productionLine) async {
+  Future<WorkOrder?> _getAssignedWorkOrder(ProductionLine productionLine) async {
 
-    WorkOrder assignedWorkOrder;
+    WorkOrder? assignedWorkOrder;
     List<WorkOrder> workOrders =
     await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
 
@@ -435,7 +437,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     else {
       // see if the work order number specified by the user matches any of the work order that
       // assigned to the production
-      assignedWorkOrder = workOrders.firstWhere((workOrder) => _workOrderNumberController.text == workOrder.number);
+      assignedWorkOrder = workOrders.firstWhereOrNull((workOrder) => _workOrderNumberController.text == workOrder.number);
     }
     return assignedWorkOrder;
   }
@@ -453,38 +455,38 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
             Icons.list,
             size: 20,
           ),
-          onChanged: (T) {
+          onChanged: (ProductionLineAssignment? value) {
             //下拉菜单item点击之后的回调
             setState(() {
-              _selectedProductionLineAssignment = T;
+              _selectedProductionLineAssignment = value;
             });
           },
         )
     );
   }
 
-  List<DropdownMenuItem> _getProductionLineAssignmentItems()  {
-    List<DropdownMenuItem> items = [];
+  List<DropdownMenuItem<ProductionLineAssignment>> _getProductionLineAssignmentItems()  {
+    List<DropdownMenuItem<ProductionLineAssignment>> items = [];
 
-    if (_currentWorkOrder.productionLineAssignments == null || _currentWorkOrder.productionLineAssignments.length == 0) {
+    if (_currentWorkOrder?.productionLineAssignments == null || _currentWorkOrder?.productionLineAssignments.length == 0) {
       return items;
     }
 
     // _selectedInventoryStatus = _validInventoryStatus[0];
-    for (int i = 0; i < _currentWorkOrder.productionLineAssignments.length; i++) {
+    for (int i = 0; i < _currentWorkOrder!.productionLineAssignments.length; i++) {
       items.add(DropdownMenuItem(
-        value: _currentWorkOrder.productionLineAssignments[i],
-        child: Text(_currentWorkOrder.productionLineAssignments[i].productionLine.name),
+        value: _currentWorkOrder?.productionLineAssignments[i],
+        child: Text(_currentWorkOrder?.productionLineAssignments[i].productionLine?.name ?? ""),
       ));
     }
 
-    if (_currentWorkOrder.productionLineAssignments.length == 1 ||
+    if (_currentWorkOrder?.productionLineAssignments.length == 1 ||
         _selectedProductionLineAssignment == null) {
       // if we only have one valid inventory status, then
       // default the selection to it
       // if the user has not select any inventdry status yet, then
       // default the value to the first option as well
-      _selectedProductionLineAssignment = _currentWorkOrder.productionLineAssignments[0];
+      _selectedProductionLineAssignment = _currentWorkOrder?.productionLineAssignments[0];
     }
     return items;
   }
@@ -496,9 +498,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
         Checkbox(
           value: _pickToProductionLineInStage,
-          onChanged: (bool value) {
+          onChanged: (bool? value) {
             setState(() {
-              _pickToProductionLineInStage = value;
+              _pickToProductionLineInStage = value ?? false;
             });
           },
         ),
@@ -535,7 +537,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                     readOnly: false,
                     showKeyboard: false,
                     validator: (v) {
-                      if (v.trim().isEmpty) {
+                      if (v!.trim().isEmpty) {
                         return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
                       }
 
@@ -649,8 +651,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     bool continuePicking = true;
     bool continueWholeLPN = true;
 
-    ProductionLine productionLine = _scannedProductionLine == null ?
-        _selectedProductionLineAssignment.productionLine : _scannedProductionLine;
+    ProductionLine? productionLine = _scannedProductionLine == null ?
+        _selectedProductionLineAssignment?.productionLine : _scannedProductionLine;
 
     printLongLogMessage("do we need to validate partial LPN pick in case "
         " the inventory has more quantity than required? ${_validatePartialLPNPick}");
@@ -665,12 +667,12 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
         // check the quantity we can pick from the invenotry
         int pickableQuantity = await WorkOrderService.getPickableQuantityForManualPick(
-            _currentWorkOrder.id, _lpnController.text,
-            productionLine.id
+            _currentWorkOrder!.id!, _lpnController.text,
+            productionLine!.id!
         );
 
         // check the total quantity of the LPN
-        int inventoryQuantity =  inventories.fold(0, (previous, current) => previous + current.quantity);
+        int inventoryQuantity =  inventories.fold(0, (previous, current) => previous! + current!.quantity!);
 
 
         if (pickableQuantity < inventoryQuantity) {
@@ -712,26 +714,26 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     showLoading(context);
     try {
       List<Pick> picks = await WorkOrderService.generateManualPick(
-          _currentWorkOrder.id, _lpnController.text,
-          productionLine.id, continueWholeLPN
+          _currentWorkOrder!.id!, _lpnController.text,
+          productionLine!.id!, continueWholeLPN
 
       );
-      printLongLogMessage("get ${picks.length} by generating manual pick for the work order ${_currentWorkOrder.number}");
+      printLongLogMessage("get ${picks.length} by generating manual pick for the work order ${_currentWorkOrder?.number}");
 
       // let's finish each pick one by one
       for(var i = 0; i < picks.length; i++){
 
-        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity - picks[i].pickedQuantity}");
+        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity! - picks[i]!.pickedQuantity!}");
         if (_pickToProductionLineInStage) {
           if (productionLine.inboundStageLocation == null) {
             WarehouseLocation inboundStageLocation = await WarehouseLocationService.getWarehouseLocationById(
-                productionLine.inboundStageLocationId);
+                productionLine!.inboundStageLocationId!);
             printLongLogMessage("Will pick to production's stage ${inboundStageLocation.name}");
             // Async confirmed the pick to increase the performance
             // await PickService.confirmPick(
             PickService.confirmPick(
-                picks[i], (picks[i].quantity - picks[i].pickedQuantity), lpn: _lpnController.text,
-                nextLocationName: inboundStageLocation.name).then((value) {
+                picks[i], (picks[i].quantity! - picks[i]!.pickedQuantity!), lpn: _lpnController.text,
+                nextLocationName: inboundStageLocation.name!).then((value) {
 
                   showToast("pick confirmed");
             } , onError: (e) {
@@ -740,12 +742,12 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
             });
           }
           else {
-            printLongLogMessage("Will pick to production's stage ${productionLine.inboundStageLocation.name}");
+            printLongLogMessage("Will pick to production's stage ${productionLine.inboundStageLocation?.name}");
             // Async confirmed the pick to increase the performance
             // await PickService.confirmPick(
             PickService.confirmPick(
-                picks[i], (picks[i].quantity - picks[i].pickedQuantity), lpn: _lpnController.text,
-                nextLocationName: productionLine.inboundStageLocation.name).then((value) {
+                picks[i], (picks[i].quantity! - picks[i].pickedQuantity!), lpn: _lpnController.text,
+                nextLocationName: productionLine.inboundStageLocation!.name!).then((value) {
 
               showToast("pick confirmed");
             } , onError: (e) {
@@ -759,7 +761,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
           // Async confirmed the pick to increase the performance
           // await PickService.confirmPick(
           PickService.confirmPick(
-              picks[i], (picks[i].quantity - picks[i].pickedQuantity), lpn: _lpnController.text).then((value) {
+              picks[i], (picks[i].quantity! - picks[i]!.pickedQuantity!), lpn: _lpnController.text).then((value) {
 
             showToast("pick confirmed");
           } , onError: (e) {

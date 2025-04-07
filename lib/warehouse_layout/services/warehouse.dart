@@ -15,7 +15,7 @@ class WarehouseService {
   static Future<List<Warehouse>> getWarehouseByUser(String companyCode, String username) async {
 
     String warehouseListURL =
-        Global.currentServer.url + "layout/warehouses/accessible/$companyCode/$username";
+        Global.currentServer!.url! + "layout/warehouses/accessible/$companyCode/$username";
     print("Will get warehouse list from $warehouseListURL");
     Response response = await Dio().get(warehouseListURL);
 
@@ -28,9 +28,8 @@ class WarehouseService {
     }
 
     List<Warehouse> _warehouses
-    = (responseString["data"] as List)?.map((e) =>
-    e == null ? null : Warehouse.fromJson(e as Map<String, dynamic>))
-        ?.toList();
+    = (responseString["data"] as List).map((e) =>  Warehouse.fromJson(e as Map<String, dynamic>))
+        .toList();
 
 
     return _warehouses;

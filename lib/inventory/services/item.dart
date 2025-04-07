@@ -16,7 +16,7 @@ class ItemService {
 
     Response response = await httpClient.get(
         "/inventory/items/${id}",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id}
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from item by name $name");
@@ -41,7 +41,7 @@ class ItemService {
 
     Response response = await httpClient.get(
         "/inventory/items",
-      queryParameters: {'warehouseId': Global.currentWarehouse.id,
+      queryParameters: {'warehouseId': Global.currentWarehouse!.id,
           'name': name}
     );
 
@@ -72,7 +72,7 @@ class ItemService {
 
     Response response = await httpClient.get(
         "/inventory/items-query/by-keyword",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id,
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id,
           'companyId': Global.lastLoginCompanyId,
           'keyword': keyword}
     );

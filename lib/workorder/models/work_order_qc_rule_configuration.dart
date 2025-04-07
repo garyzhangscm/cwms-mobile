@@ -28,12 +28,12 @@ part 'work_order_qc_rule_configuration.g.dart';
 class WorkOrderQCRuleConfiguration{
   WorkOrderQCRuleConfiguration();
 
-  int id;
-  int warehouseId;
-  ProductionLine productionLine;
-  WorkOrder workOrder;
-  List<WorkOrderQCRuleConfigurationRule> workOrderQCRuleConfigurationRules;
-  int qcQuantity;
+  int? id;
+  int? warehouseId;
+  ProductionLine? productionLine;
+  WorkOrder? workOrder;
+  List<WorkOrderQCRuleConfigurationRule> workOrderQCRuleConfigurationRules = [];
+  int? qcQuantity;
 
 
 

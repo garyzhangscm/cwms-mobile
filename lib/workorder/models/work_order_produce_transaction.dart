@@ -19,19 +19,19 @@ part 'work_order_produce_transaction.g.dart';
 class WorkOrderProduceTransaction{
   WorkOrderProduceTransaction();
 
-  WorkOrder workOrder;
-  List<WorkOrderLineConsumeTransaction> workOrderLineConsumeTransactions;
-  List<WorkOrderProducedInventory> workOrderProducedInventories;
-  List<WorkOrderKPITransaction> workOrderKPITransactions;
-  bool consumeByBomQuantity;
-  BillOfMaterial consumeByBom;
-  ProductionLine productionLine;
+  WorkOrder? workOrder;
+  List<WorkOrderLineConsumeTransaction> workOrderLineConsumeTransactions = [];
+  List<WorkOrderProducedInventory> workOrderProducedInventories = [];
+  List<WorkOrderKPITransaction> workOrderKPITransactions = [];
+  bool? consumeByBomQuantity;
+  BillOfMaterial? consumeByBom;
+  ProductionLine? productionLine;
 
   // reason code. normally used when there's
   // defective product being produced
-  int reasonCodeId;
-  ReasonCode reasonCode;
-  String rfCode;
+  int? reasonCodeId;
+  ReasonCode? reasonCode;
+  String? rfCode;
 
 
 

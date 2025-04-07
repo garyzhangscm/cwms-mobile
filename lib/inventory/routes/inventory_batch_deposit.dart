@@ -11,6 +11,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
+import 'package:collection/collection.dart';
 
 import '../../exception/WebAPICallException.dart';
 import '../../shared/global.dart';
@@ -772,7 +773,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
       // if there're multiple destination for this LPN
       if (inventoryDepositRequest.multipleNextLocationFlag == true) {
         inventoryDepositRequest.currentLocationName = "=== Multiple Locations ===";
-        Inventory inventory = inventoryOnRF.firstWhere((inventory) => inventory.id == inventoryId );
+        Inventory? inventory = inventoryOnRF.firstWhereOrNull((inventory) => inventory.id == inventoryId );
         if (inventory != null &&
             inventory.inventoryMovements != null &&
             inventory.inventoryMovements.isNotEmpty) {

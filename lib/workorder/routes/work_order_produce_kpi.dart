@@ -1,38 +1,20 @@
-import 'package:badges/badges.dart';
+
+
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inbound/models/receipt.dart';
-import 'package:cwms_mobile/inbound/models/receipt_line.dart';
-import 'package:cwms_mobile/inbound/services/receipt.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_line_list_item.dart';
-import 'package:cwms_mobile/inbound/widgets/receipt_list_item.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
-import 'package:cwms_mobile/inventory/models/inventory_status.dart';
-import 'package:cwms_mobile/inventory/models/item_package_type.dart';
-import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
-import 'package:cwms_mobile/workorder/models/bill_of_material_line.dart';
 import 'package:cwms_mobile/workorder/models/kpi_measurement.dart';
-import 'package:cwms_mobile/workorder/models/production_line.dart';
-import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/models/work_order_kpi_transaction.dart';
-import 'package:cwms_mobile/workorder/models/work_order_line_consume_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
-import 'package:cwms_mobile/workorder/models/work_order_produced_inventory.dart';
-import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:cwms_mobile/workorder/widgets/work_order_kpi_item.dart';
-import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 
 class WorkOrderKPIPage extends StatefulWidget{
 
-  WorkOrderKPIPage({Key key}) : super(key: key);
+  WorkOrderKPIPage({Key? key}) : super(key: key);
 
 
   @override
@@ -42,7 +24,7 @@ class WorkOrderKPIPage extends StatefulWidget{
 
 class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
 
-  WorkOrderProduceTransaction _workOrderProduceTransaction;
+  WorkOrderProduceTransaction? _workOrderProduceTransaction;
 
   TextEditingController _newKPIUsernameController = new TextEditingController();
 
@@ -51,12 +33,12 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
   TextEditingController _newKPIMeasurementController = new TextEditingController();
 
 
-  WorkOrderKPITransaction _newWorkOrderKPITransaction;
+  WorkOrderKPITransaction? _newWorkOrderKPITransaction;
 
   @override
   Widget build(BuildContext context) {
 
-    _workOrderProduceTransaction  = ModalRoute.of(context).settings.arguments;
+    _workOrderProduceTransaction  = ModalRoute.of(context)!.settings.arguments as WorkOrderProduceTransaction;
 
 
 
@@ -85,12 +67,12 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
             separatorBuilder: (context, index) => Divider(
               color: Colors.black,
             ),
-            itemCount: _workOrderProduceTransaction.workOrderKPITransactions.length,
+            itemCount: _workOrderProduceTransaction!.workOrderKPITransactions.length,
             itemBuilder: (BuildContext context, int index) {
 
               return WorkOrderKPIItem(
                   index: index,
-                  workOrderKPITransaction: _workOrderProduceTransaction.workOrderKPITransactions[index],
+                  workOrderKPITransaction: _workOrderProduceTransaction!.workOrderKPITransactions[index],
                   onRemove:  (index) =>  _removeWorkOrderKPI(index)
               );
             }),
@@ -101,7 +83,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
   void _removeWorkOrderKPI(int index) {
 
     setState(() {
-      _workOrderProduceTransaction.workOrderKPITransactions.removeAt(index);
+      _workOrderProduceTransaction!.workOrderKPITransactions.removeAt(index);
     });
   }
 
@@ -154,7 +136,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
   Future<void> _onConfirmWorkOrderTransaction() async {
 
     await WorkOrderService.saveWorkOrderProduceTransaction(
-        _workOrderProduceTransaction
+        _workOrderProduceTransaction!
     );
     print("work order produce transaction saved!");
 
@@ -201,7 +183,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                           TextField(
                             onChanged: (value) {
                               setState(() {
-                                _newWorkOrderKPITransaction.username = value;
+                                _newWorkOrderKPITransaction!.username = value;
                               });
                             },
                             controller: _newKPIUsernameController,
@@ -226,7 +208,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                           TextField(
                             onChanged: (value) {
                               setState(() {
-                                _newWorkOrderKPITransaction.workingTeamName = value;
+                                _newWorkOrderKPITransaction!.workingTeamName = value;
                               });
                             },
                             controller: _newKPIWorkingTeamNameController,
@@ -251,7 +233,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                           TextField(
                             onChanged: (value) {
                               setState(() {
-                                _newWorkOrderKPITransaction.amount = double.parse(value);
+                                _newWorkOrderKPITransaction!.amount = double.parse(value);
                               });
                             },
                             controller: _newKPIAmountController,
@@ -287,11 +269,11 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                                 Icons.list,
                                 size: 20,
                               ),
-                              value: _newWorkOrderKPITransaction.kpiMeasurement,
-                              onChanged: (KPIMeasurement newValue) {
+                              value: _newWorkOrderKPITransaction!.kpiMeasurement,
+                              onChanged: (KPIMeasurement? newValue) {
                                 //下拉菜单item点击之后的回调
                                 setState(() {
-                                   _newWorkOrderKPITransaction.kpiMeasurement = newValue;
+                                   _newWorkOrderKPITransaction!.kpiMeasurement = newValue;
                                   printLongLogMessage("change kpimeasurement to "
                                       + "${newValue}");
 
@@ -358,7 +340,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
   }
 
   List<DropdownMenuItem> _getValidKPIMeasurements() {
-    List<DropdownMenuItem> items = new List();
+    List<DropdownMenuItem> items = [];
 
     // default to by quantity
     //_newWorkOrderKPITransaction.kpiMeasurement = KPIMeasurement.BY_QUANTITY;
@@ -375,12 +357,12 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
 
   void _confirmNewKPITransaction() {
     printLongLogMessage("will add new KPI transaction ");
-    printLongLogMessage("> ${_newWorkOrderKPITransaction.username}");
-    printLongLogMessage("> ${_newWorkOrderKPITransaction.workingTeamName}");
-    printLongLogMessage("> ${_newWorkOrderKPITransaction.amount}");
-    printLongLogMessage("> ${_newWorkOrderKPITransaction.kpiMeasurement}");
+    printLongLogMessage("> ${_newWorkOrderKPITransaction!.username}");
+    printLongLogMessage("> ${_newWorkOrderKPITransaction!.workingTeamName}");
+    printLongLogMessage("> ${_newWorkOrderKPITransaction!.amount}");
+    printLongLogMessage("> ${_newWorkOrderKPITransaction!.kpiMeasurement}");
     setState(() {
-       _workOrderProduceTransaction.workOrderKPITransactions.add(_newWorkOrderKPITransaction);
+       _workOrderProduceTransaction!.workOrderKPITransactions.add(_newWorkOrderKPITransaction!);
     });
 
 

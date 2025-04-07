@@ -24,15 +24,15 @@ part 'production_line_activity.g.dart';
 class ProductionLineActivity{
   ProductionLineActivity();
 
-  int id;
-  WorkOrder workOrder;
-  ProductionLine productionLine;
-  int warehouseId;
-  String username;
-  User user;
-  ProductionLineActivityType type;
-  int workingTeamMemberCount;
-  DateTime transactionTime;
+  int? id;
+  WorkOrder? workOrder;
+  ProductionLine? productionLine;
+  int? warehouseId;
+  String? username;
+  User? user;
+  ProductionLineActivityType? type;
+  int? workingTeamMemberCount;
+  DateTime? transactionTime;
 
 
 

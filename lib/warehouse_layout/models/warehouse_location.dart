@@ -14,27 +14,27 @@ part 'warehouse_location.g.dart';
 class WarehouseLocation{
   WarehouseLocation();
 
-  int id;
-  String name;
+  int? id;
+  String? name;
 
-  String aisle;
-  double x;
-  double y;
-  double z;
-  double length;
-  double width;
-  double height;
-  int pickSequence;
-  int putawaySequence;
-  int countSequence;
-  double capacity;
-  double fillPercentage;
-  double currentVolume;
-  double pendingVolume;
-  LocationGroup locationGroup;
-  bool enabled;
-  bool locked;
-  String reservedCode;
+  String? aisle;
+  double? x;
+  double? y;
+  double? z;
+  double? length;
+  double? width;
+  double? height;
+  int? pickSequence;
+  int? putawaySequence;
+  int? countSequence;
+  double? capacity;
+  double? fillPercentage;
+  double? currentVolume;
+  double? pendingVolume;
+  LocationGroup? locationGroup;
+  bool? enabled;
+  bool? locked;
+  String? reservedCode;
 
   //不同的类使用不同的mixin即可
   factory WarehouseLocation.fromJson(Map<String, dynamic> json) => _$WarehouseLocationFromJson(json);

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class SystemControllerNumberTextBox extends StatefulWidget {
-  SystemControllerNumberTextBox({required this.type, required this.controller, this.validator, required this.readOnly,
+  SystemControllerNumberTextBox({required this.type, required this.controller, this.validator, this.readOnly = false,
   this.showKeyboard = true, this.focusNode, this.autofocus = true, this.onValueChanged, this.onClear}
        ) : super(key: ValueKey(type));
 

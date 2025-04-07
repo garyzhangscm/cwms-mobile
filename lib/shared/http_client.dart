@@ -1,9 +1,7 @@
-import 'dart:async';
-import 'dart:convert';
+
+
 import 'dart:io';
-import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/shared/RefreshTokenInterceptor.dart';
-import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -16,21 +14,21 @@ class CWMSHttpClient {
     _options = Options(extra: {"context": context});
   }
 
-  BuildContext context;
-  Options _options;
+  BuildContext? context;
+  Options? _options;
 
   static int timeoutRetryTime = 20;
 
 
   static Dio _dio = new Dio(BaseOptions(
-    baseUrl: Global.currentServer.url,
+    baseUrl: Global.currentServer!.url!,
     headers: {
       HttpHeaders.acceptHeader: "application/json",
     },
 
   ));
 
-  static Dio _dioWithAuth;
+  static Dio? _dioWithAuth;
 
   static Dio get  dio => _dio;
 
@@ -38,18 +36,18 @@ class CWMSHttpClient {
     if (_dioWithAuth == null) {
       resetDio();
     }
-    return _dioWithAuth;
+    return _dioWithAuth!;
   }
 
   static void resetDio() {
 
     _dioWithAuth = new Dio(BaseOptions(
-      baseUrl: Global.currentServer.url,
+      baseUrl: Global.currentServer!.url!,
       headers: {
         HttpHeaders.acceptHeader: "application/json",
-        HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
+        HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser?.token}",
         "rfCode": Global.lastLoginRFCode,
-        "warehouseId": Global.currentWarehouse.id,
+        "warehouseId": Global.currentWarehouse!.id,
         "companyId": Global.lastLoginCompanyId
       },
       // connectTimeout: 10000,
@@ -57,7 +55,7 @@ class CWMSHttpClient {
       // sendTimeout: 15000,
 
     ));
-    _dioWithAuth.interceptors.add(RefreshTokenInterceptor());
+    _dioWithAuth?.interceptors.add(RefreshTokenInterceptor());
 
   }
   static void init() {

@@ -27,8 +27,8 @@ class RFConfigurationService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
-        Global.currentServer.url! + "/resource/rf-configurations",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+        Global.currentServer!.url! + "/resource/rf-configurations",
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id,
         "rfCode": rfCode}
     );
 

@@ -87,7 +87,7 @@ class _InventoryListItemState extends State<InventoryListItem> {
 
   }
   void _printLPNLabel() {
-      InventoryService.printLPNLabel(widget.inventory!.lpn!, widget.inventory!.location!.locationGroup.name);
+      InventoryService.printLPNLabel(widget.inventory!.lpn!, widget.inventory!.location!.locationGroup!.name!);
   }
 
   Widget _buildInventoryDetail() {
@@ -98,7 +98,7 @@ class _InventoryListItemState extends State<InventoryListItem> {
             children: <Widget>[
                _buildInformationRow(
                   CWMSLocalizations.of(context)!.location,
-                  widget.inventory!.location!.name),
+                  widget.inventory!.location!.name!),
               _buildInformationRow(
                   CWMSLocalizations.of(context)!.lpn, widget.inventory!.lpn ?? ""),
               _buildInformationRow(
@@ -129,29 +129,29 @@ class _InventoryListItemState extends State<InventoryListItem> {
                       CWMSLocalizations.of(context)!.productSize,
                       widget.inventory?.productSize ?? "") :
                   Container(),
-              widget.inventory?.item?.trackingInventoryAttribute1Flag == true && Global.currentInventoryConfiguration.inventoryAttribute1Enabled == true?
+              widget.inventory?.item?.trackingInventoryAttribute1Flag == true && Global.currentInventoryConfiguration?.inventoryAttribute1Enabled == true?
                   _buildInformationRow(
-                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute1") + ":",
+                      Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute1") + ":",
                       widget.inventory?.attribute1 ?? "") :
                   Container(),
-              widget.inventory?.item?.trackingInventoryAttribute2Flag == true && Global.currentInventoryConfiguration.inventoryAttribute2Enabled == true?
+              widget.inventory?.item?.trackingInventoryAttribute2Flag == true && Global.currentInventoryConfiguration?.inventoryAttribute2Enabled == true?
                   _buildInformationRow(
-                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute2") + ":",
+                      Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute2") + ":",
                       widget.inventory?.attribute2 ?? "") :
                   Container(),
-              widget.inventory?.item?.trackingInventoryAttribute3Flag == true && Global.currentInventoryConfiguration.inventoryAttribute3Enabled == true?
+              widget.inventory?.item?.trackingInventoryAttribute3Flag == true && Global.currentInventoryConfiguration?.inventoryAttribute3Enabled == true?
                   _buildInformationRow(
-                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute3") + ":",
+                      Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute3") + ":",
                       widget.inventory?.attribute3 ?? "") :
                   Container(),
-              widget.inventory?.item?.trackingInventoryAttribute4Flag == true && Global.currentInventoryConfiguration.inventoryAttribute4Enabled == true?
+              widget.inventory?.item?.trackingInventoryAttribute4Flag == true && Global.currentInventoryConfiguration?.inventoryAttribute4Enabled == true?
                   _buildInformationRow(
-                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute4") + ":",
+                      Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute4") + ":",
                       widget.inventory?.attribute4 ?? "") :
                   Container(),
-              widget.inventory?.item?.trackingInventoryAttribute5Flag == true && Global.currentInventoryConfiguration.inventoryAttribute5Enabled == true?
+              widget.inventory?.item?.trackingInventoryAttribute5Flag == true && Global.currentInventoryConfiguration?.inventoryAttribute5Enabled == true?
                   _buildInformationRow(
-                      Global.currentInventoryConfiguration.getInventoryAttributeDisplayName("attribute5") + ":",
+                      Global.currentInventoryConfiguration?.getInventoryAttributeDisplayName("attribute5") + ":",
                       widget.inventory?.attribute5 ?? "") :
                   Container(),
           ]

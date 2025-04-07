@@ -17,8 +17,8 @@ class WarehouseConfigurationService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
-        Global.currentServer.url! + "/layout/warehouse-configuration/by-warehouse/${Global.currentWarehouse.id}",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+        Global.currentServer!.url! + "/layout/warehouse-configuration/by-warehouse/${Global.currentWarehouse!.id}",
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id}
     );
 
     // print("response from getRFConfiguration: $response");

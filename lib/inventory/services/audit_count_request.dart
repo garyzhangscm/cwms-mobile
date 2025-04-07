@@ -23,7 +23,7 @@ class AuditCountRequestService {
 
     printLongLogMessage("start to get data from /inventory/audit-count-request/batch/$batchId");
     Response response = await httpClient.get(
-        "/inventory/audit-count-request/batch/${Global.currentWarehouse.id}/$batchId"
+        "/inventory/audit-count-request/batch/${Global.currentWarehouse!.id}/$batchId"
     );
 
     // printLongLogMessage("response from audit count request: $response");

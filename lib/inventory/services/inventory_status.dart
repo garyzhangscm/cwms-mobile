@@ -46,7 +46,7 @@ class InventoryStatusService {
 /*
     CWMSHttpResponse response = await Global.httpClient.get(
         "/inventory/inventory-statuses",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id}
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id}
     );
 
  */
@@ -55,7 +55,7 @@ class InventoryStatusService {
 
     Response response = await httpClient.get(
       "/inventory/inventory-statuses",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id}
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getAllInventoryStatus");
@@ -82,7 +82,7 @@ class InventoryStatusService {
 
     Response response = await httpClient.get(
         "/inventory/inventory-statuses",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id,
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id,
           'name': name}
     );
 
@@ -111,7 +111,7 @@ class InventoryStatusService {
 
     Response response = await httpClient.get(
         "/inventory/inventory-statuses/available",
-        queryParameters: {'warehouseId': Global.currentWarehouse.id}
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getAvaiableInventoryStatus: $response");

@@ -13,6 +13,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badge;
+import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
 import '../models/pick_mode.dart';
@@ -527,7 +528,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
       Set<int> pickIdSet =  wavePick.value;
       // check if the pick belongs to the current wave
       if (pickIdSet.contains(pick.id)) {
-        wave = assignedWaves.firstWhere((assignedWave) => assignedWave.number == waveNumber);
+        wave = assignedWaves.firstWhereOrNull((assignedWave) => assignedWave.number == waveNumber);
         if (wave != null) {
           // we found such order, let's return
           break;

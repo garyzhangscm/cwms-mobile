@@ -11,6 +11,7 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 import '../../exception/WebAPICallException.dart';
 import '../../shared/global.dart';
@@ -77,7 +78,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         // allow the user to input barcode
 
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d) {
+        if (barcode.is_2d == true) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
@@ -298,7 +299,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       // default the value to the one marked as 'default for inbound receiving'
 
       _selectedItemUnitOfMeasure = item.defaultItemPackageType?.itemUnitOfMeasures
-          .firstWhere((element) => element.id == item.defaultItemPackageType?.defaultInboundReceivingUOM?.id);
+          .firstWhereOrNull((element) => element.id == item.defaultItemPackageType?.defaultInboundReceivingUOM?.id);
     }
 /**
     if (item.defaultItemPackageType.itemUnitOfMeasures.length == 1) {
@@ -822,7 +823,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
   void _moveInventoryAsync(InventoryDepositRequest inventoryDepositRequest, String unitOfMeasure,  {int retryTime = 0}) {
     WarehouseLocationService.getWarehouseLocationByName(
-        Global.lastLoginRFCode
+        Global.lastLoginRFCode!
     ).then((rfLocation) async {
       List<Inventory> resultInventories = await InventoryService.moveInventory(
           lpn: inventoryDepositRequest!.lpn!,

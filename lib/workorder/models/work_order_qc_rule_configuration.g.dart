@@ -18,9 +18,9 @@ WorkOrderQCRuleConfiguration _$WorkOrderQCRuleConfigurationFromJson(Map<String, 
         ? null
         : WorkOrder.fromJson(json['workOrder'] as Map<String, dynamic>)
     ..workOrderQCRuleConfigurationRules = (json['workOrderQCRuleConfigurationRules'] as List)
-        ?.map(
-            (e) => e == null ? null : WorkOrderQCRuleConfigurationRule.fromJson(e as Map<String, dynamic>))
-        ?.toList()
+        .map(
+            (e) => WorkOrderQCRuleConfigurationRule.fromJson(e as Map<String, dynamic>))
+        .toList()
   ;
 }
 

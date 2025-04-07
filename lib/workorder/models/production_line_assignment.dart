@@ -18,12 +18,12 @@ part 'production_line_assignment.g.dart';
 class ProductionLineAssignment{
   ProductionLineAssignment();
 
-  int id;
+  int? id;
 
-  ProductionLine productionLine;
-  WorkOrder workOrder;
-  int workOrderId;
-  String workOrderNumber;
+  ProductionLine? productionLine;
+  WorkOrder? workOrder;
+  int? workOrderId;
+  String? workOrderNumber;
 
 
 

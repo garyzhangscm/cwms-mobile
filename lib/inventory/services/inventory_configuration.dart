@@ -27,7 +27,7 @@ class InventoryConfigurationService {
     Response response = await httpClient.get(
         "inventory/inventory_configuration",
       queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
         "companyId": Global.lastLoginCompanyId}
     );
 

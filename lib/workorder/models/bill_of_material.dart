@@ -19,18 +19,18 @@ part 'bill_of_material.g.dart';
 class BillOfMaterial{
   BillOfMaterial();
 
-  int id;
-  String number;
-  String description;
-  List<BillOfMaterialLine> billOfMaterialLines;
+  int? id;
+  String? number;
+  String? description;
+  List<BillOfMaterialLine> billOfMaterialLines = [];
 
-  Item item;
-  int itemId;
+  Item? item;
+  int? itemId;
 
-  double expectedQuantity;
+  double? expectedQuantity;
 
-  int warehouseId;
-  Warehouse warehouse;
+  int? warehouseId;
+  Warehouse? warehouse;
 
 
 

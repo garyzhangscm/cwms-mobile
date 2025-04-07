@@ -108,7 +108,7 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
     _newCycleCountResult.batchId = _cycleCountRequest?.batchId;
     _newCycleCountResult.location = _cycleCountRequest?.location;
     _newCycleCountResult.locationId = _cycleCountRequest?.location?.id;
-    _newCycleCountResult.warehouseId = Global.currentWarehouse.id;
+    _newCycleCountResult.warehouseId = Global.currentWarehouse!.id;
     _newCycleCountResult.warehouse = Global.currentWarehouse;
     _newCycleCountResult.item = null;
     _newCycleCountResult.quantity = 0;

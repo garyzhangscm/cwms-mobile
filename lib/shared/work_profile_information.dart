@@ -14,7 +14,7 @@ import 'global.dart';
 
 class WorkProfileInfoPage extends StatefulWidget{
 
-  WorkProfileInfoPage({Key key}) : super(key: key);
+  WorkProfileInfoPage({Key? key}) : super(key: key);
 
 
   @override
@@ -55,7 +55,7 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
                         backgroundColor: Theme.of(context).primaryColor,
                       ),
                       onPressed: () {
-                        if (_formKey.currentState.validate()) {
+                        if (_formKey.currentState!.validate()) {
                           print("form validation passed");
                           _changeWorkProfile();
                         }
@@ -89,11 +89,13 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
                     hintText: CWMSLocalizations
                         .of(context)
                         .inputLocationHint,
+                    /**
                     suffixIcon:
                     IconButton(
                       onPressed: _startLocationBarcodeScanner,
                       icon: Icon(Icons.scanner),
                     ),
+                        **/
 
                   ),
                 ),
@@ -102,26 +104,6 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
           )
       );
   }
-
-
-  void _startLocationBarcodeScanner() async  {
-    String locationScanned = await _startBarcodeScanner();
-    if (locationScanned != "-1") {
-
-      _locationController.text = locationScanned;
-    }
-
-  }
-
-  Future<String> _startBarcodeScanner() async {
-    /***
-    String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
-    print("barcode scanned: $barcodeScanRes");
-    return barcodeScanRes;
-**/
-  }
-
   _changeWorkProfile() {
     if (_locationController.text.isNotEmpty) {
       _changeCurrentLocation();

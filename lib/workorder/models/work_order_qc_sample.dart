@@ -25,17 +25,17 @@ class WorkOrderQCSample{
   WorkOrderQCSample();
   WorkOrderQCSample.fromProductionLineAssignment(ProductionLineAssignment productionLineAssignment) {
     this.productionLineAssignment = productionLineAssignment;
-    this.warehouseId = Global.currentWarehouse.id;
+    this.warehouseId = Global.currentWarehouse!.id;
     this.number = "";
     this.imageUrls = "";
   }
 
-  int id;
-  String number;
-  int warehouseId;
-  ProductionLineAssignment productionLineAssignment;
+  int? id;
+  String? number;
+  int? warehouseId;
+  ProductionLineAssignment? productionLineAssignment;
 
-  String imageUrls;
+  String? imageUrls;
 
 
 

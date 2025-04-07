@@ -11,6 +11,7 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:collection/collection.dart';
 
 import '../inventory/models/inventory_configuration.dart';
 import '../inventory/services/inventory_configuration.dart';
@@ -273,8 +274,8 @@ class Global {
 
   static addServer(CWMSSiteInformation server) async {
 
-    CWMSSiteInformation matchedServer
-      = servers!.firstWhere((element) => element.url?.compareTo(server!.url!) == 0);
+    CWMSSiteInformation? matchedServer
+      = servers!.firstWhereOrNull((element) => element.url?.compareTo(server!.url!) == 0);
 
     if (matchedServer != null) {
       // OK, we get a matched server, let's update it based on the new configuration
@@ -319,7 +320,7 @@ class Global {
       return null;
     }
     else {
-      return servers!.firstWhere((element) => element.isAutoConnect() == true);
+      return servers!.firstWhereOrNull((element) => element.isAutoConnect() == true);
     }
   }
 

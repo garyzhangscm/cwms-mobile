@@ -19,7 +19,7 @@ class SubMenus extends StatefulWidget {
 class _SubMenusState extends State<SubMenus> {
 
 
-  MenuSubGroup _menuSubGroup;
+  MenuSubGroup? _menuSubGroup;
 
   @override
   void initState() {
@@ -32,10 +32,10 @@ class _SubMenusState extends State<SubMenus> {
   @override
   Widget build(BuildContext context) {
 
-    _menuSubGroup = ModalRoute.of(context).settings.arguments;
+    _menuSubGroup = ModalRoute.of(context)!.settings.arguments as MenuSubGroup;
 
     return Scaffold(
-        appBar: AppBar(title: Text("CWMS - ${_menuSubGroup.text}")),
+        appBar: AppBar(title: Text("CWMS - ${_menuSubGroup?.text}")),
       resizeToAvoidBottomInset: true,
         body: Stack(
           children:  [
@@ -63,12 +63,12 @@ class _SubMenusState extends State<SubMenus> {
         crossAxisCount: 2,
         childAspectRatio: .90,
         children: List.generate(
-            _menuSubGroup == null ? 0 : _menuSubGroup.menus.length,
+            _menuSubGroup == null ? 0 : _menuSubGroup!.menus.length,
                 (index) {
               return Card(
                 child: InkWell(
                   onTap: () {
-                    _onPressed(_menuSubGroup.menus[index]);
+                    _onPressed(_menuSubGroup!.menus[index]);
                   },
                   child:
                   Center(
@@ -78,15 +78,15 @@ class _SubMenusState extends State<SubMenus> {
                         // FlutterLogo(),
                         Image(
                           image: NetworkImage(
-                              Global.currentServer.url + "/resource/assets/images/mobile/" + _menuSubGroup.menus[index].icon),
-                              // Global.currentServer.url + "/resource/assets/images/image_missing.png"),
+                              Global.currentServer!.url! + "/resource/assets/images/mobile/" + _menuSubGroup!.menus[index]!.icon!),
+                              // Global.currentServer!.url + "/resource/assets/images/image_missing.png"),
                           //  "http://k8s-staging-zuulserv-707034e5d3-1316291729.us-west-1.elb.amazonaws.com/api/resource/assets/images/mobile/menu_outbound.jpg"),
                           width: 100.0,
                         ),
                         Text(CWMSLocalizations.of(context)
                             .getMenuDisplayText(
-                            _menuSubGroup.menus[index].i18n,
-                            _menuSubGroup.menus[index].text))],
+                            _menuSubGroup!.menus[index].i18n!,
+                            _menuSubGroup!.menus[index].text!))],
                     ),
                   ),
                 ),
@@ -104,7 +104,8 @@ class _SubMenusState extends State<SubMenus> {
   void _onPressed(Menu menu){
 
 
-    Navigator.of(context).pushNamed(menu.link);
+    Navigator.of(context).pushNamed(menu.link!
+    );
   }
 
 

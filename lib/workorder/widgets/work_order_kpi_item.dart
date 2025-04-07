@@ -8,15 +8,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class WorkOrderKPIItem extends StatefulWidget {
-  WorkOrderKPIItem({this.index, this.workOrderKPITransaction,
-       @required this.onRemove}
+  WorkOrderKPIItem({required this.index, required this.workOrderKPITransaction,
+       this.onRemove}
        ) : super(key: ValueKey(
-          (workOrderKPITransaction.username == null ? "" : workOrderKPITransaction.username)
+          (workOrderKPITransaction.username ?? "")
               +
-          (workOrderKPITransaction.workingTeamName == null ? "": workOrderKPITransaction.workingTeamName)));
+          ( workOrderKPITransaction.workingTeamName ?? "")));
 
 
-  final ValueChanged<int> onRemove;
+  final ValueChanged<int>? onRemove;
 
 
   final int index;
@@ -33,7 +33,10 @@ class WorkOrderKPIItem extends StatefulWidget {
 class _WorkOrderKPIItemState extends State<WorkOrderKPIItem> {
 
   void _removeKPITransactionFromlist() {
-      widget.onRemove(widget.index);
+    if (widget.onRemove != null) {
+
+      widget.onRemove!(widget.index);
+    }
   }
 
   @override
@@ -98,7 +101,7 @@ class _WorkOrderKPIItemState extends State<WorkOrderKPIItem> {
                       Text(CWMSLocalizations.of(context)!.userName),
                     ),
 
-                    Text(widget.workOrderKPITransaction.username == null ? "" : widget.workOrderKPITransaction.username)
+                    Text(widget.workOrderKPITransaction.username ?? "")
                   ],
                 ),
               ),
@@ -115,7 +118,7 @@ class _WorkOrderKPIItemState extends State<WorkOrderKPIItem> {
                       Text(CWMSLocalizations.of(context)!.workingTeamName),
                     ),
 
-                    Text(widget.workOrderKPITransaction.workingTeamName == null ? "" : widget.workOrderKPITransaction.workingTeamName)
+                    Text(widget.workOrderKPITransaction.workingTeamName ?? "")
                   ],
                 ),
               ),

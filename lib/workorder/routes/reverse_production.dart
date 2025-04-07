@@ -10,7 +10,6 @@ import 'package:cwms_mobile/shared/services/barcode_service.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import '../../shared/services/barcode_service.dart';
 import '../../shared/models/barcode.dart';
 
 import '../../shared/http_client.dart';
@@ -18,7 +17,7 @@ import '../../shared/http_client.dart';
 
 class ReverseProductionPage extends StatefulWidget{
 
-  ReverseProductionPage({Key key}) : super(key: key);
+  ReverseProductionPage({Key? key}) : super(key: key);
 
 
   @override
@@ -51,7 +50,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
         // allow the user to input barcode
 
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d) {
+        if (barcode.is_2d == true) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
@@ -157,22 +156,22 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
         int totalQuantity = 0;
         bool includeNonWorkOrderInventory = false;
         String locationName = "";
-        int workOrderId;
+        int? workOrderId;
 
         inventories.forEach((inventory) {
-          clientNames.add(inventory.client == null ? "" : inventory.client.name);
-          itemNames.add(inventory.item.name);
-          itemPackageTypeNames.add(inventory.itemPackageType.name);
-          totalQuantity += inventory.quantity;
-          locationName = inventory.location.name;
+          clientNames.add(inventory.client?.name ?? "");
+          itemNames.add(inventory.item?.name ?? "");
+          itemPackageTypeNames.add(inventory.itemPackageType?.name ?? "");
+          totalQuantity += inventory.quantity!;
+          locationName = inventory.location?.name ?? "";
           if (inventory.workOrder == null) {
             includeNonWorkOrderInventory = true;
           }
           else {
-            workOrderNumbers.add(inventory.workOrder.number);
+            workOrderNumbers.add(inventory.workOrder?.number ?? "");
           }
           if (inventory.workOrderId != null) {
-            workOrderId = inventory.workOrderId;
+            workOrderId = inventory.workOrderId!;
           }
         });
 
@@ -247,7 +246,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
           _reversedInventories;
         });
 
-        await WorkOrderService.reverseProduction(workOrderId, reversedInventoryInformation.lpn);
+        await WorkOrderService.reverseProduction(workOrderId!, reversedInventoryInformation.lpn!);
 
         setState(() {
               reversedInventoryInformation.reverseResult = true;
@@ -273,7 +272,8 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
           setState(() {
             reversedInventoryInformation.reverseResult = false;
             reversedInventoryInformation.reverseInProgress = false;
-            reversedInventoryInformation.result = "Fail to reverse LPN: " + reversedInventoryInformation.lpn + " after trying ${CWMSHttpClient.timeoutRetryTime}  times";
+            reversedInventoryInformation.result = "Fail to reverse LPN: " +
+                reversedInventoryInformation.lpn! + " after trying ${CWMSHttpClient.timeoutRetryTime}  times";
             _reversedInventories;
           });
         }
@@ -317,7 +317,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
               ),
             ),
             validator: (v) {
-              return v.trim().isNotEmpty ?
+              return v!.trim().isNotEmpty ?
               null :
               CWMSLocalizations.of(context)!.missingField(
                   CWMSLocalizations.of(context)!.lpn);
@@ -358,7 +358,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
             fit: StackFit.expand, //未定位widget占满Stack整个空间
             children: <Widget>[
               ListTile(
-                title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _reversedInventories[index].lpn),
+                title: Text(CWMSLocalizations.of(context).lpn + ": " + (_reversedInventories[index].lpn ?? "")),
                 subtitle:
                 Column(
                     children: <Widget>[
@@ -374,7 +374,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                                 )
                             ),
                             Text(
-                                _reversedInventories[index].itemName,
+                                _reversedInventories[index].itemName ?? "",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -432,7 +432,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
           height: 75,
           child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _reversedInventories[index].lpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + (_reversedInventories[index].lpn ?? "")),
               subtitle:
                 Column(
                   children: <Widget>[
@@ -448,7 +448,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                           )
                         ),
                         Text(
-                          _reversedInventories[index].itemName,
+                          _reversedInventories[index].itemName ?? "",
                           textScaleFactor: .9,
                           style: TextStyle(
                             height: 1.15,
@@ -489,14 +489,14 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
         );
     }
     else {
-      double height = min(75 + (_reversedInventories[index].result.length / 50) * 15, 120);
+      double height = min(75 + (_reversedInventories[index].result!.length / 50) * 15, 120);
       printLongLogMessage("print with height $height");
       return
         SizedBox(
             height: height,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _reversedInventories[index].lpn),
+              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _reversedInventories[index].lpn!),
               subtitle:
               Column(
                   children: <Widget>[
@@ -512,7 +512,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                               )
                           ),
                           Text(
-                              _reversedInventories[index].itemName,
+                              _reversedInventories[index].itemName ?? "",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,

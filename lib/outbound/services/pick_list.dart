@@ -26,7 +26,7 @@ class PickListService {
     Response response = await httpClient.get(
         "outbound/pick-lists",
         queryParameters: {"number": number,
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse!.id
         }
     );
 
@@ -74,7 +74,7 @@ class PickListService {
     Response response = await httpClient.post(
         "outbound/pick-lists/${pickList.id}/confirm",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
           "quantity": confirmQuantity,
           "sourceLocationId": sourceLocationId,
           "nextLocationName": nextLocationName.isEmpty ? Global.getLastLoginRFCode() : nextLocationName,
@@ -104,7 +104,7 @@ class PickListService {
     Response response = await httpClient.post(
         "outbound/pick-lists/${id}/acknowledge",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse!.id
         }
     );
 
@@ -130,7 +130,7 @@ class PickListService {
     Response response = await httpClient.post(
         "outbound/pick-lists/${id}/unacknowledge",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id
+          "warehouseId": Global.currentWarehouse!.id
         }
     );
 

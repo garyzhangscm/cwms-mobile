@@ -15,21 +15,21 @@ part 'work_task.g.dart';
 class WorkTask{
   WorkTask();
 
-  int id;
+  int? id;
 
-  String number;
-  WorkTaskType type;
-  WorkTaskStatus status;
+  String? number;
+  WorkTaskType? type;
+  WorkTaskStatus? status;
 
-  int priority;
-  int sourceLocationId;
-  WarehouseLocation sourceLocation;
-  int destinationLocationId;
-  WarehouseLocation destinationLocation;
+  int? priority;
+  int? sourceLocationId;
+  WarehouseLocation? sourceLocation;
+  int? destinationLocationId;
+  WarehouseLocation? destinationLocation;
 
-  String referenceNumber;
+  String? referenceNumber;
 
-  OperationType operationType;
+  OperationType? operationType;
 
   //不同的类使用不同的mixin即可
   factory WorkTask.fromJson(Map<String, dynamic> json) => _$WorkTaskFromJson(json);

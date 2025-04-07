@@ -25,12 +25,12 @@ part 'work_order_kpi_transaction.g.dart';
 class WorkOrderKPITransaction{
   WorkOrderKPITransaction();
 
-  int id;
-  String username;
-  String workingTeamName;
-  KPIMeasurement kpiMeasurement;
-  WorkOrderKPITransactionType type;
-  double amount;
+  int? id;
+  String? username;
+  String? workingTeamName;
+  KPIMeasurement? kpiMeasurement;
+  WorkOrderKPITransactionType? type;
+  double? amount;
 
 
 

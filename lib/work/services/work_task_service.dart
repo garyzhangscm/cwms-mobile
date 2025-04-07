@@ -14,13 +14,13 @@ import 'package:dio/dio.dart';
 
 class WorkTaskService {
 
-  static Future<WorkTask> getNextWorkTask() async {
+  static Future<WorkTask?> getNextWorkTask() async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
         "resource/work-tasks/next-work-task",
         queryParameters: {"rfCode":  Global.getLastLoginRFCode(),
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     printLongLogMessage("response from getNextWorkTask: $response");
@@ -41,7 +41,7 @@ class WorkTaskService {
     Response response = await httpClient.delete(
         "resource/work-tasks/${workTask.id}",
         queryParameters: {"rfCode":  Global.getLastLoginRFCode(),
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getNextWorkTask: $response");
@@ -62,7 +62,7 @@ class WorkTaskService {
     Response response = await httpClient.post(
         "resource/work-tasks/${workTask.id}/complete",
         queryParameters: {"rfCode":  Global.getLastLoginRFCode(),
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getNextWorkTask: $response");
@@ -83,7 +83,7 @@ class WorkTaskService {
     Response response = await httpClient.post(
         "resource/work-tasks/${workTask.id}/acknowledge",
         queryParameters: {"rfCode":  Global.getLastLoginRFCode(),
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getNextWorkTask: $response");
@@ -104,7 +104,7 @@ class WorkTaskService {
     Response response = await httpClient.post(
         "resource/work-tasks/${workTask.id}/unacknowledge",
         queryParameters: {
-          "warehouseId": Global.currentWarehouse.id,
+          "warehouseId": Global.currentWarehouse!.id,
         "skip" : skip}
     );
 

@@ -18,7 +18,7 @@ class OrderService {
     Response response = await httpClient.get(
         "outbound/orders",
         queryParameters: {"number": orderNumber,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // print("response from Order: $response");
@@ -52,7 +52,7 @@ class OrderService {
 
     Response response = await httpClient.get(
         "outbound/orders-with-open-pick",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id}
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id}
     );
 
     // print("response from Order: $response");
@@ -77,7 +77,7 @@ class OrderService {
 
     Response response = await httpClient.get(
         "outbound/orders/${orderId}/get-manual-pick-quantity",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id,
           "lpn": lpn,  "rfCode":Global.getLastLoginRFCode()}
     );
 
@@ -106,7 +106,7 @@ class OrderService {
 
     Response response = await httpClient.post(
         "outbound/orders/${orderId}/generate-manual-pick",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id,
           "lpn": lpn,
           "rfCode":Global.getLastLoginRFCode(),
           "pickWholeLPN": pickWholeLPN}

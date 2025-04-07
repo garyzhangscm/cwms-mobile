@@ -17,16 +17,16 @@ part 'production_line.g.dart';
 class ProductionLine{
   ProductionLine();
 
-  int id;
-  String name;
+  int? id;
+  String? name;
 
 
-  int inboundStageLocationId;
-  WarehouseLocation inboundStageLocation;
-  int outboundStageLocationId;
-  WarehouseLocation outboundStageLocation;
-  int productionLineLocationId;
-  WarehouseLocation productionLineLocation;
+  int? inboundStageLocationId;
+  WarehouseLocation? inboundStageLocation;
+  int? outboundStageLocationId;
+  WarehouseLocation? outboundStageLocation;
+  int? productionLineLocationId;
+  WarehouseLocation? productionLineLocation;
 
 
 

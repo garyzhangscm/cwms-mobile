@@ -12,7 +12,7 @@ class MenuService {
   static Future<MenuGroup> getAccessibleMenus() async {
 
 
-    CWMSHttpResponse response = await Global.httpClient.get("/resource/site-information/mobile",
+    CWMSHttpResponse response = await Global.httpClient!.get("/resource/site-information/mobile",
         queryParameters: {
           "companyId": Global.lastLoginCompanyId
         });

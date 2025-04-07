@@ -25,13 +25,13 @@ part 'work_order_labor.g.dart';
 class WorkOrderLabor{
   WorkOrderLabor();
 
-  int id;
-  int warehouseId;
-  String username;
-  ProductionLine productionLine;
-  DateTime lastCheckInTime;
-  DateTime lastCheckOutTime;
-  WorkOrderLaborStatus workOrderLaborStatus;
+  int? id;
+  int? warehouseId;
+  String? username;
+  ProductionLine? productionLine;
+  DateTime? lastCheckInTime;
+  DateTime? lastCheckOutTime;
+  WorkOrderLaborStatus? workOrderLaborStatus;
 
 
 

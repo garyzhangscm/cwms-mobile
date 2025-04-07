@@ -11,10 +11,10 @@ part 'warehouse.g.dart';
 class Warehouse{
   Warehouse();
 
-  int id;
-  String name;
-  double size;
-  int companyId;
+  int? id;
+  String? name;
+  double? size;
+  int? companyId;
 
   //不同的类使用不同的mixin即可
   factory Warehouse.fromJson(Map<String, dynamic> json) => _$WarehouseFromJson(json);

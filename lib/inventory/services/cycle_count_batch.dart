@@ -75,7 +75,7 @@ class CycleCountBatchService {
     Response response = await httpClient.get(
         "/inventory/cycle-count-batches",
         queryParameters: {"batchId": batchId,
-          "warehouseId": Global.currentWarehouse.id}
+          "warehouseId": Global.currentWarehouse!.id}
     );
 
     // printLongLogMessage("response from getCycleCountBatchByBatchId: $response");

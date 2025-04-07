@@ -15,13 +15,13 @@ part 'work_order_produced_inventory.g.dart';
 class WorkOrderProducedInventory{
   WorkOrderProducedInventory();
 
-  int id;
-  String lpn;
-  int quantity;
-  int inventoryStatusId;
-  InventoryStatus inventoryStatus;
-  int itemPackageTypeId;
-  ItemPackageType itemPackageType;
+  int? id;
+  String? lpn;
+  int? quantity;
+  int? inventoryStatusId;
+  InventoryStatus? inventoryStatus;
+  int? itemPackageTypeId;
+  ItemPackageType? itemPackageType;
 
   //不同的类使用不同的mixin即可
   factory WorkOrderProducedInventory.fromJson(Map<String, dynamic> json) => _$WorkOrderProducedInventoryFromJson(json);

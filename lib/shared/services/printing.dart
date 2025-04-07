@@ -49,8 +49,8 @@ class PrintingService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.put(
-        Global.currentServer.url! + "/resource/printing-requests/by-report-history",
-        queryParameters: {"warehouseId": Global.currentWarehouse.id,
+        Global.currentServer!.url! + "/resource/printing-requests/by-report-history",
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id,
           "reportHistoryId": reportHistory.id,
           "printerName": printerName,
           "copies":  "1"}
@@ -77,7 +77,7 @@ class PrintingService {
     printLongLogMessage("Start to print file ${reportHistory.fileName} from server's printer ${printerName}");
 
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
-    queryParameters["warehouseId"] = Global.currentWarehouse.id;
+    queryParameters["warehouseId"] = Global.currentWarehouse!.id;
     queryParameters["printerName"] = printerName;
     queryParameters["copies"] = "1";
 
@@ -85,7 +85,7 @@ class PrintingService {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.post(
-        Global.currentServer.url! + "/resource/report-histories/print/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/${reportHistory.type?.name}/${reportHistory.fileName}",
+        Global.currentServer!.url! + "/resource/report-histories/print/${Global.lastLoginCompanyId}/${Global.currentWarehouse!.id}/${reportHistory.type?.name}/${reportHistory.fileName}",
         queryParameters: queryParameters
     );
 
@@ -106,8 +106,8 @@ class PrintingService {
   static Future<String> downloadFile(ReportHistory reportHistory) async {
 //https://staging.claytechsuite.com/api/resource/report-histories/preview/4/6/LPN_LABEL/LPN_LABEL_1743551794620_0109.lbl?token=eyJhbGciOiJIUzI1NiJ9.eyJjb21wYW55SWQiOi0xLCJzdWIiOiJHWkhBTkciLCJpYXQiOjE3NDM1NTE0MzUsImV4cCI6MTc0MzU4NzQzNX0.l4xWVEA5dQSwhGUtVqAGEqFDQYsrMl784Y0N-rkUkJQ&companyId=4
 
-    String url = "resource/report-histories/preview/${Global.lastLoginCompanyId}/${Global.currentWarehouse.id}/LPN_LABEL/${reportHistory.fileName}";
-    url  = "$url?token=${Global.currentUser.token}";
+    String url = "resource/report-histories/preview/${Global.lastLoginCompanyId}/${Global.currentWarehouse!.id}/LPN_LABEL/${reportHistory.fileName}";
+    url  = "$url?token=${Global.currentUser!.token}";
     url  = "$url&companyId=${Global.lastLoginCompanyId}";
 
     Dio httpClient = CWMSHttpClient.getDio();

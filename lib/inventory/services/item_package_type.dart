@@ -16,7 +16,7 @@ class ItemPackageTypeService {
 
     Response response = await httpClient.get(
         "/inventory/itemPackageTypes",
-      queryParameters: {'warehouseId': Global.currentWarehouse.id,
+      queryParameters: {'warehouseId': Global.currentWarehouse!.id,
         'itemId': itemId,
           'name': name}
     );

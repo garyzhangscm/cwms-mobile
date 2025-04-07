@@ -1,4 +1,5 @@
-import 'dart:collection';
+
+import 'package:collection/collection.dart';
 
 import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -19,7 +20,6 @@ import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/services/barcode_service.dart';
-import 'package:cwms_mobile/shared/services/printing.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
@@ -110,9 +110,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
         print("barcode.is_2d? ${barcode.is_2d}");
 
         // first check if it is a barcode scanned in
-        if (barcode.is_2d) {
+        if (barcode.is_2d  == true) {
           _barcodeReceivingMode = true;
-          _processBarcode(barcode.result).then(
+          _processBarcode(barcode.result!).then(
                   (successful) {
 
                     if (successful) {
@@ -157,7 +157,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         // if we tab out, then add the LPN to the list
 
         Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d) {
+        if (barcode.is_2d == true) {
           // for 2d barcode, let's get the result and set the LPN back to the text
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
@@ -205,7 +205,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
     if (parameters.containsKey("inventoryStatusId")) {
       setState(() {
 
-        _selectedInventoryStatus = _validInventoryStatus.firstWhere((inventoryStatus) => inventoryStatus.id.toString() == parameters["inventoryStatusId"]);
+        _selectedInventoryStatus = _validInventoryStatus.firstWhereOrNull
+          ((inventoryStatus) => inventoryStatus.id.toString() == parameters["inventoryStatusId"]);
       });
     }
 
@@ -624,7 +625,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       else if (_selectedItemPackageType != null){
           setState(() {
             _selectedItemPackageType = _currentReceiptLine!.item!.itemPackageTypes
-                .firstWhere((element) => element.id == _selectedItemPackageType?.id);
+                .firstWhereOrNull((element) => element.id == _selectedItemPackageType?.id);
           });
       }
     }
@@ -635,14 +636,15 @@ class _ReceivingPageState extends State<ReceivingPage> {
   // 1. item package type defined at the receipt line level
   // 2. default item package type of the item
   // 3. first item package type of the item
-  ItemPackageType getDefaultItemPackageType(ReceiptLine receiptLine) {
+  ItemPackageType? getDefaultItemPackageType(ReceiptLine receiptLine) {
       if (receiptLine.itemPackageTypeId != null) {
-        return _currentReceiptLine!.item!.itemPackageTypes.firstWhere((element) => element.id == receiptLine.itemPackageTypeId);
+        return _currentReceiptLine!.item!.itemPackageTypes.firstWhereOrNull
+          ((element) => element.id == receiptLine.itemPackageTypeId);
       }
 
 
-      ItemPackageType defaultItemPackageType =
-          _currentReceiptLine!.item!.itemPackageTypes.firstWhere((element) => element.defaultFlag == true);
+      ItemPackageType? defaultItemPackageType =
+          _currentReceiptLine!.item!.itemPackageTypes.firstWhereOrNull((element) => element.defaultFlag == true);
 
       return defaultItemPackageType == null ? _currentReceiptLine!.item!.itemPackageTypes[0] : defaultItemPackageType;
   }
@@ -677,7 +679,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         // default the value to the one marked as 'default for inbound receiving'
 
         _selectedItemUnitOfMeasure = _selectedItemPackageType!.itemUnitOfMeasures
-            .firstWhere((element) => element.id == _selectedItemPackageType!.defaultInboundReceivingUOM?.id);
+            .firstWhereOrNull((element) => element.id == _selectedItemPackageType!.defaultInboundReceivingUOM?.id);
     }
 
     return items;
@@ -1236,7 +1238,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     }
 
     setState(() {
-      _currentReceiptLine =  _currentReceipt!.receiptLines.firstWhere(
+      _currentReceiptLine =  _currentReceipt!.receiptLines.firstWhereOrNull(
               (receiptLine) => receiptLine!.item!.name == itemNumber);
     });
 

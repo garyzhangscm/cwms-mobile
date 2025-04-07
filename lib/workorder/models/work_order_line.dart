@@ -12,22 +12,22 @@ part 'work_order_line.g.dart';
 class WorkOrderLine{
   WorkOrderLine();
 
-  int id;
-  String number;
+  int? id;
+  String? number;
 
-  Item item;
-  int itemId;
+  Item? item;
+  int? itemId;
 
-  int expectedQuantity;
-  int openQuantity;
-  int inprocessQuantity;
-  int deliveredQuantity;
-  int consumedQuantity;
-  int scrappedQuantity;
-  int returnedQuantity;
+  int? expectedQuantity;
+  int? openQuantity;
+  int? inprocessQuantity;
+  int? deliveredQuantity;
+  int? consumedQuantity;
+  int? scrappedQuantity;
+  int? returnedQuantity;
 
-  int inventoryStatusId;
-  InventoryStatus inventoryStatus;
+  int? inventoryStatusId;
+  InventoryStatus? inventoryStatus;
 
 
 

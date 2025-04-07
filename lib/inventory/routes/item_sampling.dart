@@ -154,7 +154,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
   _onAddNewItemSampling(){
     setState(() {
 
-      _currentItemSampling = ItemSampling.fromItem(Global.currentWarehouse.id, _currentItemSampling!.item!);
+      _currentItemSampling = ItemSampling.fromItem(Global.currentWarehouse!.id!, _currentItemSampling!.item!);
       _newItemSampling = true;
       _itemSamplingNumberController.clear();
     });
@@ -190,7 +190,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
             return;
 
           }
-          _currentItemSampling = ItemSampling.fromItem(Global.currentWarehouse.id, item);
+          _currentItemSampling = ItemSampling.fromItem(Global.currentWarehouse!.id!, item);
           _newItemSampling = true;
         }
         else {
@@ -246,12 +246,12 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
                     Image.file(File(_localFile[imageUrl]!))
                         :
                     Image.network(
-                        Global.currentServer.url! + "inventory/item-sampling/images/${Global.currentWarehouse.id}/${_currentItemSampling!.item!.id}/${_currentItemSampling!.number}/$imageUrl",
+                        Global.currentServer!.url! + "inventory/item-sampling/images/${Global.currentWarehouse!.id}/${_currentItemSampling!.item!.id}/${_currentItemSampling!.number}/$imageUrl",
                         fit: BoxFit.cover, width: 1000,
                         headers: {
-                          HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser.token}",
-                          "rfCode": Global.lastLoginRFCode,
-                          "warehouseId": Global.currentWarehouse.id.toString(),
+                          HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser!.token}",
+                          "rfCode": Global.lastLoginRFCode!,
+                          "warehouseId": Global.currentWarehouse!.id.toString(),
                           "companyId": Global.lastLoginCompanyId.toString()
                         }),
                     Positioned(

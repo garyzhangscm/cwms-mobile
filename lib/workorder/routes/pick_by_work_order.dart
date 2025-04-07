@@ -5,27 +5,24 @@ import 'dart:core';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
-import 'package:cwms_mobile/outbound/services/order.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
-import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:cwms_mobile/workorder/widgets/work_order_list_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart' as badge;
 
 
 class PickByWorkOrderPage extends StatefulWidget{
 
-  PickByWorkOrderPage({Key key}) : super(key: key);
+  PickByWorkOrderPage({Key? key}) : super(key: key);
 
 
   @override
@@ -44,7 +41,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
   // a map of relationship beteen order and pick id
   // we will use this map to remove the picks when we remove the
   // work order from the assignment
-  HashMap workOrderPicks = new HashMap<String, Set<int>>();
+  HashMap<String, Set<int>> workOrderPicks = new HashMap();
 
 
   // map to store order's priority
@@ -65,9 +62,9 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
   // selected orders from the order selection pop up
   List<WorkOrder> selectedWorkOrders = [];
 
-  Pick currentPick;
+  Pick? currentPick;
 
-  List<Inventory>  inventoryOnRF;
+  List<Inventory>  inventoryOnRF =[];
 
   @override
   void initState() {
@@ -80,7 +77,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
     workOrderSharedFlagMap.clear();
     assignedWorkOrders = [];
     selectedWorkOrders = [];
-    inventoryOnRF = new List<Inventory>();
+    inventoryOnRF  =[];
 
     _reloadInventoryOnRF();
 
@@ -299,7 +296,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
     if (_workOrderNumberController.text.isNotEmpty &&
         !_orderAlreadyInList(_workOrderNumberController.text)) {
 
-      WorkOrder workOrder =
+      WorkOrder? workOrder =
         await WorkOrderService.getWorkOrderByNumber(_workOrderNumberController.text);
 
 
@@ -334,11 +331,11 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
       workOrder.totalLineDeliveredQuantity = 0;
       workOrder.totalLineConsumedQuantity = 0;
       workOrder.workOrderLines.forEach((workOrderLine) {
-        workOrder.totalLineExpectedQuantity += workOrderLine.expectedQuantity;
-        workOrder.totalLineOpenQuantity += workOrderLine.openQuantity;
-        workOrder.totalLineInprocessQuantity += workOrderLine.inprocessQuantity;
-        workOrder.totalLineDeliveredQuantity += workOrderLine.deliveredQuantity;
-        workOrder.totalLineConsumedQuantity += workOrderLine.consumedQuantity;
+        workOrder.totalLineExpectedQuantity = workOrder.totalLineExpectedQuantity! + workOrderLine.expectedQuantity!;
+        workOrder.totalLineOpenQuantity = workOrder.totalLineOpenQuantity! + workOrderLine.openQuantity!;
+        workOrder.totalLineInprocessQuantity = workOrder.totalLineInprocessQuantity! + workOrderLine.inprocessQuantity!;
+        workOrder.totalLineDeliveredQuantity = workOrder.totalLineDeliveredQuantity! + workOrderLine.deliveredQuantity!;
+        workOrder.totalLineConsumedQuantity = workOrder.totalLineConsumedQuantity! + workOrderLine.consumedQuantity!;
       });
 
       setState(() {
@@ -362,13 +359,13 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
     // save the relationship between the work order and the picks so that
     // when we remove the order from current assignment, we can
     // remove the picks as well
-    Set<int> existingPicks = workOrderPicks[workOrder.number];
+    Set<int>? existingPicks = workOrderPicks[workOrder.number];
     if (existingPicks == null) {
       existingPicks = new Set<int>();
     }
 
-    picksByWorkOrder.forEach((pick) => existingPicks.add(pick.id));
-    workOrderPicks[workOrder.number] = existingPicks;
+    picksByWorkOrder.forEach((pick) => existingPicks?.add(pick.id!));
+    workOrderPicks[workOrder.number!] = existingPicks;
 
     print("_assignPickToUser: Now we have ${assignedPicks.length} picks from ${workOrderPicks.length} orders assigned");
 
@@ -378,8 +375,8 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
   void _deassignPickFromUser(WorkOrder workOrder) {
     // find the pick ids and remove them from the pick list
 
-    Set<int> existingPicks = workOrderPicks[workOrder.number];
-    existingPicks.forEach((pickId) =>
+    Set<int>? existingPicks = workOrderPicks[workOrder.number];
+    existingPicks?.forEach((pickId) =>
         assignedPicks.removeWhere((assignedPick) => assignedPick.id == pickId));
 
     // remove order from the relationship map
@@ -417,21 +414,21 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
         return;
       }
       var pickResult = result as PickResult;
-      print("pick result: ${pickResult.result} for pick: ${currentPick.number}");
+      print("pick result: ${pickResult.result} for pick: ${currentPick!.number}");
 
       // refresh the orders
       if (pickResult.result == true) {
         // update the current pick
-        currentPick.pickedQuantity
-          = currentPick.pickedQuantity + pickResult.confirmedQuantity;
+        currentPick!.pickedQuantity
+          = currentPick!.pickedQuantity! + pickResult!.confirmedQuantity!;
         // update the order's open pick quantity to reflect the
         // pick status
-        WorkOrder workOrder = _getWorkOrderByPick(currentPick);
+        WorkOrder? workOrder = _getWorkOrderByPick(currentPick!);
         if (workOrder != null) {
           setState(() {
 
-            workOrder.totalLineOpenQuantity -= pickResult.confirmedQuantity;
-            workOrder.totalLineDeliveredQuantity +=  pickResult.confirmedQuantity;
+            workOrder.totalLineOpenQuantity = workOrder.totalLineOpenQuantity! - pickResult!.confirmedQuantity!;
+            workOrder.totalLineDeliveredQuantity = workOrder.totalLineDeliveredQuantity! + pickResult!.confirmedQuantity!;
           });
         }
 
@@ -461,13 +458,13 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
 
   }
 
-  WorkOrder _getWorkOrderByPick(Pick pick) {
+  WorkOrder? _getWorkOrderByPick(Pick pick) {
     // Since the pick doesn't have the information of the pick, we will
     // need to get the order number from the map orderPicks, which
     // is the only place we store the relationship between
     // order number and pick id
 
-    WorkOrder workOrder;
+    WorkOrder? workOrder;
     Iterator<MapEntry<String, Set<int>>> workOrderPickIterator = workOrderPicks.entries.iterator;
     while(workOrderPickIterator.moveNext()) {
       MapEntry<String, Set<int>> workOrderPick = workOrderPickIterator.current;
@@ -475,7 +472,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
       Set<int> pickIdSet =  workOrderPick.value;
       // check if the pick belongs to the current order
       if (pickIdSet.contains(pick.id)) {
-        workOrder = assignedWorkOrders.firstWhere((assignedWorkOrder) => assignedWorkOrder.number == workOrderNumber);
+        workOrder = assignedWorkOrders.firstWhereOrNull((assignedWorkOrder) => assignedWorkOrder.number == workOrderNumber);
         if (workOrder != null) {
           // we found such order, let's return
           break;
@@ -501,7 +498,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
 
   }
 
-  Pick _getNextValidPick() {
+  Pick? _getNextValidPick() {
     print(" =====   _getNextValidPick      =====");
     assignedPicks.forEach((pick) {
       print(">> ${pick.number} / ${pick.quantity} / ${pick.pickedQuantity}");
@@ -510,7 +507,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
        return null;
     }
     else {
-      return assignedPicks.firstWhere((pick) => pick.quantity > pick.pickedQuantity, orElse: () => null);
+      return assignedPicks.firstWhereOrNull((pick) => pick.quantity! > pick.pickedQuantity!);
     }
   }
 
@@ -574,9 +571,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
                   highPriorityFlag: false,
                   sharedFlag: false,
                   displayOnlyFlag: true,
-                  onPriorityChanged:  null,
-                  onSharedFlagChanged: null,
-                  onRemove:  null,
+
                   onToggleHightlighted:  (selected) => _selectWorkOrderFromList(selected, workOrdersWithOpenPick[index])
               );
             }),

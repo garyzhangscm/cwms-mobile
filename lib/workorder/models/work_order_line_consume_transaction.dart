@@ -14,10 +14,10 @@ part 'work_order_line_consume_transaction.g.dart';
 class WorkOrderLineConsumeTransaction{
   WorkOrderLineConsumeTransaction();
 
-  int id;
-  WorkOrderLine workOrderLine;
+  int? id;
+  WorkOrderLine? workOrderLine;
 
-  int consumedQuantity;
+  int? consumedQuantity;
 
   //不同的类使用不同的mixin即可
   factory WorkOrderLineConsumeTransaction.fromJson(Map<String, dynamic> json) => _$WorkOrderLineConsumeTransactionFromJson(json);
