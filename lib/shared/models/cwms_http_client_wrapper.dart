@@ -231,15 +231,15 @@ class CWMSHttpClientAdapter {
     }
 
     CWMSHttpException _parseException(Exception error) {
-        if (error is DioError) {
+        if (error is DioException) {
             switch (error.type) {
-                case DioErrorType.connectTimeout:
-                case DioErrorType.receiveTimeout:
-                case DioErrorType.sendTimeout:
-                    return NetworkException(message: error.error.message);
-                case DioErrorType.cancel:
-                    return CancelException(error.error.message);
-                case DioErrorType.response:
+                case DioExceptionType.connectionTimeout:
+                case DioExceptionType.receiveTimeout:
+                case DioExceptionType.sendTimeout:
+                    return NetworkException(message: error.message);
+                case DioExceptionType.cancel:
+                    return CancelException(error.message);
+                case DioExceptionType.badResponse:
                     try {
                         int errCode = error.response!.statusCode!;
                         switch (errCode) {
@@ -280,13 +280,13 @@ class CWMSHttpClientAdapter {
                                     message: CWMSLocalizations.of(MyApp.navigatorKey.currentContext!).httpError505,
                                     code: errCode);
                             default:
-                                return UnknownException(error.error.message);
+                                return UnknownException(error.message);
                         }
                     } on Exception catch (_) {
-                        return UnknownException(error.error.message);
+                        return UnknownException(error.message);
                     }
                     break;
-                case DioErrorType.other:
+                case DioExceptionType.unknown:
                     if (error.error is SocketException) {
                         return NetworkException(message: error.message);
                     } else {

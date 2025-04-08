@@ -44,27 +44,27 @@ dependencies:
 
   # save server URL
   # shared_preferences: "^0.4.2"
-  shared_preferences: ^2.0.8
+  shared_preferences: ^2.5.3
 
   # http client
   # dio: ^3.0.10
-  dio: ^4.0.6
+  dio: ^5.8.0+1
 
   # Parse JSON
   # json_annotation: ^3.1.0
   # json_annotation: ^4.3.0
-  json_annotation: ^4.7.0
+  json_annotation: ^4.9.0
 
   # cached_network_image: ^2.0.0
   # cached_network_image: ^3.1.0+1
-  cached_network_image: ^3.2.2
+  cached_network_image: ^3.4.1
 
   # fluttertoast: ^8.0.8
-  fluttertoast: ^8.1.1
+  fluttertoast: ^8.2.12
 
   # webview_flutter: ^1.0.6
   # webview_flutter: ^2.3.0
-  webview_flutter: ^3.0.4
+  webview_flutter: ^4.10.0
 
   # barcode scanner
   # flutter_barcode_scanner: ^1.0.2
@@ -75,11 +75,13 @@ dependencies:
   # badges
   # https://pub.dev/packages/badges
   # badges: ^1.2.0
-  badges: ^2.0.1
+  # badges: ^2.0.1
+  badges: ^3.1.2
 
   # cast between enum and string
   # enum_to_string: ^1.0.14
-  enum_to_string: ^2.0.1
+  # enum_to_string: ^2.0.1
+  enum_to_string: ^2.2.1
 
   # print PDF files from local printer
   # printing: ^5.0.0
@@ -90,34 +92,45 @@ dependencies:
   flutter_launcher_icons: ^0.14.3
 
   # carousel_slider: ^4.0.0
-  carousel_slider: ^4.1.1
+  # carousel_slider: ^4.1.1
+  carousel_slider: ^5.0.0
 
   # Auto upgrade
   # 1. get package information from the server
-  package_info: ^2.0.2
+  # package_info: ^2.0.2
+  package_info_plus: ^8.3.0
   # 2. get the local path to download and store the app file
-  path_provider: ^2.0.4
+  # path_provider: ^2.0.4
+  path_provider: ^2.1.5
   # 3. download the latest app file from the server
   # flutter_downloader: ^1.7.1
-  flutter_downloader: ^1.8.4
+  # flutter_downloader: ^1.8.4
+  flutter_downloader: ^1.12.0
+
   # 3.1 Show the download progress
   # progress_dialog: ^1.2.4
   progress_dialog_null_safe: ^3.0.0
   # 4. open the downloaded file and install the apk
-  open_file: ^3.2.1
+  # open_file: ^3.2.1
+  open_file: ^3.5.10
 
-  device_info: ^2.0.3
+  # device_info: ^2.0.3
+  device_info_plus: ^11.3.3
   android_path_provider: ^0.3.0
-  permission_handler: ^8.2.6
+  # permission_handler: ^8.2.6
+  permission_handler: ^11.4.0
   # permission_handler: ^9.2.0
 
   #upload images
   # image_picker: ^0.8.4+4
-  image_picker: ^0.8.6
-  qr_code_scanner: ^1.0.1
+  # image_picker: ^0.8.6
+  image_picker: ^1.1.2
+  # qr_code_scanner: ^1.0.1
+  qr_code_scanner_plus: ^2.0.10+1
 
   tuple: ^2.0.2
-  dropdown_button2: ^2.1.4
+  # dropdown_button2: ^2.1.4
+  dropdown_button2: ^2.3.9
   flutter_file_dialog: ^3.0.2
   printing: ^5.14.2
   # blue_thermal_printer: ^1.2.3

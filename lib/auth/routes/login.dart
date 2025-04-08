@@ -18,7 +18,7 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:collection/collection.dart';
 
 import '../../shared/models/rf.dart';
@@ -60,21 +60,23 @@ class _LoginPageState extends State<LoginPage> {
 
     }
     else {
-      defaultCompanyCode = Global.lastLoginCompanyCode!;
+      defaultCompanyCode = Global.lastLoginCompanyCode ?? "";
     }
     _companyCodeController.text = defaultCompanyCode;
     // check if auto login
+    printLongLogMessage("see if we can auto login");
+
     if (Global.autoLoginUser != null) {
       _processAutoLogin(Global.autoLoginUser!);
     }
     _validWarehouses = [];
+
     if (_companyCodeController.text.isNotEmpty) {
+      printLongLogMessage("start to load warehouse");
       _loadWarehouses();
     }
     _rfCodeController = TextEditingController(
         text: Global.getLastLoginRFCode());
-
-
 
   }
 

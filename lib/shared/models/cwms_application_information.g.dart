@@ -8,9 +8,9 @@ part of 'cwms_application_information.dart';
 
 CWMSApplicationInformation _$CWMSApplicationInformationFromJson(Map<String, dynamic> json) {
   return CWMSApplicationInformation()
-    ..name = json['name'] as String
-    ..description = json['description'] as String
-    ..version = json['version'] as String;
+    ..name = json['name'] ?? ""
+    ..description = json['description'] ?? ""
+    ..version = json['version'] ?? "";
 }
 
 Map<String, dynamic> _$CWMSApplicationInformationToJson(CWMSApplicationInformation instance) =>

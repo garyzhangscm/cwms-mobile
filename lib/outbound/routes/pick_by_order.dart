@@ -175,8 +175,10 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
           ),
           badge.Badge(
               showBadge: true,
+            badgeStyle: badge.BadgeStyle(
               padding: EdgeInsets.all(8),
               badgeColor: Colors.deepPurple,
+            ),
               badgeContent: Text(
                 inventoryOnRF.length.toString(),
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

@@ -9,7 +9,7 @@ import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/models/rf_app_version.dart';
-import 'package:device_info/device_info.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:open_file/open_file.dart';
@@ -259,8 +259,9 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
   }
   /// 下载进度回调函数
   @pragma('vm:entry-point')
-  static void _downLoadCallback(String id, DownloadTaskStatus status, int progress) {
-    printLongLogMessage("_downLoadCallback: id: ${id}, status: ${status.value}, progress: ${progress}");
+  //static void _downLoadCallback(String id, DownloadTaskStatus status, int progress) {
+  static void _downLoadCallback(String id, int status, int progress) {
+    printLongLogMessage("_downLoadCallback: id: ${id}, status: ${status}, progress: ${progress}");
 
     IsolateNameServer.lookupPortByName('downloader_send_port')
         ?.send([id, status, progress]);

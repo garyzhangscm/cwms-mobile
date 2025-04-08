@@ -8,11 +8,11 @@ part of 'cwms_site_information.dart';
 
 CWMSSiteInformation _$CWMSSiteInformationFromJson(Map<String, dynamic> json) {
   return CWMSSiteInformation()
-    ..url = json['url'] as String
-    ..autoConnectFlag = json['autoConnectFlag'] as bool
-    ..singleCompanySite = json['singleCompanySite'] as bool
-    ..defaultCompanyCode = json['defaultCompanyCode'] as String
-    ..rfAppVersion = json['rfAppVersion'] as String
+    ..url = json['url'] ?? ""
+    ..autoConnectFlag = json['autoConnectFlag'] ?? false
+    ..singleCompanySite = json['singleCompanySite']  ?? false
+    ..defaultCompanyCode = json['defaultCompanyCode'] ?? ""
+    ..rfAppVersion = json['rfAppVersion'] ?? ""
     ..cwmsApplicationInformation = json['app'] == null
         ? null
         : CWMSApplicationInformation.fromJson(json['app'] as Map<String, dynamic>);

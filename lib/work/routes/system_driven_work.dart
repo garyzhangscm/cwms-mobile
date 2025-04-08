@@ -17,7 +17,6 @@ import 'package:cwms_mobile/work/models/work-task-type.dart';
 import 'package:cwms_mobile/work/models/work_task.dart';
 import 'package:cwms_mobile/work/services/work_task_service.dart';
 import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
 
 import '../../outbound/models/pick.dart';
 import '../../outbound/models/pick_list.dart';
@@ -274,8 +273,10 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
         ),
         badge.Badge(
           showBadge: true,
-          padding: EdgeInsets.all(8),
-          badgeColor: Colors.deepPurple,
+          badgeStyle: badge.BadgeStyle(
+            padding: EdgeInsets.all(8),
+            badgeColor: Colors.deepPurple,
+          ),
           badgeContent: Text(
             _inventoryOnRF == null || _inventoryOnRF.length == 0 ? "0" : _inventoryOnRF.length.toString(),
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

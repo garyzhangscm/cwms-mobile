@@ -9,7 +9,7 @@ import 'package:cwms_mobile/warehouse_layout/models/company.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:collection/collection.dart';
 
@@ -229,7 +229,7 @@ class Global {
   }
 
   static String getLastLoginRFCode(){
-    return lastLoginRFCode!;
+    return lastLoginRFCode ?? "";
   }
   static setLastLoginRFCode(String rfCode){
     lastLoginRFCode = rfCode;

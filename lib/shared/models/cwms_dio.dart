@@ -1,5 +1,7 @@
-import 'package:dio/adapter.dart';
+
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 
 import 'cwms_http_config.dart';
 
@@ -8,9 +10,9 @@ class CWMSDio with DioMixin implements Dio {
         options ??= BaseOptions(
             baseUrl: dioConfig?.baseUrl ?? "",
             contentType: 'application/json',
-            connectTimeout: dioConfig?.connectTimeout,
-            sendTimeout: dioConfig?.sendTimeout,
-            receiveTimeout: dioConfig?.receiveTimeout,
+            connectTimeout: Duration(milliseconds: dioConfig?.connectTimeout ?? 0),
+            sendTimeout: Duration(milliseconds: dioConfig?.sendTimeout ?? 0),
+            receiveTimeout: Duration(milliseconds: dioConfig?.receiveTimeout ?? 0),
             headers: dioConfig?.headers
         );
         this.options = options;
@@ -49,7 +51,7 @@ class CWMSDio with DioMixin implements Dio {
         if (dioConfig?.interceptors?.isNotEmpty ?? false) {
             interceptors.addAll(interceptors);
         }
-        httpClientAdapter = DefaultHttpClientAdapter();
+        httpClientAdapter = IOHttpClientAdapter();
     }
 
 }

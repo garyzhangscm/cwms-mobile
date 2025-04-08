@@ -1,4 +1,5 @@
 
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -174,7 +175,7 @@ class _LaunchPageState extends State<LaunchPage> {
         Response response = await Dio().get(
             serverUrl + "/resource/mobile");
 
-        print("get response: $response");
+        print("get response from server \n: $response");
 
 
         HttpResponseWrapper httpResponseWrapper =
@@ -213,6 +214,7 @@ class _LaunchPageState extends State<LaunchPage> {
         Global.setCurrentServer(server);
 
 
+        printLongLogMessage("start login process");
         Navigator.pushNamed(context, "login_page");
 
 

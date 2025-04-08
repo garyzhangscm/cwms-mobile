@@ -155,8 +155,10 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
 
         badge.Badge(
           showBadge: true,
-          padding: EdgeInsets.all(8),
-          badgeColor: Colors.deepPurple,
+          badgeStyle: badge.BadgeStyle(
+            padding: EdgeInsets.all(8),
+            badgeColor: Colors.deepPurple,
+          ),
           badgeContent: Text(
             inventoryOnRF.length.toString(),
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -172,8 +174,10 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         ),
         badge.Badge(
           showBadge: true,
-          padding: EdgeInsets.all(8),
-          badgeColor: Colors.deepPurple,
+          badgeStyle: badge.BadgeStyle(
+            padding: EdgeInsets.all(8),
+            badgeColor: Colors.deepPurple,
+          ),
           badgeContent: Text(
             inventoryOnRF.length.toString(),
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
