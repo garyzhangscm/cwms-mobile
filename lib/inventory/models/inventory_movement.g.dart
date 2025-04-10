@@ -9,12 +9,12 @@ part of 'inventory_movement.dart';
 InventoryMovement _$InventoryMovementFromJson(Map<String, dynamic> json) {
   return InventoryMovement()
     ..id = json['id'] as int
-    ..locationId = json['locationId'] as int
-    ..sequence = json['sequence'] as int
+    ..locationId = json['locationId']
+    ..sequence = json['sequence']
     ..location = json['location'] == null
         ? null
         : WarehouseLocation.fromJson(json['location'] as Map<String, dynamic>)
-    ..warehouseId = json['warehouseId'] as int;
+    ..warehouseId = json['warehouseId'] ;
 }
 
 Map<String, dynamic> _$InventoryMovementToJson(InventoryMovement instance) => <String, dynamic>{

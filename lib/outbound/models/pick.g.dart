@@ -9,43 +9,43 @@ part of 'pick.dart';
 Pick _$PickFromJson(Map<String, dynamic> json) {
   return Pick()
     ..id = json['id'] as int
-    ..number = json['number'] as String
-    ..sourceLocationId = json['sourceLocationId'] as int
+    ..number = json['number']
+    ..sourceLocationId = json['sourceLocationId']
     ..sourceLocation = json['sourceLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['sourceLocation'] as Map<String, dynamic>)
-    ..destinationLocationId = json['destinationLocationId'] as int
+    ..destinationLocationId = json['destinationLocationId']
     ..destinationLocation = json['destinationLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['destinationLocation'] as Map<String, dynamic>)
-    ..itemId = json['itemId'] as int
+    ..itemId = json['itemId']
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
     ..workTaskId = json['workTaskId'] == null
         ? null
-        : json['workTaskId'] as int
+        : json['workTaskId']
     ..workTask = json['workTask'] == null
         ? null
         : WorkTask.fromJson(json['workTask'] as Map<String, dynamic>)
-    ..quantity = json['quantity'] as int
-    ..pickedQuantity = json['pickedQuantity'] as int
-    ..warehouseId = json['warehouseId'] as int
-    ..confirmItemFlag = json['confirmItemFlag'] as bool
-    ..confirmLocationFlag = json['confirmLocationFlag'] as bool
-    ..confirmLocationCodeFlag = json['confirmLocationCodeFlag'] as bool
-    ..confirmLpnFlag = json['confirmLpnFlag'] as bool
-    ..color = json['color'] as String
-    ..productSize = json['productSize'] as String
-    ..style = json['style'] as String
-    ..inventoryAttribute1 = json['inventoryAttribute1'] as String
-    ..inventoryAttribute2 = json['inventoryAttribute2'] as String
-    ..inventoryAttribute3 = json['inventoryAttribute3'] as String
-    ..inventoryAttribute4 = json['inventoryAttribute4'] as String
-    ..inventoryAttribute5 = json['inventoryAttribute5'] as String
-    ..wholeLPNPick = json['wholeLPNPick'] as bool
-    ..allocateByReceiptNumber = json['allocateByReceiptNumber'] as String
-    ..inventoryStatusId = json['inventoryStatusId'] as int
+    ..quantity = json['quantity']
+    ..pickedQuantity = json['pickedQuantity']
+    ..warehouseId = json['warehouseId']
+    ..confirmItemFlag = json['confirmItemFlag']
+    ..confirmLocationFlag = json['confirmLocationFlag']
+    ..confirmLocationCodeFlag = json['confirmLocationCodeFlag']
+    ..confirmLpnFlag = json['confirmLpnFlag']
+    ..color = json['color']
+    ..productSize = json['productSize']
+    ..style = json['style']
+    ..inventoryAttribute1 = json['inventoryAttribute1']
+    ..inventoryAttribute2 = json['inventoryAttribute2']
+    ..inventoryAttribute3 = json['inventoryAttribute3']
+    ..inventoryAttribute4 = json['inventoryAttribute4']
+    ..inventoryAttribute5 = json['inventoryAttribute5']
+    ..wholeLPNPick = json['wholeLPNPick']
+    ..allocateByReceiptNumber = json['allocateByReceiptNumber']
+    ..inventoryStatusId = json['inventoryStatusId']
     ..inventoryStatus = json['inventoryStatus'] == null
         ? null
         : InventoryStatus.fromJson(json['inventoryStatus'] as Map<String, dynamic>);

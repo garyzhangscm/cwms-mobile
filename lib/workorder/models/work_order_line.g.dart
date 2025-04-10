@@ -9,19 +9,19 @@ part of 'work_order_line.dart';
 WorkOrderLine _$WorkOrderLineFromJson(Map<String, dynamic> json) {
   return WorkOrderLine()
     ..id = json['id'] as int
-    ..number = json['number'] as String
-    ..itemId = json['itemId'] as int
+    ..number = json['number']
+    ..itemId = json['itemId']
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
-    ..expectedQuantity = json['expectedQuantity'] as int
-    ..openQuantity = json['openQuantity'] as int
-    ..inprocessQuantity = json['inprocessQuantity'] as int
-    ..deliveredQuantity = json['deliveredQuantity'] as int
-    ..consumedQuantity = json['consumedQuantity'] as int
-    ..scrappedQuantity = json['scrappedQuantity'] as int
-    ..returnedQuantity = json['returnedQuantity'] as int
-    ..inventoryStatusId = json['inventoryStatusId'] as int
+    ..expectedQuantity = json['expectedQuantity']
+    ..openQuantity = json['openQuantity']
+    ..inprocessQuantity = json['inprocessQuantity']
+    ..deliveredQuantity = json['deliveredQuantity']
+    ..consumedQuantity = json['consumedQuantity']
+    ..scrappedQuantity = json['scrappedQuantity']
+    ..returnedQuantity = json['returnedQuantity']
+    ..inventoryStatusId = json['inventoryStatusId']
     ..inventoryStatus = json['inventoryStatus'] == null
         ? null
         : InventoryStatus.fromJson(json['inventoryStatus'] as Map<String, dynamic>);

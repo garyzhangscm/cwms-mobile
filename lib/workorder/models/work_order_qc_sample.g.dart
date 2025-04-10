@@ -9,12 +9,12 @@ part of 'work_order_qc_sample.dart';
 WorkOrderQCSample _$WorkOrderQCSampleFromJson(Map<String, dynamic> json) {
   return WorkOrderQCSample()
     ..id = json['id'] as int
-    ..number = json['number'] as String
-    ..warehouseId = json['warehouseId'] as int
+    ..number = json['number']
+    ..warehouseId = json['warehouseId']
     ..productionLineAssignment = json['productionLineAssignment'] == null
         ? null
         : ProductionLineAssignment.fromJson(json['productionLineAssignment'] as Map<String, dynamic>)
-    ..imageUrls = json['imageUrls'] as String
+    ..imageUrls = json['imageUrls']
   ;
 }
 

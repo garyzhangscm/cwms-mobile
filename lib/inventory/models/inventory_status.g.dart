@@ -9,8 +9,8 @@ part of 'inventory_status.dart';
 InventoryStatus _$InventoryStatusFromJson(Map<String, dynamic> json) {
   return InventoryStatus()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
+    ..name = json['name']
+    ..description = json['description']
     ..availableStatusFlag = json['availableStatusFlag'] == null ? false : json['availableStatusFlag'] as bool
     ..reasonRequiredWhenReceiving = json['reasonRequiredWhenReceiving'] == null ? false : json['reasonRequiredWhenReceiving'] as bool
     ..reasonRequiredWhenProducing = json['reasonRequiredWhenProducing'] == null ? false : json['reasonRequiredWhenProducing'] as bool
@@ -18,7 +18,7 @@ InventoryStatus _$InventoryStatusFromJson(Map<String, dynamic> json) {
     ..reasonOptionalWhenReceiving = json['reasonOptionalWhenReceiving'] == null ? false : json['reasonOptionalWhenReceiving'] as bool
     ..reasonOptionalWhenProducing = json['reasonOptionalWhenProducing'] == null ? false : json['reasonOptionalWhenProducing'] as bool
     ..reasonOptionalWhenAdjusting = json['reasonOptionalWhenAdjusting'] == null ? false : json['reasonOptionalWhenAdjusting'] as bool
-    ..warehouseId = json['warehouseId'] as int;
+    ..warehouseId = json['warehouseId'];
 }
 
 Map<String, dynamic> _$InventoryStatusToJson(InventoryStatus instance) => <String, dynamic>{

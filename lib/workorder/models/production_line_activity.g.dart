@@ -16,13 +16,13 @@ ProductionLineActivity _$ProductionLineActivityFromJson(Map<String, dynamic> jso
     ..productionLine = json['productionLine'] == null
         ? null
         : ProductionLine.fromJson(json['productionLine'] as Map<String, dynamic>)
-    ..warehouseId = json['warehouseId'] as int
-    ..username = json['username'] as String
+    ..warehouseId = json['warehouseId']
+    ..username = json['username']
     ..user = json['user'] == null
         ? null
         : User.fromJson(json['user'] as Map<String, dynamic>)
     ..type =  EnumToString.fromString(ProductionLineActivityType.values, json['type'] as String)
-    ..workingTeamMemberCount = json['workingTeamMemberCount'] as int
+    ..workingTeamMemberCount = json['workingTeamMemberCount']
     ..transactionTime = json['transactionTime'] == null
         ? null
         : DateTime.parse(json['transactionTime'] as String);

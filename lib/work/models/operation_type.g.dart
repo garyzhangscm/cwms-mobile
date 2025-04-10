@@ -9,9 +9,9 @@ part of 'operation_type.dart';
 OperationType _$OperationTypeFromJson(Map<String, dynamic> json) {
   return OperationType()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
-    ..defaultPriority = json['defaultPriority'] as int;
+    ..name = json['name']
+    ..description = json['description']
+    ..defaultPriority = json['defaultPriority']  ;
 }
 
 Map<String, dynamic> _$OperationTypeToJson(OperationType instance) => <String, dynamic>{

@@ -9,19 +9,19 @@ part of 'work_task.dart';
 WorkTask _$WorkTaskFromJson(Map<String, dynamic> json) {
   return WorkTask()
     ..id = json['id'] as int
-    ..number = json['number'] as String
+    ..number = json['number']
     ..type = json['type'] == null ? null : workTaskTypeFromString(json['type'] as String)
     ..status = json['status'] == null ? null : workTaskStatusFromString(json['status'] as String)
-    ..priority = json['priority'] as int
-    ..sourceLocationId = json['sourceLocationId'] as int
+    ..priority = json['priority']
+    ..sourceLocationId = json['sourceLocationId']
     ..sourceLocation = json['sourceLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['sourceLocation'] as Map<String, dynamic>)
-    ..destinationLocationId = json['destinationLocationId'] as int
+    ..destinationLocationId = json['destinationLocationId']
     ..destinationLocation = json['destinationLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['destinationLocation'] as Map<String, dynamic>)
-    ..referenceNumber = json['referenceNumber'] as String
+    ..referenceNumber = json['referenceNumber']
     ..operationType = json['operationType'] == null
         ? null
         : OperationType.fromJson(json['operationType'] as Map<String, dynamic>);

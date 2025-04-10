@@ -9,16 +9,16 @@ part of 'order_line.dart';
 OrderLine _$OrderLineFromJson(Map<String, dynamic> json) {
   return OrderLine()
     ..id = json['id'] as int
-    ..number = json['number'] as String
+    ..number = json['number']
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
-    ..expectedQuantity = json['expectedQuantity'] as int
-    ..openQuantity = json['openQuantity'] as int
-    ..inprocessQuantity = json['inprocessQuantity'] as int
-    ..shippedQuantity = json['shippedQuantity'] as int
-    ..productionPlanInprocessQuantity = json['productionPlanInprocessQuantity'] as int
-    ..productionPlanProducedQuantity = json['productionPlanProducedQuantity'] as int
+    ..expectedQuantity = json['expectedQuantity']
+    ..openQuantity = json['openQuantity']
+    ..inprocessQuantity = json['inprocessQuantity']
+    ..shippedQuantity = json['shippedQuantity']
+    ..productionPlanInprocessQuantity = json['productionPlanInprocessQuantity']
+    ..productionPlanProducedQuantity = json['productionPlanProducedQuantity']
     ..carrier = json['carrier'] == null
         ? null
         : Carrier.fromJson(json['carrier'] as Map<String, dynamic>)

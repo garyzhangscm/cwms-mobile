@@ -9,8 +9,8 @@ part of 'reason_code.dart';
 ReasonCode _$ReasonCodeFromJson(Map<String, dynamic> json) {
   return ReasonCode()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
+    ..name = json['name']
+    ..description = json['description']
     ..type =  json['type'] == null
         ? null
         : EnumToString.fromString(ReasonCodeType.values, json['type'] as String);

@@ -9,10 +9,10 @@ part of 'item_package_type.dart';
 ItemPackageType _$ItemPackageTypeFromJson(Map<String, dynamic> json) {
   return ItemPackageType()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
-    ..clientId = json['clientId'] as int
-    ..supplierId = json['supplierId'] as int
+    ..name = json['name']
+    ..description = json['description']
+    ..clientId = json['clientId']
+    ..supplierId = json['supplierId']
     ..stockItemUnitOfMeasure = json['stockItemUnitOfMeasure'] == null
         ? null
         : ItemUnitOfMeasure.fromJson(json['stockItemUnitOfMeasure'] as Map<String, dynamic>)
@@ -28,11 +28,13 @@ ItemPackageType _$ItemPackageTypeFromJson(Map<String, dynamic> json) {
     ..trackingLpnUOM = json['trackingLpnUOM'] == null
         ? null
         : ItemUnitOfMeasure.fromJson(json['trackingLpnUOM'] as Map<String, dynamic>)
-    ..itemUnitOfMeasures = (json['itemUnitOfMeasures'] as List)
+    ..itemUnitOfMeasures = json['itemUnitOfMeasures'] == null ?
+        [] :
+        (json['itemUnitOfMeasures'] as List)
         .map(
             (e) =>  ItemUnitOfMeasure.fromJson(e as Map<String, dynamic>))
         .toList()
-    ..warehouseId = json['warehouseId'] as int
+    ..warehouseId = json['warehouseId']
     ..defaultFlag = json['defaultFlag'] == null ? null : json['defaultFlag'] as bool;
 }
 

@@ -9,14 +9,16 @@ part of 'receipt.dart';
 Receipt _$ReceiptFromJson(Map<String, dynamic> json) {
   return Receipt()
     ..id = json['id'] as int
-    ..number = json['number'] as String
+    ..number = json['number']
     ..client = json['client'] == null
         ? null
         : Client.fromJson(json['client'] as Map<String, dynamic>)
     ..supplier = json['supplier'] == null
         ? null
         : Supplier.fromJson(json['supplier'] as Map<String, dynamic>)
-    ..receiptLines = (json['receiptLines'] as List)
+    ..receiptLines = json['receiptLines'] == null ?
+        [] :
+        (json['receiptLines'] as List)
         .map(
             (e) => ReceiptLine.fromJson(e as Map<String, dynamic>))
         .toList()

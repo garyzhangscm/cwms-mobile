@@ -9,20 +9,20 @@ part of 'cycle_count_result.dart';
 CycleCountResult _$CycleCountResultFromJson(Map<String, dynamic> json) {
   return CycleCountResult()
     ..id = json['id'] as int
-    ..batchId = json['batchId'] as String
-    ..locationId = json['locationId'] as int
+    ..batchId = json['batchId']
+    ..locationId = json['locationId']
     ..location = json['location'] == null
         ? null
         : WarehouseLocation.fromJson(json['location'] as Map<String, dynamic>)
-    ..warehouseId = json['warehouseId'] as int
+    ..warehouseId = json['warehouseId']
     ..warehouse = json['warehouse'] == null
         ? null
         : Warehouse.fromJson(json['warehouse'] as Map<String, dynamic>)
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
-    ..quantity = json['quantity'] as int
-    ..countQuantity = json['countQuantity'] as int;
+    ..quantity = json['quantity']
+    ..countQuantity = json['countQuantity']  ;
 }
 
 Map<String, dynamic> _$CycleCountResultToJson(CycleCountResult instance) =>

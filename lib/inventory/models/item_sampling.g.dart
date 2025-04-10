@@ -9,10 +9,10 @@ part of 'item_sampling.dart';
 ItemSampling _$ItemSamplingFromJson(Map<String, dynamic> json) {
   return ItemSampling()
     ..id = json['id'] as int
-    ..number = json['number'] as String
-    ..description = json['description'] as String
-    ..warehouseId = json['warehouseId'] as int
-    ..imageUrls = json['imageUrls'] as String
+    ..number = json['number']
+    ..description = json['description']
+    ..warehouseId = json['warehouseId']
+    ..imageUrls = json['imageUrls']
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)

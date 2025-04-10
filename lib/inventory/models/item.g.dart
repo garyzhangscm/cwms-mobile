@@ -9,10 +9,10 @@ part of 'item.dart';
 Item _$ItemFromJson(Map<String, dynamic> json) {
   return Item()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
-    ..warehouseId = json['warehouseId'] as int
-    ..clientId = json['clientId'] as int
+    ..name = json['name']
+    ..description = json['description']
+    ..warehouseId = json['warehouseId']
+    ..clientId = json['clientId']
     ..trackingColorFlag = json['trackingColorFlag'] == null ? false : json['trackingColorFlag'] as bool
     ..defaultColor = json['defaultColor'] == null ? "" : json['defaultColor'] as String
     ..trackingProductSizeFlag = json['trackingProductSizeFlag'] == null ? false : json['trackingProductSizeFlag'] as bool
@@ -35,7 +35,9 @@ Item _$ItemFromJson(Map<String, dynamic> json) {
     ..defaultItemPackageType = json['defaultItemPackageType'] == null
       ? null
       : ItemPackageType.fromJson(json['defaultItemPackageType'] as Map<String, dynamic>)
-    ..itemPackageTypes = (json['itemPackageTypes'] as List)
+    ..itemPackageTypes = json['itemPackageTypes'] == null ?
+         [] :
+        (json['itemPackageTypes'] as List)
         .map(
           (e) => ItemPackageType.fromJson(e as Map<String, dynamic>))
               .toList()
@@ -46,7 +48,9 @@ Item _$ItemFromJson(Map<String, dynamic> json) {
     ..billOfMaterial = json['billOfMaterial'] == null
         ? null
         : BillOfMaterial.fromJson(json['billOfMaterial'] as Map<String, dynamic>)
-    ..kitInnerItems = (json['kitInnerItems'] as List)
+    ..kitInnerItems = json['kitInnerItems'] == null ?
+        [] :
+        (json['kitInnerItems'] as List)
         .map(
             (e) =>  Item.fromJson(e as Map<String, dynamic>))
         .toList();

@@ -24,7 +24,7 @@ class LoginService {
     LoginResponseWrapper loginResponseWrapper =
         LoginResponseWrapper.fromJson(json.decode(response.toString()));
 
-    print("httpResponseWrapper: ${loginResponseWrapper.result}");
+    print("login result: ${loginResponseWrapper.result}");
 
 
     if (loginResponseWrapper.result == 0) {

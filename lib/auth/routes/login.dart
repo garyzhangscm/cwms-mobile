@@ -456,6 +456,7 @@ class _LoginPageState extends State<LoginPage> {
           user = await LoginService
               .login(companyId, _unameController.text, _pwdController.text);
 
+          printLongLogMessage("user ${user.username} login successfully ");
       } catch (e) {
         //登录失败则提示
           showToast(e.toString());

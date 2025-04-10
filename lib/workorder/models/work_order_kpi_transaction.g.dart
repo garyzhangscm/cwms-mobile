@@ -9,11 +9,11 @@ part of 'work_order_kpi_transaction.dart';
 WorkOrderKPITransaction _$WorkOrderKPITransactionFromJson(Map<String, dynamic> json) {
   return WorkOrderKPITransaction()
     ..id = json['id'] as int
-    ..username = json['username'] as String
-    ..workingTeamName = json['workingTeamName'] as String
+    ..username = json['username']
+    ..workingTeamName = json['workingTeamName']
     ..kpiMeasurement =  EnumToString.fromString(KPIMeasurement.values, json['kpiMeasurement'] as String)
     ..type =  EnumToString.fromString(WorkOrderKPITransactionType.values, json['type'] as String)
-    ..amount = json['amount'] as double;
+    ..amount = json['amount']  ;
 }
 
 Map<String, dynamic> _$WorkOrderKPITransactionToJson(WorkOrderKPITransaction instance) => <String, dynamic>{

@@ -8,12 +8,14 @@ part of 'menu_sub_group.dart';
 
 MenuSubGroup _$MenuSubGroupFromJson(Map<String, dynamic> json) {
   return MenuSubGroup()
-    ..name = json['name'] as String
-    ..text = json['text'] as String
-    ..icon = json['icon'] as String
-    ..i18n = json['i18n'] as String
-    ..link = json['link'] as String
-    ..menus = (json['children'] as List)
+    ..name = json['name']
+    ..text = json['text']
+    ..icon = json['icon']
+    ..i18n = json['i18n']
+    ..link = json['link']
+    ..menus = json['children'] == null ?
+        [] :
+        (json['children'] as List)
         .map(
             (e) => Menu.fromJson(e as Map<String, dynamic>))
         .toList();

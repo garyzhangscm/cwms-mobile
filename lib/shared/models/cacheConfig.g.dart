@@ -8,9 +8,9 @@ part of 'cacheConfig.dart';
 
 CacheConfig _$CacheConfigFromJson(Map<String, dynamic> json) {
   return CacheConfig()
-    ..enable = json['enable'] as bool
-    ..maxAge = json['maxAge'] as num
-    ..maxCount = json['maxCount'] as num;
+    ..enable = json['enable']
+    ..maxAge = json['maxAge']
+    ..maxCount = json['maxCount']  ;
 }
 
 Map<String, dynamic> _$CacheConfigToJson(CacheConfig instance) =>

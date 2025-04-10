@@ -8,16 +8,13 @@ part of 'user.dart';
 
 User _$UserFromJson(Map<String, dynamic> json) {
   return User()
-    ..username = json['username'] == null ?
-           (json['name'] == null ? '' : json['name'] as String)
-           :
-           json['username'] as String
-    ..password = json['password'] as String
-    ..firstname = json['firstname'] as String
-    ..lastname = json['lastname'] as String
-    ..companyId = json['companyId'] as int
-    ..token = json['token'] as String
-    ..refreshToken = json['refreshToken'] as String;
+    ..username = json['username'] ?? (json['name'] ?? "")
+    ..password = json['password'] ?? ""
+    ..firstname = json['firstname'] ?? ""
+    ..lastname = json['lastname'] ?? ""
+    ..companyId = json['companyId'] ?? null
+    ..token = json['token'] ?? ""
+    ..refreshToken = json['refreshToken'] ?? "";
 }
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{

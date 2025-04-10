@@ -9,7 +9,7 @@ part of 'work_order_qc_rule_configuration_rule.dart';
 WorkOrderQCRuleConfigurationRule _$WorkOrderQCRuleConfigurationRuleFromJson(Map<String, dynamic> json) {
   return WorkOrderQCRuleConfigurationRule()
     ..id = json['id'] as int
-    ..qcRuleId = json['qcRuleId'] as int
+    ..qcRuleId = json['qcRuleId']
     ..qcRule = json['qcRule'] == null
         ? null
         : QCRule.fromJson(json['qcRule'] as Map<String, dynamic>)

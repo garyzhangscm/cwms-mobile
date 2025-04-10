@@ -235,6 +235,8 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
     InventoryService.findInventory(lpn : inventoryDepositRequest.lpn!, includeDetails: false)
         .then((inventories) async {
 
+            printLongLogMessage("find ${inventories.length} inventory by lpn ${inventoryDepositRequest.lpn}");
+
             if(inventories.isNotEmpty) {
 
               WarehouseLocation rfLocation =

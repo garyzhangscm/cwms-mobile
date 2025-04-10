@@ -17,12 +17,13 @@ LpnCaptureRequest _$LpnCaptureRequestFromJson(Map<String, dynamic> json) {
     ..lpnUnitOfMeasure = json['lpnUnitOfMeasure'] == null
         ? null
         : ItemUnitOfMeasure.fromJson(json['lpnUnitOfMeasure'] as Map<String, dynamic>)
-    ..requestedLPNQuantity = json['requestedLPNQuantity'] as int
-    ..capturedLpn = (json['capturedLpn'] as List)
+    ..requestedLPNQuantity = json['requestedLPNQuantity']
+    ..capturedLpn = json['capturedLpn'] == null ?
+        new Set() : (json['capturedLpn'] as List)
         .map(
             (e) =>  (e as String))
         .toSet()
-    ..result = json['result'] as bool;
+    ..result = json['result'] ;
 }
 
 Map<String, dynamic> _$LpnCaptureRequestToJson(LpnCaptureRequest instance) => <String, dynamic>{

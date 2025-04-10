@@ -12,7 +12,7 @@ WorkOrderLineConsumeTransaction _$WorkOrderLineConsumeTransactionFromJson(Map<St
     ..workOrderLine = json['workOrderLine'] == null
         ? null
         : WorkOrderLine.fromJson(json['workOrderLine'] as Map<String, dynamic>)
-    ..consumedQuantity = json['consumedQuantity'] as int;
+    ..consumedQuantity = json['consumedQuantity']  ;
 }
 
 Map<String, dynamic> _$WorkOrderLineConsumeTransactionToJson(WorkOrderLineConsumeTransaction instance) => <String, dynamic>{

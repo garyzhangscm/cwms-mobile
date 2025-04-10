@@ -9,13 +9,13 @@ part of 'work_order_produced_inventory.dart';
 WorkOrderProducedInventory _$WorkOrderProducedInventoryFromJson(Map<String, dynamic> json) {
   return WorkOrderProducedInventory()
     ..id = json['id'] as int
-    ..lpn = json['lpn'] as String
-    ..quantity = json['quantity'] as int
-    ..inventoryStatusId = json['inventoryStatusId'] as int
+    ..lpn = json['lpn']
+    ..quantity = json['quantity']
+    ..inventoryStatusId = json['inventoryStatusId']
     ..inventoryStatus = json['inventoryStatus'] == null
         ? null
         : InventoryStatus.fromJson(json['inventoryStatus'] as Map<String, dynamic>)
-    ..itemPackageTypeId = json['itemPackageTypeId'] as int
+    ..itemPackageTypeId = json['itemPackageTypeId']
     ..itemPackageType = json['itemPackageType'] == null
         ? null
         : ItemPackageType.fromJson(json['itemPackageType'] as Map<String, dynamic>);

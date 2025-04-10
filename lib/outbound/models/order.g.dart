@@ -9,53 +9,55 @@ part of 'order.dart';
 Order _$OrderFromJson(Map<String, dynamic> json) {
   return Order()
     ..id = json['id'] as int
-    ..number = json['number'] as String
+    ..number = json['number']
     ..shipToCustomer = json['shipToCustomer'] == null
         ? null
         : Customer.fromJson(json['shipToCustomer'] as Map<String, dynamic>)
     ..billToCustomer = json['billToCustomer'] == null
         ? null
         : Customer.fromJson(json['billToCustomer'] as Map<String, dynamic>)
-    ..shipToContactorFirstname = json['shipToContactorFirstname'] as String
-    ..shipToContactorLastname = json['shipToContactorLastname'] as String
-    ..shipToAddressCountry = json['shipToAddressCountry'] as String
-    ..shipToAddressState = json['shipToAddressState'] as String
-    ..shipToAddressCounty = json['shipToAddressCounty'] as String
-    ..shipToAddressCity = json['shipToAddressCity'] as String
-    ..shipToAddressDistrict = json['shipToAddressDistrict'] as String
-    ..shipToAddressLine1 = json['shipToAddressLine1'] as String
-    ..shipToAddressLine2 = json['shipToAddressLine2'] as String
-    ..shipToAddressPostcode = json['shipToAddressPostcode'] as String
-    ..billToContactorFirstname = json['billToContactorFirstname'] as String
-    ..billToContactorLastname = json['billToContactorLastname'] as String
-    ..billToAddressCountry = json['billToAddressCountry'] as String
-    ..billToAddressState = json['billToAddressState'] as String
-    ..billToAddressCounty = json['billToAddressCounty'] as String
-    ..billToAddressCity = json['billToAddressCity'] as String
+    ..shipToContactorFirstname = json['shipToContactorFirstname']
+    ..shipToContactorLastname = json['shipToContactorLastname']
+    ..shipToAddressCountry = json['shipToAddressCountry']
+    ..shipToAddressState = json['shipToAddressState']
+    ..shipToAddressCounty = json['shipToAddressCounty']
+    ..shipToAddressCity = json['shipToAddressCity']
+    ..shipToAddressDistrict = json['shipToAddressDistrict']
+    ..shipToAddressLine1 = json['shipToAddressLine1']
+    ..shipToAddressLine2 = json['shipToAddressLine2']
+    ..shipToAddressPostcode = json['shipToAddressPostcode']
+    ..billToContactorFirstname = json['billToContactorFirstname']
+    ..billToContactorLastname = json['billToContactorLastname']
+    ..billToAddressCountry = json['billToAddressCountry']
+    ..billToAddressState = json['billToAddressState']
+    ..billToAddressCounty = json['billToAddressCounty']
+    ..billToAddressCity = json['billToAddressCity']
     ..allowForManualPick = json['allowForManualPick'] == null ? false : json['allowForManualPick'] as bool
-    ..billToAddressDistrict = json['billToAddressDistrict'] as String
-    ..billToAddressLine1 = json['billToAddressLine1'] as String
-    ..billToAddressLine2 = json['billToAddressLine2'] as String
-    ..billToAddressPostcode = json['billToAddressPostcode'] as String
+    ..billToAddressDistrict = json['billToAddressDistrict']
+    ..billToAddressLine1 = json['billToAddressLine1']
+    ..billToAddressLine2 = json['billToAddressLine2']
+    ..billToAddressPostcode = json['billToAddressPostcode']
     ..carrier = json['carrier'] == null
         ? null
         : Carrier.fromJson(json['carrier'] as Map<String, dynamic>)
     ..carrierServiceLevel = json['carrierServiceLevel'] == null
         ? null
         : CarrierServiceLevel.fromJson(json['carrierServiceLevel'] as Map<String, dynamic>)
-    ..orderLines = (json['orderLines'] as List)
+    ..orderLines = json['orderLines']  == null ?
+        [] :
+        (json['orderLines'] as List)
         .map(
             (e) => OrderLine.fromJson(e as Map<String, dynamic>))
         .toList()
-    ..totalLineCount = json['totalLineCount'] as int
-    ..totalItemCount = json['totalItemCount'] as int
-    ..totalExpectedQuantity = json['totalExpectedQuantity'] as int
-    ..totalOpenQuantity = json['totalOpenQuantity'] as int
-    ..totalInprocessQuantity = json['totalInprocessQuantity'] as int
-    ..totalPendingAllocationQuantity = json['totalPendingAllocationQuantity'] as int
-    ..totalOpenPickQuantity = json['totalOpenPickQuantity'] as int
-    ..totalPickedQuantity = json['totalPickedQuantity'] as int
-    ..totalShippedQuantity = json['totalShippedQuantity'] as int;
+    ..totalLineCount = json['totalLineCount']
+    ..totalItemCount = json['totalItemCount']
+    ..totalExpectedQuantity = json['totalExpectedQuantity']
+    ..totalOpenQuantity = json['totalOpenQuantity']
+    ..totalInprocessQuantity = json['totalInprocessQuantity']
+    ..totalPendingAllocationQuantity = json['totalPendingAllocationQuantity']
+    ..totalOpenPickQuantity = json['totalOpenPickQuantity']
+    ..totalPickedQuantity = json['totalPickedQuantity']
+    ..totalShippedQuantity = json['totalShippedQuantity'] ;
 }
 
 Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{

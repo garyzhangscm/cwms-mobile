@@ -8,8 +8,8 @@ part of 'pick_result.dart';
 
 PickResult _$PickResultFromJson(Map<String, dynamic> json) {
   return PickResult()
-    ..result = json['result'] as bool
-    ..confirmedQuantity = json['confirmedQuantity'] as int;
+    ..result = json['result']
+    ..confirmedQuantity = json['confirmedQuantity']  ;
 }
 
 Map<String, dynamic> _$PickResultToJson(PickResult instance) => <String, dynamic>{

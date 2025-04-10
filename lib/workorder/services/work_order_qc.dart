@@ -95,7 +95,7 @@ class WorkOrderQCService {
     printLongLogMessage("Start to record work order result: ${workOrderQCResult.toJson()}");
     Response response = await httpClient.put(
         "workorder/qc-results",
-        data: workOrderQCResult
+        data: jsonEncode(workOrderQCResult)
 
     );
 
@@ -176,7 +176,7 @@ class WorkOrderQCService {
         "workorder/qc-samples",
         queryParameters: {
           "warehouseId": Global.currentWarehouse!.id},
-        data:  workOrderQCSample
+        data:  jsonEncode(workOrderQCSample)
     );
 
     // printLongLogMessage("response from addWorkOrderQCSample: $response");

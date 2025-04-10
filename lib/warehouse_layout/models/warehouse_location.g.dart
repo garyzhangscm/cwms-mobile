@@ -8,9 +8,29 @@ part of 'warehouse_location.dart';
 
 WarehouseLocation _$WarehouseLocationFromJson(Map<String, dynamic> json) {
   return WarehouseLocation()
-    ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..aisle = json['aisle'] as String
+    ..id = json['id']
+    ..name = json['name']
+    ..aisle = json['aisle']
+    ..x = json['x']?.toDouble()
+    ..y = json['y']?.toDouble()
+    ..z = json['z']?.toDouble()
+    ..length = json['length']?.toDouble()
+    ..width = json['width']?.toDouble()
+    ..height = json['height']?.toDouble()
+    ..pickSequence = json['pickSequence']
+    ..putawaySequence = json['putawaySequence']
+    ..countSequence = json['countSequence']
+    ..capacity = json['capacity']?.toDouble()
+    ..fillPercentage = json['fillPercentage']?.toDouble()
+    ..currentVolume = json['currentVolume']?.toDouble()
+    ..pendingVolume = json['pendingVolume']?.toDouble()
+    ..locationGroup = json['locationGroup'] == null
+        ? null
+        : LocationGroup.fromJson(json['locationGroup'] as Map<String, dynamic>)
+    ..enabled = json['enabled'] ?? false
+    ..locked = json['locked'] ?? true
+    ..reservedCode = json['reservedCode'] ;
+    /**
     ..x = (json['x'] as num)?.toDouble()
     ..y = (json['y'] as num)?.toDouble()
     ..z = (json['z'] as num)?.toDouble()
@@ -30,6 +50,7 @@ WarehouseLocation _$WarehouseLocationFromJson(Map<String, dynamic> json) {
     ..enabled = json['enabled'] as bool
     ..locked = json['locked'] as bool
     ..reservedCode = json['reservedCode'] as String;
+        **/
 }
 
 Map<String, dynamic> _$WarehouseLocationToJson(WarehouseLocation instance) =>

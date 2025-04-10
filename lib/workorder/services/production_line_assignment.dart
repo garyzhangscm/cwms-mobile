@@ -93,7 +93,7 @@ class ProductionLineAssignmentService {
         "warehouseId": Global.currentWarehouse!.id, "productionLineId": productionLine.id}
     );
 
-    // printLongLogMessage("response from getAssignedWorkOrderByProductionLine: $response");
+    printLongLogMessage("response from getAssignedWorkOrderByProductionLine: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

@@ -9,10 +9,10 @@ part of 'item_family.dart';
 ItemFamily _$ItemFamilyFromJson(Map<String, dynamic> json) {
   return ItemFamily()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
-    ..warehouseId = json['warehouseId'] as int
-    ..companyId = json['companyId'] as int;
+    ..name = json['name']
+    ..description = json['description']
+    ..warehouseId = json['warehouseId']
+    ..companyId = json['companyId'] ;
 
 }
 

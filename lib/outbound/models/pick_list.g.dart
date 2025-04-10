@@ -9,8 +9,10 @@ part of 'pick_list.dart';
 PickList _$PickListFromJson(Map<String, dynamic> json) {
   return PickList()
     ..id = json['id'] as int
-    ..number = json['number'] as String
-    ..picks = (json['picks'] as List)
+    ..number = json['number']
+    ..picks = json['picks'] == null ?
+        [] :
+        (json['picks'] as List)
         .map(
             (e) => Pick.fromJson(e as Map<String, dynamic>))
         .toList();

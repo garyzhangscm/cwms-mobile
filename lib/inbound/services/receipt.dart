@@ -161,7 +161,7 @@ class ReceiptService {
 
     Response response = await httpClient.post(
         "/inbound/receipts/${receipt.id}/lines/${receiptLine.id}/receive",
-        data: inventory,
+        data: jsonEncode(inventory) ,
       queryParameters: {
           "receiveToStage": Global.getRFConfiguration.receiveToStage
       }
@@ -310,7 +310,7 @@ class ReceiptService {
 
     Response response = await httpClient.post(
         "/inbound/receipts/${receipt.id}/lines/${receiptLine.id}/receive-multiple-lpns",
-        data: inventoryList
+        data: jsonEncode(inventoryList)
     );
 
     // printLongLogMessage("response from receiving: $response");

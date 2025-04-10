@@ -230,12 +230,16 @@ class InventoryService {
 
     Dio httpClient = CWMSHttpClient.getDio();
 
-    printLongLogMessage("start to move inventory");
+    printLongLogMessage("start to move inventory to location");
+    if (destinationLocation != null) {
+
+      printLongLogMessage(destinationLocation!.toJson().toString());
+    }
 
     Response response = await httpClient.post(
         "/inventory/inventory/move",
         queryParameters: queryParameters,
-        data: destinationLocation
+        data: jsonEncode(destinationLocation)
     );
 
 
@@ -420,7 +424,7 @@ class InventoryService {
     CWMSHttpResponse response = await Global.httpClient!.put(
         "inventory/inventory-adj?warehouseId=${Global.currentWarehouse!.id}",
         queryParameters:params,
-        data: inventory
+        data: jsonEncode(inventory)
     );
 
     return Inventory.fromJson(response.data);
@@ -484,7 +488,7 @@ class InventoryService {
     Response response = await httpClient.post(
         "/inbound/putaway-configuration/allocate-location",
 
-        data: inventory
+        data: jsonEncode(inventory)
     );
 
     // printLongLogMessage("get response from allocateLocation ${response.toString()}");

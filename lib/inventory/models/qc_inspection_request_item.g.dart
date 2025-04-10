@@ -14,7 +14,9 @@ QCInspectionRequestItem _$QCInspectionRequestItemFromJson(Map<String, dynamic> j
         : QCRule.fromJson(json['qcRule'] as Map<String, dynamic>)
     ..qcInspectionResult = json['qcInspectionResult'] == null
         ? null : EnumToString.fromString(QCInspectionResult.values, json['qcInspectionResult'] as String)
-    ..qcInspectionRequestItemOptions = (json['qcInspectionRequestItemOptions'] as List)
+    ..qcInspectionRequestItemOptions = json['qcInspectionRequestItemOptions'] == null ?
+        [] :
+        (json['qcInspectionRequestItemOptions'] as List)
         .map(
             (e) => QCInspectionRequestItemOption.fromJson(e as Map<String, dynamic>))
         .toList();;

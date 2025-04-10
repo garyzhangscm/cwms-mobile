@@ -21,7 +21,7 @@ import '../models/inventory_configuration.dart';
 
 class InventoryConfigurationService {
   // Get inventory that on the current RF
-  static Future<InventoryConfiguration> getInventoryConfiguration() async {
+  static Future<InventoryConfiguration?> getInventoryConfiguration() async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
@@ -41,6 +41,9 @@ class InventoryConfigurationService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
 
+    if (responseString["data"] == null) {
+      return null;
+    }
     return InventoryConfiguration.fromJson(responseString["data"]);
   }
 

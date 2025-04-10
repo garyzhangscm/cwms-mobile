@@ -100,7 +100,7 @@ class CycleCountRequestService {
 
     Response response = await httpClient.post(
       "inventory/cycle-count-request/${cycleCountRequest.id}/confirm",
-      data: inventorySummaries
+      data: jsonEncode(inventorySummaries)
     );
 
     printLongLogMessage("confirmCycleCount with result: ${response.toString()}");

@@ -108,7 +108,7 @@ class AuditCountRequestService {
 
     Response response = await httpClient.post(
         "inventory/audit-count-result/${auditCountRequest.batchId}/${auditCountRequest.locationId}/confirm",
-        data: inventories
+        data: jsonEncode(inventories)
     );
 
     // printLongLogMessage("response from audit count request / inventory summary: $response");

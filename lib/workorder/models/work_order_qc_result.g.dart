@@ -9,14 +9,14 @@ part of 'work_order_qc_result.dart';
 WorkOrderQCResult _$WorkOrderQCResultFromJson(Map<String, dynamic> json) {
   return WorkOrderQCResult()
     ..id = json['id'] as int
-    ..number = json['number'] as String
-    ..warehouseId = json['warehouseId'] as int
+    ..number = json['number']
+    ..warehouseId = json['warehouseId']
     ..workOrderQCSample = json['workOrderQCSample'] == null
         ? null
         : WorkOrderQCSample.fromJson(json['workOrderQCSample'] as Map<String, dynamic>)
     ..qcInspectionResult = json['qcInspectionResult'] == null
         ? null : EnumToString.fromString(QCInspectionResult.values, json['qcInspectionResult'] as String)
-    ..qcUsername = json['qcUsername'] as String
+    ..qcUsername = json['qcUsername']
   ;
 }
 

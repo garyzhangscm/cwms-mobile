@@ -9,9 +9,9 @@ part of 'carrier_service_level.dart';
 CarrierServiceLevel _$CarrierServiceLevelFromJson(Map<String, dynamic> json) {
   return CarrierServiceLevel()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
-    ..type = json['type'] as String;
+    ..name = json['name']
+    ..description = json['description']
+    ..type = json['type'] ;
 }
 
 Map<String, dynamic> _$CarrierServiceLevelToJson(CarrierServiceLevel instance)

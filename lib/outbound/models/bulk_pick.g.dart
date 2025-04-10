@@ -9,28 +9,28 @@ part of 'bulk_pick.dart';
 BulkPick _$BulkPickFromJson(Map<String, dynamic> json) {
   return BulkPick()
     ..id = json['id'] as int
-    ..number = json['number'] as String
-    ..waveNumber = json['waveNumber'] as String
-    ..sourceLocationId = json['sourceLocationId'] as int
+    ..number = json['number']
+    ..waveNumber = json['waveNumber']
+    ..sourceLocationId = json['sourceLocationId']
     ..sourceLocation = json['sourceLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['sourceLocation'] as Map<String, dynamic>)
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
-    ..quantity = json['quantity'] as int
-    ..pickedQuantity = json['pickedQuantity'] as int
+    ..quantity = json['quantity']
+    ..pickedQuantity = json['pickedQuantity']
     ..inventoryStatus = json['inventoryStatus'] == null
         ? null
         : InventoryStatus.fromJson(json['inventoryStatus'] as Map<String, dynamic>)
-    ..warehouseId = json['warehouseId'] as int
-    ..confirmItemFlag = json['confirmItemFlag'] as bool
-    ..confirmLocationFlag = json['confirmLocationFlag'] as bool
-    ..confirmLocationCodeFlag = json['confirmLocationCodeFlag'] as bool
-    ..confirmLpnFlag = json['confirmLpnFlag'] as bool
-    ..color = json['color'] as String
-    ..productSize = json['productSize'] as String
-    ..style = json['style'] as String;
+    ..warehouseId = json['warehouseId']
+    ..confirmItemFlag = json['confirmItemFlag']
+    ..confirmLocationFlag = json['confirmLocationFlag']
+    ..confirmLocationCodeFlag = json['confirmLocationCodeFlag']
+    ..confirmLpnFlag = json['confirmLpnFlag']
+    ..color = json['color']
+    ..productSize = json['productSize']
+    ..style = json['style']  ;
 }
 
 Map<String, dynamic> _$BulkPickToJson(BulkPick instance) => <String, dynamic>{

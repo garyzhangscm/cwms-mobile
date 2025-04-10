@@ -9,16 +9,16 @@ part of 'item_unit_of_measure.dart';
 ItemUnitOfMeasure _$ItemUnitOfMeasureFromJson(Map<String, dynamic> json) {
   return ItemUnitOfMeasure()
     ..id = json['id'] as int
-    ..unitOfMeasureId = json['unitOfMeasureId'] as int
+    ..unitOfMeasureId = json['unitOfMeasureId']
     ..unitOfMeasure = json['unitOfMeasure'] == null
         ? null
         : UnitOfMeasure.fromJson(json['unitOfMeasure'] as Map<String, dynamic>)
-    ..quantity = json['quantity'] as int
-    ..weight = json['weight'] as double
-    ..length = json['length'] as double
-    ..width = json['width'] as double
-    ..height = json['height'] as double
-    ..warehouseId = json['warehouseId'] as int;
+    ..quantity = json['quantity']
+    ..weight = json['weight']
+    ..length = json['length']
+    ..width = json['width']
+    ..height = json['height']
+    ..warehouseId = json['warehouseId'] ;
 }
 
 Map<String, dynamic> _$ItemUnitOfMeasureToJson(ItemUnitOfMeasure instance) => <String, dynamic>{

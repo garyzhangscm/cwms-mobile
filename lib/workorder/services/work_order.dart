@@ -94,7 +94,7 @@ class WorkOrderService {
 
     Response response = await httpClient.post(
         "workorder/work-order-produce-transactions",
-       data: workOrderProduceTransaction
+       data: jsonEncode(workOrderProduceTransaction)
     );
 
     // printLongLogMessage("response from saveWorkOrderProduceTransaction: $response");

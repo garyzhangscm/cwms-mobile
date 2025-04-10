@@ -9,15 +9,16 @@ part of 'work_order_qc_rule_configuration.dart';
 WorkOrderQCRuleConfiguration _$WorkOrderQCRuleConfigurationFromJson(Map<String, dynamic> json) {
   return WorkOrderQCRuleConfiguration()
     ..id = json['id'] as int
-    ..warehouseId = json['warehouseId'] as int
-    ..qcQuantity = json['qcQuantity'] as int
+    ..warehouseId = json['warehouseId']
+    ..qcQuantity = json['qcQuantity']
     ..productionLine = json['productionLine'] == null
         ? null
         : ProductionLine.fromJson(json['productionLine'] as Map<String, dynamic>)
     ..workOrder = json['workOrder'] == null
         ? null
         : WorkOrder.fromJson(json['workOrder'] as Map<String, dynamic>)
-    ..workOrderQCRuleConfigurationRules = (json['workOrderQCRuleConfigurationRules'] as List)
+    ..workOrderQCRuleConfigurationRules = json['workOrderQCRuleConfigurationRules'] == null ?
+        [] : (json['workOrderQCRuleConfigurationRules'] as List)
         .map(
             (e) => WorkOrderQCRuleConfigurationRule.fromJson(e as Map<String, dynamic>))
         .toList()

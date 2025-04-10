@@ -9,8 +9,8 @@ part of 'unit_of_measure.dart';
 UnitOfMeasure _$UnitOfMeasureFromJson(Map<String, dynamic> json) {
   return UnitOfMeasure()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String;
+    ..name = json['name']
+    ..description = json['description']  ;
 }
 
 Map<String, dynamic> _$UnitOfMeasureToJson(UnitOfMeasure instance) => <String, dynamic>{

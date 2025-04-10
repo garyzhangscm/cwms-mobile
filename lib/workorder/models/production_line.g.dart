@@ -9,16 +9,16 @@ part of 'production_line.dart';
 ProductionLine _$ProductionLineFromJson(Map<String, dynamic> json) {
   return ProductionLine()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..inboundStageLocationId = json['inboundStageLocationId'] as int
+    ..name = json['name']
+    ..inboundStageLocationId = json['inboundStageLocationId']
     ..inboundStageLocation = json['inboundStageLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['inboundStageLocation'] as Map<String, dynamic>)
-    ..outboundStageLocationId = json['outboundStageLocationId'] as int
+    ..outboundStageLocationId = json['outboundStageLocationId']
     ..outboundStageLocation = json['outboundStageLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['outboundStageLocation'] as Map<String, dynamic>)
-    ..productionLineLocationId = json['productionLineLocationId'] as int
+    ..productionLineLocationId = json['productionLineLocationId']
     ..productionLineLocation = json['productionLineLocation'] == null
         ? null
         : WarehouseLocation.fromJson(json['productionLineLocation'] as Map<String, dynamic>);

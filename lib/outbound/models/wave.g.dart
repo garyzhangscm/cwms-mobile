@@ -8,8 +8,8 @@ part of 'wave.dart';
 
 Wave _$WaveFromJson(Map<String, dynamic> json) {
   return Wave()
-    ..id = json['id'] as int
-    ..number = json['number'] as String   ;
+    ..id = json['id']
+    ..number = json['number']   ;
 }
 
 Map<String, dynamic> _$WaveToJson(Wave instance) => <String, dynamic>{

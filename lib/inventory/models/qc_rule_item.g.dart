@@ -9,11 +9,11 @@ part of 'qc_rule_item.dart';
 QCRuleItem _$QCRuleItemFromJson(Map<String, dynamic> json) {
   return QCRuleItem()
     ..id = json['id'] as int
-    ..checkPoint = json['checkPoint'] as String
-    ..enabled = json['enabled'] as bool
+    ..checkPoint = json['checkPoint']
+    ..enabled = json['enabled']
     ..qcRuleItemType = json['qcRuleItemType'] == null
         ? null : EnumToString.fromString(QCRuleItemType.values, json['qcRuleItemType'] as String)
-    ..expectedValue = json['expectedValue'] as String
+    ..expectedValue = json['expectedValue']
     ..qcRuleItemComparator = json['qcRuleItemComparator'] == null
         ? null : EnumToString.fromString(QCRuleItemComparator.values, json['qcRuleItemComparator'] as String);
 }

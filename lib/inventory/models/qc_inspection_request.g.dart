@@ -9,20 +9,22 @@ part of 'qc_inspection_request.dart';
 QCInspectionRequest _$QCInspectionRequestFromJson(Map<String, dynamic> json) {
   return QCInspectionRequest()
     ..id = json['id'] as int
-    ..warehouseId = json['warehouseId'] as int
-    ..qcQuantity = json['qcQuantity'] as int
-    ..number = json['number'] as String
+    ..warehouseId = json['warehouseId']
+    ..qcQuantity = json['qcQuantity']
+    ..number = json['number']
     ..inventory = json['inventory'] == null
         ? null
         : Inventory.fromJson(json['inventory'] as Map<String, dynamic>)
-    ..workOrderQCSampleId = json['workOrderQCSampleId'] as int
+    ..workOrderQCSampleId = json['workOrderQCSampleId']
     ..qcInspectionResult = json['qcInspectionResult'] == null
         ? null : EnumToString.fromString(QCInspectionResult.values, json['qcInspectionResult'] as String)
-    ..qcUsername = json['qcUsername'] as String
+    ..qcUsername = json['qcUsername']
     ..qcTime = json['qcTime'] == null
         ? null
         : DateTime.parse(json['qcTime'] as String)
-    ..qcInspectionRequestItems = (json['qcInspectionRequestItems'] as List)
+    ..qcInspectionRequestItems = json['qcInspectionRequestItems'] == null ?
+        [] :
+        (json['qcInspectionRequestItems'] as List)
         .map(
             (e) =>  QCInspectionRequestItem.fromJson(e as Map<String, dynamic>))
         .toList();

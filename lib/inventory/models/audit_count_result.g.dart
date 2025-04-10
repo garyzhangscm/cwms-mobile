@@ -9,23 +9,23 @@ part of 'audit_count_result.dart';
 AuditCountResult _$AuditCountResultFromJson(Map<String, dynamic> json) {
   return AuditCountResult()
     ..id = json['id'] as int
-    ..batchId = json['batchId'] as String
+    ..batchId = json['batchId']
     ..location = json['location'] == null
         ? null
         : WarehouseLocation.fromJson(json['location'] as Map<String, dynamic>)
     ..inventory = json['inventory'] == null
         ? null
         : Inventory.fromJson(json['inventory'] as Map<String, dynamic>)
-    ..lpn = json['lpn'] as String
+    ..lpn = json['lpn']
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
-    ..warehouseId = json['warehouseId'] as int
+    ..warehouseId = json['warehouseId']
     ..warehouse = json['warehouse'] == null
         ? null
         : Warehouse.fromJson(json['warehouse'] as Map<String, dynamic>)
-    ..quantity = json['quantity'] as int
-    ..countQuantity = json['countQuantity'] as int;
+    ..quantity = json['quantity']
+    ..countQuantity = json['countQuantity']  ;
 }
 
 Map<String, dynamic> _$AuditCountResultToJson(AuditCountResult instance) =>

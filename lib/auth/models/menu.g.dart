@@ -8,11 +8,11 @@ part of 'menu.dart';
 
 Menu _$MenuFromJson(Map<String, dynamic> json) {
   return Menu()
-    ..name = json['name'] as String
-    ..link = json['link'] as String
-    ..icon = json['icon'] as String
-    ..i18n = json['i18n'] as String
-    ..text = json['text'] as String;
+    ..name = json['name']
+    ..link = json['link']
+    ..icon = json['icon']
+    ..i18n = json['i18n']
+    ..text = json['text'] ;
 }
 
 Map<String, dynamic> _$MenuToJson(Menu instance) => <String, dynamic>{

@@ -9,12 +9,12 @@ part of 'rf_app_version.dart';
 RFAppVersion _$RFAppVersionFromJson(Map<String, dynamic> json) {
   return RFAppVersion()
     ..id = json['id'] as int
-    ..versionNumber = json['versionNumber'] as String
-    ..fileName = json['fileName'] as String
-    ..fileSize = json['fileSize'] as int
-    ..isLatestVersion = json['latestVersion'] as bool
-    ..companyId = json['companyId'] as int
-    ..releaseNote = json['releaseNote'] as String
+    ..versionNumber = json['versionNumber']
+    ..fileName = json['fileName']
+    ..fileSize = json['fileSize']
+    ..isLatestVersion = json['latestVersion']
+    ..companyId = json['companyId']
+    ..releaseNote = json['releaseNote']
     ..releaseDate = json['releaseDate'] == null ? null:
         DateTime.parse(json['releaseDate']) ;
 }

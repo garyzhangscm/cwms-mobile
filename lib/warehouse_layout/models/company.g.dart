@@ -9,9 +9,9 @@ part of 'company.dart';
 Company _$CompanyFromJson(Map<String, dynamic> json) {
   return Company()
     ..id = json['id'] as int
-    ..code = json['code'] as String
-    ..name = json['name'] as String
-    ..description = json['description'] as String;
+    ..code = json['code']
+    ..name = json['name']
+    ..description = json['description'] ;
 }
 
 Map<String, dynamic> _$CompanyToJson(Company instance) => <String, dynamic>{

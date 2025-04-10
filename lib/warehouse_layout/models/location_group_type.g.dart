@@ -9,21 +9,21 @@ part of 'location_group_type.dart';
 LocationGroupType _$LocationGroupTypeFromJson(Map<String, dynamic> json) {
   return LocationGroupType()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
-    ..fourWallInventory = json['fourWallInventory'] as bool
-    ..virtual = json['virtual'] as bool
-    ..receivingStage = json['receivingStage'] as bool
-    ..shippingStage = json['shippingStage'] as bool
-    ..productionLine = json['productionLine'] as bool
-    ..productionLineInbound = json['productionLineInbound'] as bool
-    ..productionLineOutbound = json['productionLineOutbound'] as bool
-    ..dock = json['dock'] as bool
-    ..yard = json['yard'] as bool
-    ..storage = json['storage'] as bool
-    ..pickupAndDeposit = json['pickupAndDeposit'] as bool
-    ..trailer = json['trailer'] as bool
-    ..qcArea = json['qcArea'] as bool;
+    ..name = json['name']
+    ..description = json['description']
+    ..fourWallInventory = json['fourWallInventory']
+    ..virtual = json['virtual']
+    ..receivingStage = json['receivingStage']
+    ..shippingStage = json['shippingStage']
+    ..productionLine = json['productionLine']
+    ..productionLineInbound = json['productionLineInbound']
+    ..productionLineOutbound = json['productionLineOutbound']
+    ..dock = json['dock']
+    ..yard = json['yard']
+    ..storage = json['storage']
+    ..pickupAndDeposit = json['pickupAndDeposit']
+    ..trailer = json['trailer']
+    ..qcArea = json['qcArea']  ;
 }
 
 Map<String, dynamic> _$LocationGroupTypeToJson(LocationGroupType instance) =>

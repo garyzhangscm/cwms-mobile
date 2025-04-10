@@ -9,16 +9,16 @@ part of 'location_group.dart';
 LocationGroup _$LocationGroupFromJson(Map<String, dynamic> json) {
   return LocationGroup()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
+    ..name = json['name']
+    ..description = json['description']
     ..warehouse = json['warehouse'] == null
         ? null
         : Warehouse.fromJson(json['warehouse'] as Map<String, dynamic>)
-    ..pickable = json['pickable'] as bool
-    ..storable = json['storable'] as bool
-    ..countable = json['countable'] as bool
-    ..adjustable = json['adjustable'] as bool
-    ..trackingVolume = json['trackingVolume'] as bool
+    ..pickable = json['pickable']
+    ..storable = json['storable']
+    ..countable = json['countable']
+    ..adjustable = json['adjustable']
+    ..trackingVolume = json['trackingVolume']
     ..locationGroupType = json['locationGroupType'] == null
         ? null
         : LocationGroupType.fromJson(json['locationGroupType'] as Map<String, dynamic>);

@@ -29,7 +29,7 @@ class QCInspectionService {
         "/inventory/qc-inspection-requests",
       queryParameters: {'warehouseId': Global.currentWarehouse!.id,
           'rfCode': Global.getLastLoginRFCode()},
-        data: qcInspectionRequests
+        data: jsonEncode(qcInspectionRequests)
     );
 
 

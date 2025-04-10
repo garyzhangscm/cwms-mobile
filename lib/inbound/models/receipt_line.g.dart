@@ -9,16 +9,16 @@ part of 'receipt_line.dart';
 ReceiptLine _$ReceiptLineFromJson(Map<String, dynamic> json) {
   return ReceiptLine()
     ..id = json['id'] as int
-    ..number = json['number'] as String
+    ..number = json['number']
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
-    ..expectedQuantity = json['expectedQuantity'] as int
-    ..arrivedQuantity = json['arrivedQuantity'] as int
-    ..receivedQuantity = json['receivedQuantity'] as int
+    ..expectedQuantity = json['expectedQuantity']
+    ..arrivedQuantity = json['arrivedQuantity']
+    ..receivedQuantity = json['receivedQuantity']
     ..itemPackageTypeId = json['itemPackageTypeId']  == null ?  null : json['itemPackageTypeId']  as int
-    ..overReceivingQuantity = json['overReceivingQuantity'] as int
-    ..overReceivingPercent = json['overReceivingPercent'] as double;
+    ..overReceivingQuantity = json['overReceivingQuantity']
+    ..overReceivingPercent = json['overReceivingPercent']  ;
 }
 
 Map<String, dynamic> _$ReceiptLineToJson(ReceiptLine instance) => <String, dynamic>{

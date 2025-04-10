@@ -9,17 +9,17 @@ part of 'client.dart';
 Client _$ClientFromJson(Map<String, dynamic> json) {
   return Client()
     ..id = json['id'] as int
-    ..name = json['name'] as String
-    ..description = json['description'] as String
-    ..contactorFirstname = json['contactorFirstname'] as String
-    ..contactorLastname = json['contactorLastname'] as String
-    ..addressCountry = json['addressCountry'] as String
-    ..addressState = json['addressState'] as String
-    ..addressCounty = json['addressCounty'] as String
-    ..addressCity = json['addressCity'] as String
-    ..addressDistrict = json['addressDistrict'] as String
-    ..addressLine1 = json['addressLine1'] as String
-    ..addressLine2 = json['addressLine2'] as String;
+    ..name = json['name']
+    ..description = json['description']
+    ..contactorFirstname = json['contactorFirstname']
+    ..contactorLastname = json['contactorLastname']
+    ..addressCountry = json['addressCountry']
+    ..addressState = json['addressState']
+    ..addressCounty = json['addressCounty']
+    ..addressCity = json['addressCity']
+    ..addressDistrict = json['addressDistrict']
+    ..addressLine1 = json['addressLine1']
+    ..addressLine2 = json['addressLine2'] ;
 }
 
 Map<String, dynamic> _$ClientToJson(Client instance) => <String, dynamic>{

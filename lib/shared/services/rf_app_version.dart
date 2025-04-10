@@ -17,17 +17,18 @@ class RFAppVersionService {
         "rfCode": rfCode}
     );
 
-    // print("response from getLatestRFAppVersion: $response");
+    print("response from getLatestRFAppVersion: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage("getLatestRFAppVersion / Start to raise error with message: ${responseString["message"]}");
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
-    Map<String, dynamic> responseData = responseString["data"] as Map<String, dynamic>;
-    if (responseData == null || responseData.isEmpty) {
+
+    if (responseString["data"] == null || responseString["data"].isEmpty) {
       return null;
     }
+    Map<String, dynamic> responseData = responseString["data"] as Map<String, dynamic>;
     return RFAppVersion.fromJson(responseData);
 
   }

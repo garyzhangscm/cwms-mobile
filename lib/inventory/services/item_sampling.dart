@@ -86,7 +86,7 @@ class ItemSamplingService {
     Response response = await httpClient.put(
         "/inventory/item-sampling",
         queryParameters: {'warehouseId': Global.currentWarehouse!.id},
-      data: itemSampling
+      data: jsonEncode(itemSampling)
     );
 
     // printLongLogMessage("response from addItemSampling by number ${itemSampling.number}");
@@ -109,7 +109,7 @@ class ItemSamplingService {
     Response response = await httpClient.post(
         "/inventory/item-sampling/${itemSampling.id}",
         queryParameters: {'warehouseId': Global.currentWarehouse!.id},
-        data: itemSampling
+        data: jsonEncode(itemSampling)
     );
 
     // printLongLogMessage("response from changeItemSampling by number ${itemSampling.number}");

@@ -9,40 +9,40 @@ part of 'inventory.dart';
 Inventory _$InventoryFromJson(Map<String, dynamic> json) {
   return Inventory()
     ..id = json['id'] as int
-    ..lpn = json['lpn'] as String
-    ..locationId = json['locationId'] as int
-    ..locationName = json['locationName'] as String
-    ..virtual = json['virtual'] as bool
-    ..color = json['color']  == null ? null : json['color'] as String
-    ..productSize = json['productSize']  == null ? null : json['productSize'] as String
-    ..style = json['style']  == null ? null : json['style'] as String
-    ..attribute1 = json['attribute1']  == null ? null : json['attribute1'] as String
-    ..attribute2 = json['attribute2']  == null ? null : json['attribute2'] as String
-    ..attribute3 = json['attribute3']  == null ? null : json['attribute3'] as String
-    ..attribute4 = json['attribute4']  == null ? null : json['attribute4'] as String
-    ..attribute5 = json['attribute5']  == null ? null : json['attribute5'] as String
+    ..lpn = json['lpn']
+    ..locationId = json['locationId']
+    ..locationName = json['locationName']
+    ..virtual = json['virtual']
+    ..color = json['color']
+    ..productSize = json['productSize']
+    ..style = json['style']
+    ..attribute1 = json['attribute1']
+    ..attribute2 = json['attribute2']
+    ..attribute3 = json['attribute3']
+    ..attribute4 = json['attribute4']
+    ..attribute5 = json['attribute5']
     ..location = json['location'] == null
         ? null
         : WarehouseLocation.fromJson(json['location'] as Map<String, dynamic>)
-    ..pickId = json['pickId'] as int
+    ..pickId = json['pickId']
     ..pick = json['pick'] == null
         ? null
         : Pick.fromJson(json['pick'] as Map<String, dynamic>)
-    ..receiptId = json['receiptId'] as int
+    ..receiptId = json['receiptId']
     ..receipt = json['receipt'] == null
         ? null
         : Receipt.fromJson(json['receipt'] as Map<String, dynamic>)
-    ..receiptNumber = json['receiptNumber'] as String
-    ..receiptLineId = json['receiptLineId'] as int
+    ..receiptNumber = json['receiptNumber']
+    ..receiptLineId = json['receiptLineId']
     ..receiptLine = json['receiptLine'] == null
         ? null
         : ReceiptLine.fromJson(json['receiptLine'] as Map<String, dynamic>)
-    ..workOrderId = json['workOrderId'] as int
+    ..workOrderId = json['workOrderId']
     ..workOrder = json['workOrder'] == null
         ? null
         : WorkOrder.fromJson(json['workOrder'] as Map<String, dynamic>)
-    ..workOrderLineId = json['workOrderLineId'] as int
-    ..workOrderByProductId = json['workOrderByProductId'] as int
+    ..workOrderLineId = json['workOrderLineId']
+    ..workOrderByProductId = json['workOrderByProductId']
     ..lastQCTime = json['lastQCTime'] == null
         ? null
         : DateTime.parse(json['lastQCTime'] as String)
@@ -55,13 +55,15 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
     ..inventoryStatus = json['inventoryStatus'] == null
         ? null
         : InventoryStatus.fromJson(json['inventoryStatus'] as Map<String, dynamic>)
-    ..quantity = json['quantity'] as int
-    ..inventoryMovements = (json['inventoryMovements'] as List)
+    ..quantity = json['quantity']
+    ..inventoryMovements = json['inventoryMovements'] == null
+      ? [] :
+        (json['inventoryMovements'] as List)
         .map(
             (e) => InventoryMovement.fromJson(e as Map<String, dynamic>))
         .toList()
-    ..warehouseId = json['warehouseId'] as int
-    ..clientId = json['clientId'] as int
+    ..warehouseId = json['warehouseId']
+    ..clientId = json['clientId']
     ..inboundQCRequired = json['inboundQCRequired'] == null
         ? false : json['inboundQCRequired'] as bool
     ..kitInventoryFlag = json['kitInventoryFlag'] == null
@@ -71,7 +73,9 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
     ..kitInventory = json['kitInventory'] == null
         ? null
         : Inventory.fromJson(json['kitInventory'] as Map<String, dynamic>)
-    ..kitInnerInventories = (json['kitInnerInventories'] as List)
+    ..kitInnerInventories = json['kitInnerInventories']  == null ?
+        [] :
+        (json['kitInnerInventories'] as List)
         .map(
             (e) =>  Inventory.fromJson(e as Map<String, dynamic>))
         .toList();

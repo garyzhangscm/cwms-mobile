@@ -9,16 +9,16 @@ part of 'bill_of_material_line.dart';
 BillOfMaterialLine _$BillOfMaterialLineFromJson(Map<String, dynamic> json) {
   return BillOfMaterialLine()
     ..id = json['id'] as int
-    ..number = json['number'] as String
+    ..number = json['number']
     ..item = json['item'] == null
         ? null
         : Item.fromJson(json['item'] as Map<String, dynamic>)
-    ..itemId = json['itemId'] as int
-    ..expectedQuantity = json['expectedQuantity'] as double
+    ..itemId = json['itemId']
+    ..expectedQuantity = json['expectedQuantity']
     ..inventoryStatus = json['inventoryStatus'] == null
         ? null
         : InventoryStatus.fromJson(json['item'] as Map<String, dynamic>)
-    ..inventoryStatusId = json['inventoryStatusId'] as int;
+    ..inventoryStatusId = json['inventoryStatusId'] ;
 }
 
 Map<String, dynamic> _$BillOfMaterialLineToJson(BillOfMaterialLine instance) => <String, dynamic>{

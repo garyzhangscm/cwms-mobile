@@ -10,8 +10,8 @@ part of 'work_order_labor.dart';
 WorkOrderLabor _$WorkOrderLaborFromJson(Map<String, dynamic> json) {
   return WorkOrderLabor()
     ..id = json['id'] as int
-    ..warehouseId = json['warehouseId'] as int
-    ..username = json['username'] as String
+    ..warehouseId = json['warehouseId']
+    ..username = json['username']
     ..productionLine = json['productionLine'] == null
         ? null
         : ProductionLine.fromJson(json['productionLine'] as Map<String, dynamic>)

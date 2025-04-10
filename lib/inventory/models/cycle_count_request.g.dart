@@ -9,7 +9,7 @@ part of 'cycle_count_request.dart';
 CycleCountRequest _$CycleCountRequestFromJson(Map<String, dynamic> json) {
   return CycleCountRequest()
     ..id = json['id'] as int
-    ..batchId = json['batchId'] as String
+    ..batchId = json['batchId']
     ..skippedCount = json['skippedCount'] == null ? 0 : json['skippedCount'] as int
     ..location = json['location'] == null
         ? null
