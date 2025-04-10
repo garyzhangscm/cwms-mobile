@@ -396,11 +396,11 @@ class _PickPageState extends State<PickPage> {
   Widget _buildPickErrorButtons(BuildContext context) {
 
     _pickErrorOptions = [
-
-      CWMSLocalizations.of(context)!.skip,
-      CWMSLocalizations.of(context)!.cancelPickAndReallocate,
+      CWMSLocalizations.of(context).error,
+      CWMSLocalizations.of(context).skip,
+      CWMSLocalizations.of(context).cancelPickAndReallocate,
     ];
-    _selectedPickErrorOption = "";
+    _selectedPickErrorOption = CWMSLocalizations.of(context).error;
 
     return DropdownButtonHideUnderline(
       child: DropdownButton2<String>(
@@ -430,17 +430,17 @@ class _PickPageState extends State<PickPage> {
         ),
         items: _pickErrorOptions
             .map((String pickErrorOption) => DropdownMenuItem<String>(
-          value: pickErrorOption,
-          child: Text(
-            pickErrorOption,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ))
+              value: pickErrorOption,
+              child: Text(
+                pickErrorOption,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ))
             .toList(),
         value: _selectedPickErrorOption,
         onChanged: (value) {
@@ -536,7 +536,7 @@ class _PickPageState extends State<PickPage> {
   void _processPickError(String pickErrorOption) {
     printLongLogMessage("start to process pick error ${pickErrorOption}");
 
-    if (pickErrorOption == CWMSLocalizations.of(context)!.skip) {
+    if (pickErrorOption == CWMSLocalizations.of(context).skip) {
       _skipCurrentPick();
     }
     else if (pickErrorOption == CWMSLocalizations.of(context)!.cancelPickAndReallocate) {
@@ -871,8 +871,8 @@ class _PickPageState extends State<PickPage> {
     printLongLogMessage("start to get pickable inventory item package type for pick ${pick.number} with pickable quantity: ${pickableQuantity}");
     if (pickableQuantity > 0) {
       InventoryService.findPickableInventory(
-          pick!.item!.id!,
-          pick!.inventoryStatus!.id!,
+          pick.item!.id!,
+          pick.inventoryStatus!.id!,
           color: pick.color ?? "",
           productSize: pick.productSize ?? "",
           style:  pick.style ?? "",

@@ -130,11 +130,11 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
       buildTwoButtonRow(context,
         ElevatedButton(
             onPressed: _onLPNScanned,
-            child: Text(CWMSLocalizations.of(context)!.confirm)
+            child: Text(CWMSLocalizations.of(context).confirm)
         ),
         ElevatedButton(
             onPressed: _onClear,
-            child: Text(CWMSLocalizations.of(context)!.clear)
+            child: Text(CWMSLocalizations.of(context).clear)
         ),
 
       ) ;
@@ -172,16 +172,24 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
       else {
 
         int qcInspectionRequestItemsCount = 0;
+        printLongLogMessage("start to load every qcInspectionRequest");
+
         for(final qcInspectionRequest in qcInspectionRequests){
+          printLongLogMessage("qcInspectionRequest.number ${qcInspectionRequest.number}");
+          printLongLogMessage("qcInspectionRequest.qcInspectionRequestItems.length ${qcInspectionRequest.qcInspectionRequestItems.length}");
+
           if (qcInspectionRequest.qcInspectionRequestItems.isNotEmpty) {
+            printLongLogMessage("start actual qc");
             await Navigator.of(context).pushNamed("qc_inspection", arguments: qcInspectionRequest);
             qcInspectionRequestItemsCount += qcInspectionRequest.qcInspectionRequestItems.length;
           }
         }
+        printLongLogMessage("clear everything");
         _onClear();
+        printLongLogMessage("qcInspectionRequestItemsCount: ${qcInspectionRequestItemsCount}");
         if (qcInspectionRequestItemsCount == 0) {
 
-          showWarningDialog(context, CWMSLocalizations.of(context)!.inventoryNotQCRequired);
+          showWarningDialog(context, CWMSLocalizations.of(context).inventoryNotQCRequired);
         }
 
       }
@@ -213,7 +221,12 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
 
         printLongLogMessage("get ${inventoryList.length} inventory by lpn $lpn");
 
+        if (inventoryList.length == 0) {
 
+          Navigator.of(context).pop();
+          showErrorDialog(context, "can't find LPN by " + lpn);
+          return;
+        }
 
         // TO-DO, we will support only one inventory record for now
         if (inventoryList.length == 1) {

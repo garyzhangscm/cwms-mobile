@@ -277,12 +277,10 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
         Order order =
             await OrderService.getOrderByNumber(_orderNumberController.text);
 
-        if (order != null) {
           _assignOrderToUser(order);
           print("Will add order ${order.number} to the list");
           _orderNumberController.clear();
           _orderNumberControllerFocusNode.requestFocus();
-        }
 
         Navigator.of(context).pop();
       }
@@ -333,10 +331,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     // save the relationship between the order and the picks so that
     // when we remove the order from current assignment, we can
     // remove the picks as well
-    Set<int> existingPicks = orderPicks[order.number]!;
-    if (existingPicks == null) {
-      existingPicks = new Set<int>();
-    }
+    Set<int> existingPicks = orderPicks[order.number] ?? new Set<int>();
 
     picksByOrder.forEach((pick) => existingPicks.add(pick.id!));
     orderPicks[order.number!] = existingPicks;
@@ -348,8 +343,13 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
   void _deassignPickFromUser(Order order) {
     // find the pick ids and remove them from the pick list
+    printLongLogMessage("orderPicks.length ${orderPicks.length}");
+    printLongLogMessage("order.number ${order.number}");
+    printLongLogMessage("orderPicks[order.number!]? ${orderPicks[order.number!] == null}");
 
     Set<int> existingPicks = orderPicks[order.number!]!;
+    printLongLogMessage("got ${existingPicks.length} picks from order ${order.number}");
+
     existingPicks.forEach((pickId) =>
         assignedPicks.removeWhere((assignedPick) => assignedPick.id == pickId));
 
@@ -388,6 +388,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     currentPick = await _getNextValidPick();
     if (currentPick == null) {
       await showBlockedErrorDialog(context, "all picks are done!");
+
       return;
     }
 
@@ -419,12 +420,12 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
         = currentPick!.pickedQuantity! + pickResult!.confirmedQuantity!;
       // update the order's open pick quantity to reflect the
       // pick status
-      Order order = _getOrderByPick(currentPick!);
+      Order? order = _getOrderByPick(currentPick!);
       if (order != null) {
         setState(() {
 
-          order.totalOpenPickQuantity = order.totalOpenPickQuantity! - pickResult!.confirmedQuantity!;
-          order.totalPickedQuantity = order.totalPickedQuantity! + pickResult!.confirmedQuantity!;
+          order.totalOpenPickQuantity = order.totalOpenPickQuantity! - pickResult.confirmedQuantity!;
+          order.totalPickedQuantity = order.totalPickedQuantity! + pickResult.confirmedQuantity!;
         });
       }
 
@@ -449,14 +450,14 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
   }
 
-  Order _getOrderByPick(Pick pick) {
+  Order? _getOrderByPick(Pick pick) {
     // Since the pick doesn't have the information of the pick, we will
     // need to get the order number from the map orderPicks, which
     // is the only place we store the relationship between
     // order number and pick id
 
     Order? order;
-    Iterator<MapEntry<String, Set<int>>> orderPickIterator = orderPicks!.entries!.iterator!;
+    Iterator<MapEntry<String, Set<int>>> orderPickIterator = orderPicks.entries.iterator;
     while(orderPickIterator.moveNext()) {
       MapEntry<String, Set<int>> orderPick = orderPickIterator.current;
       String orderNumber = orderPick.key;
@@ -472,7 +473,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
     }
 
-    return order!;
+    return order;
   }
 
   Future<void> _startBarcodeScanner() async {
