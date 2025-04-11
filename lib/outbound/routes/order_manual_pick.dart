@@ -202,7 +202,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
                 title: Text(
                     CWMSLocalizations.of(context).item + ':' + (_currentOrder?.orderLines[index].item!.name ?? "")),
                 subtitle: Text(
-                    CWMSLocalizations.of(context)!.expectedQuantity + ':' + (_currentOrder?.orderLines[index].openQuantity.toString() ?? "")),
+                    CWMSLocalizations.of(context).expectedQuantity + ':' + (_currentOrder?.orderLines[index].openQuantity.toString() ?? "")),
               );
             }),
       );
@@ -244,15 +244,24 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
 
     Navigator.of(context).pop();
+
     if (_currentOrder == null) {
       showErrorDialog(context, "Can't find order by number " + _orderNumberController.text);
 
     }
-
-    if (_currentOrder?.allowForManualPick != true) {
+    else if (_currentOrder?.allowForManualPick != true) {
 
       await showBlockedErrorDialog(context, "order " + _orderNumberController.text + " is marked as not for manual pick");
 
+
+      setState(()  {
+        _currentOrder = null;
+
+      });
+      _orderNumberFocusNode.requestFocus();
+    }
+    else if (!isOrderOpenForManualPick(_currentOrder!)) {
+      await showBlockedErrorDialog(context, "there's no open quantity left for manual pick of order " + _orderNumberController.text);
 
       setState(()  {
         _currentOrder = null;
@@ -272,11 +281,19 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
   }
 
+  bool isOrderOpenForManualPick(Order order) {
+    order.orderLines.forEach((orderLine) =>
+        printLongLogMessage("number: ${orderLine.number}, open quantity:${orderLine.openQuantity}")
+    );
+    return order.orderLines.any((orderLine) => (orderLine.openQuantity ?? 0) > 0);
+
+  }
+
 
   Widget _buildPickToShipStageInput(BuildContext context) {
     return
       buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.pickToProductionLineInStage,
+        CWMSLocalizations.of(context).pickToProductionLineInStage,
 
         Checkbox(
           value: _pickToShipStage,
@@ -291,7 +308,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
   Widget _buildLPNInput(BuildContext context) {
     return  buildTwoSectionInputRow(
-      CWMSLocalizations.of(context)!.lpn+ ": ",
+      CWMSLocalizations.of(context).lpn+ ": ",
       Focus(
         child:
         SystemControllerNumberTextBox(
@@ -309,7 +326,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
               // otherwise, we will flow to next LPN Capture form to let the user capture
               // more LPNs
               if (v?.trim().isEmpty == true) {
-                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
+                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context)!.lpn);
               }
 
               return null;
@@ -327,7 +344,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
     // enter in the LPN controller. In either case, we will need to make sure
     // the lpn doesn't have focus before we start confirm
 
-    printLongLogMessage("_enterOnLPNController: Start to confirm work order produced inventory, tryTime = $tryTime");
+    printLongLogMessage("_enterOnLPNController: Start to confirm order manual pick, tryTime = $tryTime");
     if (tryTime <= 0) {
       // do nothing as we run out of try time
 
@@ -430,6 +447,8 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
         // check the total quantity of the LPN
         int inventoryQuantity =  inventories.fold(0, (previous, current) => previous + current.quantity!);
 
+
+
         if (pickableQuantity < inventoryQuantity) {
 
           // ok, we will need to inform the user that it will be a partial pick
@@ -493,10 +512,15 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
                 picks[i], (picks[i].quantity! - picks[i].pickedQuantity!), lpn: _lpnController.text,
                 nextLocationName: shipStageLocation.name!).then((value) {
 
-                  showToast("pick confirmed");
+                  printLongLogMessage("pick confirmed, let's refresh the order information");
+                  _refreshOrderInformation();
+                  Navigator.of(context).pop();
+                  _readyToConfirm = true;
             } , onError: (e) {
               showErrorToast("pick confirmed error, please contact your supervisor or manager");
               showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
+              Navigator.of(context).pop();
+              _readyToConfirm = true;
             }
           );
         }
@@ -507,10 +531,18 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
           PickService.confirmPick(
               picks[i], (picks[i].quantity! - picks[i].pickedQuantity!), lpn: _lpnController.text).then((value) {
 
-            showToast("pick confirmed");
+                printLongLogMessage("pick confirmed, let's refresh the order information");
+
+                _refreshOrderInformation();
+
+                Navigator.of(context).pop();
+                _readyToConfirm = true;
+
           } , onError: (e) {
             showErrorToast("pick confirmed error, please contact your supervisor or manager");
             showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
+            Navigator.of(context).pop();
+            _readyToConfirm = true;
           });
         }
       }
@@ -526,18 +558,46 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
     }
     printLongLogMessage("All manual picks are done");
 
-    Navigator.of(context).pop();
-    _readyToConfirm = true;
     showToast("lpn ${_lpnController.text} is picked");
+
+
+
+
     _refreshScreenAfterPickConfirm();
 
   }
+
+
   _refreshScreenAfterPickConfirm(){
     // after we sucessfully pick the LPN, clear the LPN field
     _lpnController.text = "";
     _lpnFocusNode.requestFocus();
     _readyToConfirm = true;
+
+
     _reloadInventoryOnRF();
+  }
+
+  _refreshOrderInformation() async {
+    _currentOrder = await OrderService.getOrderByNumber(_currentOrder!.number!);
+    printLongLogMessage("Refresh order and load all open quantites");
+
+    if (!isOrderOpenForManualPick(_currentOrder!)) {
+
+      await showBlockedErrorDialog(context, "there's no open quantity left for manual pick of order " + _orderNumberController.text);
+
+      setState(()  {
+        _currentOrder = null;
+
+      });
+      _orderNumberFocusNode.requestFocus();
+    }
+    else {
+
+      setState(() {
+        _currentOrder;
+      });
+    }
   }
 
   void _reloadInventoryOnRF() {

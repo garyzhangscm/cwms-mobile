@@ -21,7 +21,7 @@ class OrderService {
           "warehouseId": Global.currentWarehouse!.id}
     );
 
-    // print("response from Order: $response");
+    printLongLogMessage("response from Order: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {

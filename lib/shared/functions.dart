@@ -161,11 +161,11 @@ showErrorDialog(BuildContext context, String message) {
 
 showBlockedErrorDialog(BuildContext context, String message) async {
 
-  showBlockedDialog(context, CWMSLocalizations.of(context).error, message);
+  await showBlockedDialog(context, CWMSLocalizations.of(context).error, message);
 }
 showBlockedWarningDialog(BuildContext context, String message) async {
 
-  showBlockedDialog(context, CWMSLocalizations.of(context).warning, message);
+  await showBlockedDialog(context, CWMSLocalizations.of(context).warning, message);
 }
 
 showBlockedDialog(BuildContext context, String title, String message) async {
