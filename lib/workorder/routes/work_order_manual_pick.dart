@@ -26,6 +26,9 @@ import 'package:badges/badges.dart' as badge;
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
 
+import '../../inventory/models/item.dart';
+import '../../inventory/services/item.dart';
+
 
 class WorkOrderManualPickPage extends StatefulWidget{
 
@@ -117,8 +120,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                 // if the user start with a production line, show a text box
 
                 _currentWorkOrder == null || _scannedProductionLine != null ?
-                _buildProductionLineTextBox(context) :
-                _buildProductionLineAssignmentSelection(context),
+                    _buildProductionLineTextBox(context) :
+                    _buildProductionLineAssignmentSelection(context),
                 // build a hypelink to allow the user to click and show
                 // what the user will need to pick and the remain quantity to be picked
                 _currentWorkOrder == null ? Container() : _buildPickingInformation(context),
@@ -174,6 +177,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
     printLongLogMessage("openPickingInformationForm");
 
+
     await showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
@@ -192,7 +196,36 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     );
   }
 
+  Future<void> _loadItemInformation(WorkOrder? workOrder) async {
+    Set<int>? itemIds = workOrder?.workOrderLines.where(
+      (workOrderLine) => workOrderLine.item == null
+    ).map((workOrderLine) => workOrderLine.itemId!).toSet();
+
+    // all items are loaded
+    if (itemIds == null || itemIds.length == 0) {
+      return;
+    }
+
+    String itemIdList = itemIds.join(",");
+
+    List<Item> items = await ItemService.getItemsByIds(itemIdList);
+
+    Map<int, Item> itemMap = new Map();
+    items.forEach((item) => itemMap[item.id!] = item );
+
+    workOrder?.workOrderLines.where(
+            (workOrderLine) => workOrderLine.item == null
+    ).forEach((workOrderLine) =>
+      workOrderLine.item = itemMap[workOrderLine.itemId]
+    );
+
+
+
+  }
+
   Widget _buildPickableItemList(BuildContext context) {
+    _loadItemInformation(_currentWorkOrder);
+
     return
       Expanded(
         child: ListView.builder(
@@ -674,7 +707,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
         );
 
         // check the total quantity of the LPN
-        int inventoryQuantity =  inventories.fold(0, (previous, current) => previous! + current!.quantity!);
+        int inventoryQuantity =  inventories.fold(0, (previous, current) => previous + current.quantity!);
 
 
         if (pickableQuantity < inventoryQuantity) {

@@ -92,5 +92,27 @@ class ItemService {
             .toList();
   }
 
+  static Future<List<Item>> getItemsByIds(String itemIds) async {
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.get(
+        "/inventory/items",
+        queryParameters: {'warehouseId': Global.currentWarehouse!.id,
+          'companyId': Global.lastLoginCompanyId,
+          'itemIdList': itemIds}
+    );
+
+
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("queryItemByKeyword / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+    return (responseString["data"] as List).map((e) => Item.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 
 }
