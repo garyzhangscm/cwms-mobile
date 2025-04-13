@@ -272,13 +272,13 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   Widget _buildInventoryDepositRequestListTile(BuildContext context, int index) {
     String key = _inventoryDepositRequests.keys.elementAt(index);
 
-    printLongLogMessage("_inventoryDepositRequests[key].requestInProcess: ${_inventoryDepositRequests[key]!.requestInProcess}");
-    printLongLogMessage("_inventoryDepositRequests[key].requestResult: ${_inventoryDepositRequests[key]!.requestResult}");
+    // printLongLogMessage("_inventoryDepositRequests[key].requestInProcess: ${_inventoryDepositRequests[key]!.requestInProcess}");
+    // printLongLogMessage("_inventoryDepositRequests[key].requestResult: ${_inventoryDepositRequests[key]!.requestResult}");
     if (_inventoryDepositRequests[key]!.requestInProcess == true) {
       // show loading indicator if the inventory still reverse in progress
       printLongLogMessage("show loading for index $index / ${_inventoryDepositRequests[key]!.lpn!}");
       return SizedBox(
-          height: 75,
+          height: 90,
           child:  Stack(
             alignment:Alignment.center ,
             fit: StackFit.expand, //未定位widget占满Stack整个空间
@@ -377,7 +377,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
     else if(_inventoryDepositRequests[key]!.requestResult == true) {
       return
         SizedBox(
-            height: 75,
+            height: 90,
             child:
             ListTile(
               title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[key]!.lpn!),

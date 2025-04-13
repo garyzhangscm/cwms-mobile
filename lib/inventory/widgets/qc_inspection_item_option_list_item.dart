@@ -30,13 +30,12 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
 
   @override
   Widget build(BuildContext context) {
+
     switch(widget.qcInspectionRequestItemOption.qcRuleItem?.qcRuleItemType) {
       case QCRuleItemType.NUMBER:
         return buildNumberOption(context);
-        break;
       case QCRuleItemType.STRING:
         return buildStringOption(context);
-        break;
 
       default:
         return buildYesNoOption(context);

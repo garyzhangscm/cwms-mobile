@@ -60,7 +60,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
     super.initState();
 
     _validatePartialLPNPick = Global.getConfigurationAsBoolean("outboundOrderValidatePartialLPNPick");
-    // _pickToShipStage = Global.getConfigurationAsBoolean("pickToShipStage");
+    _pickToShipStage = Global.getConfigurationAsBoolean("pickToShipStage");
 
     _currentOrder = null;
     inventoryOnRF = <Inventory>[];
@@ -584,7 +584,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
     if (!isOrderOpenForManualPick(_currentOrder!)) {
 
-      await showBlockedErrorDialog(context, "there's no open quantity left for manual pick of order " + _orderNumberController.text);
+      await showBlockedErrorDialog(context, "there's no more open quantity left for manual pick of order " + _orderNumberController.text);
 
       setState(()  {
         _currentOrder = null;

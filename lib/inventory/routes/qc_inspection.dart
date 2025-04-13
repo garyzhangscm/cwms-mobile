@@ -62,8 +62,8 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
                 children: [
                   // for work order qc, we will show the input to let the user input the qc quantity
                   _qcInspectionRequest!.workOrderQCSampleId == null ?
-                  Container() :
-                  _buildQCQuantity(context),
+                    Container() :
+                    _buildQCQuantity(context),
                   _buildQCItemName(context),
                   _buildQCItemOptionList(context),
                   _buildQCResultButtons(context),
@@ -75,8 +75,9 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   }
 
   Widget _buildQCQuantity(BuildContext context) {
+
     return
-          buildTwoSectionInputRow(CWMSLocalizations.of(context)!.qcQuantity,
+          buildTwoSectionInputRow(CWMSLocalizations.of(context).qcQuantity,
           TextFormField(
               controller: _qcQuantityController,
               keyboardType: TextInputType.number,
@@ -88,6 +89,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   }
 
   Widget _buildQCItemName(BuildContext context) {
+
     return
       Row(
           children: <Widget>[
@@ -103,6 +105,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
 
     List<QCInspectionRequestItemOption> enabledQCInspectionRequestItemOptions =
         getEnabledQCItemOptions(_qcInspectionRequest!.qcInspectionRequestItems[_qcInspectionRequestItemIndex!]);
+
 
     return
       Expanded(
@@ -125,17 +128,16 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
           ));
   }
 
-  Object _getOptionValue(QCInspectionRequestItemOption option) {
+  Object? _getOptionValue(QCInspectionRequestItemOption option) {
+
     switch(option.qcRuleItem?.qcRuleItemType) {
       case QCRuleItemType.NUMBER:
-        return option.doubleValue!;
-        break;
+        return option.doubleValue;
       case QCRuleItemType.STRING:
-        return option.stringValue!;
-        break;
+        return option.stringValue;
 
       default:
-        return option.booleanValue!;
+        return option.booleanValue;
 
     }
   }
@@ -153,7 +155,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       buildTwoButtonRow(context,
         ElevatedButton(
             onPressed: _onCancel,
-            child: Text(CWMSLocalizations.of(context)!.cancel)
+            child: Text(CWMSLocalizations.of(context).cancel)
         ),
         _qcInspectionRequestItemIndex! < _qcInspectionRequest!.qcInspectionRequestItems.length - 1 ?
             _buildNextQCInspectionRequestItemButton(context) :
