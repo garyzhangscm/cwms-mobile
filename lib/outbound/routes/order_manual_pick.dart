@@ -289,7 +289,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   Widget _buildPickToShipStageInput(BuildContext context) {
     return
       buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).pickToProductionLineInStage,
+        CWMSLocalizations.of(context).pickToShipStage,
 
         Checkbox(
           value: _pickToShipStage,

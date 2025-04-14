@@ -378,6 +378,14 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       return;
     }
 
+    if (!isWorkOrderOpenForManualPick(_currentWorkOrder!)) {
+
+      await showBlockedErrorDialog(context, "there's no more open quantity left for manual pick of work order " +
+          _currentWorkOrder!.number!);
+
+      _clearField();
+    }
+
     _lpnController.text = "";
     setState(()  {
       _currentWorkOrder;
@@ -762,7 +770,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
         if (_pickToProductionLineInStage) {
           if (productionLine.inboundStageLocation == null) {
             WarehouseLocation inboundStageLocation = await WarehouseLocationService.getWarehouseLocationById(
-                productionLine!.inboundStageLocationId!);
+                productionLine.inboundStageLocationId!);
             printLongLogMessage("Will pick to production's stage ${inboundStageLocation.name}");
             // Async confirmed the pick to increase the performance
             // await PickService.confirmPick(
