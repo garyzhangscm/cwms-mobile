@@ -771,6 +771,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                 nextLocationName: inboundStageLocation.name!).then((value) {
 
                   showToast("pick confirmed");
+                  _refreshWorkOrderInformation();
             } , onError: (e) {
               // showErrorToast("pick confirmed error, please contact your supervisor or manager");
               showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
@@ -785,6 +786,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                 nextLocationName: productionLine.inboundStageLocation!.name!).then((value) {
 
               showToast("pick confirmed");
+              _refreshWorkOrderInformation();
             } , onError: (e) {
               //showErrorToast("pick confirmed error, please contact your supervisor or manager");
               showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
@@ -799,6 +801,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
               picks[i], (picks[i].quantity! - picks[i]!.pickedQuantity!), lpn: _lpnController.text).then((value) {
 
             showToast("pick confirmed");
+            _refreshWorkOrderInformation();
           } , onError: (e) {
             //showErrorToast("pick confirmed error, please contact your supervisor or manager");
             showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
@@ -846,6 +849,35 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     _reloadInventoryOnRF();
   }
 
+
+  _refreshWorkOrderInformation() async {
+
+    _currentWorkOrder = await WorkOrderService.getWorkOrderByNumber(_currentWorkOrder!.number!, loadDetails: false);
+
+    printLongLogMessage("Refresh work order and load all open quantites");
+
+    if (!isWorkOrderOpenForManualPick(_currentWorkOrder!)) {
+
+      await showBlockedErrorDialog(context, "there's no more open quantity left for manual pick of work order " +
+          _currentWorkOrder!.number!);
+
+      _clearField();
+    }
+    else {
+
+      setState(() {
+        _currentWorkOrder;
+      });
+    }
+  }
+
+  bool isWorkOrderOpenForManualPick(WorkOrder workOrder) {
+    workOrder.workOrderLines.forEach((workOrderLine) =>
+        printLongLogMessage("number: ${workOrderLine.number}, open quantity:${workOrderLine.openQuantity}")
+    );
+    return workOrder.workOrderLines.any((workOrderLine) => (workOrderLine.openQuantity ?? 0) > 0);
+
+  }
 
 
 }

@@ -263,11 +263,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
     else if (!isOrderOpenForManualPick(_currentOrder!)) {
       await showBlockedErrorDialog(context, "there's no open quantity left for manual pick of order " + _orderNumberController.text);
 
-      setState(()  {
-        _currentOrder = null;
-
-      });
-      _orderNumberFocusNode.requestFocus();
+      _clearField();
     }
     else {
 
@@ -379,7 +375,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _currentOrder == null || !_readyToConfirm? null : _onConfirmButtonClick,
-                child: Text(CWMSLocalizations.of(context)!.confirm),
+                child: Text(CWMSLocalizations.of(context).confirm),
             ),
             badge.Badge(
               showBadge: true,
@@ -396,7 +392,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                    child: Text(CWMSLocalizations.of(context).depositInventory),
                   ),
                 ),
             )
@@ -502,7 +498,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
       // let's finish each pick one by one
       for(var i = 0; i < picks.length; i++){
 
-        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity! - picks[i]!.pickedQuantity!}");
+        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity! - picks[i].pickedQuantity!}");
         if (_pickToShipStage) {
 
           WarehouseLocation shipStageLocation = await WarehouseLocationService.getWarehouseLocationById(
@@ -514,12 +510,10 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
                   printLongLogMessage("pick confirmed, let's refresh the order information");
                   _refreshOrderInformation();
-                  Navigator.of(context).pop();
                   _readyToConfirm = true;
             } , onError: (e) {
               showErrorToast("pick confirmed error, please contact your supervisor or manager");
               showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
-              Navigator.of(context).pop();
               _readyToConfirm = true;
             }
           );
@@ -535,13 +529,11 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
                 _refreshOrderInformation();
 
-                Navigator.of(context).pop();
                 _readyToConfirm = true;
 
           } , onError: (e) {
             showErrorToast("pick confirmed error, please contact your supervisor or manager");
             showErrorDialog(context, "pick confirmed error, please contact your supervisor or manager");
-            Navigator.of(context).pop();
             _readyToConfirm = true;
           });
         }
@@ -560,6 +552,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
 
     showToast("lpn ${_lpnController.text} is picked");
 
+    Navigator.of(context).pop();
 
 
 
@@ -585,12 +578,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
     if (!isOrderOpenForManualPick(_currentOrder!)) {
 
       await showBlockedErrorDialog(context, "there's no more open quantity left for manual pick of order " + _orderNumberController.text);
-
-      setState(()  {
-        _currentOrder = null;
-
-      });
-      _orderNumberFocusNode.requestFocus();
+      _clearField();
     }
     else {
 
