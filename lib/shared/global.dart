@@ -408,11 +408,10 @@ class Global {
   }
 
   static bool getConfigurationAsBoolean(String key) {
-    printLongLogMessage("_rfConfiguration is null? ${_rfConfiguration == null}");
     Map<String, dynamic> configurations = _rfConfiguration.toJson();
 
     // return false by default for boolean value
-    return configurations.containsKey(key) ? configurations[key] as bool :
+    return configurations.containsKey(key) && configurations[key] != null ? configurations[key] as bool :
         false;
   }
   static String getConfigurationAsString(String key) {
