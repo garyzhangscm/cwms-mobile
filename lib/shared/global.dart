@@ -418,14 +418,14 @@ class Global {
     Map<String, dynamic> configurations = _rfConfiguration.toJson();
 
     // return empty string by default for String value
-    return configurations.containsKey(key) ? configurations[key] as String :
+    return configurations.containsKey(key) && configurations[key] != null ? configurations[key] as String :
         "";
   }
   static int getConfigurationAsInt(String key) {
     Map<String, dynamic> configurations = _rfConfiguration.toJson();
 
     // return 0  by default for int value
-    return configurations.containsKey(key) ? configurations[key] as int :
+    return configurations.containsKey(key) && configurations[key] != null ? configurations[key] as int :
      0;
   }
 
