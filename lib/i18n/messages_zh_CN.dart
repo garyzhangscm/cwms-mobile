@@ -281,6 +281,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "inventoryAttribute5" : MessageLookupByLibrary.simpleMessage("库存属性 5"),
 
     "cancelPickAndReallocate" : MessageLookupByLibrary.simpleMessage("取消并重新分配"),
+    "chooseNextPick" : MessageLookupByLibrary.simpleMessage("选择拣货任务"),
     "pickByWave" : MessageLookupByLibrary.simpleMessage("按波次拣货"),
     "lastQCTime" : MessageLookupByLibrary.simpleMessage("上次QC时间"),
 

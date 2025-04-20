@@ -385,7 +385,13 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
 
     // flow to pick page with the first pick
+    showLoading(context);
+
     currentPick = await _getNextValidPick();
+
+    Navigator.of(context).pop();
+
+
     if (currentPick == null) {
       await showBlockedErrorDialog(context, "all picks are done!");
 
@@ -393,7 +399,11 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     }
 
     // acknowledge the pick so no one else can take it
+
+    showLoading(context);
     await PickService.acknowledgePick(currentPick!.id!);
+
+    Navigator.of(context).pop();
 
     // setup the batch picked quantity to be the same as pick quantity
     // since we are working on a single pick. In the next pick page,
@@ -402,9 +412,14 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     Map argumentMap = new HashMap();
     argumentMap['pick'] = currentPick;
     argumentMap['pickMode'] = PickMode.BY_ORDER;
+    argumentMap['assignedPicks'] = assignedPicks;
+
 
     final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+
+    showLoading(context);
     await PickService.unacknowledgePick(currentPick!.id!);
+    Navigator.of(context).pop();
     if (result == null) {
       // if the user click the return button instead of confirming
       // let's do nothing
@@ -417,7 +432,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     if (pickResult.result == true) {
       // update the current pick
       currentPick!.pickedQuantity
-        = currentPick!.pickedQuantity! + pickResult!.confirmedQuantity!;
+        = currentPick!.pickedQuantity! + pickResult.confirmedQuantity!;
       // update the order's open pick quantity to reflect the
       // pick status
       Order? order = _getOrderByPick(currentPick!);

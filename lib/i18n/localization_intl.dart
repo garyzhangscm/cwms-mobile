@@ -296,6 +296,7 @@ class CWMSLocalizations {
   String get inventoryAttribute5 => Intl.message("Inventory Attribute 5", name: 'inventoryAttribute5');
 
   String get cancelPickAndReallocate => Intl.message("Cancel And Reallocate", name: 'cancelPickAndReallocate');
+  String get chooseNextPick => Intl.message("Choose Next Pick", name: 'chooseNextPick');
 
   String get pickByWave => Intl.message('Pick By Wave', name: 'pickByWave');
   String get lastQCTime => Intl.message('Last QC Time', name: 'lastQCTime');

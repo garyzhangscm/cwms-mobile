@@ -291,6 +291,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "inventoryAttribute5" : MessageLookupByLibrary.simpleMessage("Inventory Attribute 5"),
 
     "cancelPickAndReallocate" : MessageLookupByLibrary.simpleMessage("Cancel And Reallocate"),
+    "chooseNextPick" : MessageLookupByLibrary.simpleMessage("Choose Next Pick"),
     "pickByWave" : MessageLookupByLibrary.simpleMessage("Pick By Wave"),
     "lastQCTime" : MessageLookupByLibrary.simpleMessage("Last QC Time"),
 

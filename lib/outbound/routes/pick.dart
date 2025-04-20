@@ -42,6 +42,10 @@ class _PickPageState extends State<PickPage> {
   TextEditingController _quantityController = new TextEditingController();
   TextEditingController _lpnController = new TextEditingController();
   Pick? _currentPick;
+  // all picks assigned to current pick. We will allow the user to choose next pick
+  // if current pick is not suitable
+  List<Pick> _assignedPicks = [];
+
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
   FocusNode _sourceLocationFocusNode = FocusNode();
@@ -143,6 +147,8 @@ class _PickPageState extends State<PickPage> {
 
 
     _currentPick = arguments['pick'];
+    _assignedPicks = arguments.containsKey('assignedPicks') ? [] : arguments['assignedPicks'];
+
     _setupPickableInventoryItemPackageType(_currentPick!);
     printLongLogMessage("_currentPick: ${_currentPick?.toJson()}");
     _destinationLPN  = arguments['destinationLPN'] == null ? "" : arguments['destinationLPN'];
@@ -365,7 +371,7 @@ class _PickPageState extends State<PickPage> {
 
   Widget _buildQuantityInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.quantity,
+        CWMSLocalizations.of(context).quantity,
         Focus(
             focusNode: _quantityFocusNode,
             child:
@@ -395,11 +401,20 @@ class _PickPageState extends State<PickPage> {
 
   Widget _buildPickErrorButtons(BuildContext context) {
 
-    _pickErrorOptions = [
-      CWMSLocalizations.of(context).error,
-      CWMSLocalizations.of(context).skip,
-      CWMSLocalizations.of(context).cancelPickAndReallocate,
-    ];
+    _pickErrorOptions = (_assignedPicks.length > 0) ?
+      [
+        CWMSLocalizations.of(context).error,
+        CWMSLocalizations.of(context).skip,
+        CWMSLocalizations.of(context).cancelPickAndReallocate,
+        CWMSLocalizations.of(context).chooseNextPick,
+      ]
+      :
+      [
+        CWMSLocalizations.of(context).error,
+        CWMSLocalizations.of(context).skip,
+        CWMSLocalizations.of(context).cancelPickAndReallocate,
+      ] ;
+
     _selectedPickErrorOption = CWMSLocalizations.of(context).error;
 
     return DropdownButtonHideUnderline(
@@ -539,12 +554,53 @@ class _PickPageState extends State<PickPage> {
     if (pickErrorOption == CWMSLocalizations.of(context).skip) {
       _skipCurrentPick();
     }
-    else if (pickErrorOption == CWMSLocalizations.of(context)!.cancelPickAndReallocate) {
+    else if (pickErrorOption == CWMSLocalizations.of(context).cancelPickAndReallocate) {
       cancelPickAndReallocate();
+    }
+    else if (pickErrorOption == CWMSLocalizations.of(context).chooseNextPick) {
+      _openAssignedPickModel();
     }
 
   }
 
+  Future<void> _openAssignedPickModel() async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Choose a Pick'),
+          content:
+            SingleChildScrollView(
+              physics: ScrollPhysics(),
+              child: Column(
+                children: <Widget>[
+                  Text('Hey'),
+                  ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount:_assignedPicks.length,
+                      itemBuilder: (context,index){
+                        return ListTile(
+                          title: Text(_assignedPicks[index].number!),
+                          subtitle: Text("quantity: ${_assignedPicks[index].quantity! - _assignedPicks[index].pickedQuantity!}"),
+                        );
+                      })
+                ],
+              ),
+            ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(textStyle: Theme.of(context).textTheme.labelLarge),
+              child: Text(CWMSLocalizations.of(context).cancel),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   void _enterOnLocationController(int tryTime) async {
 
     // if the location is empty, then ask the user to input the
