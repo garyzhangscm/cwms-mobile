@@ -155,6 +155,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
               );
           }
       );
+      printLongLogMessage("=====  Return to previous page =====");
       // return to the previous page after display the message
       Navigator.of(context).pop();
     }
