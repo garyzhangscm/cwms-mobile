@@ -9,6 +9,7 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_list.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
+import 'package:cwms_mobile/outbound/routes/pick.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/services/pick_list.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
@@ -365,13 +366,22 @@ class _PickByListPageState extends State<PickByListPage> {
     if (_currentPick != null) {
 
       printLongLogMessage("start to pick for ${_currentPick?.number} with batch quantity ${_currentPick?.batchPickQuantity}");
-      Map argumentMap = new HashMap();
-      argumentMap['pick'] = _currentPick;
-      argumentMap['workNumber'] = _currentPickList!.number;
-      argumentMap['pickMode'] = PickMode.BY_LIST;
-      argumentMap['destinationLPN'] = _currentDestinationLPN;
+      // Map argumentMap = new HashMap();
+      // argumentMap['pick'] = _currentPick;
+      // argumentMap['workNumber'] = _currentPickList!.number;
+      // argumentMap['pickMode'] = PickMode.BY_LIST;
+      // argumentMap['destinationLPN'] = _currentDestinationLPN;
 
-      final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+      // final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+
+      final result = await Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) =>
+                  PickPage(
+                      currentPick: _currentPick!,
+                      workNumber: _currentPickList!.number,
+                      assignedPicks: _currentPickList!.picks)));
+
       if (result == null) {
         // if the user click the return button instead of confirming
         // let's do nothing

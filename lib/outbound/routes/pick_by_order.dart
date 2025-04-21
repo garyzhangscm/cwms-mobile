@@ -425,10 +425,10 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     // since we are working on a single pick. In the next pick page,
     // we will use the same logic to handle the batch picking and single pick
     currentPick!.batchPickQuantity = currentPick!.quantity! - currentPick!.pickedQuantity!;
-    Map argumentMap = new HashMap();
-    argumentMap['pick'] = currentPick;
-    argumentMap['pickMode'] = PickMode.BY_ORDER;
-    argumentMap['assignedPicks'] = assignedPicks;
+    // Map argumentMap = new HashMap();
+    // argumentMap['pick'] = currentPick;
+    // argumentMap['pickMode'] = PickMode.BY_ORDER;
+    // argumentMap['assignedPicks'] = assignedPicks;
 
 
     printLongLogMessage("###########   start to flow to pick page");

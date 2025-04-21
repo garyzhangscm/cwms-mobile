@@ -19,6 +19,8 @@ import 'package:collection/collection.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart' as badge;
 
+import '../../outbound/routes/pick.dart';
+
 
 class PickByWorkOrderPage extends StatefulWidget{
 
@@ -409,13 +411,38 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
     currentPick = _getNextValidPick();
 
     if (currentPick != null) {
-      final result = await Navigator.of(context).pushNamed("pick", arguments: currentPick);
+      // final result = await Navigator.of(context).pushNamed("pick", arguments: currentPick);
+
+      final result = await Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) =>
+                  PickPage(
+                      currentPick: currentPick!,
+                      workNumber: currentPick!.number,
+                      assignedPicks: assignedPicks)));
+
+      showLoading(context);
+      await PickService.unacknowledgePick(currentPick!.id!);
+      Navigator.of(context).pop();
+
       if (result == null) {
         // if the user click the return button instead of confirming
         // let's do nothing
         return;
       }
+
       var pickResult = result as PickResult;
+
+      // the user may change the currentPick in the pick page, let's find the right one
+      // with the pick id from the pick release
+      if (pickResult.pickId != null &&
+          currentPick!.id != pickResult.pickId &&
+          assignedPicks.any((pick) => pick.id == pickResult.pickId)) {
+
+        printLongLogMessage("current pick is changed during picking, let's get the right one so we can deduct the quanttiy");
+        currentPick = assignedPicks.firstWhere((pick) => pick.id == pickResult.pickId);
+      }
+
       print("pick result: ${pickResult.result} for pick: ${currentPick!.number}");
 
       // refresh the orders

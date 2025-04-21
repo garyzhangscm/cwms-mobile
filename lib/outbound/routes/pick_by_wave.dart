@@ -8,6 +8,7 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
+import 'package:cwms_mobile/outbound/routes/pick.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -402,11 +403,19 @@ class _PickByWavePageState extends State<PickByWavePage> {
     // setup the batch picked quantity to be the same as pick quantity
     // since we are working on a single pick. In the next pick page,
     // we will use the same logic to handle the batch picking and single pick
-    Map argumentMap = new HashMap();
-    argumentMap['pick'] = currentPick;
-    argumentMap['pickMode'] = PickMode.BY_WAVE;
+    // Map argumentMap = new HashMap();
+    // argumentMap['pick'] = currentPick;
+    // argumentMap['pickMode'] = PickMode.BY_WAVE;
 
-    final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+    // final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+
+    final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) =>
+                PickPage(
+                    currentPick: currentPick!,
+                    workNumber: currentPick!.number,
+                    assignedPicks: assignedPicks)));
 
     showLoading(context);
 

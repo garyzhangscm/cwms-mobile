@@ -8,6 +8,7 @@ import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
+import 'package:cwms_mobile/outbound/routes/pick.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -251,19 +252,35 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
     if (_currentPick != null) {
 
       // printLongLogMessage("start to pick for ${_currentPick.number} with batch quantity ${_currentPick.batchPickQuantity}");
-      Map argumentMap = new HashMap();
-      argumentMap['pick'] = _currentPick;
-      argumentMap['workNumber'] = _currentPick!.number!;
-      argumentMap['pickMode'] = PickMode.BY_BATCH;
+      // Map argumentMap = new HashMap();
+      // argumentMap['pick'] = _currentPick;
+      // argumentMap['workNumber'] = _currentPick!.number!;
+      // argumentMap['pickMode'] = PickMode.BY_BATCH;
 
-      final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+      // final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+      final result = await Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) =>
+                  PickPage(
+                      currentPick: _currentPick!,
+                      workNumber: _currentPick!.number,
+                      assignedPicks: [_currentPick!])));
+
+
+      showLoading(context);
+      await PickService.unacknowledgePick(_currentPick!.id!);
+      Navigator.of(context).pop();
+
+
       if (result == null) {
         // if the user click the return button instead of confirming
         // let's do nothing
         return;
       }
+
       var pickResult = result as PickResult;
       print("pick result: ${pickResult.toJson()} for pick: ${_currentPick!.number}");
+
 
       // refresh the orders
       if (pickResult.result == true) {

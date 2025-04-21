@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 
 import '../../outbound/models/pick.dart';
 import '../../outbound/models/pick_list.dart';
+import '../../outbound/routes/pick.dart';
 import '../../outbound/services/pick_list.dart';
 import '../../shared/global.dart';
 
@@ -466,7 +467,14 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     printLongLogMessage("flow to produce inventory page");
 
-    final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+    // final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+    final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) =>
+                PickPage(
+                    currentPick: pick!,
+                    workNumber: pick.number,
+                    assignedPicks: [pick])));
 
     if (result ==  null) {
       // the user press Return, let's unacknowledge the work task and then start with the next work task
