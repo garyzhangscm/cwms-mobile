@@ -86,7 +86,7 @@ class Inventory{
 
 
   WarehouseLocation? getNextDepositLocaiton() {
-    if (inventoryMovements == null || inventoryMovements.isEmpty) {
+    if (inventoryMovements.isEmpty) {
       return null;
     }
 

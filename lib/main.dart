@@ -140,7 +140,7 @@ class MyApp extends StatelessWidget {
               "audit_count_batch": (context) => AuditCountBatchPage(),
               "audit_count_request": (context) => AuditCountRequestPage(),
               "pick_by_order": (context) => PickByOrderPage(),
-              "pick": (context) => PickPage(),
+              // "pick": (context) => PickPage(currentPick: null,),
               "inventory_deposit": (context) => InventoryDepositPage(),
               // "inventory_adjust": (context) => InventoryAdjustmentPage(),
               "inventory_lost_and_found": (context) => InventoryLostFoundPage(),

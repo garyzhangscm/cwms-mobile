@@ -148,7 +148,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                     onPressed: () {
                       _lpnController.clear();
                       inventoryDepositRequest = null;
-                      Navigator.of(context).pop(true); //关闭对话框
+                      Navigator.of(context).pop(); //关闭对话框
+                      printLongLogMessage("=====  close the dialog =====");
                     },
                   ),
                 ],
@@ -158,6 +159,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       printLongLogMessage("=====  Return to previous page =====");
       // return to the previous page after display the message
       Navigator.of(context).pop();
+      // Navigator.of(context).pop();
     }
     else {
       printLongLogMessage("inventory_deposit / _displayInventoryForDeposit: start to get next deposit inventory");
@@ -403,24 +405,33 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   }
 
-  _allocateLocation() {
+  _allocateLocation() async {
     // allocatet a location for the inventory. If the LPN
     // already has a location , reallocate the inventory
     showLoading(context);
-    InventoryService.findInventory(lpn: inventoryDepositRequest!.lpn!)
-        .then((inventoryList) async {
-          inventoryList.forEach((inventory) async {
-            printLongLogMessage("will allocate location for lpn ${inventory.lpn}");
-            printLongLogMessage("item family: ${inventory.item?.toJson()}");
-            await InventoryService.allocateLocation(inventory);
-          });
+    List<Inventory> inventoryList = await InventoryService.findInventory(lpn: inventoryDepositRequest!.lpn!);
 
-          // refresh to show the destination location
-          _refreshInventoryOnRF();
-          inventoryDepositRequest = await _getNextInventoryToDeposit(inventoryDepositRequest!.lpn!);
-          Navigator.of(context).pop();
+    for(var inventory in inventoryList) {
 
+      printLongLogMessage("will allocate location for lpn ${inventory.lpn}");
+      // printLongLogMessage("item family: ${inventory.item?.toJson()}");
+      Inventory allocatedInventory = await InventoryService.allocateLocation(inventory);
+      // update the movement path for the inventory on rf to reflect the result of the
+      // system assigned destination location
+      printLongLogMessage("find the inventory with id ${allocatedInventory.id}");
+
+      inventoryOnRF.where((inv) => inv.id == allocatedInventory.id)
+          .forEach((inv)=> inv.inventoryMovements = allocatedInventory.inventoryMovements);
+    }
+
+
+    inventoryDepositRequest = await _getNextInventoryToDeposit(inventoryDepositRequest!.lpn!);
+    printLongLogMessage("inventoryDepositRequest?.nextLocationId : ${inventoryDepositRequest?.nextLocationId}");
+    printLongLogMessage("inventoryDepositRequest?.nextLocation : ${inventoryDepositRequest?.nextLocation?.name}");
+    setState(() {
+      inventoryDepositRequest;
     });
+    Navigator.of(context).pop();
 
   }
   // scan in location barcode to confirm
@@ -789,7 +800,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   }
 
   Future<void> _depositLPNsWithSameDestination(int destinationLocationId) async {
-    printLongLogMessage("inventory_deposit / _refreshInventoryOnRF: start to load inventory on the RF");
+    printLongLogMessage("inventory_deposit / _depositLPNsWithSameDestination: start to load inventory on the RF");
 
     showLoading(context);
 
@@ -805,12 +816,14 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     inventoryDepositRequests = inventoryDepositRequests.where(
             (inventoryDepositRequest) => inventoryDepositRequest.nextLocationId != null
                 && inventoryDepositRequest.nextLocationId == destinationLocationId).toList();
+
+    Navigator.of(context).pop();
+
     if (inventoryDepositRequests.isEmpty) {
       printLongLogMessage("there's no inventory on the RF that has the same destination as the current one's id ${destinationLocationId}");
       return;
     }
 
-    Navigator.of(context).pop();
 
     // let's loop through each request and start to deposit each one
     // _confirmInventoryDepositRequests(inventoryDepositRequests);
@@ -902,7 +915,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     Navigator.of(context).pop();
 
     showToast("inventory deposit");
-    RFService.changeCurrentRFLocation(destinationLocation.id!).then((value) => printLongLogMessage("current RF's location is changed to ${destinationLocation.name}"));
+    RFService.changeCurrentRFLocation(destinationLocation.id!).then((value) =>
+        printLongLogMessage("current RF's location is changed to ${destinationLocation.name}"));
 
     return true;
     

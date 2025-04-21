@@ -491,7 +491,7 @@ class InventoryService {
         data: jsonEncode(inventory)
     );
 
-    // printLongLogMessage("get response from allocateLocation ${response.toString()}");
+    //printLongLogMessage("get response from allocateLocation ${response.toString()}");
 
 
     Map<String, dynamic> responseString = json.decode(response.toString());

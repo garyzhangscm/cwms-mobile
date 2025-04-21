@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:core';
 
@@ -9,6 +10,7 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/outbound/models/pick_result.dart';
+import 'package:cwms_mobile/outbound/routes/pick.dart';
 import 'package:cwms_mobile/outbound/services/order.dart';
 import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
@@ -51,7 +53,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   // map to store order's priority
   // Order can be either hight priority or not.
   // High priority orders will be picked first
-  // The priority is set by the client
+  // The priority is set by the clients
   // key: order number
   // value: whether it is a high priority order
   HashMap orderPriorityMap = new HashMap<String, bool>();
@@ -69,6 +71,19 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   Pick? currentPick;
 
   List<Inventory>  inventoryOnRF = [];
+  Timer? _timer;  // timer to refresh inventory on RF every 2 second
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    // remove any timer so we won't need to load the next work again after
+    // the user return from this page
+    _timer?.cancel();
+
+
+  }
+
 
   @override
   void initState() {
@@ -161,17 +176,17 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
         buildTwoButtonRow(context,
           ElevatedButton(
               onPressed: () => _onAddingOrder(10),
-              child: Text(CWMSLocalizations.of(context)!.addOrder)
+              child: Text(CWMSLocalizations.of(context).addOrder)
           ),
           ElevatedButton(
               onPressed: _onChooseOrder,
-              child: Text(CWMSLocalizations.of(context)!.chooseOrder)
+              child: Text(CWMSLocalizations.of(context).chooseOrder)
           ),
         ),
         buildTwoButtonRow(context,
           ElevatedButton(
               onPressed: _onStartingPicking,
-              child: Text(CWMSLocalizations.of(context)!.start)
+              child: Text(CWMSLocalizations.of(context).start)
           ),
           badge.Badge(
               showBadge: true,
@@ -188,7 +203,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                    child: Text(CWMSLocalizations.of(context).depositInventory),
                   ),
                 ),
           )
@@ -389,6 +404,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
     currentPick = await _getNextValidPick();
 
+
     Navigator.of(context).pop();
 
 
@@ -415,7 +431,16 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     argumentMap['assignedPicks'] = assignedPicks;
 
 
-    final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+    printLongLogMessage("###########   start to flow to pick page");
+    printLongLogMessage("currentPick.batchPickQuantity: ${currentPick!.batchPickQuantity ?? 0}");
+    // final result = await Navigator.of(context).pushNamed("pick", arguments: argumentMap);
+    final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) =>
+                PickPage(
+                    currentPick: currentPick!,
+                    workNumber: currentPick!.number,
+                    assignedPicks: assignedPicks)));
 
     showLoading(context);
     await PickService.unacknowledgePick(currentPick!.id!);
@@ -426,6 +451,16 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
       return;
     }
     var pickResult = result as PickResult;
+    // the user may change the currentPick in the pick page, let's find the right one
+    // with the pick id from the pick release
+    if (pickResult.pickId != null &&
+        currentPick!.id != pickResult.pickId &&
+        assignedPicks.any((pick) => pick.id == pickResult.pickId)) {
+
+      printLongLogMessage("current pick is changed during picking, let's get the right one so we can deduct the quanttiy");
+      currentPick = assignedPicks.firstWhere((pick) => pick.id == pickResult.pickId);
+    }
+
     print("pick result: $pickResult for pick: ${currentPick?.number}");
 
     // refresh the orders
@@ -454,12 +489,22 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
 
   }
 
-  void _reloadInventoryOnRF() {
+  void _reloadInventoryOnRF({int refreshCount = 0}) {
 
     InventoryService.getInventoryOnCurrentRF()
         .then((value) {
       setState(() {
         inventoryOnRF = value;
+
+        if (refreshCount > 0) {
+
+          _timer = Timer(new Duration(seconds: 2), () {
+            this._reloadInventoryOnRF(refreshCount: refreshCount - 1);
+          });
+        }
+        else {
+          _timer?.cancel();
+        }
       });
     });
 
@@ -491,14 +536,6 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
     return order;
   }
 
-  Future<void> _startBarcodeScanner() async {
-    /***
-    String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
-    print("barcode scanned: $barcodeScanRes");
-    _orderNumberController.text = barcodeScanRes;
-**/
-  }
 
   Future<Pick?> _getNextValidPick() async {
     print(" =====   _getNextValidPick      =====");
@@ -520,7 +557,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
             "/ source location: ${pick.sourceLocation?.name} / pick sequence: ${pick.sourceLocation?.pickSequence}");
       });
       // return the first unacknowleged pick
-      for (var pick in assignedPicks.where((pick) => pick.quantity! > pick!.pickedQuantity!)) {
+      for (var pick in assignedPicks.where((pick) => pick.quantity! > pick.pickedQuantity!)) {
         bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id!);
         if (acknowledgeable) {
           return pick;
@@ -627,10 +664,14 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   }
 
   Future<void> _startDeposit() async {
+    _timer?.cancel();
     await Navigator.of(context).pushNamed("inventory_deposit");
 
-    // refresh the pick on the RF
-    _reloadInventoryOnRF();
+    // refresh the inventory on the RF
+    // when we come back from the deposit page, we will refresh
+    // 3 times as the deposit happens async so when we return from
+    // the deposit page, the last deposit may not be actually done yet
+    _reloadInventoryOnRF(refreshCount: 3);
   }
 
 

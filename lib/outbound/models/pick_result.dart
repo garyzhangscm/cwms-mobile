@@ -14,6 +14,8 @@ part 'pick_result.g.dart';
 class PickResult{
   PickResult();
 
+  int? pickId;
+
   bool? result;
   int? confirmedQuantity;
 
