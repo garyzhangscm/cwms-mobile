@@ -295,7 +295,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "pickByWave" : MessageLookupByLibrary.simpleMessage("Pick By Wave"),
     "lastQCTime" : MessageLookupByLibrary.simpleMessage("Last QC Time"),
 
-    'greetingMessage':greetingMessage,
+  "changeQuantity" : MessageLookupByLibrary.simpleMessage("Change Quantity"),
+  "originalQuantity" : MessageLookupByLibrary.simpleMessage("Original Quantity"),
+  "newQuantity" : MessageLookupByLibrary.simpleMessage("New Quantity"),
+
+
+
+  'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,
 

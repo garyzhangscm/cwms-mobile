@@ -366,6 +366,12 @@ Widget buildSingleButtonRow(BuildContext context, Widget button) {
 }
 
 Widget buildTwoButtonRow(BuildContext context, Widget button1, Widget button2) {
+  return buildTwoButtonRowWithWidth(context,
+      button1, MediaQuery.of(context).size.width * 0.45,
+      button2, MediaQuery.of(context).size.width * 0.45);
+}
+
+Widget buildTwoButtonRowWithWidth(BuildContext context, Widget button1, double width1, Widget button2, double width2) {
   return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       mainAxisSize: MainAxisSize.max,
@@ -375,17 +381,16 @@ Widget buildTwoButtonRow(BuildContext context, Widget button1, Widget button2) {
       verticalDirection: VerticalDirection.down,
       children: [
         SizedBox(
-            width: MediaQuery.of(context).size.width * 0.45,
+            width: width1,
             child: button1
         ),
         SizedBox(
-            width: MediaQuery.of(context).size.width * 0.45,
+            width: width2,
             child: button2
         ),
       ]
   );
 }
-
 
 Widget buildThreeButtonRow(BuildContext context, Widget button1, Widget button2, Widget button3) {
   return Row(

@@ -16,6 +16,7 @@ ItemUnitOfMeasure _$ItemUnitOfMeasureFromJson(Map<String, dynamic> json) {
     ..quantity = json['quantity']
     ..weight = json['weight']
     ..length = json['length']
+    ..defaultForDisplay = json['defaultForDisplay']
     ..width = json['width']
     ..height = json['height']
     ..warehouseId = json['warehouseId'] ;
@@ -28,6 +29,7 @@ Map<String, dynamic> _$ItemUnitOfMeasureToJson(ItemUnitOfMeasure instance) => <S
       'quantity': instance.quantity,
       'weight': instance.weight,
       'length': instance.length,
+      'defaultForDisplay': instance.defaultForDisplay,
       'width': instance.width,
       'height': instance.height,
       'warehouse': instance.warehouse,

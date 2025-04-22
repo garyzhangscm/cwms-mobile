@@ -285,6 +285,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "pickByWave" : MessageLookupByLibrary.simpleMessage("按波次拣货"),
     "lastQCTime" : MessageLookupByLibrary.simpleMessage("上次QC时间"),
 
+    "changeQuantity" : MessageLookupByLibrary.simpleMessage("修改数量"),
+    "originalQuantity" : MessageLookupByLibrary.simpleMessage("原数量"),
+    "newQuantity" : MessageLookupByLibrary.simpleMessage("新数量"),
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,

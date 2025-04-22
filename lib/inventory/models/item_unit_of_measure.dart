@@ -28,6 +28,8 @@ class ItemUnitOfMeasure{
   int? warehouseId;
   Warehouse? warehouse;
 
+  bool? defaultForDisplay;
+
 
   //不同的类使用不同的mixin即可
   factory ItemUnitOfMeasure.fromJson(Map<String, dynamic> json) => _$ItemUnitOfMeasureFromJson(json);

@@ -969,12 +969,38 @@ class _PickPageState extends State<PickPage> {
       return "";
     }
 
+    // let's see if we setup a display UOM in the item package type
+    ItemUnitOfMeasure? displayItemUnitOfMeasure =
+      _pickableInventoryItemPackageType?.itemUnitOfMeasures
+          .firstWhere((itemUnitOfMeasure) =>  (itemUnitOfMeasure.defaultForDisplay ?? false) == true);
+
+    if (displayItemUnitOfMeasure != null &&
+        quantity % displayItemUnitOfMeasure.quantity! == 0) {
+      // there's a display unit of measure defined for the item
+
+      return " ( ${quantity / displayItemUnitOfMeasure.quantity!} ${displayItemUnitOfMeasure.unitOfMeasure!.name!})";
+    }
+
     // save the quantity of each unit of measure  so we can
     // calculate how many of each unit of measure needed for the pick
     Map<int, ItemUnitOfMeasure> itemUnitOfMeasureMap = new Map();
-    _pickableInventoryItemPackageType?.itemUnitOfMeasures.forEach((itemUnitOfMeasure) =>
-        itemUnitOfMeasureMap.putIfAbsent(itemUnitOfMeasure.quantity!, () => itemUnitOfMeasure)
-    );
+    _pickableInventoryItemPackageType?.itemUnitOfMeasures.forEach((itemUnitOfMeasure) {
+        if (itemUnitOfMeasureMap.containsKey(itemUnitOfMeasure.quantity!)) {
+             // in case we have 2 UOM has the same quantity, we will always use the bigger one
+            ItemUnitOfMeasure anotherItemUnitOfMeasure = itemUnitOfMeasureMap[itemUnitOfMeasure.quantity!]!;
+            if ((anotherItemUnitOfMeasure.length ?? 0) < (itemUnitOfMeasure.length?? 0) ||
+                  (anotherItemUnitOfMeasure.width ?? 0)< (itemUnitOfMeasure.width ?? 0)||
+                  (anotherItemUnitOfMeasure.height ?? 0)< (itemUnitOfMeasure.height?? 0) ||
+                  (anotherItemUnitOfMeasure.weight ?? 0)< (itemUnitOfMeasure.weight?? 0)) {
+
+              itemUnitOfMeasureMap[itemUnitOfMeasure.quantity!] = itemUnitOfMeasure;
+            }
+        }
+        else {
+          itemUnitOfMeasureMap[itemUnitOfMeasure.quantity!] = itemUnitOfMeasure;
+
+        };
+    });
     List<int> itemUnitOfMeasureQuantityList = itemUnitOfMeasureMap.keys.toList()..sort((a, b) => b.compareTo(a));
 
     String pickByUnitOfMeasureIndicator = "";

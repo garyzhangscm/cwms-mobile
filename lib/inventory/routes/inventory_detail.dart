@@ -51,10 +51,19 @@ class _InventoryDetailPageState extends State<InventoryDetailPage> {
 
               return InventoryListItem(
                   index: index,
-                  inventory: _inventories[index]
+                  inventory: _inventories[index],
+                  onQuantityChanged: (newQuantity) => _changeInventoryQuantity(_inventories[index], newQuantity)
               );
 
             });
+  }
+
+  _changeInventoryQuantity(Inventory inventory, int newQuantity) {
+    setState(() {
+
+      inventory.quantity = newQuantity;
+      printLongLogMessage(">>> inventory ${inventory.lpn} 's quantity is changed to ${inventory.quantity}");
+    });
   }
 
 

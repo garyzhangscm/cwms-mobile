@@ -301,6 +301,12 @@ class CWMSLocalizations {
   String get pickByWave => Intl.message('Pick By Wave', name: 'pickByWave');
   String get lastQCTime => Intl.message('Last QC Time', name: 'lastQCTime');
 
+  String get changeQuantity => Intl.message('Change Quantity', name: 'changeQuantity');
+  String get originalQuantity => Intl.message('Original Quantity', name: 'originalQuantity');
+  String get newQuantity => Intl.message('New Quantity', name: 'newQuantity');
+
+
+
 
 
 

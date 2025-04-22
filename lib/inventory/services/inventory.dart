@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
+import 'package:cwms_mobile/inventory/models/item_unit_of_measure.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
@@ -19,6 +20,7 @@ import 'package:flutter/cupertino.dart';
 
 
 import '../../shared/services/printer.dart';
+import '../models/inventory_quantity_for_display.dart';
 
 
 class InventoryService {
@@ -832,4 +834,118 @@ class InventoryService {
 
     return qcInspectionRequests;
   }
+
+  static Future<Inventory> removeInventory( int inventoryId )  async {
+
+
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response = await httpClient.delete(
+        "/inventory/inventory/${inventoryId}",
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage("get response from removeInventory ${response.toString()}");
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("removeInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+
+    return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
+  }
+
+  static Future<Inventory> changeQuantity( int inventoryId , int newQuantity)  async {
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+
+    Response response = await httpClient.post(
+      "/inventory/inventory/${inventoryId}/adjust-quantity",
+      queryParameters: {'newQuantity': newQuantity},
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage("get response from changeQuantity ${response.toString()}");
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("removeInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+
+    return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
+  }
+
+
+  static InventoryQuantityForDisplay getInventoryQuantityForDisplay(Inventory inventory) {
+    // first of all, let's get the display UOM
+    // if there're multiple defined, let's get the biggest one
+    List<ItemUnitOfMeasure> displayItemUnitOfMeasures =
+        inventory.itemPackageType?.itemUnitOfMeasures
+            .where((itemUnitOfMeasure) =>
+                itemUnitOfMeasure.defaultForDisplay == true &&
+                inventory.quantity! % itemUnitOfMeasure.quantity! == 0).toList() ?? [];
+
+    ItemUnitOfMeasure? biggestDisplayItemUnitOfMeasure = getBiggestItemUnitOfMeasure(displayItemUnitOfMeasures);
+
+    // let's get the display UOM, let's return the biggest one
+    if (biggestDisplayItemUnitOfMeasure != null) {
+      return new InventoryQuantityForDisplay(inventory,
+          biggestDisplayItemUnitOfMeasure, (inventory.quantity! / biggestDisplayItemUnitOfMeasure.quantity!).round());
+    }
+
+    // there's no UOM setup for display, let's return the biggest unit of measure that
+    // can be divided evenly by the inventory's quantity
+
+    List<ItemUnitOfMeasure> itemUnitOfMeasures =
+        inventory.itemPackageType?.itemUnitOfMeasures
+            .where((itemUnitOfMeasure) =>
+            inventory.quantity! % itemUnitOfMeasure.quantity! == 0).toList() ?? [];
+
+    ItemUnitOfMeasure? biggestItemUnitOfMeasure = getBiggestItemUnitOfMeasure(itemUnitOfMeasures);
+
+    // let's get the display UOM, let's return the biggest one
+      return new InventoryQuantityForDisplay(inventory,
+          biggestItemUnitOfMeasure!, (inventory.quantity! / biggestItemUnitOfMeasure.quantity!).round());
+
+  }
+
+  // get the biggest item unit of measures from a list of item unit of measures
+  // we will compare the quantity first, if the quantities are the same for 2 UOM
+  // then we compare the size;
+  static ItemUnitOfMeasure? getBiggestItemUnitOfMeasure(List<ItemUnitOfMeasure> itemUnitOfMeasures) {
+    if (itemUnitOfMeasures.length == 0) {
+      return null;
+    }
+
+    itemUnitOfMeasures..sort((a, b)  {
+      if (a.quantity! != b.quantity!) {
+        return b.quantity!.compareTo(a.quantity!);
+      }
+      else if (a.length != b.length){
+        return b.length!.compareTo(a.length!);
+
+      }
+      else if (a.width != b.width){
+        return b.width!.compareTo(a.width!);
+
+      }
+      else if (a.height != b.height){
+        return b.height!.compareTo(a.height!);
+
+      }
+      else if (a.weight != b.weight){
+        return b.weight!.compareTo(a.weight!);
+      }
+      return 1;
+    });
+
+    return itemUnitOfMeasures.first;
+
+  }
+
+
 }

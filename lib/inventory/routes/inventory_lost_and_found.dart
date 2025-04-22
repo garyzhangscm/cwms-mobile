@@ -619,9 +619,9 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
         String errorMessage = await InventoryService.validateNewLpn(lpn);
         if (errorMessage.isNotEmpty) {
           Navigator.of(context).pop();
-          showErrorDialog(context, errorMessage);
+          showErrorDialog(context, "inventory already exists, please use inventory adjustment page to adjust the quantity");
           _readyToConfirm = true;
-          printLongLogMessage("3. set _readyToConfirm to ${_readyToConfirm} ");
+          // printLongLogMessage("3. set _readyToConfirm to ${_readyToConfirm} ");
           return;
         }
         printLongLogMessage("LPN ${lpn} passed the validation");
