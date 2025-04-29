@@ -954,7 +954,7 @@ class InventoryService {
 
     Response response = await httpClient.put(
       "/inventory/inventory/${inventory.id}",
-        data: inventory
+        data: jsonEncode(inventory)
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());

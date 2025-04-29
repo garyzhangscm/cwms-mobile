@@ -304,7 +304,7 @@ class _InventoryListItemState extends State<InventoryListItem> {
                                   return null;
                                 }),
                             DropdownButton(
-                              hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                              hint: Text(CWMSLocalizations.of(context).select),
                               items: _getItemUnitOfMeasures(),
                               value: _newQuantityItemUnitOfMeasure,
                               elevation: 1,
@@ -407,6 +407,7 @@ class _InventoryListItemState extends State<InventoryListItem> {
   Future<void> _openChangeStatusDialog() async {
     printLongLogMessage("start to change status for inventory ${widget.inventory?.id} / ${widget.inventory?.lpn}");
 
+    showLoading(context);
 
     // get all inventory status to display
 
@@ -417,6 +418,14 @@ class _InventoryListItemState extends State<InventoryListItem> {
         (itemUnitOfMeasure) => itemUnitOfMeasure.unitOfMeasure?.id == widget.inventoryQuantityForDisplay.displayItemUnitOfMeasure.unitOfMeasure?.id
         );
      **/
+
+    printLongLogMessage("got ${_validInventoryStatus.length} inventory status");
+
+    _selectedInventoryStatus = _validInventoryStatus.firstWhere(
+        (inventoryStatus) => inventoryStatus.id == widget.inventory?.inventoryStatus?.id
+    );
+    printLongLogMessage("_selectedInventoryStatus is setup to ${_selectedInventoryStatus?.description ?? "N/A"}");
+    Navigator.of(context).pop();
 
     await showDialog<void>(
         context: context,
@@ -429,13 +438,13 @@ class _InventoryListItemState extends State<InventoryListItem> {
                     content:
                     Column(
                         children: <Widget>[
-                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
+                          buildTwoSectionInformationRow("${CWMSLocalizations.of(context).lpn} : ",
                               widget.inventory?.lpn ?? ""),
-                          buildTwoSectionInformationRow(
-                              "${CWMSLocalizations.of(context).original } ${CWMSLocalizations.of(context).inventoryStatus }",
-                              widget.inventoryQuantityForDisplay.inventory.inventoryStatus?.name ?? ""),
-                          buildTwoSectionInputRow(
-                              "${CWMSLocalizations.of(context).newValue } ${CWMSLocalizations.of(context).inventoryStatus }",
+                          buildSingleSectionInformationRow("${CWMSLocalizations.of(context).original } ${CWMSLocalizations.of(context).inventoryStatus } : "),
+                          buildSingleSectionInformationRow(
+                              widget.inventoryQuantityForDisplay.inventory.inventoryStatus?.description ?? ""),
+                          buildSingleSectionInformationRow("${CWMSLocalizations.of(context).newValue } ${CWMSLocalizations.of(context).inventoryStatus } : "),
+                          buildSingleSectionInputRow(
                               DropdownButton(
                                 hint: Text(CWMSLocalizations.of(context).select),
                                 items: _getInventoryStatusItems(_validInventoryStatus),
@@ -467,10 +476,16 @@ class _InventoryListItemState extends State<InventoryListItem> {
                             ElevatedButton(
                               child: Text(CWMSLocalizations.of(context).confirm),
                               onPressed: _selectedInventoryStatus == null  ? null :
-                                  ()  {
-                                    _changeStatus();
-                                    _onStatusChanged(_selectedInventoryStatus!);
-                                    Navigator.of(context).pop();
+                                  ()  async {
+                                    try {
+
+                                      await _changeStatus();
+                                      _onStatusChanged(_selectedInventoryStatus!);
+                                      Navigator.of(context).pop();
+                                    }
+                                    on Exception catch(ex) {
+                                      showToast(ex.toString());
+                                    }
                                   },
                             ),
                             MediaQuery.of(context).size.width * 0.3,
