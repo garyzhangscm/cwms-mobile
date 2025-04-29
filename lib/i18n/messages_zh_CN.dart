@@ -289,6 +289,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "originalQuantity" : MessageLookupByLibrary.simpleMessage("原数量"),
     "newQuantity" : MessageLookupByLibrary.simpleMessage("新数量"),
 
+    "original" : MessageLookupByLibrary.simpleMessage("原"),
+    "newValue" : MessageLookupByLibrary.simpleMessage("新"),
+    "select" : MessageLookupByLibrary.simpleMessage("选择"),
+
     'greetingMessage':greetingMessage,
     'missingField':missingField,
     'incorrectValue':incorrectValue,

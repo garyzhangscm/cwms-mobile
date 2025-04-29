@@ -1,16 +1,10 @@
 
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/audit_count_result.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
-import 'package:cwms_mobile/inventory/models/item.dart';
-import 'package:cwms_mobile/inventory/models/item_package_type.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
-import 'package:cwms_mobile/inventory/services/item.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -19,15 +13,18 @@ import 'package:flutter/material.dart';
 import '../../shared/global.dart';
 import '../models/inventory_quantity_for_display.dart';
 import '../models/item_unit_of_measure.dart';
-// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class InventoryListItem extends StatefulWidget {
   InventoryListItem({this.index, this.inventory,
-    required this.onQuantityChanged}
+    required this.onQuantityChanged,
+    required this.onStatusChanged,
+    required this.onAttributeChanged}
        ) : inventoryQuantityForDisplay =  InventoryService.getInventoryQuantityForDisplay(inventory!),
         super(key: ValueKey(inventory.id));
 
-  final ValueChanged<int> onQuantityChanged;
+  final ValueChanged<int> onQuantityChanged;   // return new quantity
+  final ValueChanged<InventoryStatus> onStatusChanged;     // return id of the new status
+  final ValueChanged<Inventory> onAttributeChanged;  // return inventory with same data but different attribute
 
   final int? index;
   final Inventory? inventory;
@@ -46,8 +43,20 @@ class _InventoryListItemState extends State<InventoryListItem> {
       widget.onQuantityChanged(newQuantity);
   }
 
+  void _onStatusChanged(InventoryStatus inventoryStatus) {
+    widget.onStatusChanged(inventoryStatus);
+  }
+
+
+  void _onAttributeChanged(Inventory newInventory) {
+    widget.onAttributeChanged(newInventory);
+  }
+
+
   TextEditingController _newQuantityController = new TextEditingController();
   ItemUnitOfMeasure? _newQuantityItemUnitOfMeasure;
+
+  InventoryStatus? _selectedInventoryStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +109,10 @@ class _InventoryListItemState extends State<InventoryListItem> {
 
                         showToast("change attribute from PDA is not support");
                       }
+                      else if (value == "change_status") {
+
+                        _openChangeStatusDialog();
+                      }
                     },
                     itemBuilder:
                         (BuildContext context) => <PopupMenuEntry<String>>[
@@ -110,6 +123,10 @@ class _InventoryListItemState extends State<InventoryListItem> {
                             const PopupMenuItem<String>(
                               value: "change_quantity",
                               child: Text("Change Quantity"),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: "change_status",
+                              child: Text("Change Status"),
                             ),
                             const PopupMenuItem<String>(
                               value: "change_attribute",
@@ -370,6 +387,7 @@ class _InventoryListItemState extends State<InventoryListItem> {
     }
   }
 
+
   List<DropdownMenuItem<ItemUnitOfMeasure>> _getItemUnitOfMeasures() {
     List<DropdownMenuItem<ItemUnitOfMeasure>> items = [];
 
@@ -384,4 +402,127 @@ class _InventoryListItemState extends State<InventoryListItem> {
 
     return items;
   }
+
+
+  Future<void> _openChangeStatusDialog() async {
+    printLongLogMessage("start to change status for inventory ${widget.inventory?.id} / ${widget.inventory?.lpn}");
+
+
+    // get all inventory status to display
+
+    List<InventoryStatus> _validInventoryStatus = await InventoryStatusService.getAllInventoryStatus();
+
+    /**
+        _newQuantityItemUnitOfMeasure = widget.inventory?.itemPackageType?.itemUnitOfMeasures.firstWhere(
+        (itemUnitOfMeasure) => itemUnitOfMeasure.unitOfMeasure?.id == widget.inventoryQuantityForDisplay.displayItemUnitOfMeasure.unitOfMeasure?.id
+        );
+     **/
+
+    await showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState){
+                return AlertDialog(
+                    title: Text(CWMSLocalizations.of(context).changeQuantity),
+                    content:
+                    Column(
+                        children: <Widget>[
+                          buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
+                              widget.inventory?.lpn ?? ""),
+                          buildTwoSectionInformationRow(
+                              "${CWMSLocalizations.of(context).original } ${CWMSLocalizations.of(context).inventoryStatus }",
+                              widget.inventoryQuantityForDisplay.inventory.inventoryStatus?.name ?? ""),
+                          buildTwoSectionInputRow(
+                              "${CWMSLocalizations.of(context).newValue } ${CWMSLocalizations.of(context).inventoryStatus }",
+                              DropdownButton(
+                                hint: Text(CWMSLocalizations.of(context).select),
+                                items: _getInventoryStatusItems(_validInventoryStatus),
+                                value: _selectedInventoryStatus,
+                                elevation: 1,
+                                isExpanded: true,
+                                icon: Icon(
+                                  Icons.list,
+                                  size: 20,
+                                ),
+                                onChanged: (InventoryStatus? value) {
+                                  printLongLogMessage("invenotry status to ${value?.name}");
+                                  //下拉菜单item点击之后的回调
+                                  setState(() {
+                                    _selectedInventoryStatus = value;
+                                  });
+                                },
+                              )
+                          ),
+                          buildTwoButtonRowWithWidth(context,
+                            ElevatedButton(
+                              child: Text(CWMSLocalizations.of(context).cancel),
+                              onPressed: () {
+                                _onStatusChanged(widget.inventory!.inventoryStatus!);
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            MediaQuery.of(context).size.width * 0.3,
+                            ElevatedButton(
+                              child: Text(CWMSLocalizations.of(context).confirm),
+                              onPressed: _selectedInventoryStatus == null  ? null :
+                                  ()  {
+                                    _changeStatus();
+                                    _onStatusChanged(_selectedInventoryStatus!);
+                                    Navigator.of(context).pop();
+                                  },
+                            ),
+                            MediaQuery.of(context).size.width * 0.3,
+                          ),
+                        ]
+                    )
+                );
+              }
+          );
+
+        }
+    );
+  }
+
+  Future<void> _changeStatus() async {
+
+    if (_selectedInventoryStatus == null) {
+
+      throw new Exception("no inventory status is selected");
+    }
+    if (widget.inventory?.inventoryStatus?.id != _selectedInventoryStatus!.id) {
+      widget.inventory?.inventoryStatus = _selectedInventoryStatus;
+
+      showLoading(context);
+      await InventoryService.changeInventory(widget.inventory!);
+      Navigator.of(context).pop();
+    }
+  }
+
+  List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems(List<InventoryStatus> validInventoryStatus) {
+    List<DropdownMenuItem<InventoryStatus>> items = [];
+    if (validInventoryStatus == null || validInventoryStatus.length == 0) {
+      return items;
+    }
+
+    // _selectedInventoryStatus = _validInventoryStatus[0];
+    for (int i = 0; i < validInventoryStatus.length; i++) {
+      items.add(DropdownMenuItem(
+        value: validInventoryStatus[i],
+        child: Text(validInventoryStatus[i].description ?? ""),
+      ));
+    }
+
+    if (validInventoryStatus.length == 1 ||
+        _selectedInventoryStatus == null) {
+      // if we only have one valid inventory status, then
+      // default the selection to it
+      // if the user has not select any inventdry status yet, then
+      // default the value to the first option as well
+      _selectedInventoryStatus = validInventoryStatus[0];
+    }
+    return items;
+  }
+
 }

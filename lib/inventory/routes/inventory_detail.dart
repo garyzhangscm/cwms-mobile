@@ -4,6 +4,8 @@ import 'package:cwms_mobile/inventory/widgets/inventory_list_item.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/material.dart';
 
+import '../models/inventory_status.dart';
+
 
 class InventoryDetailPage extends StatefulWidget{
 
@@ -52,7 +54,9 @@ class _InventoryDetailPageState extends State<InventoryDetailPage> {
               return InventoryListItem(
                   index: index,
                   inventory: _inventories[index],
-                  onQuantityChanged: (newQuantity) => _changeInventoryQuantity(_inventories[index], newQuantity)
+                  onQuantityChanged: (newQuantity) => _changeInventoryQuantity(_inventories[index], newQuantity),
+                  onStatusChanged: (newStatus) => _changeInventoryStatus(_inventories[index], newStatus),
+                  onAttributeChanged: (newInventory) => _changeInventoryAttribute(_inventories[index], newInventory)
               );
 
             });
@@ -65,6 +69,23 @@ class _InventoryDetailPageState extends State<InventoryDetailPage> {
       printLongLogMessage(">>> inventory ${inventory.lpn} 's quantity is changed to ${inventory.quantity}");
     });
   }
+
+  _changeInventoryStatus(Inventory inventory, InventoryStatus newStatus) {
+
+    setState(() {
+
+      inventory.inventoryStatus = newStatus;
+    });
+  }
+
+  _changeInventoryAttribute(Inventory inventory, Inventory newInventory) {
+
+    setState(() {
+
+      inventory = newInventory;
+    });
+  }
+
 
 
 

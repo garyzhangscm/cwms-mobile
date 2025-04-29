@@ -947,5 +947,26 @@ class InventoryService {
 
   }
 
+  static Future<Inventory> changeInventory(Inventory inventory)  async {
+
+    Dio httpClient = CWMSHttpClient.getDio();
+
+
+    Response response = await httpClient.put(
+      "/inventory/inventory/${inventory.id}",
+        data: inventory
+    );
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage("get response from changeInventory ${response.toString()}");
+
+    if (responseString["result"] as int != 0) {
+      printLongLogMessage("changeInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+    }
+
+
+    return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
+  }
 
 }

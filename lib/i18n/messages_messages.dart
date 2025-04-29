@@ -299,6 +299,10 @@ class MessageLookup extends MessageLookupByLibrary {
   "originalQuantity" : MessageLookupByLibrary.simpleMessage("Original Quantity"),
   "newQuantity" : MessageLookupByLibrary.simpleMessage("New Quantity"),
 
+    "original" : MessageLookupByLibrary.simpleMessage("Original"),
+    "newValue" : MessageLookupByLibrary.simpleMessage("New"),
+    "select" : MessageLookupByLibrary.simpleMessage("Select"),
+
 
 
   'greetingMessage':greetingMessage,

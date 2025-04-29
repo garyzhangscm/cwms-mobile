@@ -306,6 +306,10 @@ class CWMSLocalizations {
   String get newQuantity => Intl.message('New Quantity', name: 'newQuantity');
 
 
+  String get original => Intl.message('Original', name: 'original');
+  String get newValue => Intl.message('New', name: 'newValue');
+  String get select => Intl.message('Select', name: 'select');
+
 
 
 
