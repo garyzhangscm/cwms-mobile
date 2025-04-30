@@ -22,7 +22,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:collection/collection.dart';
 
 import '../../shared/models/rf.dart';
-import '../../shared/services/printer.dart';
 import '../../warehouse_layout/models/warehouse_location.dart';
 
 class LoginPage extends StatefulWidget{

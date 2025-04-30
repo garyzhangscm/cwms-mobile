@@ -317,8 +317,9 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     printLongLogMessage("_downLoadCallback: id: ${id}, status: ${status}, progress: ${progress}");
     // print("_downLoadCallback: id: ${id}, status: ${status}, progress: ${progress}");
 
-    // only send new progress at max once per second
-    if (lastMessageSentTime == null ||
+    // only send new progress at max once per second or last progress
+    if (progress >= 100 ||
+        lastMessageSentTime == null ||
         (DateTime.now().millisecondsSinceEpoch - lastMessageSentTime!) > 1000) {
       final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
       send?.send([id, status, progress]);
