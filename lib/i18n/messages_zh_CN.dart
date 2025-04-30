@@ -292,6 +292,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "original" : MessageLookupByLibrary.simpleMessage("原"),
     "newValue" : MessageLookupByLibrary.simpleMessage("新"),
     "select" : MessageLookupByLibrary.simpleMessage("选择"),
+    "downloading" : MessageLookupByLibrary.simpleMessage("下载中"),
 
     'greetingMessage':greetingMessage,
     'missingField':missingField,

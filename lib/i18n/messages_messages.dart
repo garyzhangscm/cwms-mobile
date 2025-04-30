@@ -302,6 +302,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "original" : MessageLookupByLibrary.simpleMessage("Original"),
     "newValue" : MessageLookupByLibrary.simpleMessage("New"),
     "select" : MessageLookupByLibrary.simpleMessage("Select"),
+    "downloading" : MessageLookupByLibrary.simpleMessage("Downloading"),
 
 
 

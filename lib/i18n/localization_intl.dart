@@ -309,6 +309,7 @@ class CWMSLocalizations {
   String get original => Intl.message('Original', name: 'original');
   String get newValue => Intl.message('New', name: 'newValue');
   String get select => Intl.message('Select', name: 'select');
+  String get downloading => Intl.message('Downloading', name: 'downloading');
 
 
 
