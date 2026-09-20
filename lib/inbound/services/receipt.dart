@@ -98,6 +98,7 @@ class ReceiptService {
   // 2. no
   static Future<List<Receipt>> getOpenReceipts() async {
     Dio httpClient = CWMSHttpClient.getDio();
+    final stopwatch = Stopwatch()..start();
 
     // receipt status that we can start receiving
     String openReceiptStatuses =
@@ -110,6 +111,7 @@ class ReceiptService {
         queryParameters: {"warehouseId": Global.currentWarehouse!.id,
             "receipt_status_list": openReceiptStatuses}
     );
+    final networkMilliseconds = stopwatch.elapsedMilliseconds;
 
     // printLongLogMessage("response from Receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
@@ -119,6 +121,10 @@ class ReceiptService {
     = (responseString["data"] as List).map((e) => Receipt.fromJson(e as Map<String, dynamic>))
         .toList();
 
+    printLongLogMessage(
+        "getOpenReceipts: network ${networkMilliseconds} ms, "
+        "parse ${stopwatch.elapsedMilliseconds - networkMilliseconds} ms, "
+        "${receipts.length} receipts");
     print("get ${receipts.length} receipts");
 
     return receipts;
@@ -352,7 +358,3 @@ class ReceiptService {
 
 
 }
-
-
-
-

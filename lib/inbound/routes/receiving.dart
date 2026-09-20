@@ -74,6 +74,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
   // the same item but new LPN
   bool _barcodeReceivingMode = false;
 
+  static const Duration _openReceiptsCacheDuration = Duration(seconds: 30);
+  Future<List<Receipt>>? _openReceiptsFuture;
+  DateTime? _openReceiptsLoadedAt;
+  bool _isChoosingReceipt = false;
+
 
   final  _formKey = GlobalKey<FormState>();
   ProgressDialog? pr;
@@ -87,6 +92,12 @@ class _ReceivingPageState extends State<ReceivingPage> {
     _selectedItemPackageType = new ItemPackageType();
     _inventoryAttributesFromBarcode.clear();
     _barcodeReceivingMode = false;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _getOpenReceipts().catchError((_) => <Receipt>[]);
+      }
+    });
 
     InventoryStatusService.getAllInventoryStatus()
         .then((value) {
@@ -1122,6 +1133,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
   _refreshScreenAfterReceive(bool qcRequired) {
     print("inventory received!");
 
+    _invalidateOpenReceiptsCache();
     Navigator.of(context).pop();
 
     if (qcRequired == true) {
@@ -1263,45 +1275,96 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   // show all open receipt that can be received
   _showChoosingReceiptDialog() async {
-
+    if (_isChoosingReceipt) {
+      return;
+    }
+    _isChoosingReceipt = true;
     showLoading(context);
-    List<Receipt> openReceiptForReceiving =
-        await ReceiptService.getOpenReceipts();
+    final stopwatch = Stopwatch()..start();
 
-    // Setup the total quantity for each receipt. We
-    // will display the total quantity to assist the user
-    // to choose the right receipt to start with
-    _setupTotalQuantity(openReceiptForReceiving);
+    try {
+      List<Receipt> openReceiptForReceiving = await _getOpenReceipts();
 
-    // 隐藏loading框
-    Navigator.of(context).pop();
-    await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        var child = Column(
-          children: <Widget>[
-            Row(
-              children: [
-                ElevatedButton(
-                  child: Text(CWMSLocalizations
-                      .of(context)
-                      .cancel),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            ListTile(title: Text(CWMSLocalizations
-                .of(context)
-                .chooseReceipt)),
-            _buildOpenReceiptList(context, openReceiptForReceiving)
-          ],
-        );
-        //使用AlertDialog会报错
-        //return AlertDialog(content: child);
-        return Dialog(child: child);
-      },
-    );
+      // Setup the total quantity for each receipt. We
+      // will display the total quantity to assist the user
+      // to choose the right receipt to start with
+      _setupTotalQuantity(openReceiptForReceiving);
 
+      if (!mounted) {
+        return;
+      }
+      // 隐藏loading框
+      Navigator.of(context).pop();
+      printLongLogMessage(
+          "open receipt chooser ready in ${stopwatch.elapsedMilliseconds} ms");
+
+      await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          var child = Column(
+            children: <Widget>[
+              Row(
+                children: [
+                  ElevatedButton(
+                    child: Text(CWMSLocalizations
+                        .of(context)
+                        .cancel),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              ListTile(title: Text(CWMSLocalizations
+                  .of(context)
+                  .chooseReceipt)),
+              _buildOpenReceiptList(context, openReceiptForReceiving)
+            ],
+          );
+          //使用AlertDialog会报错
+          //return AlertDialog(content: child);
+          return Dialog(child: child);
+        },
+      );
+    }
+    catch (error) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        showErrorDialog(context, error.toString());
+      }
+    }
+    finally {
+      _isChoosingReceipt = false;
+    }
+  }
+
+  Future<List<Receipt>> _getOpenReceipts() {
+    final loadedAt = _openReceiptsLoadedAt;
+    final cacheIsFresh = loadedAt != null &&
+        DateTime.now().difference(loadedAt) < _openReceiptsCacheDuration;
+
+    if (_openReceiptsFuture != null &&
+        (loadedAt == null || cacheIsFresh)) {
+      return _openReceiptsFuture!;
+    }
+
+    _openReceiptsFuture = _fetchOpenReceipts();
+    return _openReceiptsFuture!;
+  }
+
+  Future<List<Receipt>> _fetchOpenReceipts() async {
+    try {
+      final receipts = await ReceiptService.getOpenReceipts();
+      _openReceiptsLoadedAt = DateTime.now();
+      return receipts;
+    }
+    catch (_) {
+      _invalidateOpenReceiptsCache();
+      rethrow;
+    }
+  }
+
+  void _invalidateOpenReceiptsCache() {
+    _openReceiptsFuture = null;
+    _openReceiptsLoadedAt = null;
   }
 
   void _clearReceipt() {
