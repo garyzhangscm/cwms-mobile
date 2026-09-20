@@ -393,8 +393,12 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         if (v?.trim().isEmpty ?? true) {
                           return "please type in quantity";
                         }
+                        final receivingQuantity = int.tryParse(v!.trim());
+                        if (receivingQuantity == null || receivingQuantity <= 0) {
+                          return "please type in a valid quantity";
+                        }
                         if (!_validateOverReceiving(
-                            _currentReceiptLine!, int.parse(_quantityController.text))) {
+                            _currentReceiptLine!, receivingQuantity)) {
 
                           return "over receive is not allowed";
                         }
@@ -510,6 +514,9 @@ class _ReceivingPageState extends State<ReceivingPage> {
       context,
       ElevatedButton(
         onPressed: () {
+          if (!_validateReceivingSelections()) {
+            return;
+          }
           if (_formKey.currentState?.validate() ?? false) {
 
             print("1. _readyToConfirm? $_readyToConfirm");
@@ -567,17 +574,54 @@ class _ReceivingPageState extends State<ReceivingPage> {
     // expected quantity or the arrived quantity. It is based on configuraiton
     // and we will postponed to the actual receiving web call to
     // let the server decides whether it is a over receiving
-    int maxExpectedQuantity = receiptLine.arrivedQuantity! > receiptLine.expectedQuantity! ?
-        receiptLine.arrivedQuantity!  : receiptLine.expectedQuantity! ;
-    double openQuantity = (maxExpectedQuantity - receiptLine.receivedQuantity!) * 1.0;
-    if (receiptLine.overReceivingQuantity! > 0) {
-      openQuantity += receiptLine.overReceivingQuantity!;
+    final expectedQuantity = receiptLine.expectedQuantity ?? 0;
+    final arrivedQuantity = receiptLine.arrivedQuantity ?? expectedQuantity;
+    final receivedQuantity = receiptLine.receivedQuantity ?? 0;
+    final overReceivingQuantity = receiptLine.overReceivingQuantity ?? 0;
+    final overReceivingPercent = receiptLine.overReceivingPercent ?? 0;
+    int maxExpectedQuantity = arrivedQuantity > expectedQuantity ?
+        arrivedQuantity : expectedQuantity;
+    double openQuantity = (maxExpectedQuantity - receivedQuantity) * 1.0;
+    if (overReceivingQuantity > 0) {
+      openQuantity += overReceivingQuantity;
     }
-    else if (receiptLine.overReceivingPercent! > 0) {
+    else if (overReceivingPercent > 0) {
       openQuantity = openQuantity +
-          receiptLine.expectedQuantity! * (100 + receiptLine.overReceivingPercent!) / 100;
+          expectedQuantity * (100 + overReceivingPercent) / 100;
     }
     return openQuantity >= receivingQuantity;
+  }
+
+  bool _validateReceivingSelections() {
+    if (_currentReceiptLine?.id == null || _currentReceiptLine?.item == null) {
+      showErrorDialog(context, "Please select an item to receive");
+      return false;
+    }
+
+    final packageTypes = _currentReceiptLine!.item!.itemPackageTypes;
+    if (packageTypes.isEmpty) {
+      showErrorDialog(
+          context, CWMSLocalizations.of(context).itemNotReceivableNoPackageType);
+      return false;
+    }
+    if (_selectedItemPackageType?.id == null) {
+      showErrorDialog(context, "Please select an item package type");
+      return false;
+    }
+    if (_selectedItemPackageType!.itemUnitOfMeasures.isEmpty) {
+      showErrorDialog(context,
+          "The selected item package type has no unit of measure configured");
+      return false;
+    }
+    if (_selectedItemUnitOfMeasure?.quantity == null) {
+      showErrorDialog(context, "Please select a unit of measure");
+      return false;
+    }
+    if (_selectedInventoryStatus?.id == null) {
+      showErrorDialog(context, "Please select an inventory status");
+      return false;
+    }
+    return true;
   }
 
   List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
@@ -615,7 +659,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
         items.add(DropdownMenuItem(
           value: _currentReceiptLine!.item!.itemPackageTypes[i],
-          child: Text(_currentReceiptLine!.item!.itemPackageTypes[i].description ?? ""),
+          child: Text(
+              (_currentReceiptLine!.item!.itemPackageTypes[i].description?.trim().isNotEmpty ?? false)
+                  ? _currentReceiptLine!.item!.itemPackageTypes[i].description!
+                  : (_currentReceiptLine!.item!.itemPackageTypes[i].name ?? "")),
         ));
       }
       if (_currentReceiptLine!.item!.itemPackageTypes.length == 1 ||
@@ -1528,11 +1575,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
 
   void _enterOnLPNController({int tryTime = 10}) async {
-    if (_getItemPackageTypeItems().isEmpty) {
-      showErrorToast(
-
-        CWMSLocalizations.of(context).itemNotReceivableNoPackageType,
-      );
+    if (!_validateReceivingSelections()) {
       _readyToConfirm = true;
       return;
     }
