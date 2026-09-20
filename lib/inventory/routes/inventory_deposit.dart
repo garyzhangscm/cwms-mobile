@@ -543,13 +543,11 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     inventoryDepositRequest.inventoryIdList.forEach((inventoryId) {
       // find the inventory from inventory on the RF
       Inventory inventory = inventoryOnRF.where((element) => element.id == inventoryId).first;
-      if (inventory != null) {
-        if (itemQuantityMap[inventory.item?.name] == null) {
-          itemQuantityMap[inventory.item!.name!] = inventory.quantity!;
-        }
-        else {
-          itemQuantityMap[inventory.item!.name!] = itemQuantityMap[inventory.item!.name!]! + inventory.quantity!;
-        }
+      if (itemQuantityMap[inventory.item?.name] == null) {
+        itemQuantityMap[inventory.item!.name!] = inventory.quantity!;
+      }
+      else {
+        itemQuantityMap[inventory.item!.name!] = itemQuantityMap[inventory.item!.name!]! + inventory.quantity!;
       }
 
     });
@@ -957,7 +955,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
     }).catchError((err) {
       printLongLogMessage("Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
-      if (err is DioError) {
+      if (err is DioException) {
           // err.type == DioErrorType.connectTimeout &&) {
         // for timeout error and we are still in the retry threshold, let's try again
 
@@ -974,7 +972,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       }
       else if (err is WebAPICallException){
         // for any other error display it
-        final webAPICallException = err as WebAPICallException;
+        final webAPICallException = err;
         showErrorDialog(context, webAPICallException.errMsg() + ", LPN: " + inventoryDepositRequest.lpn!);
       }
       else {

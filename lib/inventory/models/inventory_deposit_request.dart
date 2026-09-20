@@ -50,8 +50,7 @@ class InventoryDepositRequest{
   InventoryDepositRequest.fromInventory(Inventory inventory) {
     lpn = inventory.lpn;
     newLpn = inventory.lpn;
-    if (inventory.inventoryMovements != null &&
-        inventory.inventoryMovements.isNotEmpty) {
+    if (inventory.inventoryMovements.isNotEmpty) {
       nextLocation = inventory.inventoryMovements[0].location;
       nextLocationName = nextLocation!.name;
       nextLocationId = nextLocation!.id;
@@ -107,8 +106,7 @@ class InventoryDepositRequest{
     // see if we have multiple locations
 
     int? newInventoryNextLocationId;
-    if (inventory.inventoryMovements != null &&
-        inventory.inventoryMovements.isNotEmpty) {
+    if (inventory.inventoryMovements.isNotEmpty) {
       newInventoryNextLocationId = nextLocation!.id;
     }
     if (newInventoryNextLocationId != nextLocationId) {

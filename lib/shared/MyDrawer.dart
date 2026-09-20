@@ -1,11 +1,9 @@
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/states/profile_change_notifier.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../warehouse_layout/services/warehouse_location.dart';
 import 'global.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -118,13 +116,13 @@ class MyDrawer extends StatelessWidget {
               title: Text(CWMSLocalizations.of(context).version + ": " + (Global.currentAPPVersion ?? "")),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.warehouse + ": " + (Global.currentWarehouse!.name ?? "")),
+              title: Text(CWMSLocalizations.of(context).warehouse + ": " + (Global.currentWarehouse!.name ?? "")),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.rfCode + ": " + Global.getLastLoginRFCode()),
+              title: Text(CWMSLocalizations.of(context).rfCode + ": " + Global.getLastLoginRFCode()),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.currentLocation + ": " + (Global.getLastLoginRF().currentLocationName ?? "" )),
+              title: Text(CWMSLocalizations.of(context).currentLocation + ": " + (Global.getLastLoginRF().currentLocationName ?? "" )),
             ),
           ],
         );

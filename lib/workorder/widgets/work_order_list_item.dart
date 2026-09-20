@@ -1,17 +1,15 @@
 
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class WorkOrderListItem extends StatefulWidget {
   WorkOrderListItem({required this.index, required this.workOrder,
-       this.highPriorityFlag: false,
-       this.sharedFlag: false,
-       this.displayOnlyFlag: false,
-       this.highlighted: false,
+       this.highPriorityFlag = false,
+       this.sharedFlag = false,
+       this.displayOnlyFlag = false,
+       this.highlighted = false,
        this.onPriorityChanged,
        this.onSharedFlagChanged,
        this.onRemove,
@@ -148,7 +146,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
                         children: [
                           Icon(widget.highPriorityFlag ?
                             Icons.star : Icons.star_border),
-                          Text(CWMSLocalizations.of(context)!.highPriority),
+                          Text(CWMSLocalizations.of(context).highPriority),
 
                         ],
                       ),
@@ -160,7 +158,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
                       children: [
                         Icon(widget.sharedFlag ?
                             Icons.share : Icons.share_outlined),
-                        Text(CWMSLocalizations.of(context)!.share),
+                        Text(CWMSLocalizations.of(context).share),
                       ],
                     ),
                   ),
@@ -170,7 +168,7 @@ class _WorkOrderListItemState extends State<WorkOrderListItem> {
                       Column(
                         children: [
                           Icon(Icons.delete), //我们的自定义图标
-                          Text(CWMSLocalizations.of(context)!.remove),
+                          Text(CWMSLocalizations.of(context).remove),
                         ],
                       )
                  ),

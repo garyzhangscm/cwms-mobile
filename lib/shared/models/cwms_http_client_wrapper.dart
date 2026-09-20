@@ -59,7 +59,7 @@ class CWMSHttpClientAdapter {
           );
           return handleResponse(response, httpTransformer: httpTransformer);
         }
-        on DioError catch(ex) {
+        on DioException catch(ex) {
           printLongLogMessage("get DioError while call http post");
           printLongLogMessage("message: ${ex.message}");
           printLongLogMessage("response: ${ex.response}");
@@ -80,6 +80,7 @@ class CWMSHttpClientAdapter {
             throw ex;
           }
         }
+        return null;
 
     }
 
@@ -189,11 +190,6 @@ class CWMSHttpClientAdapter {
         {required CWMSHttpTransformer httpTransformer}) {
         httpTransformer ??= CWMSDefaultHttpTransformer.getInstance();
 
-        // 返回值异常
-        if (response == null) {
-            return CWMSHttpResponse.failureFromError();
-        }
-
         // token失效
         printLongLogMessage("response.statusCode: ${response.statusCode}");
         if (_isTokenTimeout(response.statusCode!)) {
@@ -227,7 +223,7 @@ class CWMSHttpClientAdapter {
 
     /// 请求成功
     bool _isRequestSuccess(int statusCode) {
-        return (statusCode != null && statusCode >= 200 && statusCode < 300);
+        return (statusCode >= 200 && statusCode < 300);
     }
 
     CWMSHttpException _parseException(Exception error) {

@@ -246,7 +246,7 @@ class ReceiptService {
             billOfMaterial.billOfMaterialLines.firstWhereOrNull((element) => element.itemId == kitInnerItem.id);
 
         kitInnerInventory.quantity =
-        (quantity * matchedBillOfMaterialLine!.expectedQuantity! / billOfMaterial!.expectedQuantity!) as int;
+        (quantity * matchedBillOfMaterialLine!.expectedQuantity! / billOfMaterial.expectedQuantity!) as int;
 
         // receive the inventory onto RF
         kitInnerInventory.location = inventory.location;

@@ -1,13 +1,9 @@
 
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/states/profile_change_notifier.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:provider/provider.dart';
 
 import 'global.dart';
 
@@ -34,7 +30,7 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.workProfile)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workProfile)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -61,7 +57,7 @@ class _WorkProfileInfoPageState extends State<WorkProfileInfoPage> {
                         }
 
                       },
-                      child: Text(CWMSLocalizations.of(context)!.confirm),
+                      child: Text(CWMSLocalizations.of(context).confirm),
                     ),
                 ),
               ),

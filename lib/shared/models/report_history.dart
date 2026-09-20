@@ -3,7 +3,6 @@
 import 'package:cwms_mobile/shared/models/report_orientation.dart';
 import 'package:cwms_mobile/shared/models/report_type.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'cwms_application_information.dart';
 
 // server.g.dart 将在我们运行生成命令后自动生成
 part 'report_history.g.dart';

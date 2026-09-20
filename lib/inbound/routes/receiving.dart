@@ -571,7 +571,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
     List<DropdownMenuItem<InventoryStatus>> items = [];
-    if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
+    if (_validInventoryStatus.length == 0) {
       return items;
     }
     for (int i = 0; i < _validInventoryStatus.length; i++) {
@@ -770,7 +770,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           return false;
         }
       }
-      on CWMSHttpException catch(ex) {
+      on CWMSHttpException {
 
         Navigator.of(context).pop();
         return false;
@@ -785,7 +785,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
             return false;
           }
       }
-      on CWMSHttpException catch(ex) {
+      on CWMSHttpException {
 
         Navigator.of(context).pop();
         return false;
@@ -1001,7 +1001,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         printLongLogMessage("add current LPN $lpn first so that the user don't have to scan in again");
       }
       LpnCaptureRequest lpnCaptureRequest = new LpnCaptureRequest.withData(
-          receiptLine!.item!,
+          receiptLine.item!,
           _selectedItemPackageType!,
           _selectedItemPackageType!.trackingLpnUOM!,
           lpnCount, capturedLpn,
@@ -1241,7 +1241,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
     setState(() {
       _currentReceiptLine =  _currentReceipt!.receiptLines.firstWhereOrNull(
-              (receiptLine) => receiptLine!.item!.name == itemNumber);
+              (receiptLine) => receiptLine.item!.name == itemNumber);
     });
 
 
@@ -1325,8 +1325,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
     int totalExpectedQuantity = 0;
     int totalReceivedQuantity = 0;
     receipt.receiptLines.forEach((receiptLine) {
-      totalExpectedQuantity += receiptLine!.expectedQuantity!;
-      totalReceivedQuantity += receiptLine!.receivedQuantity!;
+      totalExpectedQuantity += receiptLine.expectedQuantity!;
+      totalReceivedQuantity += receiptLine.receivedQuantity!;
     });
     receipt.totalReceivedQuantity = totalReceivedQuantity;
     receipt.totalExpectedQuantity = totalExpectedQuantity;
@@ -1366,7 +1366,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
         _currentReceipt = receipt;
         _currentReceiptLine = new ReceiptLine();
 
-        _receiptNumberController.text = receipt!.number ?? "";
+        _receiptNumberController.text = receipt.number ?? "";
         _clearReceiptLineInformation();
       });
     }
@@ -1435,7 +1435,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
       setState(() {
 
         _currentReceiptLine = receiptLine;
-        _itemController.text = receiptLine!.item!.name ?? "";
+        _itemController.text = receiptLine.item!.name ?? "";
       });
     }
     _quantityFocusNode.requestFocus();

@@ -17,7 +17,6 @@ import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 import 'package:collection/collection.dart';
@@ -178,7 +177,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.inventoryAdjust)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).inventoryAdjust)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -187,28 +186,25 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
           child: Column(
             children: <Widget>[
               // show RF as the destination location of the adjust LPN
-              buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.location,
+              buildTwoSectionInformationRow(CWMSLocalizations.of(context).location,
                   Global.lastLoginRFCode!),
 
               // ask the user to input item number
-              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.item,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).item,
                 Focus(
                     child: ItemQuery(
                         itemNumberController: _itemController,
                         autofocus: true,
                         focusNode: _itemNumberFocusNode,
                         onItemSelected: (selectedItem) {
-                          if (selectedItem != null) {
-
-                            setState(() {
-                              _currentItem = selectedItem;
-                            });
-                            _quantityFocusNode.requestFocus();
-                          }
+                          setState(() {
+                            _currentItem = selectedItem;
+                          });
+                          _quantityFocusNode.requestFocus();
                         },
                         validator: (v) {
                           if (v!.trim().isEmpty) {
-                            return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.item);
+                            return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).item);
                           }
 
                           return null;
@@ -237,7 +233,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               ),
               // Allow the user to choose item package type
               buildTwoSectionInputRow(
-                  CWMSLocalizations.of(context)!.itemPackageType,
+                  CWMSLocalizations.of(context).itemPackageType,
 
                   _getItemPackageTypeItems().isEmpty ?
                   Container() :
@@ -261,7 +257,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               ),
               // Allow the user to choose inventory status
               buildTwoSectionInputRow(
-                  CWMSLocalizations.of(context)!.inventoryStatus,
+                  CWMSLocalizations.of(context).inventoryStatus,
                   DropdownButton(
                     //  hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
                     items: _getInventoryStatusItems(),
@@ -281,7 +277,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                   )
               ),
               buildThreeSectionInputRow(
-                  CWMSLocalizations.of(context)!.quantity,
+                  CWMSLocalizations.of(context).quantity,
                   TextFormField(
                       keyboardType: TextInputType.number,
                       controller: _quantityController,
@@ -307,7 +303,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                   _getItemUnitOfMeasures().isEmpty ?
                   Container() :
                   DropdownButton(
-                    hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getItemUnitOfMeasures(),
                     value: _selectedItemUnitOfMeasure,
                     elevation: 1,
@@ -325,7 +321,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                   )
               ),
               buildTwoSectionInputRow(
-                CWMSLocalizations.of(context)!.lpn+ ": ",
+                CWMSLocalizations.of(context).lpn+ ": ",
                 Focus(
                   child:
                   SystemControllerNumberTextBox(
@@ -340,7 +336,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                         // otherwise, we will flow to next LPN Capture form to let the user capture
                         // more LPNs
                         if (v!.trim().isEmpty && _getRequiredLPNCount(int.parse(_quantityController.text)) == 1) {
-                          return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
+                          return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
                         }
 
                         return null;
@@ -393,7 +389,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
               width: MediaQuery.of(context).size.width,
               child: ElevatedButton(
                 onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                child: Text(CWMSLocalizations.of(context).depositInventory),
               ),
             ),
         )
@@ -556,7 +552,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
   List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
     List<DropdownMenuItem<InventoryStatus>> items = [];
-    if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
+    if (_validInventoryStatus.length == 0) {
       return items;
     }
 
@@ -863,12 +859,12 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
       while(lpnIterator.moveNext()) {
         String lpn = lpnIterator.current;
         double progress = currentLPNIndex * 100 / totalLPNCount;
-        String message = CWMSLocalizations.of(context)!.receivingCurrentLpn + ": " +
+        String message = CWMSLocalizations.of(context).receivingCurrentLpn + ": " +
             lpn + ", " + currentLPNIndex.toString() + " / " + totalLPNCount.toString();
 
         _progressDialog!.update(progress: progress, message: message);
 
-        Inventory inventory = await createInventory(lpn, lpnCaptureRequest!.lpnUnitOfMeasure!.quantity!, inventoryAttributes);
+        Inventory inventory = await createInventory(lpn, lpnCaptureRequest.lpnUnitOfMeasure!.quantity!, inventoryAttributes);
 
         await InventoryService.addInventory(inventory);
 
@@ -902,7 +898,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
       showLogs: true,
     );
 
-    _progressDialog!.style(message: CWMSLocalizations.of(context)!.receivingMultipleLpns);
+    _progressDialog!.style(message: CWMSLocalizations.of(context).receivingMultipleLpns);
     if (!_progressDialog!.isShowing()) {
       _progressDialog!.show();
     }

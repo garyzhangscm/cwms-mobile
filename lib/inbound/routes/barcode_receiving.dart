@@ -185,7 +185,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
           badgeColor: Colors.deepPurple,
         ),
         badgeContent: Text(
-          _inventoryOnRF == null || _inventoryOnRF.length == 0 ? "0" : _inventoryOnRF.length.toString(),
+          _inventoryOnRF.length == 0 ? "0" : _inventoryOnRF.length.toString(),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         child:
@@ -260,7 +260,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
       }
       parameters = barcodeResult.result!;
     }
-    on Exception catch(ex) {
+    on Exception {
 
       Navigator.of(context).pop();
       await showBlockedErrorDialog(context, "Can't parse the barcode " + barcode);
@@ -291,10 +291,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     // validate the barcode
     // we will need to pass in either
     // 1. receiptId and receiptLineId and Item
-    if (receiptIdString == null || receiptIdString.isEmpty ||
-        receiptLineIdString == null || receiptLineIdString.isEmpty ||
-        quantityString == null || quantityString.isEmpty ||
-        lpn == null || lpn.isEmpty) {
+    if (receiptIdString.isEmpty || receiptLineIdString.isEmpty || quantityString.isEmpty || lpn.isEmpty) {
 
       await showBlockedErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
       return false;
@@ -302,7 +299,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     showLoading(context);
 
     InventoryStatus? inventoryStatus;
-    if (inventoryStatusString == null || inventoryStatusString.isEmpty) {
+    if (inventoryStatusString.isEmpty) {
       // if inventory status is not passed in, receive by default available inventory status
       inventoryStatus = await InventoryStatusService.getAvaiableInventoryStatus();
     }
@@ -320,7 +317,7 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     ReceiptLine receiptLine = await ReceiptService.getReceiptLineById(int.parse(receiptLineIdString));
 
     ItemPackageType? itemPackageType;
-    if (itemPackageTypeString == null || itemPackageTypeString.isEmpty) {
+    if (itemPackageTypeString.isEmpty) {
       // if item package type is not passed, get the default item package type from the item
 
       itemPackageType = receiptLine.item?.defaultItemPackageType != null ?
@@ -459,24 +456,20 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     // of the inventory can be divided by the display UOM
     ItemUnitOfMeasure displayItemUnitOfMeasure = _getDisplayItemUnitOfMeasure(inventory);
 
-    if (displayItemUnitOfMeasure == null) {
-      printLongLogMessage("display item unit of measure is not defined");
-      return inventory.quantity!;
-    }
-    else if (inventory.quantity! % displayItemUnitOfMeasure.quantity! == 0) {
-      printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
-      printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
-      printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
+    if (inventory.quantity! % displayItemUnitOfMeasure.quantity! == 0) {
+    printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
+    printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
+    printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
 
-      return inventory.quantity! / displayItemUnitOfMeasure.quantity!;
-    }
-    else {
+    return inventory.quantity! / displayItemUnitOfMeasure.quantity!;
+  }
+  else {
 
-      printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
-      printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
-      printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
-      return inventory.quantity!;
-    }
+    printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
+    printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
+    printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
+    return inventory.quantity!;
+  }
 
   }
   String _getDisplayUOM(Inventory inventory) {
@@ -484,16 +477,13 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     // display by the display UOM only if the display UOM is defined and the quantity
     // of the inventory can be divided by the display UOM
     ItemUnitOfMeasure displayItemUnitOfMeasure = _getDisplayItemUnitOfMeasure(inventory);
-    if (displayItemUnitOfMeasure == null) {
-      return "";
-    }
-    else if (inventory.quantity! % displayItemUnitOfMeasure!.quantity! == 0) {
-      return displayItemUnitOfMeasure.unitOfMeasure?.description ?? "";
-    }
-    else {
+    if (inventory.quantity! % displayItemUnitOfMeasure.quantity! == 0) {
+    return displayItemUnitOfMeasure.unitOfMeasure?.description ?? "";
+  }
+  else {
 
-      return "";
-    }
+    return "";
+  }
 
   }
   ItemUnitOfMeasure _getDisplayItemUnitOfMeasure(Inventory inventory) {

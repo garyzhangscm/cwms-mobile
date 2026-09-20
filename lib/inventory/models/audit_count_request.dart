@@ -1,9 +1,7 @@
-import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'item.dart';
 
 // user.g.dart 将在我们运行生成命令后自动生成
 part 'audit_count_request.g.dart';

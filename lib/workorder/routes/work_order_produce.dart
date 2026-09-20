@@ -14,7 +14,6 @@ import 'package:cwms_mobile/workorder/models/work_order_status.dart';
 import 'package:cwms_mobile/workorder/services/production_line.dart';
 import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
@@ -79,7 +78,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     // printLongLogMessage("rebuild work order produce");
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.workOrderProduce)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -154,7 +153,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
   Widget _buildWorkOrderNumberInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.workOrderNumber,
+        CWMSLocalizations.of(context).workOrderNumber,
         _getWorkOrderInputWidget(context));
   }
 
@@ -203,7 +202,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
   Widget _buildProductionLineTextBox(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.productionLine,
+        CWMSLocalizations.of(context).productionLine,
         _getProductionLineInputWidget(context));
   }
 
@@ -252,9 +251,9 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
   Widget _buildProductionLineAssignmentSelection(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.productionLine,
+        CWMSLocalizations.of(context).productionLine,
         DropdownButton(
-          hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
           items: _getProductionLineAssignmentItems(),
           value: _selectedProductionLineAssignment,
           elevation: 1,
@@ -337,7 +336,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
       printLongLogMessage("## Production line ${_productionLineController.text} found!");
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
       Navigator.of(context).pop();
       showErrorDialog(context, "can't find production line by name ${_productionLineController.text}");
       return;
@@ -475,7 +474,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
               backgroundColor: Theme.of(context).primaryColor,
             ),
             onPressed: _currentWorkOrder == null || _assignedProductionLine == null ? null : _onStartProduce,
-            child: Text(CWMSLocalizations.of(context)!.workOrderProduce),
+            child: Text(CWMSLocalizations.of(context).workOrderProduce),
           )
         );
   }

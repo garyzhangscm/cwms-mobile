@@ -1,6 +1,5 @@
 
 
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 

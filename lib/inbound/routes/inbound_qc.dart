@@ -6,7 +6,6 @@ import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../shared/services/barcode_service.dart';
 import '../../shared/models/barcode.dart';
@@ -240,7 +239,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
 
       _itemName = inventory.item!.name ?? "";
       _itemDescription = inventory.item!.description ?? "";
-      _lpn = inventory!.lpn!;
+      _lpn = inventory.lpn!;
 
       // check if the inventory needs qc
       if (inventory.inboundQCRequired == false) {

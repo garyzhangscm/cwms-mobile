@@ -11,7 +11,6 @@ import 'package:cwms_mobile/inventory/services/item.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/widgets/system_controlled_number_textbox.dart';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -176,7 +175,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
         new Column(
             children: [
               // LPN Controller
-              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.lpn,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
 
                   // if the cycle count result doesn't have item,
                   // it means the locaiton doesn't any inventory
@@ -195,7 +194,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       )
                     )
                         :
-                    Text(widget!.auditCountResult!.lpn ?? "")
+                    Text(widget.auditCountResult!.lpn ?? "")
               ),
               /***
               Padding(
@@ -232,7 +231,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               // Item controller
-              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.item,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).item,
 
                   // if the cycle count result doesn't have item,
                   // it means the locaiton doesn't any inventory
@@ -302,7 +301,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               // Item Description Controller
-              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.item,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).item,
                   widget.auditCountResult!.unexpectedItem == true ?
                     Text( _unexpectedItem?.description ?? "")
                         :
@@ -330,14 +329,14 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               // item package type
-              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.itemPackageType,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).itemPackageType,
                   widget.auditCountResult!.unexpectedItem == true ?
                     Expanded(
                         child:
                         DropdownButtonFormField<ItemPackageType>(
-                            hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+                            hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                             items: _getItemPackageTypeItems(),
-                            value: _selectedItemPackageType,
+                            initialValue: _selectedItemPackageType,
                             elevation: 1,
                             isExpanded: true,
                             icon: Icon(
@@ -353,8 +352,8 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                             validator: (v) {
                               // if we specify a item, either by manually input
                               // or an existing item, we will force the user to type in the quantity
-                              if (v == null || v!.name?.isEmpty == true) {
-                                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.itemPackageType);
+                              if (v == null || v.name?.isEmpty == true) {
+                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).itemPackageType);
                               }
                               return null;
                             }
@@ -417,14 +416,14 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               //Inventory Status
-              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.inventoryStatus,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).inventoryStatus,
                   widget.auditCountResult!.unexpectedItem == true ?
                     Expanded(
                         child:
                         DropdownButtonFormField<InventoryStatus>(
-                            hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+                            hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                             items: _getInventoryStatusItems(),
-                            value: _selectedInventoryStatus,
+                            initialValue: _selectedInventoryStatus,
                             elevation: 1,
                             isExpanded: true,
                             icon: Icon(
@@ -441,8 +440,8 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                             validator: (v) {
                               // if we specify a item, either by manually input
                               // or an existing item, we will force the user to type in the quantity
-                              if (v == null  || v!.name?.isEmpty == true) {
-                                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.inventoryStatus);
+                              if (v == null  || v.name?.isEmpty == true) {
+                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).inventoryStatus);
                               }
                               return null;
                             }
@@ -505,7 +504,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
               ),
               **/
               // count quantity
-              buildTwoSectionInputRow(CWMSLocalizations.of(context)!.countQuantity,
+              buildTwoSectionInputRow(CWMSLocalizations.of(context).countQuantity,
                 TextFormField(
                     maxLength: 10,
                     textAlign: TextAlign.end,
@@ -519,7 +518,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
                       if (( _itemController.text.isNotEmpty ||
                           widget.auditCountResult!.unexpectedItem != true ) &&
                           v!.trim() == "") {
-                        return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.countQuantity);
+                        return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).countQuantity);
                       }
                       return null;
                     }),
@@ -579,11 +578,10 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
   List<DropdownMenuItem<ItemPackageType>> _getItemPackageTypeItems() {
     List<DropdownMenuItem<ItemPackageType>> items = [];
 
-    if (_unexpectedItem == null || _unexpectedItem!.itemPackageTypes == null) {
+    if (_unexpectedItem == null) {
       return items;
     }
-    if (_unexpectedItem!.itemPackageTypes != null &&
-            _unexpectedItem!.itemPackageTypes.length > 0) {
+    if (_unexpectedItem!.itemPackageTypes.length > 0) {
       // _selectedItemPackageType = _unexpectedItem.itemPackageTypes[0];
       // _onItemPackageTypeValueChange(_selectedItemPackageType.name);
 
@@ -609,7 +607,7 @@ class _AuditCountListItemState extends State<AuditCountListItem> {
 
   List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
     List<DropdownMenuItem<InventoryStatus>> items = [];
-    if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
+    if (_validInventoryStatus.length == 0) {
       return items;
     }
     for (int i = 0; i < _validInventoryStatus.length; i++) {

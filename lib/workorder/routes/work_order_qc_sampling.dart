@@ -13,9 +13,7 @@ import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/models/work_order_qc_sample.dart';
 import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order_qc.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 
@@ -80,7 +78,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.qcSampling)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).qcSampling)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -91,7 +89,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
             children: <Widget>[
 
               buildTwoSectionInputRow(
-                CWMSLocalizations.of(context)!.productionLine,
+                CWMSLocalizations.of(context).productionLine,
                 TextFormField(
                     controller: _productionLineController,
                     autofocus: true,
@@ -101,15 +99,15 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
                 ),
               ),
               buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context)!.productionLine,
+                  CWMSLocalizations.of(context).productionLine,
                   _productionLineAssignment?.productionLine?.name ?? ""
               ),
               buildTwoSectionInformationRow(
-                CWMSLocalizations.of(context)!.workOrderNumber,
+                CWMSLocalizations.of(context).workOrderNumber,
                   _productionLineAssignment?.workOrderNumber ?? ""
               ),
               buildSingleSectionInformationRow(
-                CWMSLocalizations.of(context)!.workOrderQCSampleNumber,
+                CWMSLocalizations.of(context).workOrderQCSampleNumber,
               ),
               buildSingleSectionInputRow(
 
@@ -155,7 +153,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
         if (_productionLineAssignment == null) {
           // we are not able to find any assignment by this production line
-          showErrorDialog(context, CWMSLocalizations.of(context)!.noAssignmentByProductionLine + productionLineName);
+          showErrorDialog(context, CWMSLocalizations.of(context).noAssignmentByProductionLine + productionLineName);
           return;
         }
 
@@ -179,7 +177,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
     try {
 
-      _workOrderQCSample = await WorkOrderQCService.getWorkOrderQCSampleByProductionLineAssignment(productionLineAssignment!.id!);
+      _workOrderQCSample = await WorkOrderQCService.getWorkOrderQCSampleByProductionLineAssignment(productionLineAssignment.id!);
       if (_workOrderQCSample == null) {
 
         printLongLogMessage("we can't get qc samples from production line id: ${productionLineAssignment.id}, we will create one");
@@ -192,8 +190,8 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
 
         // show dialog to ask whether the user would like to create a new sample, or change the existing sample
         await showYesNoDialog(context,
-            CWMSLocalizations.of(context)!.addOrModify,
-            CWMSLocalizations.of(context)!.whetherAddNewSample,
+            CWMSLocalizations.of(context).addOrModify,
+            CWMSLocalizations.of(context).whetherAddNewSample,
             () {
               // the user press Yes, we will keep the current qc sample 
               _newWorkOrderQCSample = false;
@@ -430,7 +428,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
           // ok we are supposed to create a new work order sample but it already exists, let's
           // raise an error
           Navigator.of(context).pop();
-          showErrorDialog(context, CWMSLocalizations.of(context)!.qcSampleNumberAlreadyExists);
+          showErrorDialog(context, CWMSLocalizations.of(context).qcSampleNumberAlreadyExists);
           return;
         }
 
@@ -458,7 +456,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
     }
 
     Navigator.of(context).pop();
-    showToast( CWMSLocalizations.of(context)!.qcSampleAdded);
+    showToast( CWMSLocalizations.of(context).qcSampleAdded);
     // we will allow the user to continue receiving with the same
     // receipt and line
     setState(() {

@@ -19,7 +19,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
 
-import '../../shared/services/printer.dart';
 import '../models/inventory_quantity_for_display.dart';
 
 
@@ -96,12 +95,12 @@ class InventoryService {
   // inventory into deposit request
   static String _getKey(Inventory inventory, bool groupItemFlag,
       bool groupInventoryStatusFlag) {
-    String key = inventory!.lpn!;
+    String key = inventory.lpn!;
     if (!groupItemFlag) {
-      key += "-" + inventory!.item!.name!;
+      key += "-" + inventory.item!.name!;
     }
     if (!groupInventoryStatusFlag) {
-      key += "-" + inventory!.inventoryStatus!.name!;
+      key += "-" + inventory.inventoryStatus!.name!;
     }
     return key;
   }
@@ -235,7 +234,7 @@ class InventoryService {
     printLongLogMessage("start to move inventory to location");
     if (destinationLocation != null) {
 
-      printLongLogMessage(destinationLocation!.toJson().toString());
+      printLongLogMessage(destinationLocation.toJson().toString());
     }
 
     Response response = await httpClient.post(
@@ -338,7 +337,7 @@ class InventoryService {
     // get the printer for printing LPN
     String printerName = "";
 
-    if (Global.getLastLoginRF() != null && Global.getLastLoginRF().printerName != null &&
+    if (Global.getLastLoginRF().printerName != null &&
         Global.getLastLoginRF().printerName?.isNotEmpty == true) {
       printerName = Global.getLastLoginRF().printerName!;
     }
@@ -469,7 +468,7 @@ class InventoryService {
     printLongLogMessage("validate LPN result: ${response?.data}");
     if (response?.data != null && response!.data.toString().isNotEmpty) {
       // return error message
-      return response!.data.toString();
+      return response.data.toString();
     }
 
 
@@ -546,7 +545,7 @@ class InventoryService {
       InventoryService.findInventory(lpn : lpn, includeDetails: true)
           .then((inventoryList) {
 
-        if (inventoryList != null && inventoryList.isNotEmpty) {
+        if (inventoryList.isNotEmpty) {
 
           autoPrintLPNLabel(context, inventoryList[0]);
         }

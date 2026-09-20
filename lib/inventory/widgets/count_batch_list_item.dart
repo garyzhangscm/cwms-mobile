@@ -1,17 +1,15 @@
 
 
 import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
-import 'package:cwms_mobile/shared/functions.dart';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CountBatchListItem extends StatefulWidget {
   CountBatchListItem({this.index, this.countBatch,
-       this.displayOnlyFlag: false,
-       this.highlighted: false,
-      this.cycleCountFlag: true,
-      this.auditCountFlag: false,
+       this.displayOnlyFlag = false,
+       this.highlighted = false,
+      this.cycleCountFlag = true,
+      this.auditCountFlag = false,
 
        @required this.onRemove,
        @required this.onToggleHightlighted}
@@ -42,7 +40,7 @@ class _CountBatchListItemState extends State<CountBatchListItem> {
 
   void _removeOrderFromlist() {
     if (widget.displayOnlyFlag == false) {
-      widget.onRemove!(widget!.index!);
+      widget.onRemove!(widget.index!);
     }
   }
   void _onToggleHightlighted() {

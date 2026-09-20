@@ -1,9 +1,6 @@
 
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../inventory/models/reversed_inventory_information.dart';
@@ -100,7 +97,7 @@ class _ReversedInventoryItemState extends State<ReversedInventoryItem> {
                         Row(
                             children: <Widget>[
                               Text(
-                                CWMSLocalizations.of(context)!.item + ": ",
+                                CWMSLocalizations.of(context).item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -122,7 +119,7 @@ class _ReversedInventoryItemState extends State<ReversedInventoryItem> {
                         Row(
                             children: <Widget>[
                               Text(
-                                  CWMSLocalizations.of(context)!.quantity + ": ",
+                                  CWMSLocalizations.of(context).quantity + ": ",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,

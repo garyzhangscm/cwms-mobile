@@ -80,7 +80,7 @@ class RFService {
     = (responseString["data"] as List).map((e) => RF.fromJson(e as Map<String, dynamic>))
         .toList();
 
-    if (rfs == null || rfs.isEmpty) {
+    if (rfs.isEmpty) {
 
       throw new WebAPICallException("can't find RF by code $rfCode");
     }
@@ -123,7 +123,7 @@ class RFService {
     }
 
     Map<String, dynamic> responseData = responseString["data"] as Map<String, dynamic>;
-    if (responseData == null || responseData.isEmpty) {
+    if (responseData.isEmpty) {
       throw new WebAPICallException("fail to change the location for current RF");
     }
 

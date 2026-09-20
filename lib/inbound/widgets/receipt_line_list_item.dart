@@ -1,14 +1,11 @@
 
 
-import 'package:cwms_mobile/inbound/models/receipt.dart';
 import 'package:cwms_mobile/inbound/models/receipt_line.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ReceiptLineListItem extends StatefulWidget {
   ReceiptLineListItem({required this.index, required this.receiptLine,
-          this.highlighted: false,
+          this.highlighted = false,
           required this.onToggleHightlighted}
        ) : super(key: ValueKey(receiptLine.number));
 
@@ -30,13 +27,10 @@ class ReceiptLineListItem extends StatefulWidget {
 class _ReceiptLineListItemState extends State<ReceiptLineListItem> {
 
   void _onToggleHightlighted() {
-    if (widget.onToggleHightlighted != null) {
-
-      setState(() {
-        widget.highlighted = !widget.highlighted;
-      });
-      widget.onToggleHightlighted(widget.highlighted);
-    }
+    setState(() {
+      widget.highlighted = !widget.highlighted;
+    });
+    widget.onToggleHightlighted(widget.highlighted);
   }
 
   @override

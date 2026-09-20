@@ -1,10 +1,7 @@
 
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/models/work_order_kpi_transaction.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class WorkOrderKPIItem extends StatefulWidget {
@@ -98,7 +95,7 @@ class _WorkOrderKPIItemState extends State<WorkOrderKPIItem> {
                     Padding(
                       padding: const EdgeInsets.only(right: 25.0),
                       child:
-                      Text(CWMSLocalizations.of(context)!.userName),
+                      Text(CWMSLocalizations.of(context).userName),
                     ),
 
                     Text(widget.workOrderKPITransaction.username ?? "")
@@ -115,7 +112,7 @@ class _WorkOrderKPIItemState extends State<WorkOrderKPIItem> {
                     Padding(
                       padding: const EdgeInsets.only(right: 25.0),
                       child:
-                      Text(CWMSLocalizations.of(context)!.workingTeamName),
+                      Text(CWMSLocalizations.of(context).workingTeamName),
                     ),
 
                     Text(widget.workOrderKPITransaction.workingTeamName ?? "")

@@ -222,18 +222,14 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
     setState(() {
       widget._qcResult = value;
       widget.value = value;
-      if (value == null) {
-        widget.qcInspectionRequestItemOption.qcInspectionResult =
-            QCInspectionResult.PENDING;
-      }
-      else if (_validateBooleanResult(value)) {
-        widget.qcInspectionRequestItemOption.qcInspectionResult =
-            QCInspectionResult.PASS;
-      }
-      else {
-        widget.qcInspectionRequestItemOption.qcInspectionResult =
-            QCInspectionResult.FAIL;
-      }
+      if (_validateBooleanResult(value)) {
+      widget.qcInspectionRequestItemOption.qcInspectionResult =
+          QCInspectionResult.PASS;
+    }
+    else {
+      widget.qcInspectionRequestItemOption.qcInspectionResult =
+          QCInspectionResult.FAIL;
+    }
 
     });
   }
@@ -373,10 +369,6 @@ class _QCInspectionItemOptionListItemState extends State<QCInspectionItemOptionL
   bool _validateStringResult(String value) {
 
     var expectedValue =  widget.qcInspectionRequestItemOption.qcRuleItem?.expectedValue ?? "";
-    if (expectedValue == null) {
-      // the expected value is not defined, we will take everything as a pass
-      return true;
-    }
     bool result = true;
     switch(widget.qcInspectionRequestItemOption.qcRuleItem?.qcRuleItemComparator) {
       case QCRuleItemComparator.EQUAL:

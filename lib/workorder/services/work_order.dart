@@ -2,19 +2,17 @@
 import 'dart:convert';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:cwms_mobile/outbound/models/pick.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:dio/dio.dart';
 
 class WorkOrderService {
   // Get all cycle count requests by batch id
-  static Future<WorkOrder?> getWorkOrderByNumber(String workOrderNumber, {loadDetails : true}) async {
+  static Future<WorkOrder?> getWorkOrderByNumber(String workOrderNumber, {loadDetails = true}) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage("Start to get work order by ${workOrderNumber}");

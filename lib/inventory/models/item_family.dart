@@ -1,10 +1,5 @@
-import 'package:cwms_mobile/common/models/unit_of_measure.dart';
-import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'item_unit_of_measure.dart';
 
 // user.g.dart 将在我们运行生成命令后自动生成
 part 'item_family.g.dart';

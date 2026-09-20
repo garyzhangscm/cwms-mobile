@@ -19,7 +19,6 @@ import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/services/production_line.dart';
 import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badge;
@@ -105,7 +104,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pickByWorkOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
       resizeToAvoidBottomInset: true,
       body:
         Padding(
@@ -141,12 +140,12 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   }
   Widget _buildWorkOrderNumberInput(BuildContext context) {
     return buildTwoSectionInputRow(
-              CWMSLocalizations.of(context)!.workOrderNumber,
+              CWMSLocalizations.of(context).workOrderNumber,
               _getWorkOrderInputWidget(context));
   }
   Widget _buildProductionLineTextBox(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.productionLine,
+        CWMSLocalizations.of(context).productionLine,
         _getProductionLineInputWidget(context));
   }
 
@@ -422,7 +421,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
           await ProductionLineService.getProductionLineByNumber(_productionLineController.text);
 
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
       Navigator.of(context).pop();
       showErrorDialog(context, "can't find production line by name ${_productionLineController.text}");
       return;
@@ -485,9 +484,9 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
 
   Widget _buildProductionLineAssignmentSelection(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.productionLine,
+        CWMSLocalizations.of(context).productionLine,
         DropdownButton(
-          hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
           items: _getProductionLineAssignmentItems(),
           value: _selectedProductionLineAssignment,
           elevation: 1,
@@ -535,7 +534,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   Widget _buildPickToProductionInput(BuildContext context) {
     return
       buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.pickToProductionLineInStage,
+        CWMSLocalizations.of(context).pickToProductionLineInStage,
 
         Checkbox(
           value: _pickToProductionLineInStage,
@@ -551,7 +550,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   Widget _buildLPNInput(BuildContext context) {
     return
       buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.lpn,
+        CWMSLocalizations.of(context).lpn,
         Focus(
             child:
             RawKeyboardListener(
@@ -579,7 +578,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                     showKeyboard: false,
                     validator: (v) {
                       if (v!.trim().isEmpty) {
-                        return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
+                        return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
                       }
 
                       return null;
@@ -646,7 +645,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _currentWorkOrder == null ? null : _onWorkOrderMaualPickConfirm,
-                child: Text(CWMSLocalizations.of(context)!.confirm),
+                child: Text(CWMSLocalizations.of(context).confirm),
             ),
             badge.Badge(
               showBadge: true,
@@ -663,7 +662,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                    child: Text(CWMSLocalizations.of(context).depositInventory),
                   ),
                 ),
             )
@@ -766,7 +765,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
       // let's finish each pick one by one
       for(var i = 0; i < picks.length; i++){
 
-        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity! - picks[i]!.pickedQuantity!}");
+        printLongLogMessage("start to confirm pick # $i, quantity ${picks[i].quantity! - picks[i].pickedQuantity!}");
         if (_pickToProductionLineInStage) {
           if (productionLine.inboundStageLocation == null) {
             WarehouseLocation inboundStageLocation = await WarehouseLocationService.getWarehouseLocationById(
@@ -775,7 +774,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
             // Async confirmed the pick to increase the performance
             // await PickService.confirmPick(
             PickService.confirmPick(
-                picks[i], (picks[i].quantity! - picks[i]!.pickedQuantity!), lpn: _lpnController.text,
+                picks[i], (picks[i].quantity! - picks[i].pickedQuantity!), lpn: _lpnController.text,
                 nextLocationName: inboundStageLocation.name!).then((value) {
 
                   showToast("pick confirmed");
@@ -806,7 +805,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
           // Async confirmed the pick to increase the performance
           // await PickService.confirmPick(
           PickService.confirmPick(
-              picks[i], (picks[i].quantity! - picks[i]!.pickedQuantity!), lpn: _lpnController.text).then((value) {
+              picks[i], (picks[i].quantity! - picks[i].pickedQuantity!), lpn: _lpnController.text).then((value) {
 
             showToast("pick confirmed");
             _refreshWorkOrderInformation();

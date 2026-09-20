@@ -1,12 +1,10 @@
 
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
-import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/inventory/services/item.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 
@@ -34,10 +32,7 @@ class ItemQuery extends StatefulWidget {
 class _ItemQueryState extends State<ItemQuery> {
 
   void _onItemSelected(Item selectedItem) {
-    if (widget.onItemSelected != null) {
-
-      widget.onItemSelected(selectedItem);
-    }
+    widget.onItemSelected(selectedItem);
   }
 
   TextEditingController _itemCriteriaInputController = new TextEditingController();
@@ -168,7 +163,7 @@ class _ItemQueryState extends State<ItemQuery> {
 
           _matchedItemList = await ItemService.queryItemByKeyword(_itemCriteriaInputController.text);
         }
-        on WebAPICallException catch(ex) {
+        on WebAPICallException {
           Navigator.of(context).pop();
           showErrorDialog(context, "can't find item by  ${_itemCriteriaInputController.text}");
           return;

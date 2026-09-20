@@ -1,6 +1,3 @@
-import 'package:cwms_mobile/auth/models/menu.dart';
-import 'package:cwms_mobile/auth/models/menu_sub_group.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'location_group.dart';

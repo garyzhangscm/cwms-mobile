@@ -16,14 +16,12 @@ import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart' as badge;
 import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
-import '../models/pick_mode.dart';
 
 
 class PickByOrderPage extends StatefulWidget{
@@ -115,7 +113,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pickByOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByOrder)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -147,7 +145,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
                         autofocus: true,
                         focusNode: _orderNumberControllerFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context)!.orderNumber,
+                          labelText: CWMSLocalizations.of(context).orderNumber,
                           hintText: "please input order number",
                           suffixIcon:
                           Row(

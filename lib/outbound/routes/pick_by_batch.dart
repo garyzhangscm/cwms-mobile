@@ -1,5 +1,4 @@
 
-import 'dart:collection';
 import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -17,7 +16,6 @@ import 'package:badges/badges.dart' as badge;
 import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
-import '../models/pick_mode.dart';
 
 
 class PickByBatchPage extends StatefulWidget{
@@ -67,10 +65,10 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
   void dispose() {
     super.dispose();
     // for any reason the user return, let's try to unacknowledge the _currentPickList
-    if (_currentPickBatch != null && _currentPickBatch.isNotEmpty) {
+    if (_currentPickBatch.isNotEmpty) {
       _currentPickBatch.forEach((pick) {
 
-        PickService.unacknowledgePick(pick!.id!).then(
+        PickService.unacknowledgePick(pick.id!).then(
                 (pick) {
               // _currentPickList= null;
             }).catchError((err) {
@@ -85,7 +83,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -113,7 +111,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                         autofocus: true,
                         focusNode: _pickNumberFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context)!.pick,
+                          labelText: CWMSLocalizations.of(context).pick,
                           hintText: "please input pick number",
                           suffixIcon:
                           Row(
@@ -140,8 +138,8 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
       children: [
         buildTwoButtonRow(context,
             ElevatedButton(
-                onPressed: _currentPickBatch != null && _currentPickBatch.isNotEmpty ? _startBatchPicking : null,
-                child: Text(CWMSLocalizations.of(context)!.start)
+                onPressed: _currentPickBatch.isNotEmpty ? _startBatchPicking : null,
+                child: Text(CWMSLocalizations.of(context).start)
             ),
             badge.Badge(
               showBadge: true,
@@ -158,7 +156,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                  child: Text(CWMSLocalizations.of(context).depositInventory),
                 ),
               ),
             )
@@ -170,7 +168,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
   }
   void _clear() {
 
-    if (_currentPickBatch != null && _currentPickBatch.isNotEmpty) {
+    if (_currentPickBatch.isNotEmpty) {
 
       _currentPickBatch.forEach((pick) {
 
@@ -219,7 +217,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
   void _onAddingPick(String pickNumber) async {
 
       // if the pick is already added, then do nothing
-      if (_currentPickBatch != null && _currentPickBatch.isNotEmpty &&
+      if (_currentPickBatch.isNotEmpty &&
           _currentPickBatch.any((pick) => pick.number!.trim() == pickNumber.trim())) {
         // ok, the pick is already added in the current batch. then do nothing
         return;
@@ -336,7 +334,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
       PickService.sortPicks(_currentPickBatch, Global.getLastActivityLocation(), Global.isMovingForward());
       // get the first available pick and then group the quantity all together from the same location, for the same
       // inventory
-      _currentPick = _currentPickBatch.firstWhereOrNull((pick) => pick.quantity! > pick!.pickedQuantity!);
+      _currentPick = _currentPickBatch.firstWhereOrNull((pick) => pick.quantity! > pick.pickedQuantity!);
       if (_currentPick != null) {
         // Batch picking means we will group all picks but we won't do
         // the actual batch picking in the location. Instead, if the user would like to do a batch picking
@@ -393,14 +391,14 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
             height: 75,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.pick + ": " + _currentPickBatch[index]!.number!),
+              title: Text(CWMSLocalizations.of(context).pick + ": " + _currentPickBatch[index].number!),
               subtitle:
                 Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.item + ": ",
+                              CWMSLocalizations.of(context).item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -422,7 +420,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.quantity + ": ",
+                              CWMSLocalizations.of(context).quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -431,7 +429,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                               )
                           ),
                           Text(
-                              (_currentPickBatch[index].quantity! - _currentPickBatch[index]!.pickedQuantity!).toString(),
+                              (_currentPickBatch[index].quantity! - _currentPickBatch[index].pickedQuantity!).toString(),
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -444,7 +442,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.location + ": ",
+                              CWMSLocalizations.of(context).location + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -471,7 +469,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                   onPressed: () => _removePickFromBatch(index),
                   icon: Icon(Icons.close),
                 ),
-              tileColor: _currentPickBatch[index].quantity! > _currentPickBatch[index]!.pickedQuantity! ?
+              tileColor: _currentPickBatch[index].quantity! > _currentPickBatch[index].pickedQuantity! ?
                   Colors.lightGreen : Colors.white38,
             )
         );
@@ -488,7 +486,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
 
       await PickService.unacknowledgePick(pick.id!);
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
 
       Navigator.of(context).pop();
       // ignore the error

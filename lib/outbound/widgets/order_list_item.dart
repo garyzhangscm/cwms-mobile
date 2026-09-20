@@ -1,15 +1,14 @@
 
 
 import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class OrderListItem extends StatefulWidget {
   OrderListItem({required this.index, required this.order,
-       this.highPriorityFlag: false,
-       this.sharedFlag: false,
-       this.displayOnlyFlag: false,
-       this.highlighted: false,
+       this.highPriorityFlag = false,
+       this.sharedFlag = false,
+       this.displayOnlyFlag = false,
+       this.highlighted = false,
        required this.onPriorityChanged,
        required this.onSharedFlagChanged,
        required this.onRemove,

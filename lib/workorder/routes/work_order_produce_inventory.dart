@@ -24,7 +24,6 @@ import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart
 import 'package:cwms_mobile/workorder/models/work_order_produced_inventory.dart';
 import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -144,7 +143,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.workOrderProduce)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -155,10 +154,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
             children: <Widget>[
 
               buildTwoSectionInformationRowWithWidget(
-                  CWMSLocalizations.of(context)!.workOrderNumber,
+                  CWMSLocalizations.of(context).workOrderNumber,
                   _getWorkOrderDisplayWidget(context, _currentWorkOrder!)),
               buildTwoSectionInformationRowWithWidget(
-                  CWMSLocalizations.of(context)!.item,
+                  CWMSLocalizations.of(context).item,
                   _getItemDisplayWidget(context, _currentWorkOrder!.item!)),
 /**
               buildTwoSectionInformationRow(
@@ -174,10 +173,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     **/
               // Allow the user to choose item package type
               buildTwoSectionInputRow(
-                  CWMSLocalizations.of(context)!.itemPackageType,
+                  CWMSLocalizations.of(context).itemPackageType,
 
                   DropdownButton(
-                    hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getItemPackageTypeItems(),
                     value: _selectedItemPackageType,
                     elevation: 1,
@@ -196,9 +195,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               ),
               // Allow the user to choose inventory status
               buildTwoSectionInputRow(
-                  CWMSLocalizations.of(context)!.inventoryStatus,
+                  CWMSLocalizations.of(context).inventoryStatus,
                   DropdownButton(
-                    hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getInventoryStatusItems(),
                     value: _selectedInventoryStatus,
                     elevation: 1,
@@ -252,7 +251,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                           },
                       ),
                       Expanded (
-                        child: Text(CWMSLocalizations.of(context)!.quantity + ": ", textAlign: TextAlign.left ),
+                        child: Text(CWMSLocalizations.of(context).quantity + ": ", textAlign: TextAlign.left ),
                       ),
                       _forceLPNReceiving ?
                         SizedBox(
@@ -306,7 +305,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             child:
                             DropdownButton(
 
-                                      hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+                                      hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                                       items: _getItemUnitOfMeasures(),
                                       value: _selectedItemUnitOfMeasure,
                                       elevation: 1,
@@ -330,7 +329,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                     )
               ),
               buildTwoSectionInputRow(
-                CWMSLocalizations.of(context)!.lpn,
+                CWMSLocalizations.of(context).lpn,
                 Focus(
                     child:
                     RawKeyboardListener(
@@ -358,7 +357,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                             validator: (v) {
                               if (v!.trim().isEmpty &&
                                   _getRequiredLPNCount(int.parse(_quantityController.text) * _selectedItemUnitOfMeasure!.quantity!) == 1) {
-                                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn);
+                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
                               }
 
                               return null;
@@ -408,9 +407,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   Widget _buildReasonCodeDropdown() {
     // Allow the user to choose inventory status
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.reason,
+        CWMSLocalizations.of(context).reason,
         DropdownButton(
-          hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
           items: _getReasonCodeItems(),
           value: _selectedReasonCode,
           elevation: 1,
@@ -498,10 +497,10 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                         context, item.name ?? "", Column(
                           children: <Widget>[
                             buildTwoSectionInformationRow(
-                                CWMSLocalizations.of(context)!.item,
+                                CWMSLocalizations.of(context).item,
                                 _currentWorkOrder?.item?.name ?? ""),
                             buildTwoSectionInformationRow(
-                                CWMSLocalizations.of(context)!.item,
+                                CWMSLocalizations.of(context).item,
                                 _currentWorkOrder?.item?.description ?? ""),
 
                           ]),
@@ -525,14 +524,14 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                   children: <Widget>[
 
                     buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context)!.expectedQuantity,
+                        CWMSLocalizations.of(context).expectedQuantity,
                         workOrder.expectedQuantity.toString()),
                     buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context)!.billOfMaterial,
+                        CWMSLocalizations.of(context).billOfMaterial,
                         _matchedBillOfMaterial?.number ?? ""),
                     // show the matched BOM
                     buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context)!.producedQuantity,
+                        CWMSLocalizations.of(context).producedQuantity,
                         workOrder.producedQuantity.toString()),
 
                   ]),
@@ -549,7 +548,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   List<DropdownMenuItem<ReasonCode>> _getReasonCodeItems() {
 
     List<DropdownMenuItem<ReasonCode>> items = [];
-    if (_validReasonCodes == null || _validReasonCodes.length == 0) {
+    if (_validReasonCodes.length == 0) {
       _selectedReasonCode = null;
       return items;
     }
@@ -567,7 +566,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
   List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
     List<DropdownMenuItem<InventoryStatus>> items = [];
-    if (_validInventoryStatus == null || _validInventoryStatus.length == 0) {
+    if (_validInventoryStatus.length == 0) {
       return items;
     }
 
@@ -602,7 +601,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         // printLongLogMessage("_currentWorkOrder.item.itemPackageTypes[i]: ${_currentWorkOrder.item.itemPackageTypes[i].toJson()}");
         items.add(DropdownMenuItem(
           value: _currentWorkOrder!.item!.itemPackageTypes[i],
-          child: Text(_currentWorkOrder!.item!.itemPackageTypes[i]!.description ?? ""),
+          child: Text(_currentWorkOrder!.item!.itemPackageTypes[i].description ?? ""),
         ));
       }
       if (_currentWorkOrder!.item!.itemPackageTypes.length == 1 ||
@@ -833,7 +832,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     if (inventoryQuantity > _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
       // bool continueWithExceedQuantity = await showYesNoDialog(context, "lpn validation", "lpn quantity exceed the standard quantity, continue?");
       bool continueWithExceedQuantity = false;
-      await showYesNoDialog(context, CWMSLocalizations.of(context)!.lpnQuantityExceedWarningTitle, CWMSLocalizations.of(context)!.lpnQuantityExceedWarningMessage,
+      await showYesNoDialog(context, CWMSLocalizations.of(context).lpnQuantityExceedWarningTitle, CWMSLocalizations.of(context).lpnQuantityExceedWarningMessage,
             () => continueWithExceedQuantity = true,
             () => continueWithExceedQuantity = false,
       );
@@ -1025,7 +1024,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       while(lpnIterator.moveNext()) {
         String lpn = lpnIterator.current;
         double progress = currentLPNIndex * 100 / totalLPNCount;
-        String message = CWMSLocalizations.of(context)!.receivingCurrentLpn + ": " +
+        String message = CWMSLocalizations.of(context).receivingCurrentLpn + ": " +
             lpn + ", " + currentLPNIndex.toString() + " / " + totalLPNCount.toString();
 
         _progressDialog!.update(progress: progress, message: message);
@@ -1033,7 +1032,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         WorkOrderProduceTransaction workOrderProduceTransaction =
             generateWorkOrderProduceTransaction(
                 lpn, _selectedInventoryStatus!,
-              _selectedItemPackageType!, lpnCaptureRequest!.lpnUnitOfMeasure!.quantity!,
+              _selectedItemPackageType!, lpnCaptureRequest.lpnUnitOfMeasure!.quantity!,
                 _getReasonCodeForProducingInventory()
           );
 
@@ -1070,7 +1069,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       showLogs: true,
     );
 
-    _progressDialog!.style(message: CWMSLocalizations.of(context)!.receivingMultipleLpns);
+    _progressDialog!.style(message: CWMSLocalizations.of(context).receivingMultipleLpns);
     if (!_progressDialog!.isShowing()) {
       _progressDialog!.show();
     }

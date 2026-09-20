@@ -1,5 +1,4 @@
 
-import 'dart:collection';
 import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -14,14 +13,12 @@ import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/outbound/services/pick_list.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:badges/badges.dart' as badge;
 import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
-import '../models/pick_mode.dart';
 
 
 class PickByListPage extends StatefulWidget{
@@ -108,7 +105,7 @@ class _PickByListPageState extends State<PickByListPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.listPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).listPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -139,7 +136,7 @@ class _PickByListPageState extends State<PickByListPage> {
                         autofocus: true,
                         focusNode: _pickListNumberFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context)!.pickList,
+                          labelText: CWMSLocalizations.of(context).pickList,
                           hintText: "please input pick list",
                           suffixIcon:
                           Row(
@@ -173,7 +170,7 @@ class _PickByListPageState extends State<PickByListPage> {
                     autofocus: true,
                     focusNode: _newLPNNumberFocusNode,
                     decoration: InputDecoration(
-                      labelText: CWMSLocalizations.of(context)!.lpn,
+                      labelText: CWMSLocalizations.of(context).lpn,
                       hintText: "please input a new lpn",
                       suffixIcon:
                       Row(
@@ -233,7 +230,7 @@ class _PickByListPageState extends State<PickByListPage> {
             ElevatedButton(
                 onPressed: _currentPickList != null && (_requireNewLPN == false || _currentDestinationLPN?.isNotEmpty == true)
                     ? _startPickingForPick : null,
-                child: Text(CWMSLocalizations.of(context)!.start)
+                child: Text(CWMSLocalizations.of(context).start)
             ),
             badge.Badge(
               showBadge: true,
@@ -250,7 +247,7 @@ class _PickByListPageState extends State<PickByListPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                  child: Text(CWMSLocalizations.of(context).depositInventory),
                 ),
               ),
             )
@@ -326,7 +323,7 @@ class _PickByListPageState extends State<PickByListPage> {
 
         List<Inventory> inventoryList = await InventoryService.findInventory(lpn: _newLPNNumberController.text, includeDetails: false);
 
-        if (inventoryList == null || inventoryList.isEmpty) {
+        if (inventoryList.isEmpty) {
           // OK, this LPN is a new LPN, we will still need to make sure the new LPN has the right format
           String errorMessage = await InventoryService.validateNewLpn(_newLPNNumberController.text);
           if (errorMessage.isNotEmpty) {
@@ -445,12 +442,12 @@ class _PickByListPageState extends State<PickByListPage> {
       PickService.sortPicks(_currentPickList!.picks, Global.getLastActivityLocation(), Global.isMovingForward());
       // get the first available pick and then group the quantity all together from the same location, for the same
       // inventory
-      _currentPick = _currentPickList!.picks.firstWhereOrNull((pick) => pick.quantity! > pick!.pickedQuantity!);
+      _currentPick = _currentPickList!.picks.firstWhereOrNull((pick) => pick.quantity! > pick.pickedQuantity!);
       if (_currentPick != null) {
         _currentPick!.batchPickQuantity = 0;
         _currentPick!.batchedPicks = [];
         _currentPickList!.picks.forEach((pick) {
-          if (pick.quantity! > pick!.pickedQuantity! && PickService.pickInventoryWithSameAttribute(pick, _currentPick!)) {
+          if (pick.quantity! > pick.pickedQuantity! && PickService.pickInventoryWithSameAttribute(pick, _currentPick!)) {
             _currentPick?.batchPickQuantity = _currentPick!.batchPickQuantity! + (pick.quantity! - pick.pickedQuantity!);
             if (pick.id != _currentPick!.id!) {
               _currentPick!.batchedPicks.add(pick);

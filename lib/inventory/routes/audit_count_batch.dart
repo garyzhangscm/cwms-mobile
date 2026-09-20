@@ -7,7 +7,6 @@ import 'package:cwms_mobile/inventory/services/cycle_count_batch.dart';
 import 'package:cwms_mobile/inventory/widgets/count_batch_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -56,7 +55,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.auditCount)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).auditCount)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -116,7 +115,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onAddingCountBatch,
-                child: Text(CWMSLocalizations.of(context)!.addCountBatch),
+                child: Text(CWMSLocalizations.of(context).addCountBatch),
               ),
 
           ),
@@ -129,7 +128,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onChooseCountBatch,
-                child: Text(CWMSLocalizations.of(context)!.chooseCountBatch),
+                child: Text(CWMSLocalizations.of(context).chooseCountBatch),
               ),
 
           ),
@@ -142,7 +141,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onStartingAuditCount,
-                child: Text(CWMSLocalizations.of(context)!.start),
+                child: Text(CWMSLocalizations.of(context).start),
               ),
           ),
         ],
@@ -347,7 +346,7 @@ class _AuditCountBatchPageState extends State<AuditCountBatchPage> {
       // no more cycle count left
       // 隐藏loading框
       Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context)!.noMoreAuditCountInBatch);
+      showToast(CWMSLocalizations.of(context).noMoreAuditCountInBatch);
       _refreshCycleCountBatchQuantities();
       return;
     }

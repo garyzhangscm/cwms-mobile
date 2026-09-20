@@ -2,7 +2,7 @@ import 'package:cwms_mobile/shared/models/cwms_http_exception.dart';
 
 class CWMSHttpResponse {
     bool? ok;
-    dynamic? data;
+    dynamic data;
     CWMSHttpException? error;
 
     CWMSHttpResponse.success(this.data) {

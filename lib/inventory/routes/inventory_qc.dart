@@ -6,7 +6,6 @@ import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../shared/services/barcode_service.dart';
 import '../../shared/models/barcode.dart';
@@ -94,14 +93,14 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
               children: [
                 _buildLPNScanner(context),
                 _buildButtons(context),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.lpn, _lpn ?? ""),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.item, _itemName ?? ""),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.item, _itemDescription ?? ""),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.lastQCTime,
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn, _lpn ?? ""),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemName ?? ""),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemDescription ?? ""),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context).lastQCTime,
                     _inventoryForQC?.lastQCTime?.toLocal().toString() ?? ""
                 ),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.inventoryNeedQC,
-                    _readyForQCResult ? CWMSLocalizations.of(context)!.yes : CWMSLocalizations.of(context)!.no),
+                buildTwoSectionInformationRow(CWMSLocalizations.of(context).inventoryNeedQC,
+                    _readyForQCResult ? CWMSLocalizations.of(context).yes : CWMSLocalizations.of(context).no),
                 _buildQCResultButtons(context),
               ],
         ),
@@ -117,7 +116,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
         focusNode: _lpnFocusNode,
         autofocus: true,
         decoration: InputDecoration(
-          labelText: CWMSLocalizations.of(context)!.lpn,
+          labelText: CWMSLocalizations.of(context).lpn,
         ),);
   }
 
@@ -150,7 +149,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
             focusNode: _startQCButtonFocusNode,
             onPressed:
             _readyForQCResult ? _onStartQC : null,
-            child: Text(CWMSLocalizations.of(context)!.startQC)
+            child: Text(CWMSLocalizations.of(context).startQC)
         ),
       ) ;
   }
@@ -167,7 +166,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
       Navigator.of(context).pop();
       if (qcInspectionRequests.isEmpty) {
 
-        showWarningDialog(context, CWMSLocalizations.of(context)!.inventoryNotQCRequired);
+        showWarningDialog(context, CWMSLocalizations.of(context).inventoryNotQCRequired);
       }
       else {
 
@@ -246,7 +245,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
         Navigator.of(context).pop();
 
       }
-      on WebAPICallException catch (ex) {
+      on WebAPICallException {
         Navigator.of(context).pop();
         //await showBlockedErrorDialog(context, ex.errMsg());
 

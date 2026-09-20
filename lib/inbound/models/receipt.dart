@@ -1,9 +1,6 @@
 
 
-import 'package:cwms_mobile/common/models/carrier.dart';
-import 'package:cwms_mobile/common/models/carrier_service_level.dart';
 import 'package:cwms_mobile/common/models/client.dart';
-import 'package:cwms_mobile/common/models/customer.dart';
 import 'package:cwms_mobile/common/models/supplier.dart';
 import 'package:cwms_mobile/inbound/models/receipt_line.dart';
 import 'package:cwms_mobile/inbound/models/receipt_status.dart';

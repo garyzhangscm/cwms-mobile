@@ -113,7 +113,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         focusNode: lpnFocusNode,
         autofocus: true,
         decoration: InputDecoration(
-          labelText: CWMSLocalizations.of(context)!.lpn,
+          labelText: CWMSLocalizations.of(context).lpn,
           hintText: "please input LPN",
           suffixIcon:
             IconButton(
@@ -125,8 +125,8 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         validator: (v) {
           return v!.trim().isNotEmpty ?
               null :
-              CWMSLocalizations.of(context)!.missingField(
-                  CWMSLocalizations.of(context)!.lpn);
+              CWMSLocalizations.of(context).missingField(
+                  CWMSLocalizations.of(context).lpn);
         });
   }
 
@@ -150,7 +150,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             backgroundColor: Theme.of(context).primaryColor,
           ),
           onPressed: _onAddingLPN,
-          child: Text(CWMSLocalizations.of(context)!.add),
+          child: Text(CWMSLocalizations.of(context).add),
         ),
 
         badge.Badge(
@@ -168,7 +168,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             width: MediaQuery.of(context).size.width,
             child: ElevatedButton(
               onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-              child: Text(CWMSLocalizations.of(context)!.depositInventory),
+              child: Text(CWMSLocalizations.of(context).depositInventory),
             ),
           ),
         ),
@@ -187,7 +187,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             width: MediaQuery.of(context).size.width,
             child: ElevatedButton(
               onPressed: inventoryOnRF.length == 0 ? null : _startBatchDeposit,
-              child: Text(CWMSLocalizations.of(context)!.batchDepositInventory),
+              child: Text(CWMSLocalizations.of(context).batchDepositInventory),
             ),
           ),
         )
@@ -279,7 +279,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                 // show error message
                 inventoryDepositRequest.requestInProcess = false;
                 inventoryDepositRequest.requestResult = false;
-                inventoryDepositRequest.result = CWMSLocalizations.of(context)!.noInventoryFound;
+                inventoryDepositRequest.result = CWMSLocalizations.of(context).noInventoryFound;
 
                 setState(() {
                   _inventoryDepositRequests;
@@ -289,7 +289,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         })
         .catchError((err) {
             printLongLogMessage("Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
-            if (err is DioError ) {
+            if (err is DioException ) {
               // for timeout error and we are still in the retry threshold, let's try again
               printLongLogMessage("time out while get inventory by LPN ${inventoryDepositRequest.lpn}, let's try again.");
               // retry after 2 second
@@ -314,7 +314,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             }
             else if (err is WebAPICallException){
               // for any other error display it
-              final webAPICallException = err as WebAPICallException;
+              final webAPICallException = err;
 
               // do nothing as we already running out of retry time
               inventoryDepositRequest.requestInProcess = false;
@@ -414,14 +414,14 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             fit: StackFit.expand, //未定位widget占满Stack整个空间
             children: <Widget>[
               ListTile(
-                title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn!),
+                title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn!),
                 subtitle:
                 Column(
                     children: <Widget>[
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context)!.item + ": ",
+                                CWMSLocalizations.of(context).item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -443,7 +443,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context)!.quantity + ": ",
+                                CWMSLocalizations.of(context).quantity + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -488,14 +488,14 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
             height: 75,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn!),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn!),
               subtitle:
               Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.item + ": ",
+                              CWMSLocalizations.of(context).item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -517,7 +517,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.quantity + ": ",
+                              CWMSLocalizations.of(context).quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -545,20 +545,20 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         );
     }
     else {
-      double height = min(75 + (_inventoryDepositRequests[index].result!.length! / 50) * 15, 120);
+      double height = min(75 + (_inventoryDepositRequests[index].result!.length / 50) * 15, 120);
       return
         SizedBox(
             height: height,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[index].lpn!),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[index].lpn!),
               subtitle:
               Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.item + ": ",
+                              CWMSLocalizations.of(context).item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -580,7 +580,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.quantity + ": ",
+                              CWMSLocalizations.of(context).quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -602,7 +602,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
                     Row(
                         children: <Widget>[
                           Flexible(
-                            child: Text(CWMSLocalizations.of(context)!.result + ": " + _inventoryDepositRequests[index].result.toString(),
+                            child: Text(CWMSLocalizations.of(context).result + ": " + _inventoryDepositRequests[index].result.toString(),
                                 maxLines: 3,
                                 style: TextStyle(
                                     color: Colors.lightBlue,

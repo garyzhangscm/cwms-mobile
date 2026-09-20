@@ -4,7 +4,6 @@ import 'package:cwms_mobile/work/models/work-task-status.dart';
 import 'package:cwms_mobile/work/models/work-task-type.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../auth/models/user.dart';
 import 'operation_type.dart';
 
 part 'work_task.g.dart';

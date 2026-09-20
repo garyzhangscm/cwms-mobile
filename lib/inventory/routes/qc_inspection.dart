@@ -169,7 +169,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     return
         ElevatedButton(
             onPressed: _onNextQCInspectionRequestItem,
-            child: Text(CWMSLocalizations.of(context)!.nextQCRule)
+            child: Text(CWMSLocalizations.of(context).nextQCRule)
         );
   }
   Widget _buildComfirmButton(BuildContext context) {
@@ -177,7 +177,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     return
       ElevatedButton(
           onPressed: _onConfirm,
-          child: Text(CWMSLocalizations.of(context)!.confirm)
+          child: Text(CWMSLocalizations.of(context).confirm)
       );
 
   }
@@ -191,7 +191,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       // flow to the previous page after we saved the result
 
       Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context)!.qcCompleted);
+      showToast(CWMSLocalizations.of(context).qcCompleted);
       Navigator.of(context).pop();
     }
     on WebAPICallException catch(ex) {

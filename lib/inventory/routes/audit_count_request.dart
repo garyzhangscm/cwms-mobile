@@ -11,7 +11,6 @@ import 'package:cwms_mobile/inventory/widgets/audit_count_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AuditCountRequestPage extends StatefulWidget{
@@ -74,7 +73,7 @@ class _AuditCountRequestPageState extends State<AuditCountRequestPage> {
     // print("_CycleCountRequestPageState / rebuild!");
     printLongLogMessage("_auditCountRequest.location == null? ${_auditCountRequest?.location == null}");
     return Scaffold(
-      appBar: AppBar(title: Text("${CWMSLocalizations.of(context)!.auditCount} - ${_auditCountRequest?.location?.name}")),
+      appBar: AppBar(title: Text("${CWMSLocalizations.of(context).auditCount} - ${_auditCountRequest?.location?.name}")),
       resizeToAvoidBottomInset: true,
       body: _buildInventoryList(context),
       bottomNavigationBar:_buildBottomNavigationBar(context),
@@ -94,8 +93,8 @@ class _AuditCountRequestPageState extends State<AuditCountRequestPage> {
       BottomNavigationBar(
         items: <BottomNavigationBarItem>[
 
-          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: CWMSLocalizations.of(context)!.confirmAuditCount),
-          BottomNavigationBarItem(icon: Icon(Icons.next_plan), label: CWMSLocalizations.of(context)!.skipAuditCount),
+          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: CWMSLocalizations.of(context).confirmAuditCount),
+          BottomNavigationBarItem(icon: Icon(Icons.next_plan), label: CWMSLocalizations.of(context).skipAuditCount),
           // cancel audit count is now allowed yet
           // BottomNavigationBarItem(icon: Icon(Icons.cancel), label: CWMSLocalizations.of(context)!.cancelAuditCount),
 

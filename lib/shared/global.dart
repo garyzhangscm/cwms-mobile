@@ -275,7 +275,7 @@ class Global {
   static addServer(CWMSSiteInformation server) async {
 
     CWMSSiteInformation? matchedServer
-      = servers!.firstWhereOrNull((element) => element.url?.compareTo(server!.url!) == 0);
+      = servers!.firstWhereOrNull((element) => element.url?.compareTo(server.url!) == 0);
 
     if (matchedServer != null) {
       // OK, we get a matched server, let's update it based on the new configuration

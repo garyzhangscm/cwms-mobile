@@ -35,8 +35,8 @@ Widget gmAvatar(String url, {
 }
 
 void showToast(String text, {
-  gravity: ToastGravity.TOP,
-  toastLength: Toast.LENGTH_SHORT,
+  gravity = ToastGravity.TOP,
+  toastLength = Toast.LENGTH_SHORT,
 }) {
   Fluttertoast.showToast(
     msg: text,
@@ -49,8 +49,8 @@ void showToast(String text, {
 }
 
 void showErrorToast(String text, {
-  gravity: ToastGravity.TOP,
-  toastLength: Toast.LENGTH_SHORT,
+  gravity = ToastGravity.TOP,
+  toastLength = Toast.LENGTH_SHORT,
 }) {
   Fluttertoast.showToast(
     msg: text,
@@ -143,7 +143,7 @@ showErrorDialog(BuildContext context, String message) {
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(CWMSLocalizations.of(context)!.error),
+    title: Text(CWMSLocalizations.of(context).error),
     content: Text(message),
     actions: [
       okButton,
@@ -208,7 +208,7 @@ showWarningDialog(BuildContext context, String message) {
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(CWMSLocalizations.of(context)!.warning),
+    title: Text(CWMSLocalizations.of(context).warning),
     content: Text(message),
     actions: [
       okButton,
@@ -229,7 +229,7 @@ Future<bool?>  showYesNoDialog(BuildContext context, String title, String messag
     Function yesOnPressed, Function noOnPressed) {
 
   Widget okButton = TextButton(
-    child: Text(CWMSLocalizations.of(context)!.yes),
+    child: Text(CWMSLocalizations.of(context).yes),
     onPressed: () {
       yesOnPressed();
       Navigator.of(context).pop();
@@ -237,7 +237,7 @@ Future<bool?>  showYesNoDialog(BuildContext context, String title, String messag
   );
 
   Widget cancelButton = TextButton(
-    child: Text(CWMSLocalizations.of(context)!.no),
+    child: Text(CWMSLocalizations.of(context).no),
     onPressed: () {
       noOnPressed();
       Navigator.of(context).pop();
@@ -268,14 +268,14 @@ Future<bool?>  showYesNoCancelDialog(BuildContext context, String title, String 
     Function yesOnPressed, Function noOnPressed, Function cancelOnPressed) {
 
   Widget yesButton = TextButton(
-    child: Text(CWMSLocalizations.of(context)!.yes),
+    child: Text(CWMSLocalizations.of(context).yes),
     onPressed: () {
       yesOnPressed();
       Navigator.of(context).pop();
     },
   );
   Widget noButton = TextButton(
-    child: Text(CWMSLocalizations.of(context)!.no),
+    child: Text(CWMSLocalizations.of(context).no),
     onPressed: () {
       noOnPressed();
       Navigator.of(context).pop();
@@ -283,7 +283,7 @@ Future<bool?>  showYesNoCancelDialog(BuildContext context, String title, String 
   );
 
   Widget cancelButton = TextButton(
-    child: Text(CWMSLocalizations.of(context)!.cancel),
+    child: Text(CWMSLocalizations.of(context).cancel),
     onPressed: () {
       cancelOnPressed();
       Navigator.of(context).pop();

@@ -1,6 +1,5 @@
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../shared/global.dart';
@@ -63,7 +62,7 @@ class _InventoryAttributeCapturePageState extends State<InventoryAttributeCaptur
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.captureInventoryAttribute)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).captureInventoryAttribute)),
         resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),

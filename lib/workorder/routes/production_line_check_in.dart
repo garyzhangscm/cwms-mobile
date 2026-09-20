@@ -1,41 +1,20 @@
 
-import 'dart:collection';
 import 'dart:core';
 
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/auth/services/user.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
-import 'package:cwms_mobile/inventory/services/inventory.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/outbound/models/pick_result.dart';
-import 'package:cwms_mobile/outbound/services/order.dart';
-import 'package:cwms_mobile/outbound/services/pick.dart';
-import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
-import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/models/production_line.dart';
-import 'package:cwms_mobile/workorder/models/production_line_activity.dart';
-import 'package:cwms_mobile/workorder/models/production_line_activity_type.dart';
-import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/models/work_order_labor.dart';
-import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
-import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
 import 'package:cwms_mobile/workorder/services/production_line.dart';
-import 'package:cwms_mobile/workorder/services/production_line_activity.dart';
 import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
-import 'package:cwms_mobile/workorder/services/work_order.dart';
-import 'package:cwms_mobile/workorder/widgets/work_order_list_item.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:badges/badges.dart';
 import 'package:intl/intl.dart';
 
 
@@ -128,7 +107,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.productionLineCheckIn)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).productionLineCheckIn)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -155,10 +134,10 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                   children: <Widget>[
                     // Allow the user to choose production line
                     buildTwoSectionInputRow(
-                        CWMSLocalizations.of(context)!.productionLine,
+                        CWMSLocalizations.of(context).productionLine,
                         DropdownButton(
                           focusNode: _productionLineNode,
-                          hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+                          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                           items: _getValidProductionLines(),
                           value: _selectedProductionLine == null ?  null : _selectedProductionLine,
                           elevation: 1,
@@ -178,24 +157,24 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                         )
                     ),
                     buildTwoSectionInputRow(
-                        CWMSLocalizations.of(context)!.userName,
+                        CWMSLocalizations.of(context).userName,
                         TextFormField(
                         focusNode: _usernameFocusNode,
                         controller: _usernameController,
                         textInputAction: TextInputAction.next,
                         validator: (v) {
                           if (_incorrectUsername == true) {
-                            return CWMSLocalizations.of(context)!.incorrectValue(CWMSLocalizations.of(context)!.userName);
+                            return CWMSLocalizations.of(context).incorrectValue(CWMSLocalizations.of(context).userName);
                           }
                           return v!.trim().isNotEmpty ? null :
-                          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.userName);
+                          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).userName);
                         },
                       ),
                     ),
                     _currentUser == null? new Container() :
                       buildTwoSectionInformationRow(
 
-                        CWMSLocalizations.of(context)!.userName,
+                        CWMSLocalizations.of(context).userName,
                           _currentUser!.username! + " (" + _currentUser!.firstname! + ", " + _currentUser!.lastname! + ")"
                       )
                     /**
@@ -281,7 +260,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
   List<DropdownMenuItem<ProductionLine>> _getValidProductionLines() {
     List<DropdownMenuItem<ProductionLine>> items = [];
-    if (_validProductionLines == null || _validProductionLines.length == 0) {
+    if (_validProductionLines.length == 0) {
       return items;
     }
     for (int i = 0; i < _validProductionLines.length; i++) {
@@ -317,7 +296,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
                       }
 
                     },
-            child: Text(CWMSLocalizations.of(context)!.productionLineCheckIn),
+            child: Text(CWMSLocalizations.of(context).productionLineCheckIn),
           )
         );
 
@@ -344,15 +323,15 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
         new Column(
             children: [
               buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context)!.productionLine,
+                  CWMSLocalizations.of(context).productionLine,
                   _workOrderLabor?.productionLine?.name ?? ""
               ),
               buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context)!.userName,
+                  CWMSLocalizations.of(context).userName,
                       _workOrderLabor?.username ?? ""
               ),
               buildTwoSectionInformationRow(
-                  CWMSLocalizations.of(context)!.transactionTime,
+                  CWMSLocalizations.of(context).transactionTime,
                   _workOrderLabor == null ?
                     "" :
                     DateFormat("MM/dd/yyyy HH:mm:ss").format(_workOrderLabor!.lastCheckInTime!)
@@ -400,7 +379,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
     if (workOrders.isEmpty) {
       // no work order is assigned yet, there's no need to check in
       // an empty production line
-      showToast(CWMSLocalizations.of(context)!.noWorkOrderFoundOnProductionLine);
+      showToast(CWMSLocalizations.of(context).noWorkOrderFoundOnProductionLine);
       Navigator.of(context).pop();
       return;
 
@@ -428,7 +407,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
 
     print("production line check in transaction saved!");
 
-    showToast(CWMSLocalizations.of(context)!.actionComplete);
+    showToast(CWMSLocalizations.of(context).actionComplete);
     _usernameController.clear();
     _usernameFocusNode?.requestFocus();
     _currentUser = null;

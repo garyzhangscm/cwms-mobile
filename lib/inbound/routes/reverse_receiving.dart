@@ -252,7 +252,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
     })
     .catchError((err) {
 
-      if (err is DioError ) {
+      if (err is DioException ) {
         // for timeout error and we are still in the retry threshold, let's try again
         // retry after 2 second
 
@@ -273,7 +273,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
       }
       else if (err is WebAPICallException){
         // for any other error display it
-        final webAPICallException = err as WebAPICallException;
+        final webAPICallException = err;
         setState(() {
           reversedInventoryInformation.reverseResult = false;
           reversedInventoryInformation.reverseInProgress = false;
@@ -480,7 +480,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
         );
     }
     else {
-      double height = min(75 + (_reversedInventories[index].result!.length! / 50) * 15, 120);
+      double height = min(75 + (_reversedInventories[index].result!.length / 50) * 15, 120);
       return
         SizedBox(
             height: height,

@@ -1,4 +1,3 @@
-import 'package:cwms_mobile/common/models/client.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/inventory/models/item_unit_of_measure.dart';
 import 'package:json_annotation/json_annotation.dart';

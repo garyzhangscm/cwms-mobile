@@ -267,7 +267,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.listPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).listPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -289,7 +289,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
   Widget _buildLocationInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.location,
+        CWMSLocalizations.of(context).location,
       _currentPick?.confirmLocationFlag == true || _currentPick?.confirmLocationCodeFlag == true ?
           Focus(
               focusNode: _sourceLocationFocusNode,
@@ -326,7 +326,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
   Widget _buildLPNInput(BuildContext context) {
     return buildTwoSectionInputRow(
-      CWMSLocalizations.of(context)!.lpn,
+      CWMSLocalizations.of(context).lpn,
         _currentPick?.confirmLpnFlag == true ?
       Focus(
           focusNode: _lpnFocusNode,
@@ -365,7 +365,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
   Widget _buildQuantityInput(BuildContext context) {
     return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context)!.quantity,
+        CWMSLocalizations.of(context).quantity,
         Focus(
             focusNode: _quantityFocusNode,
             child:
@@ -401,11 +401,11 @@ class _ListPickPageState extends State<ListPickPage> {
 
               _onPickConfirm(_currentPickList!, int.parse(_quantityController.text));
             },
-            child: Text(CWMSLocalizations.of(context)!.confirm)
+            child: Text(CWMSLocalizations.of(context).confirm)
         ),
         ElevatedButton(
             onPressed: _skipCurrentPick,
-            child: Text(CWMSLocalizations.of(context)!.skip)
+            child: Text(CWMSLocalizations.of(context).skip)
         ),
         badge.Badge(
             showBadge: true,
@@ -422,7 +422,7 @@ class _ListPickPageState extends State<ListPickPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                  child: Text(CWMSLocalizations.of(context).depositInventory),
                 )
             ),
 
@@ -439,7 +439,7 @@ class _ListPickPageState extends State<ListPickPage> {
     // right location
     if (_sourceLocationController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.location));
+          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).location));
       _sourceLocationControllerFocusNode.requestFocus();
       return;
     }
@@ -475,7 +475,7 @@ class _ListPickPageState extends State<ListPickPage> {
     // right location
     if (_lpnController.text.isEmpty) {
       showErrorDialog(context,
-          CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.lpn));
+          CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn));
       _lpnControllerFocusNode.requestFocus();
       return;
     }
@@ -528,7 +528,7 @@ class _ListPickPageState extends State<ListPickPage> {
           locationId: _currentPick?.sourceLocationId
       );
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
       return 0;
 
     }
@@ -541,13 +541,13 @@ class _ListPickPageState extends State<ListPickPage> {
 
     int totalPickableQuantity = 0 ;
     pickList.picks.forEach((pick) {
-      totalPickableQuantity += (pick.quantity! - pick!.pickedQuantity!);
+      totalPickableQuantity += (pick.quantity! - pick.pickedQuantity!);
     });
 
     // over pick for bulk pick is not allowed
     if (confirmedQuantity > totalPickableQuantity) {
       showErrorDialog(context,
-        CWMSLocalizations.of(context)!.overPickNotAllowed);
+        CWMSLocalizations.of(context).overPickNotAllowed);
       return;
     }
 
@@ -644,9 +644,9 @@ class _ListPickPageState extends State<ListPickPage> {
         pick.confirmLocationCodeFlag == false) {
       _sourceLocationController.text = pick.sourceLocation?.name ?? "";
     }
-    if (pick!.quantity! > pick!.pickedQuantity!) {
+    if (pick.quantity! > pick.pickedQuantity!) {
 
-      _quantityController.text = (pick.quantity! - pick!.pickedQuantity!).toString();
+      _quantityController.text = (pick.quantity! - pick.pickedQuantity!).toString();
     }
     else {
       _quantityController.text = "0";
@@ -685,15 +685,11 @@ class _ListPickPageState extends State<ListPickPage> {
     }
 
     Navigator.of(context).pop();
-    if (warehouseLocation == null) {
-      showErrorDialog(context, "can't find location by input value ${_sourceLocationController.text}");
-      return false;
-    }
-    else if (warehouseLocation.id != _currentPick?.sourceLocationId) {
-      showErrorDialog(context, "Location ${_sourceLocationController.text} is not the right location for pick");
-      return false;
+    if (warehouseLocation.id != _currentPick?.sourceLocationId) {
+    showErrorDialog(context, "Location ${_sourceLocationController.text} is not the right location for pick");
+    return false;
 
-    }
+  }
     return true;
   }
 

@@ -5,7 +5,6 @@ import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
-import 'package:cwms_mobile/shared/models/rf_configuration.dart';
 import 'package:dio/dio.dart';
 
 import '../models/warehouse_configuration.dart';
@@ -29,7 +28,7 @@ class WarehouseConfigurationService {
       throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
     }
     Map<String, dynamic> responseData = responseString["data"] as Map<String, dynamic>;
-    if (responseData == null || responseData.isEmpty) {
+    if (responseData.isEmpty) {
       return null;
     }
     return WarehouseConfiguration.fromJson(responseData);

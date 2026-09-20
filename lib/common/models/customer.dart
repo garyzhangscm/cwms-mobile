@@ -1,6 +1,3 @@
-import 'package:cwms_mobile/inventory/models/inventory_status.dart';
-import 'package:cwms_mobile/inventory/models/item.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'customer.g.dart';

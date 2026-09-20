@@ -160,11 +160,11 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
                       children: [
                         Expanded(
                           child: Column(children: [
-                            buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.number,
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).number,
                                  _currentWorkTask?.number ?? ""),
-                            buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.type,
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).type,
                                 _currentWorkTask?.type?.name ?? ""),
-                            buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.sourceLocation, _currentWorkTaskSourceLocationName),
+                            buildTwoSectionInformationRow(CWMSLocalizations.of(context).sourceLocation, _currentWorkTaskSourceLocationName),
                           ]),
                         ),
                         // Expanded(child: Container(color: Colors.amber)),
@@ -279,7 +279,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
             badgeColor: Colors.deepPurple,
           ),
           badgeContent: Text(
-            _inventoryOnRF == null || _inventoryOnRF.length == 0 ? "0" : _inventoryOnRF.length.toString(),
+            _inventoryOnRF.length == 0 ? "0" : _inventoryOnRF.length.toString(),
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           child:
@@ -287,7 +287,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
             width: MediaQuery.of(context).size.width,
             child: ElevatedButton(
               onPressed: _inventoryOnRF.length == 0 ? null : _startDeposit,
-              child: Text(CWMSLocalizations.of(context)!.depositInventory),
+              child: Text(CWMSLocalizations.of(context).depositInventory),
             ),
           ),
         )
@@ -358,7 +358,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     try {
       bulkPick = await BulkPickService.getBulkPickByNumber(workTask.referenceNumber!);
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
       // ok it is possible that the actual work is already cancelled but the work task is still present,
       // let's cancel the work task as it is no long valid
 
@@ -398,7 +398,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     try {
       pickList = await PickListService.getPickListByNumber(workTask.referenceNumber!);
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
       // ok it is possible that the actual work is already cancelled but the work task is still present,
       // let's cancel the work task as it is no long valid
 
@@ -412,7 +412,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     Navigator.of(context).pop();
     // if all the picks in the list are already done, then complate the work task
-    if (!pickList.picks.any((pick) => pick.pickedQuantity! < pick!.quantity!)) {
+    if (!pickList.picks.any((pick) => pick.pickedQuantity! < pick.quantity!)) {
       _completeWorkTask(_currentWorkTask!);
       _refresh();
       return;
@@ -438,7 +438,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
     try {
       pick = await PickService.getPicksByNumber(workTask.referenceNumber!);
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
 
       Navigator.of(context).pop();
       // ok it is possible that the actual work is already cancelled but the work task is still present,

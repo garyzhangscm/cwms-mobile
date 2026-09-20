@@ -3,7 +3,6 @@
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/profile.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ProfileChangeNotifier extends ChangeNotifier {
@@ -24,7 +23,7 @@ class UserModel extends ProfileChangeNotifier {
 
   //用户信息发生变化，更新用户信息并通知依赖它的子孙Widgets更新
   set user(User user) {
-    if (user?.login != _profile.user?.login) {
+    if (user.login != _profile.user?.login) {
       _profile.lastLogin = _profile.user?.login;
       _profile.user = user;
       notifyListeners();
@@ -35,12 +34,12 @@ class UserModel extends ProfileChangeNotifier {
 class ThemeModel extends ProfileChangeNotifier {
   // 获取当前主题，如果为设置主题，则默认使用蓝色主题
   ColorSwatch get theme => Global.themes
-      .firstWhere((e) => e.value == _profile.theme, orElse: () => Colors.blue);
+      .firstWhere((e) => e.toARGB32() == _profile.theme, orElse: () => Colors.blue);
 
   // 主题改变后，通知其依赖项，新主题会立即生效
   set theme(ColorSwatch color) {
     if (color != theme) {
-      _profile.theme = color[500]!.value;
+      _profile.theme = color[500]!.toARGB32();
       notifyListeners();
     }
   }

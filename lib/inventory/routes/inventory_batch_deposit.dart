@@ -67,7 +67,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS ${CWMSLocalizations.of(context)!.batchDepositInventory}")),
+      appBar: AppBar(title: Text("CWMS ${CWMSLocalizations.of(context).batchDepositInventory}")),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -199,7 +199,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
     List<InventoryDepositRequest> _inventoryDepositRequestWithoutDestination
         = _getInventoryDepositRequestWithoutDestination(inventoryDepositRequests);
 
-    if (_inventoryDepositRequestWithoutDestination != null && _inventoryDepositRequestWithoutDestination.isNotEmpty) {
+    if (_inventoryDepositRequestWithoutDestination.isNotEmpty) {
 
       printLongLogMessage("we will pop up a dialog and ask the user to input a destination");
       var destinationLocation = await _showDestinationLocationDialog(context);
@@ -291,7 +291,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context)!.item + ": ",
+                                CWMSLocalizations.of(context).item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -313,7 +313,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context)!.quantity + ": ",
+                                CWMSLocalizations.of(context).quantity + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -335,7 +335,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context)!.location + ": ",
+                                CWMSLocalizations.of(context).location + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -380,14 +380,14 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
             height: 90,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[key]!.lpn!),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[key]!.lpn!),
               subtitle:
               Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.item + ": ",
+                              CWMSLocalizations.of(context).item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -409,7 +409,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.quantity + ": ",
+                              CWMSLocalizations.of(context).quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -431,7 +431,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.location + ": ",
+                              CWMSLocalizations.of(context).location + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -465,14 +465,14 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
             height: height,
             child:
             CheckboxListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _inventoryDepositRequests[key]!.lpn!),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _inventoryDepositRequests[key]!.lpn!),
               subtitle:
                 Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.item + ": ",
+                              CWMSLocalizations.of(context).item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -494,7 +494,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.quantity + ": ",
+                              CWMSLocalizations.of(context).quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -516,7 +516,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                            CWMSLocalizations.of(context)!.location + ": ",
+                            CWMSLocalizations.of(context).location + ": ",
                             textScaleFactor: .9,
                             style: TextStyle(
                               height: 1.15,
@@ -536,7 +536,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                           Padding(
                             padding: const EdgeInsets.only(left: 26.0),
                             child:  Text(
-                                CWMSLocalizations.of(context)!.nextLocation + ": ",
+                                CWMSLocalizations.of(context).nextLocation + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -594,13 +594,12 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
 
       inventoryList.forEach((inventory) async {
         inventory.location = rfLocation;
-        if (inventory.inventoryMovements != null &&
-            inventory.inventoryMovements.isNotEmpty &&
+        if (inventory.inventoryMovements.isNotEmpty &&
             inventory.inventoryMovements[0].locationId != null &&
             inventory.inventoryMovements[0].location == null) {
 
           WarehouseLocation nextLocation = await WarehouseLocationService.getWarehouseLocationById(
-              inventory.inventoryMovements[0]!.locationId!
+              inventory.inventoryMovements[0].locationId!
           );
           inventory.inventoryMovements[0].location = nextLocation;
 
@@ -704,17 +703,17 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text(CWMSLocalizations.of(context)!.nextLocation),
+            title: Text(CWMSLocalizations.of(context).nextLocation),
             content: TextField(
               controller: _destinationLocationFieldController,
             ),
             actions: <Widget>[
               ElevatedButton(
-                child: Text(CWMSLocalizations.of(context)!.cancel),
+                child: Text(CWMSLocalizations.of(context).cancel),
                 onPressed: () => Navigator.pop(context),
               ),
               ElevatedButton(
-                child: Text(CWMSLocalizations.of(context)!.confirm),
+                child: Text(CWMSLocalizations.of(context).confirm),
                 onPressed: () async {
                   if (_destinationLocationFieldController.text.isEmpty) {
                     showErrorToast("please fill in the destination location");
@@ -724,14 +723,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                     try {
                       WarehouseLocation destinationLocation =
                           await WarehouseLocationService.getWarehouseLocationByName( _destinationLocationFieldController.text);
-                      if (destinationLocation != null) {
-
-                        Navigator.pop(context, destinationLocation);
-                      }
-                      else {
-
-                        showErrorToast("can't find location with name ${_destinationLocationFieldController.text}");
-                      }
+                      Navigator.pop(context, destinationLocation);
                     }
                     on WebAPICallException catch (ex) {
                       showErrorToast(ex.errMsg());
@@ -775,7 +767,6 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         inventoryDepositRequest.currentLocationName = "=== Multiple Locations ===";
         Inventory? inventory = inventoryOnRF.firstWhereOrNull((inventory) => inventory.id == inventoryId );
         if (inventory != null &&
-            inventory.inventoryMovements != null &&
             inventory.inventoryMovements.isNotEmpty) {
 
           try {

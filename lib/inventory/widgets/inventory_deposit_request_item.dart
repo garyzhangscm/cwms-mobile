@@ -2,13 +2,11 @@
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class InventoryDepositRequestItem extends StatefulWidget {
   InventoryDepositRequestItem({this.index, this.inventoryDepositRequest,
-       this.highlighted: false,
+       this.highlighted = false,
        required this.onToggleHightlighted}
        ) : super(key: ValueKey(index));
 
@@ -33,13 +31,10 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
 
 
   void _onToggleHightlighted() {
-    if (widget.onToggleHightlighted != null) {
-
-      setState(() {
-        widget.highlighted = !widget.highlighted;
-      });
-      widget.onToggleHightlighted!(widget.highlighted);
-    }
+    setState(() {
+      widget.highlighted = !widget.highlighted;
+    });
+    widget.onToggleHightlighted(widget.highlighted);
   }
 
   @override
@@ -84,7 +79,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                CWMSLocalizations.of(context)!.item + ": ",
+                                CWMSLocalizations.of(context).item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -106,7 +101,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                  CWMSLocalizations.of(context)!.inventoryStatus + ": ",
+                                  CWMSLocalizations.of(context).inventoryStatus + ": ",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,
@@ -128,7 +123,7 @@ class _InventoryDepositRequestItemState extends State<InventoryDepositRequestIte
                         Row(
                             children: <Widget>[
                               Text(
-                                  CWMSLocalizations.of(context)!.quantity + ": ",
+                                  CWMSLocalizations.of(context).quantity + ": ",
                                   textScaleFactor: .9,
                                   style: TextStyle(
                                     height: 1.15,

@@ -74,7 +74,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.reverseProduction)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).reverseProduction)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -141,7 +141,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
         if (inventories.isEmpty) {
           reversedInventoryInformation.reverseInProgress = false;
           reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context)!.noInventoryFound;
+          reversedInventoryInformation.result = CWMSLocalizations.of(context).noInventoryFound;
 
           setState(() {
             _reversedInventories;
@@ -180,7 +180,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
         if (includeNonWorkOrderInventory) {
           reversedInventoryInformation.reverseInProgress = false;
           reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context)!.reverseErrorNoWorkOrder;
+          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorNoWorkOrder;
 
           setState(() {
             _reversedInventories;
@@ -191,7 +191,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
 
           reversedInventoryInformation.reverseInProgress = false;
           reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context)!.reverseErrorMixedWorkOrder;
+          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWorkOrder;
 
           setState(() {
             _reversedInventories;
@@ -201,7 +201,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
         if (clientNames.length > 1) {
           reversedInventoryInformation.reverseInProgress = false;
           reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context)!.reverseErrorMixedWithClient;
+          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWithClient;
 
           setState(() {
             _reversedInventories;
@@ -211,7 +211,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
         if (itemNames.length > 1) {
           reversedInventoryInformation.reverseInProgress = false;
           reversedInventoryInformation.reverseResult = false;
-          reversedInventoryInformation.result = CWMSLocalizations.of(context)!.reverseErrorMixedWithItem;
+          reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorMixedWithItem;
 
           setState(() {
             _reversedInventories;
@@ -226,7 +226,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
           setState(() {
             reversedInventoryInformation.reverseResult = false;
             reversedInventoryInformation.reverseInProgress = false;
-            reversedInventoryInformation.result = CWMSLocalizations.of(context)!.reverseErrorNoWorkOrder;
+            reversedInventoryInformation.result = CWMSLocalizations.of(context).reverseErrorNoWorkOrder;
             _reversedInventories;
           });
           return;
@@ -259,7 +259,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
     }).catchError((error)  {
 
 
-      if (error is DioError ) {
+      if (error is DioException ) {
         // for timeout error and we are still in the retry threshold, let's try again
         // retry after 2 second
         printLongLogMessage("get dio error ${error.type}");
@@ -280,7 +280,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
       }
       if (error is WebAPICallException){
         // for any other error display it
-        final webAPICallException = error as WebAPICallException;
+        final webAPICallException = error;
         printLongLogMessage("get WebAPICallException error ${webAPICallException.errMsg()}");
         setState(() {
           reversedInventoryInformation.reverseResult = false;
@@ -303,7 +303,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
   }
 
   Widget _buildLPNController(BuildContext context) {
-    return buildTwoSectionInputRow(CWMSLocalizations.of(context)!.lpn,
+    return buildTwoSectionInputRow(CWMSLocalizations.of(context).lpn,
         TextFormField(
             controller: _lpnController,
             autofocus: true,
@@ -319,8 +319,8 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
             validator: (v) {
               return v!.trim().isNotEmpty ?
               null :
-              CWMSLocalizations.of(context)!.missingField(
-                  CWMSLocalizations.of(context)!.lpn);
+              CWMSLocalizations.of(context).missingField(
+                  CWMSLocalizations.of(context).lpn);
             })
     );
   }
@@ -365,7 +365,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context)!.item + ": ",
+                                CWMSLocalizations.of(context).item + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -387,7 +387,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                       Row(
                           children: <Widget>[
                             Text(
-                                CWMSLocalizations.of(context)!.quantity + ": ",
+                                CWMSLocalizations.of(context).quantity + ": ",
                                 textScaleFactor: .9,
                                 style: TextStyle(
                                   height: 1.15,
@@ -432,14 +432,14 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
           height: 75,
           child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + (_reversedInventories[index].lpn ?? "")),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + (_reversedInventories[index].lpn ?? "")),
               subtitle:
                 Column(
                   children: <Widget>[
                     Row(
                       children: <Widget>[
                         Text(
-                          CWMSLocalizations.of(context)!.item + ": ",
+                          CWMSLocalizations.of(context).item + ": ",
                           textScaleFactor: .9,
                           style: TextStyle(
                             height: 1.15,
@@ -461,7 +461,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                     Row(
                       children: <Widget>[
                         Text(
-                          CWMSLocalizations.of(context)!.quantity + ": ",
+                          CWMSLocalizations.of(context).quantity + ": ",
                           textScaleFactor: .9,
                           style: TextStyle(
                             height: 1.15,
@@ -496,14 +496,14 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
             height: height,
             child:
             ListTile(
-              title: Text(CWMSLocalizations.of(context)!.lpn + ": " + _reversedInventories[index].lpn!),
+              title: Text(CWMSLocalizations.of(context).lpn + ": " + _reversedInventories[index].lpn!),
               subtitle:
               Column(
                   children: <Widget>[
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.item + ": ",
+                              CWMSLocalizations.of(context).item + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -525,7 +525,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                     Row(
                         children: <Widget>[
                           Text(
-                              CWMSLocalizations.of(context)!.quantity + ": ",
+                              CWMSLocalizations.of(context).quantity + ": ",
                               textScaleFactor: .9,
                               style: TextStyle(
                                 height: 1.15,
@@ -547,7 +547,7 @@ class _ReverseProductionPageState extends State<ReverseProductionPage> {
                     Row(
                         children: <Widget>[
                           Flexible(
-                            child: Text(CWMSLocalizations.of(context)!.result + ": " + _reversedInventories[index].result.toString(),
+                            child: Text(CWMSLocalizations.of(context).result + ": " + _reversedInventories[index].result.toString(),
                                 maxLines: 3,
                                 style: TextStyle(
                                     color: Colors.lightBlue,

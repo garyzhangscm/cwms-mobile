@@ -17,7 +17,6 @@ import 'package:badges/badges.dart' as badge;
 import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
-import '../models/pick_mode.dart';
 import '../models/wave.dart';
 import '../services/wave.dart';
 import '../widgets/wave_list_item.dart';
@@ -80,7 +79,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pickByWave)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWave)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -109,7 +108,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
                         autofocus: true,
                         focusNode: _waveNumberFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context)!.waveNumber,
+                          labelText: CWMSLocalizations.of(context).waveNumber,
                           hintText: "please input wave number",
                           suffixIcon:
                           Row(
@@ -138,11 +137,11 @@ class _PickByWavePageState extends State<PickByWavePage> {
         buildThreeButtonRow(context,
           ElevatedButton(
               onPressed: () => _onAddingWave(10),
-              child: Text(CWMSLocalizations.of(context)!.addWave)
+              child: Text(CWMSLocalizations.of(context).addWave)
           ),
           ElevatedButton(
               onPressed: _onStartingPicking,
-              child: Text(CWMSLocalizations.of(context)!.start)
+              child: Text(CWMSLocalizations.of(context).start)
           ),
           badge.Badge(
               showBadge: true,
@@ -159,7 +158,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                    child: Text(CWMSLocalizations.of(context).depositInventory),
                   ),
                 ),
           )
@@ -229,12 +228,10 @@ class _PickByWavePageState extends State<PickByWavePage> {
         Wave wave =
             await WaveService.getWaveByNumber(_waveNumberController.text);
 
-        if (wave != null) {
-          _assignWaveToUser(wave);
-          print("Will add wave ${wave.number} to the list");
-          _waveNumberController.clear();
-          _waveNumberFocusNode.requestFocus();
-        }
+        _assignWaveToUser(wave);
+        print("Will add wave ${wave.number} to the list");
+        _waveNumberController.clear();
+        _waveNumberFocusNode.requestFocus();
 
         Navigator.of(context).pop();
       }
@@ -284,9 +281,6 @@ class _PickByWavePageState extends State<PickByWavePage> {
     // when we remove the wave from current assignment, we can
     // remove the picks as well
     Set<int> existingPicks = wavePicks[wave.number]!;
-    if (existingPicks == null) {
-      existingPicks = new Set<int>();
-    }
 
     picksByWave.forEach((pick) => existingPicks.add(pick.id!));
     wavePicks[wave.number!] = existingPicks;
@@ -357,19 +351,19 @@ class _PickByWavePageState extends State<PickByWavePage> {
       try {
         // if we have error assign one valid pick, let's just ignore the pick
         // and continue with others
-          if (pick.quantity! > pick!.pickedQuantity! && pick.id != currentPick!.id! &&
+          if (pick.quantity! > pick.pickedQuantity! && pick.id != currentPick!.id! &&
               PickService.pickInventoryWithSameAttribute(pick, currentPick!)) {
-              bool acknowledgeable = await PickService.isPickAcknowledgable(pick!.id!);
+              bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id!);
               printLongLogMessage("pick ${pick.number} is acknowledgeable? ${acknowledgeable}");
 
               if (acknowledgeable) {
-                await PickService.acknowledgePick(pick!.id!);
+                await PickService.acknowledgePick(pick.id!);
                 currentPick!.batchedPicks.add(pick);
-                currentPick!.batchPickQuantity = currentPick!.batchPickQuantity! + (pick.quantity! - pick!.pickedQuantity!);
+                currentPick!.batchPickQuantity = currentPick!.batchPickQuantity! + (pick.quantity! - pick.pickedQuantity!);
               }
           }
       }
-      on WebAPICallException catch(ex) {
+      on WebAPICallException {
 
       }
     }
@@ -424,11 +418,11 @@ class _PickByWavePageState extends State<PickByWavePage> {
         if (currentPick!.batchedPicks.length > 0) {
           // assigned the batch picks as well
           currentPick!.batchedPicks.forEach((pick) async {
-            await PickService.unacknowledgePick(pick!.id!);
+            await PickService.unacknowledgePick(pick.id!);
           });
         }
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
       // ignore the error when unackonwledge the orig picks
       // Navigator.of(context).pop();
       // showErrorDialog(context, ex.errMsg());
@@ -488,7 +482,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
 
     // refresh the assignedPicks list based on the pick result
     // so that the next valid pick will be based off the latest result
-    if (pickResult.confirmedPickResult != null && pickResult.confirmedPickResult.length > 0) {
+    if (pickResult.confirmedPickResult.length > 0) {
       printLongLogMessage("We got ${pickResult.confirmedPickResult.length} pick confirm result. let's start to change the local cached pick's quantity");
       for(var pickId in pickResult.confirmedPickResult.keys) {
             var confirmedQuantity = pickResult.confirmedPickResult[pickId];
@@ -500,12 +494,12 @@ class _PickByWavePageState extends State<PickByWavePage> {
             }
       }
     }
-    if (pickResult.cancelledPicks != null && pickResult.cancelledPicks.length > 0) {
+    if (pickResult.cancelledPicks.length > 0) {
       printLongLogMessage("We got ${pickResult.cancelledPicks.length} pick cancelled, let's remove from the available list");
       assignedPicks.removeWhere((pick) => pickResult.cancelledPicks.contains(pick.id));
 
     }
-    if (pickResult.reallocatedPicks != null && pickResult.reallocatedPicks.length > 0) {
+    if (pickResult.reallocatedPicks.length > 0) {
       printLongLogMessage("We got ${pickResult.reallocatedPicks.length} new picks generated after reallocate, let's added to the list");
       assignedPicks.addAll(pickResult.reallocatedPicks);
     }
@@ -572,8 +566,8 @@ class _PickByWavePageState extends State<PickByWavePage> {
             "/ source location: ${pick.sourceLocation?.name} / pick sequence: ${pick.sourceLocation?.pickSequence}");
       });
       // return the first unacknowleged pick
-      for (var pick in assignedPicks.where((pick) => pick.quantity! > pick!.pickedQuantity!)) {
-        bool acknowledgeable = await PickService.isPickAcknowledgable(pick!.id!);
+      for (var pick in assignedPicks.where((pick) => pick.quantity! > pick.pickedQuantity!)) {
+        bool acknowledgeable = await PickService.isPickAcknowledgable(pick.id!);
         if (acknowledgeable) {
           return pick;
         }

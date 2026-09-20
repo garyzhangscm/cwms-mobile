@@ -8,7 +8,6 @@ import 'package:cwms_mobile/inventory/widgets/count_result_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CycleCountRequestPage extends StatefulWidget{
@@ -79,9 +78,9 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
     return
       BottomNavigationBar(
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: CWMSLocalizations.of(context)!.confirmCycleCount),
-          BottomNavigationBarItem(icon: Icon(Icons.next_plan), label: CWMSLocalizations.of(context)!.skipCycleCount),
-          BottomNavigationBarItem(icon: Icon(Icons.cancel), label: CWMSLocalizations.of(context)!.cancelCycleCount),
+          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: CWMSLocalizations.of(context).confirmCycleCount),
+          BottomNavigationBarItem(icon: Icon(Icons.next_plan), label: CWMSLocalizations.of(context).skipCycleCount),
+          BottomNavigationBarItem(icon: Icon(Icons.cancel), label: CWMSLocalizations.of(context).cancelCycleCount),
 
         ],
         currentIndex: 0,

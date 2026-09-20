@@ -13,7 +13,6 @@ import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:cwms_mobile/workorder/widgets/work_order_list_item.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -89,7 +88,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.pickByWorkOrder)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -141,17 +140,17 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
         buildTwoButtonRow(context,
           ElevatedButton(
               onPressed: _onAddingWorkOrder,
-              child: Text(CWMSLocalizations.of(context)!.addWorkOrder)
+              child: Text(CWMSLocalizations.of(context).addWorkOrder)
           ),
           ElevatedButton(
               onPressed: _onChooseWorkOrder,
-              child: Text(CWMSLocalizations.of(context)!.chooseWorkOrder),
+              child: Text(CWMSLocalizations.of(context).chooseWorkOrder),
           ),
         ),
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _onStartingPicking,
-                child: Text(CWMSLocalizations.of(context)!.start),
+                child: Text(CWMSLocalizations.of(context).start),
             ),
             badge.Badge(
               showBadge: true,
@@ -168,7 +167,7 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
                       onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                      child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                      child: Text(CWMSLocalizations.of(context).depositInventory),
                     ),
                 ),
             )
@@ -449,15 +448,15 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
       if (pickResult.result == true) {
         // update the current pick
         currentPick!.pickedQuantity
-          = currentPick!.pickedQuantity! + pickResult!.confirmedQuantity!;
+          = currentPick!.pickedQuantity! + pickResult.confirmedQuantity!;
         // update the order's open pick quantity to reflect the
         // pick status
         WorkOrder? workOrder = _getWorkOrderByPick(currentPick!);
         if (workOrder != null) {
           setState(() {
 
-            workOrder.totalLineOpenQuantity = workOrder.totalLineOpenQuantity! - pickResult!.confirmedQuantity!;
-            workOrder.totalLineDeliveredQuantity = workOrder.totalLineDeliveredQuantity! + pickResult!.confirmedQuantity!;
+            workOrder.totalLineOpenQuantity = workOrder.totalLineOpenQuantity! - pickResult.confirmedQuantity!;
+            workOrder.totalLineDeliveredQuantity = workOrder.totalLineDeliveredQuantity! + pickResult.confirmedQuantity!;
           });
         }
 

@@ -4,15 +4,12 @@ import 'dart:convert';
 
 import 'package:cwms_mobile/inventory/models/audit_count_request.dart';
 import 'package:cwms_mobile/inventory/models/audit_count_result.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 
 class AuditCountRequestService {
   // Get all cycle count requests by batch id

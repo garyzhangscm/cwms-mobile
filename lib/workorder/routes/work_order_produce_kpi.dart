@@ -8,7 +8,6 @@ import 'package:cwms_mobile/workorder/models/work_order_kpi_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:cwms_mobile/workorder/widgets/work_order_kpi_item.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 
@@ -43,7 +42,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.kpi)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).kpi)),
       resizeToAvoidBottomInset: true,
       body:
         Column(
@@ -93,9 +92,9 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
     return
       BottomNavigationBar(
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.done_all), label: CWMSLocalizations.of(context)!.confirm),
-          BottomNavigationBarItem(icon: Icon(Icons.note_add), label: CWMSLocalizations.of(context)!.add),
-          BottomNavigationBarItem(icon: Icon(Icons.cancel), label: CWMSLocalizations.of(context)!.cancel),
+          BottomNavigationBarItem(icon: Icon(Icons.done_all), label: CWMSLocalizations.of(context).confirm),
+          BottomNavigationBarItem(icon: Icon(Icons.note_add), label: CWMSLocalizations.of(context).add),
+          BottomNavigationBarItem(icon: Icon(Icons.cancel), label: CWMSLocalizations.of(context).cancel),
 
         ],
         currentIndex: 0,
@@ -176,7 +175,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                         Padding(
                           padding: const EdgeInsets.only(left:25.0, right: 25.0),
                           child:
-                          Text(CWMSLocalizations.of(context)!.userName),
+                          Text(CWMSLocalizations.of(context).userName),
                         ),
                         Flexible(
                           child:
@@ -201,7 +200,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                         Padding(
                           padding: const EdgeInsets.only(left:25.0, right: 25.0),
                           child:
-                          Text(CWMSLocalizations.of(context)!.workingTeamName),
+                          Text(CWMSLocalizations.of(context).workingTeamName),
                         ),
                         Flexible(
                           child:
@@ -226,7 +225,7 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                         Padding(
                           padding: const EdgeInsets.only(left:25.0, right: 25.0),
                           child:
-                          Text(CWMSLocalizations.of(context)!.kpiAmount),
+                          Text(CWMSLocalizations.of(context).kpiAmount),
                         ),
                         Flexible(
                           child:
@@ -251,12 +250,12 @@ class _WorkOrderKPIPageState extends State<WorkOrderKPIPage> {
                         Padding(
                           padding: const EdgeInsets.only(left:25.0, right: 25.0),
                           child:
-                          Text(CWMSLocalizations.of(context)!.kpiMeasurement),
+                          Text(CWMSLocalizations.of(context).kpiMeasurement),
                         ),
                         Expanded(
                             child:
                             DropdownButton<KPIMeasurement>(
-                              hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
+                              hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                               // items: _getValidKPIMeasurements(),
                               items: KPIMeasurement.values.map((KPIMeasurement kpiMeasurement) {
                                 return DropdownMenuItem<KPIMeasurement>(

@@ -3,7 +3,6 @@ import 'dart:convert';
 
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
-import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/inventory/models/item_sampling.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';

@@ -16,7 +16,6 @@ import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badge;
-import 'package:flutter/services.dart';
 import '../../shared/global.dart';
 
 import '../models/order.dart';
@@ -91,7 +90,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.manualPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).manualPick)),
       resizeToAvoidBottomInset: true,
       body:
         Padding(
@@ -121,7 +120,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
   }
   Widget _buildOrderNumberInput(BuildContext context) {
     return buildTwoSectionInputRow(
-              CWMSLocalizations.of(context)!.orderNumber,
+              CWMSLocalizations.of(context).orderNumber,
               TextFormField(
                   controller: _orderNumberController,
                   showCursor: true,
@@ -315,6 +314,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
             focusNode: _lpnFocusNode,
             onClear: (value) {
               _lpnControllerCleared();
+              return null;
             },
             autofocus: true,
             validator: (v) {
@@ -322,7 +322,7 @@ class _OrderManualPickPageState extends State<OrderManualPickPage> {
               // otherwise, we will flow to next LPN Capture form to let the user capture
               // more LPNs
               if (v?.trim().isEmpty == true) {
-                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context)!.lpn);
+                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
               }
 
               return null;

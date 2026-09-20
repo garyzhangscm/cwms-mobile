@@ -1,5 +1,3 @@
-import 'package:cwms_mobile/auth/models/menu.dart';
-import 'package:cwms_mobile/auth/models/menu_sub_group.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 // user.g.dart 将在我们运行生成命令后自动生成

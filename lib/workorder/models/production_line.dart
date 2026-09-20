@@ -1,11 +1,6 @@
 
 
-import 'package:cwms_mobile/common/models/carrier.dart';
-import 'package:cwms_mobile/common/models/carrier_service_level.dart';
-import 'package:cwms_mobile/common/models/customer.dart';
-import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
-import 'package:cwms_mobile/workorder/models/work_order_line.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 

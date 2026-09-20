@@ -738,7 +738,7 @@ class _PickPageState extends State<PickPage> {
           locationName: widget.currentPick.sourceLocation?.name ?? ""
       );
     }
-    on WebAPICallException catch(ex) {
+    on WebAPICallException {
       return 0;
 
     }

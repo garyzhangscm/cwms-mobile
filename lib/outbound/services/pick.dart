@@ -10,7 +10,6 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:cwms_mobile/workorder/models/work_order.dart';
 import 'package:dio/dio.dart';
 
-import '../models/pick_mode.dart';
 
 class PickService {
   static Future<Pick?> getPicksByNumber(String number) async {
@@ -113,109 +112,58 @@ class PickService {
 
   static void sortPicks(List<Pick> picks, WarehouseLocation currentLocation,
       bool isMovingForward) {
-    if (currentLocation == null) {
-      // if we don't know where the user is, then we will sort
-      // the picks either forward, or backward
-      if (isMovingForward) {
-        picks.sort((pickA, pickB)   {
-          if (pickA.skipCount! > pickB!.skipCount!) {
-            return 1;
-          }
-          else if (pickA.skipCount! < pickB!.skipCount!) {
-            return -1;
-          }
+    // OK, we know where the user is. Let's get the best picks for the user
+    // based on the proximity and direction
+    // if both locations are in the same direction, then we will always return
+    // the closed one.
+    // otherwise, return the one in the right direction first
+      picks.sort((pickA, pickB) {
 
-          if (pickB.sourceLocation?.pickSequence == null) {
-            return -1;
-          }
-          else if (pickA.sourceLocation?.pickSequence == null) {
-            return 1;
-          }
-          else {
-            return pickA.sourceLocation!.pickSequence!.compareTo(
-                pickB.sourceLocation!.pickSequence!
-            );
-          }
-        });
-      }
-      else {
-        picks.sort((pickA, pickB) {
+        if (pickA.skipCount! > pickB.skipCount!) {
+          return 1;
+        }
+        else if (pickA.skipCount! < pickB.skipCount!) {
+          return -1;
+        }
 
-          if (pickA.skipCount! > pickB!.skipCount!) {
-            return 1;
-          }
-          else if (pickA.skipCount! < pickB!.skipCount!) {
-            return -1;
-          }
+        int pickASourceLocationPickSequence = pickA.sourceLocation?.pickSequence == null ?
+            0: pickA.sourceLocation!.pickSequence!;
+        int pickBSourceLocationPickSequence = pickB.sourceLocation?.pickSequence == null ?
+            0: pickB.sourceLocation!.pickSequence!;
+        int currentLocationPickSequence = currentLocation.pickSequence == null ?
+            0: currentLocation.pickSequence!;
 
-          if (pickA.sourceLocation?.pickSequence == null) {
-            return -1;
-          }
-          else if (pickB.sourceLocation?.pickSequence == null) {
-            return 1;
-          }
-          else {
-            return pickB.sourceLocation!.pickSequence!.compareTo(
-                pickA.sourceLocation!.pickSequence!
-            );
-          }
-        });
-      }
-    }
-    else {
-      // OK, we know where the user is. Let's get the best picks for the user
-      // based on the proximity and direction
-      // if both locations are in the same direction, then we will always return
-      // the closed one.
-      // otherwise, return the one in the right direction first
-        picks.sort((pickA, pickB) {
-
-          if (pickA.skipCount! > pickB!.skipCount!) {
-            return 1;
-          }
-          else if (pickA.skipCount! < pickB!.skipCount!) {
-            return -1;
-          }
-
-          int pickASourceLocationPickSequence = pickA.sourceLocation?.pickSequence == null ?
-              0: pickA.sourceLocation!.pickSequence!;
-          int pickBSourceLocationPickSequence = pickB.sourceLocation?.pickSequence == null ?
-              0: pickB.sourceLocation!.pickSequence!;
-          int currentLocationPickSequence = currentLocation.pickSequence == null ?
-              0: currentLocation.pickSequence!;
-
-           if (pickASourceLocationPickSequence == currentLocationPickSequence) {
-             return -1;
-           }
-           else if (pickB.sourceLocation?.pickSequence == currentLocationPickSequence) {
-             return 1;
-           }
-           else if ((pickASourceLocationPickSequence - currentLocationPickSequence) *
-               (pickBSourceLocationPickSequence - currentLocationPickSequence) > 0) {
-             return (pickASourceLocationPickSequence - currentLocationPickSequence).abs().compareTo(
-                 (pickBSourceLocationPickSequence - currentLocationPickSequence).abs());
+         if (pickASourceLocationPickSequence == currentLocationPickSequence) {
+           return -1;
+         }
+         else if (pickB.sourceLocation?.pickSequence == currentLocationPickSequence) {
+           return 1;
+         }
+         else if ((pickASourceLocationPickSequence - currentLocationPickSequence) *
+             (pickBSourceLocationPickSequence - currentLocationPickSequence) > 0) {
+           return (pickASourceLocationPickSequence - currentLocationPickSequence).abs().compareTo(
+               (pickBSourceLocationPickSequence - currentLocationPickSequence).abs());
+         }
+         else {
+           if (isMovingForward) {
+             // moving forward, return the one that is in the forward direction first
+             return pickASourceLocationPickSequence.compareTo(
+                 currentLocationPickSequence
+             );
            }
            else {
-             if (isMovingForward) {
-               // moving forward, return the one that is in the forward direction first
-               return pickASourceLocationPickSequence.compareTo(
-                   currentLocationPickSequence
-               );
-             }
-             else {
-               // moving backward, return the one that is in the forward direction first
-               return pickBSourceLocationPickSequence.compareTo(
-                   currentLocationPickSequence
-               );
-             }
-
+             // moving backward, return the one that is in the forward direction first
+             return pickBSourceLocationPickSequence.compareTo(
+                 currentLocationPickSequence
+             );
            }
-        });
-      }
+
+         }
+      });
   }
 
   static Future<void> confirmWholePick(Pick pick)  async{
-    return confirmPick(pick, (pick.quantity! - pick!.pickedQuantity!));
+    return confirmPick(pick, (pick.quantity! - pick.pickedQuantity!));
 
   }
   // Confirm pick, with picking quantity
@@ -229,7 +177,7 @@ class PickService {
     if (confirmQuantity <= 0) {
       return;
     }
-    if (confirmQuantity >  (pick.quantity! - pick!.pickedQuantity!)) {
+    if (confirmQuantity >  (pick.quantity! - pick.pickedQuantity!)) {
       // throw error as we can't over pick
 
       printLongLogMessage("raise error as over pick is not allowed");

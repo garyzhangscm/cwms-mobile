@@ -1,5 +1,4 @@
 
-import 'dart:collection';
 import 'dart:core';
 import 'dart:io';
 import 'dart:isolate';
@@ -149,7 +148,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     // downloadingFileSize = _latestRFAppVersion.fileSize;
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.appUpgrade)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).appUpgrade)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -171,7 +170,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
         Row(
             children: <Widget>[
               Padding(padding: EdgeInsets.only(left: 10),
-                child: Text(CWMSLocalizations.of(context)!.newReleaseFound + ": ",
+                child: Text(CWMSLocalizations.of(context).newReleaseFound + ": ",
                     textAlign: TextAlign.left,
                     style: Theme.of(context).textTheme.titleLarge),
               ),
@@ -447,7 +446,7 @@ class _AppUpgradePageState extends State<AppUpgradePage> {
     var externalStorageDirPath;
     if (Platform.isAndroid) {
       final directory = await getExternalStorageDirectory();
-      externalStorageDirPath = directory!.path!;
+      externalStorageDirPath = directory!.path;
     } else if (Platform.isIOS) {
       externalStorageDirPath =
           (await getApplicationDocumentsDirectory()).absolute.path;

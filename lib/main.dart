@@ -1,4 +1,4 @@
-
+import 'dart:io';
 
 import 'package:cwms_mobile/inbound/routes/barcode_receiving.dart';
 import 'package:cwms_mobile/inbound/routes/inbound_qc.dart';
@@ -57,20 +57,23 @@ import 'inventory/routes/partial_inventory_move.dart';
 import 'inventory/routes/qc_inspection.dart';
 import 'launch_page.dart';
 import 'menus.dart';
-import 'outbound/routes/pick.dart';
-
-import 'package:flutter/rendering.dart';
 
 import 'outbound/routes/pick_by_list.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
+  if (Platform.isAndroid) {
+    await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
+  }
   // debugPaintSizeEnabled = true;
   Global.init().then((e) => runApp(MyApp()));
 }
 
 class MyApp extends StatelessWidget {
+  MyApp({this.enableDebugAutoConnect = true});
+
+  final bool enableDebugAutoConnect;
+
   // This widget is the root of your application.
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey();
 
@@ -84,7 +87,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: LocaleModel()),
       ],
       child: Consumer2<ThemeModel, LocaleModel>(
-        builder: (BuildContext context, themeModel, localeModel, Widget? child) {
+        builder:
+            (BuildContext context, themeModel, localeModel, Widget? child) {
           return MaterialApp(
             // theme: ThemeData(
             //  primarySwatch: themeModel.theme,
@@ -92,11 +96,9 @@ class MyApp extends StatelessWidget {
 
             navigatorKey: navigatorKey,
             onGenerateTitle: (context) {
-              return CWMSLocalizations
-                  .of(context)
-                  .title;
+              return CWMSLocalizations.of(context).title;
             },
-            home: LaunchPage(),
+            home: LaunchPage(enableDebugAutoConnect: enableDebugAutoConnect),
             locale: localeModel.getLocale(),
             //我们只支持美国英语和中文简体
             supportedLocales: [
@@ -115,14 +117,12 @@ class MyApp extends StatelessWidget {
               if (localeModel.getLocale() != null) {
                 //如果已经选定语言，则不跟随系统
                 return localeModel.getLocale();
-              }
-              else {
+              } else {
                 //跟随系统
                 Locale locale;
                 if (supportedLocales.contains(_locale)) {
                   locale = _locale!;
-                }
-                else {
+                } else {
                   //如果系统语言不是中文简体或美国英语，则默认使用美国英语
                   locale = Locale('en', 'US');
                 }
@@ -151,32 +151,38 @@ class MyApp extends StatelessWidget {
               "pick_by_work_order": (context) => PickByWorkOrderPage(),
               "work_order_produce": (context) => WorkOrderProducePage(),
               "work_order_qc": (context) => WorkOrderQCPage(),
-              "work_order_produce_inventory": (context) => WorkOrderProduceInventoryPage(),
-              "work_order_produce_kpi":(context) => WorkOrderKPIPage(),
-              "production_line_check_in":(context) => ProductionLineCheckInPage(),
-              "production_line_check_out":(context) => ProductionLineCheckOutPage(),
-              "qc_inspection":(context) => QCInspectionPage(),
-              "inventory_qc":(context) => InventoryQCPage(),
-              "app_upgrade":(context) => AppUpgradePage(),
-              "lpn_capture":(context) => LpnCapturePage(),
-              "inventory_attribute_capture":(context) => InventoryAttributeCapturePage(),
-              "work_order_qc_sampling":(context) => WorkOrderQCSamplingPage(),
-              "item_sampling":(context) => ItemSamplingPage(),
-              "work_order_manual_pick":(context) => WorkOrderManualPickPage(),
-              "qr_code_view":(context) => QRCodeView(),
-              "barcode_receiving":(context) => BarcodeReceivingPage(),
-              "system_driven_work":(context) => SystemDrivenWork(),
-              "bulk_pick":(context) => BulkPickPage(),
-              "pick_by_bulk":(context) => PickByBulkPage(),
-              "order_manual_pick":(context) => OrderManualPickPage(),
-              "partial_inventory_move":(context) => PartialInventoryMovePage(),
-              "work_order_reverse_production":(context) => ReverseProductionPage(),
-              "reverse_receiving":(context) => ReverseReceivingPage(),
-              "inbound_qc":(context) => InboundQCPage(),
-              "pick_by_list":(context) => PickByListPage(),
-              "pick_by_number":(context) => PickByBatchPage(),
-              "inventory_batch_deposit":(context) => InventoryBatchDepositPage(),
-              "pick_by_wave":(context) => PickByWavePage(),
+              "work_order_produce_inventory": (context) =>
+                  WorkOrderProduceInventoryPage(),
+              "work_order_produce_kpi": (context) => WorkOrderKPIPage(),
+              "production_line_check_in": (context) =>
+                  ProductionLineCheckInPage(),
+              "production_line_check_out": (context) =>
+                  ProductionLineCheckOutPage(),
+              "qc_inspection": (context) => QCInspectionPage(),
+              "inventory_qc": (context) => InventoryQCPage(),
+              "app_upgrade": (context) => AppUpgradePage(),
+              "lpn_capture": (context) => LpnCapturePage(),
+              "inventory_attribute_capture": (context) =>
+                  InventoryAttributeCapturePage(),
+              "work_order_qc_sampling": (context) => WorkOrderQCSamplingPage(),
+              "item_sampling": (context) => ItemSamplingPage(),
+              "work_order_manual_pick": (context) => WorkOrderManualPickPage(),
+              "qr_code_view": (context) => QRCodeView(),
+              "barcode_receiving": (context) => BarcodeReceivingPage(),
+              "system_driven_work": (context) => SystemDrivenWork(),
+              "bulk_pick": (context) => BulkPickPage(),
+              "pick_by_bulk": (context) => PickByBulkPage(),
+              "order_manual_pick": (context) => OrderManualPickPage(),
+              "partial_inventory_move": (context) => PartialInventoryMovePage(),
+              "work_order_reverse_production": (context) =>
+                  ReverseProductionPage(),
+              "reverse_receiving": (context) => ReverseReceivingPage(),
+              "inbound_qc": (context) => InboundQCPage(),
+              "pick_by_list": (context) => PickByListPage(),
+              "pick_by_number": (context) => PickByBatchPage(),
+              "inventory_batch_deposit": (context) =>
+                  InventoryBatchDepositPage(),
+              "pick_by_wave": (context) => PickByWavePage(),
               // "/": (context) => LaunchPage(), //注册首页路由
               // "/":(context) => WebViewExample(), //注册首页路由
             },

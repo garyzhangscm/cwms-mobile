@@ -1,13 +1,11 @@
 
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
 import 'package:cwms_mobile/inventory/models/item.dart';
 import 'package:cwms_mobile/inventory/services/item.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -122,7 +120,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                       Padding(
                         padding: const EdgeInsets.only(right: 25.0),
                         child:
-                            Text(CWMSLocalizations.of(context)!.item),
+                            Text(CWMSLocalizations.of(context).item),
                       ),
                     // if the cycle count result doesn't have item,
                     // it means the locaiton doesn't any inventory
@@ -165,7 +163,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                     Padding(
                       padding: const EdgeInsets.only(right: 25.0),
                       child:
-                         Text(CWMSLocalizations.of(context)!.item),
+                         Text(CWMSLocalizations.of(context).item),
                     ),
                     // widget.cycleCountResult.unexpectedItem == true ?
                     // Text("")
@@ -187,7 +185,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                       Padding(
                         padding: const EdgeInsets.only(right: 15.0),
                         child:
-                            Text(CWMSLocalizations.of(context)!.expectedQuantity),
+                            Text(CWMSLocalizations.of(context).expectedQuantity),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(right: 20.0),
@@ -204,7 +202,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                       Padding(
                         padding: const EdgeInsets.only(right: 15.0),
                         child:
-                            Text(CWMSLocalizations.of(context)!.countQuantity),
+                            Text(CWMSLocalizations.of(context).countQuantity),
                       ),
                       new Expanded(
                         // flex: 3,
@@ -220,7 +218,7 @@ class _CountResultListItemState extends State<CountResultListItem> {
                               // or an existing item, we will force the user to type in the quantity
                               if (( _itemController.text.isNotEmpty || widget.cycleCountResult?.item != null) &&
                                   v?.trim() == "") {
-                                return CWMSLocalizations.of(context)!.missingField(CWMSLocalizations.of(context)!.countQuantity);
+                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).countQuantity);
                               }
                               return null;
                             }),

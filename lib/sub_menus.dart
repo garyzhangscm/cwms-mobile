@@ -4,7 +4,6 @@ import 'package:cwms_mobile/auth/models/menu_sub_group.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/global.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'auth/models/menu.dart';
@@ -78,7 +77,7 @@ class _SubMenusState extends State<SubMenus> {
                         // FlutterLogo(),
                         Image(
                           image: NetworkImage(
-                              Global.currentServer!.url! + "/resource/assets/images/mobile/" + _menuSubGroup!.menus[index]!.icon!),
+                              Global.currentServer!.url! + "/resource/assets/images/mobile/" + _menuSubGroup!.menus[index].icon!),
                               // Global.currentServer!.url + "/resource/assets/images/image_missing.png"),
                           //  "http://k8s-staging-zuulserv-707034e5d3-1316291729.us-west-1.elb.amazonaws.com/api/resource/assets/images/mobile/menu_outbound.jpg"),
                           width: 100.0,

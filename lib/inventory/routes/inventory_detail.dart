@@ -29,7 +29,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage> {
     printLongLogMessage(">>>> start to show inventory details with ${_inventories.length} records");
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.inventory)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).inventory)),
         resizeToAvoidBottomInset: true,
       body:  _buildInventoryList(context, _inventories)
       //endDrawer: MyDrawer(),

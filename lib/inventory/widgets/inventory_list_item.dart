@@ -7,7 +7,6 @@ import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../shared/global.dart';
@@ -517,7 +516,7 @@ class _InventoryListItemState extends State<InventoryListItem> {
 
   List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems(List<InventoryStatus> validInventoryStatus) {
     List<DropdownMenuItem<InventoryStatus>> items = [];
-    if (validInventoryStatus == null || validInventoryStatus.length == 0) {
+    if (validInventoryStatus.length == 0) {
       return items;
     }
 

@@ -7,24 +7,13 @@ import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/outbound/models/bulk_pick.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/outbound/models/pick_list.dart';
-import 'package:cwms_mobile/outbound/models/pick_result.dart';
 import 'package:cwms_mobile/outbound/services/bulk_pick.dart';
-import 'package:cwms_mobile/outbound/services/order.dart';
-import 'package:cwms_mobile/outbound/services/pick.dart';
-import 'package:cwms_mobile/outbound/services/pick_list.dart';
-import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:badges/badges.dart' as badge;
 
-import '../../shared/global.dart';
 import '../models/pick_mode.dart';
 
 
@@ -88,7 +77,7 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.bulkPick)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).bulkPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -115,7 +104,7 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
                         autofocus: true,
                         focusNode: _bulkPickNumberFocusNode,
                         decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context)!.bulkPick,
+                          labelText: CWMSLocalizations.of(context).bulkPick,
                           hintText: "please input bulk pick number",
                           suffixIcon:
                           Row(
@@ -144,7 +133,7 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
         buildTwoButtonRow(context,
             ElevatedButton(
                 onPressed: _currentBulkPick != null  ? _startBulkPick : null,
-                child: Text(CWMSLocalizations.of(context)!.start)
+                child: Text(CWMSLocalizations.of(context).start)
             ),
             badge.Badge(
               showBadge: true,
@@ -161,7 +150,7 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
                 width: MediaQuery.of(context).size.width,
                 child: ElevatedButton(
                   onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                  child: Text(CWMSLocalizations.of(context)!.depositInventory),
+                  child: Text(CWMSLocalizations.of(context).depositInventory),
                 ),
               ),
             )

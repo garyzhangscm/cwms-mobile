@@ -7,7 +7,6 @@ import 'package:cwms_mobile/inventory/services/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/widgets/count_batch_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -116,7 +115,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onAddingCountBatch,
-                child: Text(CWMSLocalizations.of(context)!.addCountBatch),
+                child: Text(CWMSLocalizations.of(context).addCountBatch),
               ),
 
           ),
@@ -129,7 +128,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onChooseCountBatch,
-                child: Text(CWMSLocalizations.of(context)!.chooseCountBatch),
+                child: Text(CWMSLocalizations.of(context).chooseCountBatch),
               ),
 
           ),
@@ -142,7 +141,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: _onStartingCycleCount,
-                child: Text(CWMSLocalizations.of(context)!.start),
+                child: Text(CWMSLocalizations.of(context).start),
               ),
           ),
         ],
@@ -348,7 +347,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
       // no more cycle count left
       // 隐藏loading框
       Navigator.of(context).pop();
-      showToast(CWMSLocalizations.of(context)!.noMoreCycleCountInBatch);
+      showToast(CWMSLocalizations.of(context).noMoreCycleCountInBatch);
       _refreshCycleCountBatchQuantities();
       return;
     }

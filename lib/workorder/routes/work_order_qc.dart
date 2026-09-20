@@ -1,5 +1,4 @@
 
-import 'dart:collection';
 import 'dart:core';
 import 'dart:io';
 import 'dart:math';
@@ -7,40 +6,19 @@ import 'dart:math';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_result.dart';
-import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/item.dart';
-import 'package:cwms_mobile/outbound/models/order.dart';
-import 'package:cwms_mobile/outbound/models/pick.dart';
-import 'package:cwms_mobile/outbound/models/pick_result.dart';
-import 'package:cwms_mobile/outbound/services/order.dart';
-import 'package:cwms_mobile/outbound/services/pick.dart';
-import 'package:cwms_mobile/outbound/widgets/order_list_item.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/bottom_navigation_bar.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
-import 'package:cwms_mobile/workorder/models/bill_of_material.dart';
-import 'package:cwms_mobile/workorder/models/material-consume-timing.dart';
-import 'package:cwms_mobile/workorder/models/production_line.dart';
-import 'package:cwms_mobile/workorder/models/production_line_assignment.dart';
-import 'package:cwms_mobile/workorder/models/work_order.dart';
-import 'package:cwms_mobile/workorder/models/work_order_produce_transaction.dart';
 import 'package:cwms_mobile/workorder/models/work_order_qc_result.dart';
 import 'package:cwms_mobile/workorder/models/work_order_qc_rule_configuration.dart';
 import 'package:cwms_mobile/workorder/models/work_order_qc_sample.dart';
-import 'package:cwms_mobile/workorder/services/bill_of_material.dart';
-import 'package:cwms_mobile/workorder/services/production_line.dart';
-import 'package:cwms_mobile/workorder/services/production_line_assignment.dart';
 import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:cwms_mobile/workorder/services/work_order_qc.dart';
-import 'package:cwms_mobile/workorder/widgets/work_order_list_item.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:badges/badges.dart';
 
 
 class WorkOrderQCPage extends StatefulWidget{
@@ -99,18 +77,18 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context)!.workOrderQC)),
+      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderQC)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
             children: [
               _buildWorkOrderQCNumberAndProductionLineScanner(context),
               _buildButtons(context),
-              buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.workOrderQCSampleNumber, _workOrderQCSampleNumber),
-              buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.workOrderNumber, _workOrderNumber),
-              buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.productionLine, _productionLineName),
-              buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.item, _itemName),
-              buildTwoSectionInformationRow(CWMSLocalizations.of(context)!.item, _itemDescription),
+              buildTwoSectionInformationRow(CWMSLocalizations.of(context).workOrderQCSampleNumber, _workOrderQCSampleNumber),
+              buildTwoSectionInformationRow(CWMSLocalizations.of(context).workOrderNumber, _workOrderNumber),
+              buildTwoSectionInformationRow(CWMSLocalizations.of(context).productionLine, _productionLineName),
+              buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemName),
+              buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemDescription),
               _buildQCImages(),
               _buildQCResultButtons(context),
             ],
@@ -155,11 +133,11 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
       buildTwoButtonRow(context,
         ElevatedButton(
             onPressed: _onWorkOrderQCSampleNumberScanned,
-            child: Text(CWMSLocalizations.of(context)!.confirm)
+            child: Text(CWMSLocalizations.of(context).confirm)
         ),
         ElevatedButton(
             onPressed: _onClear,
-            child: Text(CWMSLocalizations.of(context)!.clear)
+            child: Text(CWMSLocalizations.of(context).clear)
         ),
 
       ) ;
@@ -174,7 +152,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
             focusNode: _startQCButtonFocusNode,
             onPressed:
                 _readyForQCResult ? _onStartQC : null,
-            child: Text(CWMSLocalizations.of(context)!.startQC)
+            child: Text(CWMSLocalizations.of(context).startQC)
         ),
       ) ;
   }
@@ -279,7 +257,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
       if (_workOrderQCSample == null) {
           clearDisplay();
           Navigator.of(context).pop();
-          showErrorDialog(context, CWMSLocalizations.of(context)!.noQCSampleExists);
+          showErrorDialog(context, CWMSLocalizations.of(context).noQCSampleExists);
           return;
       }
 
@@ -373,7 +351,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
         // 隐藏loading框
         Navigator.of(context).pop();
         _onClear();
-        showToast(CWMSLocalizations.of(context)!.qcCompleted);
+        showToast(CWMSLocalizations.of(context).qcCompleted);
 
       });
     }
@@ -394,7 +372,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
       // 隐藏loading框
       Navigator.of(context).pop();
       _onClear();
-      showToast(CWMSLocalizations.of(context)!.qcCompleted);
+      showToast(CWMSLocalizations.of(context).qcCompleted);
 
     });
 
@@ -413,7 +391,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
       if (matchedWorkOrderQCRuleConfiguration.length == 0) {
           // no matched work order qc rule configuration
           Navigator.of(context).pop();
-          showToast(CWMSLocalizations.of(context)!.workOrderNoQCConfig);
+          showToast(CWMSLocalizations.of(context).workOrderNoQCConfig);
           return;
       }
       // ok, we get qc rules defined for this qc samples. let's generate the
