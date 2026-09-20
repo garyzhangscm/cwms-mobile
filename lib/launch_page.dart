@@ -32,7 +32,7 @@ class _LaunchPageState extends State<LaunchPage> {
     print("get auto connect server? ${server == null ? '' : server.url}");
 
     if (kDebugMode && widget.enableDebugAutoConnect) {
-      String url = 'https://staging.claytechsuite.com/api/';
+      String url = 'https://prod.claytechsuite.com/api/';
       // in debug mode
       _serverURLController = TextEditingController(text: url);
       // text: 'http。 ://k8s-staging-zuulserv-707034e5d3-990722035.us-west-1.elb.amazonaws.com/api/');
@@ -47,7 +47,7 @@ class _LaunchPageState extends State<LaunchPage> {
       _onAutoConnect(server);
     } else {
       _serverURLController =
-          TextEditingController(text: 'https://staging.claytechsuite.com/api/');
+          TextEditingController(text: 'https://prod.claytechsuite.com/api/');
       _autoConnect = true;
     }
   }
