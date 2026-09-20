@@ -73,6 +73,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
   // otherwise, we will keep the receipt and item so the user can continue with
   // the same item but new LPN
   bool _barcodeReceivingMode = false;
+  final Map<String, String> _selectionErrors = {};
+
+  static const String _packageTypeField = "packageType";
+  static const String _unitOfMeasureField = "unitOfMeasure";
+  static const String _inventoryStatusField = "inventoryStatus";
 
   static const Duration _openReceiptsCacheDuration = Duration(seconds: 30);
   Future<List<Receipt>>? _openReceiptsFuture;
@@ -330,8 +335,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).itemPackageType,
 
-                  _getItemPackageTypeItems().isEmpty ?
-                      Container() :
+                  _buildValidatedSelectionField(
+                    _packageTypeField,
+                    _getItemPackageTypeItems().isEmpty ?
+                      Text("Not configured") :
                       DropdownButton(
                           // hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                           items: _getItemPackageTypeItems(),
@@ -346,15 +353,20 @@ class _ReceivingPageState extends State<ReceivingPage> {
                             //下拉菜单item点击之后的回调
                             setState(() {
                               _selectedItemPackageType = value;
+                              _selectionErrors.remove(_packageTypeField);
+                              _selectionErrors.remove(_unitOfMeasureField);
                             });
                           },
-                        )
+                        ),
+                  )
                 ),
               // Allow the user to choose inventory status
 
               buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).inventoryStatus,
-                  DropdownButton(
+                  _buildValidatedSelectionField(
+                    _inventoryStatusField,
+                    DropdownButton(
                    //  hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getInventoryStatusItems(),
                     value: _selectedInventoryStatus,
@@ -368,8 +380,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
                       //下拉菜单item点击之后的回调
                       setState(() {
                         _selectedInventoryStatus = value;
+                        _selectionErrors.remove(_inventoryStatusField);
                       });
                     },
+                    ),
                   )
               ),
               buildThreeSectionInputRow(
@@ -404,8 +418,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
                         }
                         return null;
                       }),
-                  _getItemUnitOfMeasures().isEmpty ?
-                      Container() :
+                  _buildValidatedSelectionField(
+                    _unitOfMeasureField,
+                    _getItemUnitOfMeasures().isEmpty ?
+                      Text("Not configured") :
                       DropdownButton(
                         hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                         items: _getItemUnitOfMeasures(),
@@ -420,9 +436,11 @@ class _ReceivingPageState extends State<ReceivingPage> {
                           //下拉菜单item点击之后的回调
                           setState(() {
                             _selectedItemUnitOfMeasure = value;
+                            _selectionErrors.remove(_unitOfMeasureField);
                           });
                         },
-                      )
+                      ),
+                  )
               ),
 
               buildTwoSectionInputRow(
@@ -593,35 +611,74 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
 
   bool _validateReceivingSelections() {
+    final errors = <String, String>{};
+
     if (_currentReceiptLine?.id == null || _currentReceiptLine?.item == null) {
-      showErrorDialog(context, "Please select an item to receive");
-      return false;
+      errors[_packageTypeField] = "Select an item before choosing a package type";
+    }
+    else {
+      final packageTypes = _currentReceiptLine!.item!.itemPackageTypes;
+      if (packageTypes.isEmpty) {
+        errors[_packageTypeField] =
+            CWMSLocalizations.of(context).itemNotReceivableNoPackageType;
+      }
+      else if (_selectedItemPackageType?.id == null) {
+        errors[_packageTypeField] = "Select an item package type";
+      }
     }
 
-    final packageTypes = _currentReceiptLine!.item!.itemPackageTypes;
-    if (packageTypes.isEmpty) {
-      showErrorDialog(
-          context, CWMSLocalizations.of(context).itemNotReceivableNoPackageType);
-      return false;
+    if (_selectedItemPackageType?.id != null) {
+      if (_selectedItemPackageType!.itemUnitOfMeasures.isEmpty) {
+        errors[_unitOfMeasureField] =
+            "No unit of measure is configured for this package type";
+      }
+      else if (_selectedItemUnitOfMeasure?.quantity == null) {
+        errors[_unitOfMeasureField] = "Select a unit of measure";
+      }
     }
-    if (_selectedItemPackageType?.id == null) {
-      showErrorDialog(context, "Please select an item package type");
-      return false;
-    }
-    if (_selectedItemPackageType!.itemUnitOfMeasures.isEmpty) {
-      showErrorDialog(context,
-          "The selected item package type has no unit of measure configured");
-      return false;
-    }
-    if (_selectedItemUnitOfMeasure?.quantity == null) {
-      showErrorDialog(context, "Please select a unit of measure");
-      return false;
-    }
+
     if (_selectedInventoryStatus?.id == null) {
-      showErrorDialog(context, "Please select an inventory status");
+      errors[_inventoryStatusField] = "Select an inventory status";
+    }
+
+    setState(() {
+      _selectionErrors
+        ..clear()
+        ..addAll(errors);
+    });
+
+    if (errors.isNotEmpty) {
+      final message = errors.values.map((error) => "- $error").join("\n");
+      showErrorDialog(context, "Please complete the highlighted fields:\n$message");
       return false;
     }
     return true;
+  }
+
+  Widget _buildValidatedSelectionField(String field, Widget child) {
+    final error = _selectionErrors[field];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: error == null ? EdgeInsets.zero : EdgeInsets.all(6),
+          decoration: error == null ? null : BoxDecoration(
+            border: Border.all(color: Colors.red),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: child,
+        ),
+        if (error != null)
+          Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: Text(
+              error,
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
+    );
   }
 
   List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
@@ -1272,6 +1329,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
   _clearReceiptLineInformation() {
 
     _currentReceiptLine = new ReceiptLine();
+    _selectionErrors.clear();
 
     _itemController.clear();
     _lpnController.clear();
@@ -1301,6 +1359,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     setState(() {
       _currentReceiptLine =  _currentReceipt!.receiptLines.firstWhereOrNull(
               (receiptLine) => receiptLine.item!.name == itemNumber);
+      _selectionErrors.clear();
     });
 
 
@@ -1546,6 +1605,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
         _currentReceiptLine = receiptLine;
         _itemController.text = receiptLine.item!.name ?? "";
+        _selectionErrors.clear();
       });
     }
     _quantityFocusNode.requestFocus();
