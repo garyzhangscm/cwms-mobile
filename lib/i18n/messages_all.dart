@@ -16,6 +16,8 @@ typedef Future<dynamic> LibraryLoader();
 Map<String, LibraryLoader> _deferredLibraries = {
 // ignore: unnecessary_new
   'messages': () => new Future.value(null),
+// English resources are generated under the generic messages locale.
+  'en_US': () => new Future.value(null),
 // ignore: unnecessary_new
   'zh_CN': () => new Future.value(null),
 };
@@ -23,6 +25,8 @@ Map<String, LibraryLoader> _deferredLibraries = {
 MessageLookupByLibrary? _findExact(localeName) {
   switch (localeName) {
     case 'messages':
+      return messages_messages.messages;
+    case 'en_US':
       return messages_messages.messages;
     case 'zh_CN':
       return messages_zh_cn.messages;
@@ -34,9 +38,8 @@ MessageLookupByLibrary? _findExact(localeName) {
 /// User programs should call this before using [localeName] for messages.
 Future<bool> initializeMessages(String localeName) async {
   var availableLocale = Intl.verifiedLocale(
-    localeName,
-    (locale) => _deferredLibraries[locale] != null,
-    onFailure: (_) => null);
+      localeName, (locale) => _deferredLibraries[locale] != null,
+      onFailure: (_) => null);
   if (availableLocale == null) {
     // ignore: unnecessary_new
     return new Future.value(false);
@@ -60,8 +63,8 @@ bool _messagesExistFor(String locale) {
 }
 
 MessageLookupByLibrary? _findGeneratedMessagesFor(locale) {
-  var actualLocale = Intl.verifiedLocale(locale, _messagesExistFor,
-      onFailure: (_) => null);
+  var actualLocale =
+      Intl.verifiedLocale(locale, _messagesExistFor, onFailure: (_) => null);
   if (actualLocale == null) return null;
   return _findExact(actualLocale);
 }

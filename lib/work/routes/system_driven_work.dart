@@ -128,7 +128,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text("CWMS - System Driven Work")),
+      appBar: AppBar(title: Text("Claytech One - System Driven Work")),
       resizeToAvoidBottomInset: true,
       body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

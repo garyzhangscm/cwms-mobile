@@ -1,7 +1,5 @@
-
 import 'dart:collection';
 import 'dart:convert';
-
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -18,51 +16,87 @@ import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
-
 import '../models/inventory_quantity_for_display.dart';
-
 
 class InventoryService {
   // Get inventory that on the current RF
-  static Future<List<Inventory>> getInventoryOnCurrentRF() async {
+  static Future<List<Inventory>> getInventoryOnCurrentRF(
+      {int? maxLPNCount}) async {
+    final perf = Stopwatch()..start();
     Dio httpClient = CWMSHttpClient.getDio();
 
-    printLongLogMessage("will get inventory on ${Global.getLastLoginRFCode()} from warehouse ${Global.currentWarehouse!.id}");
-    Response response = await httpClient.get(
-        "/inventory/inventories",
-      queryParameters: {
-          "warehouseId": Global.currentWarehouse!.id,
-          'location': Global.getLastLoginRFCode()}
-    );
+    printLongLogMessage(
+        "will get inventory on ${Global.getLastLoginRFCode()} from warehouse ${Global.currentWarehouse!.id}");
+    final queryParameters = <String, dynamic>{
+      "warehouseId": Global.currentWarehouse!.id,
+      'location': Global.getLastLoginRFCode(),
+    };
+    if (maxLPNCount != null) {
+      queryParameters['maxLPNCount'] = maxLPNCount;
+    }
+    Response response = await httpClient.get("/inventory/inventories",
+        queryParameters: queryParameters);
+    final networkMs = perf.elapsedMilliseconds;
 
-     printLongLogMessage("response from inventory on RF:");
+    printLongLogMessage("response from inventory on RF:");
 
-     printLongLogMessage(response.toString());
+    // Do not serialize and print the complete RF inventory payload here.
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("getInventoryOnCurrentRF / Start to raise error with message: ${(responseString["message"] == null? "" : responseString["message"])}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + (responseString["message"] == null? "" : responseString["message"]));
+      printLongLogMessage(
+          "getInventoryOnCurrentRF / Start to raise error with message: ${(responseString["message"] == null ? "" : responseString["message"])}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          (responseString["message"] == null ? "" : responseString["message"]));
     }
 
-    List<Inventory> inventories
-      = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
-          .toList();
+    List<Inventory> inventories = (responseString["data"] as List)
+        .map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+        .toList();
 
-
+    printLongLogMessage(
+        "[PERF] inventory RF request=${networkMs}ms parse=${perf.elapsedMilliseconds - networkMs}ms count=${inventories.length}");
     printLongLogMessage("we have ${inventories.length} on the RF");
 
     return inventories;
   }
 
+  // Get only the number of inventory records currently staged on the RF.
+  // The putaway page only needs this value for its badges and button state;
+  // loading the complete inventory payload makes the page unnecessarily slow.
+  static Future<int> getInventoryCountOnCurrentRF() async {
+    final perf = Stopwatch()..start();
+    Dio httpClient = CWMSHttpClient.getDio();
+
+    Response response =
+        await httpClient.get("/inventory/inventories/count", queryParameters: {
+      "warehouseId": Global.currentWarehouse!.id,
+      "location": Global.getLastLoginRFCode(),
+    });
+    final networkMs = perf.elapsedMilliseconds;
+
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    if (responseString["result"] as int != 0) {
+      throw WebAPICallException(responseString["result"].toString() +
+          ":" +
+          (responseString["message"] == null ? "" : responseString["message"]));
+    }
+
+    final dynamic data = responseString["data"];
+    final int count = data is int ? data : int.parse(data.toString());
+    printLongLogMessage(
+        "[PERF] inventory RF count request=${networkMs}ms count=$count");
+    return count;
+  }
+
   // Get inventory deposit request from a list of inventory
   // we may group inventories together based on same item / same status
   static List<InventoryDepositRequest> getInventoryDepositRequests(
-      List<Inventory> inventories, bool groupItemFlag,
-      bool groupInventoryStatusFlag
-      ) {
-
+      List<Inventory> inventories,
+      bool groupItemFlag,
+      bool groupInventoryStatusFlag) {
     Map<String, InventoryDepositRequest> inventoryDepositRequestMap =
         new Map<String, InventoryDepositRequest>();
 
@@ -80,21 +114,19 @@ class InventoryService {
             inventoryDepositRequestMap[key]!;
         // add the inventory to the current deposit request
         inventoryDepositRequest.addInventory(inventory);
-      }
-      else {
-        inventoryDepositRequestMap[key] = InventoryDepositRequest.fromInventory(inventory);
+      } else {
+        inventoryDepositRequestMap[key] =
+            InventoryDepositRequest.fromInventory(inventory);
       }
     });
 
     return inventoryDepositRequestMap.values.toList();
-
-
   }
 
   // Get key for the inventory. We will use the key to group
   // inventory into deposit request
-  static String _getKey(Inventory inventory, bool groupItemFlag,
-      bool groupInventoryStatusFlag) {
+  static String _getKey(
+      Inventory inventory, bool groupItemFlag, bool groupInventoryStatusFlag) {
     String key = inventory.lpn!;
     if (!groupItemFlag) {
       key += "-" + inventory.item!.name!;
@@ -107,68 +139,61 @@ class InventoryService {
 
   // Get the next deposit request from a list of inventory
   static InventoryDepositRequest? getNextInventoryDepositRequest(
-      List<Inventory> inventories, bool groupItemFlag, 
-      bool groupInventoryStatusFlag
-  ) {
-
+      List<Inventory> inventories,
+      bool groupItemFlag,
+      bool groupInventoryStatusFlag) {
     printLongLogMessage("getNextInventoryDepositRequest with inventory list ");
-    inventories.forEach((element) {
-      printLongLogMessage(element.toJson().toString());
-    });
-
     if (inventories.isEmpty) {
       printLongLogMessage("no inventory to be deposit");
       return null;
     }
 
     // let's get the
-    InventoryDepositRequest inventoryDepositRequest = new InventoryDepositRequest();
+    InventoryDepositRequest inventoryDepositRequest =
+        new InventoryDepositRequest();
     inventories.forEach((inventory) {
       if (inventoryDepositRequest.lpn?.isEmpty == true) {
         // OK, this is the first inventory we can check.
         // let's assign to the inventory deposit request
-        printLongLogMessage("get the first inventory in the list, init the inventory request by the inventory");
-        inventoryDepositRequest = InventoryDepositRequest.fromInventory(inventory);
-      }
-      else {
+        printLongLogMessage(
+            "get the first inventory in the list, init the inventory request by the inventory");
+        inventoryDepositRequest =
+            InventoryDepositRequest.fromInventory(inventory);
+      } else {
         // check if we can add the inventory to the current
         // deposit request
-        printLongLogMessage("see if we can add the current inventory into the existing request");
-        _addInventoryToDepositRequest(
-                inventoryDepositRequest, inventory,
+        printLongLogMessage(
+            "see if we can add the current inventory into the existing request");
+        _addInventoryToDepositRequest(inventoryDepositRequest, inventory,
             groupItemFlag, groupInventoryStatusFlag);
-
       }
     });
-    printLongLogMessage("we got inventoryDepositRequest: $inventoryDepositRequest");
+    printLongLogMessage(
+        "we got inventoryDepositRequest: $inventoryDepositRequest");
     return inventoryDepositRequest;
   }
- 
 
   // Add new inventory into current deposit request
   static void _addInventoryToDepositRequest(
       InventoryDepositRequest inventoryDepositRequest,
       Inventory inventory,
-      bool groupItemFlag, bool groupInventoryStatusFlag) {
-
+      bool groupItemFlag,
+      bool groupInventoryStatusFlag) {
     // make sure we deposit LPN by LPN
-    if (inventoryDepositRequest.lpn !=
-        inventory.lpn) {
+    if (inventoryDepositRequest.lpn != inventory.lpn) {
       return;
     }
     // make sure the inventory goes to the same destination
     if (inventoryDepositRequest.nextLocationId == null &&
         inventory.getNextDepositLocaiton() != null) {
-      return ;
-    }
-    else if (inventoryDepositRequest.nextLocationId != null &&
+      return;
+    } else if (inventoryDepositRequest.nextLocationId != null &&
         inventory.getNextDepositLocaiton() == null) {
-      return ;
-    }
-    else if (inventoryDepositRequest.nextLocationId != null &&
-              inventory.getNextDepositLocaiton() != null &&
-              inventoryDepositRequest.nextLocationId !=
-                  inventory.getNextDepositLocaiton()?.id) {
+      return;
+    } else if (inventoryDepositRequest.nextLocationId != null &&
+        inventory.getNextDepositLocaiton() != null &&
+        inventoryDepositRequest.nextLocationId !=
+            inventory.getNextDepositLocaiton()?.id) {
       return;
     }
 
@@ -177,31 +202,33 @@ class InventoryService {
 
     // check if we can group item or inventory status
     // and deposit together
-    if (inventoryDepositRequest.itemName !=
-        inventory.item?.name) {
+    if (inventoryDepositRequest.itemName != inventory.item?.name) {
       if (!groupItemFlag) {
-
         return;
       }
     }
 
     if (inventoryDepositRequest.inventoryStatusName !=
-          inventory.inventoryStatus?.name) {
+        inventory.inventoryStatus?.name) {
       if (!groupInventoryStatusFlag) {
         return;
       }
     }
     inventoryDepositRequest.addInventory(inventory);
-
   }
 
-
   // move inventory
-  static Future<List<Inventory>> moveInventory  (
-      {int? inventoryId, int? pickId, bool immediateMove = true,
-        String destinationLpn = "", WarehouseLocation? destinationLocation,
-        String lpn = "",
-        String itemName = "", int? quantity, String unitOfMeasure = ""}) async {
+  static Future<List<Inventory>> moveInventory(
+      {int? inventoryId,
+      int? pickId,
+      bool immediateMove = true,
+      String destinationLpn = "",
+      WarehouseLocation? destinationLocation,
+      String lpn = "",
+      String itemName = "",
+      int? quantity,
+      String unitOfMeasure = ""}) async {
+    final perf = Stopwatch()..start();
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
     queryParameters["warehouseId"] = Global.currentWarehouse!.id;
@@ -233,33 +260,31 @@ class InventoryService {
 
     printLongLogMessage("start to move inventory to location");
     if (destinationLocation != null) {
-
       printLongLogMessage(destinationLocation.toJson().toString());
     }
 
-    Response response = await httpClient.post(
-        "/inventory/inventory/move",
+    Response response = await httpClient.post("/inventory/inventory/move",
         queryParameters: queryParameters,
-        data: jsonEncode(destinationLocation)
-    );
-
+        data: jsonEncode(destinationLocation));
+    final networkMs = perf.elapsedMilliseconds;
 
     Map<String, dynamic> responseString = json.decode(response.toString());
 
-
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("moveInventory / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "moveInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
-
-    List<Inventory> inventories
-      = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
-          .toList();
-
+    List<Inventory> inventories = (responseString["data"] as List)
+        .map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+        .toList();
+    printLongLogMessage(
+        "[PERF] move API inventory=$inventoryId request=${networkMs}ms parse=${perf.elapsedMilliseconds - networkMs}ms result=${inventories.length}");
 
     return inventories;
-
 
     // return the moved inventory
     // return Inventory.fromJson(json.decode(response.toString()));
@@ -268,32 +293,30 @@ class InventoryService {
   static Future<Inventory> getInventoryById(int inventoryId) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
-    Response response = await httpClient.get(
-        "inventory/inventory/$inventoryId",
-        queryParameters: {"warehouseId": Global.currentWarehouse!.id}
-    );
+    Response response = await httpClient.get("inventory/inventory/$inventoryId",
+        queryParameters: {"warehouseId": Global.currentWarehouse!.id});
 
     // printLongLogMessage("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
-
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("getInventoryById / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "getInventoryById / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
     return Inventory.fromJson(responseString["data"]);
-
   }
 
-
   static Future<List<Inventory>> findInventory(
-      {String locationName = "", String itemName = "", String lpn = "", bool includeDetails = true}
-      )  async {
-
+      {String locationName = "",
+      String itemName = "",
+      String lpn = "",
+      bool includeDetails = true}) async {
     printLongLogMessage("will find inventory by lpn $lpn");
     Dio httpClient = CWMSHttpClient.getDio();
-
 
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
@@ -310,29 +333,30 @@ class InventoryService {
     }
     queryParameters["includeDetails"] = includeDetails;
 
-    Response response = await httpClient.get(
-          "/inventory/inventories",
-          queryParameters: queryParameters
-      );
+    Response response = await httpClient.get("/inventory/inventories",
+        queryParameters: queryParameters);
 
-      Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from findInventory ${response.toString()}");
+    Map<String, dynamic> responseString = json.decode(response.toString());
+    printLongLogMessage(
+        "get response from findInventory ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("findInventory / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "findInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
-      List<Inventory> inventories
-        = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
-            .toList();
+    List<Inventory> inventories = (responseString["data"] as List)
+        .map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+        .toList();
 
-
-      return inventories;
+    return inventories;
   }
 
-
-  static Future<void> printLPNLabel(String lpn, [String? findPrinterByValue]) async {
+  static Future<void> printLPNLabel(String lpn,
+      [String? findPrinterByValue]) async {
     printLongLogMessage("Start calling printLPNLabel with lpn $lpn");
     // get the printer for printing LPN
     String printerName = "";
@@ -340,9 +364,8 @@ class InventoryService {
     if (Global.getLastLoginRF().printerName != null &&
         Global.getLastLoginRF().printerName?.isNotEmpty == true) {
       printerName = Global.getLastLoginRF().printerName!;
-    }
-    else if (Global.getRFConfiguration.printerName  != null &&
-        Global.getRFConfiguration.printerName!.isNotEmpty)  {
+    } else if (Global.getRFConfiguration.printerName != null &&
+        Global.getRFConfiguration.printerName!.isNotEmpty) {
       // if the RF doesn't have the default printer, then check if we can get one from the RF configuration
       printerName = Global.getRFConfiguration.printerName!;
     }
@@ -352,29 +375,32 @@ class InventoryService {
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
     queryParameters["warehouseId"] = Global.currentWarehouse!.id;
     if (printerName.isNotEmpty) {
-
       queryParameters["printerName"] = printerName;
     }
 
     Response response = await httpClient.post(
         "/inventory/inventories/${Global.lastLoginCompanyId}/$lpn/lpn-label",
-      queryParameters: queryParameters
-    );
+        queryParameters: queryParameters);
 
-    printLongLogMessage("get response from printLPNLabel ${response.toString()}");
+    printLongLogMessage(
+        "get response from printLPNLabel ${response.toString()}");
 
     // printLongLogMessage("response from receipt: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
-
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("printLPNLabel / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "printLPNLabel / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
-    ReportHistory reportHistory = ReportHistory.fromJson(responseString["data"]);
+    ReportHistory reportHistory =
+        ReportHistory.fromJson(responseString["data"]);
 
-    printLongLogMessage("start printing inventory LPN Label with file: ${reportHistory.fileName}, findPrinterBy: $findPrinterByValue");
+    printLongLogMessage(
+        "start printing inventory LPN Label with file: ${reportHistory.fileName}, findPrinterBy: $findPrinterByValue");
 
     await PrintingService.printFile(reportHistory, printerName);
   }
@@ -424,14 +450,11 @@ class InventoryService {
 
     CWMSHttpResponse response = await Global.httpClient!.put(
         "inventory/inventory-adj?warehouseId=${Global.currentWarehouse!.id}",
-        queryParameters:params,
-        data: jsonEncode(inventory)
-    );
+        queryParameters: params,
+        data: jsonEncode(inventory));
 
     return Inventory.fromJson(response.data);
-
   }
-
 
   static Future<String> validateNewLpn(String lpn) async {
     /**
@@ -458,12 +481,9 @@ class InventoryService {
 
     printLongLogMessage("start to validate new lpn ${lpn}");
 
-
     CWMSHttpResponse? response = await Global.httpClient!.post(
         "/inventory/inventories/validate-new-lpn?warehouseId=${Global.currentWarehouse!.id}",
-        queryParameters: {"lpn": lpn}
-    );
-
+        queryParameters: {"lpn": lpn});
 
     printLongLogMessage("validate LPN result: ${response?.data}");
     if (response?.data != null && response!.data.toString().isNotEmpty) {
@@ -471,43 +491,35 @@ class InventoryService {
       return response.data.toString();
     }
 
-
     // return empty string if there's no error
     return "";
-
-
-
   }
-
 
   static Future<Inventory> allocateLocation(Inventory inventory) async {
     printLongLogMessage("start to allocate location for lpn ${inventory.lpn}");
-
 
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.post(
         "/inbound/putaway-configuration/allocate-location",
-
-        data: jsonEncode(inventory)
-    );
+        data: jsonEncode(inventory));
 
     //printLongLogMessage("get response from allocateLocation ${response.toString()}");
 
-
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("allocateLocation / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "allocateLocation / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
-
   }
 
   static Future<ReportHistory> generateLPNLabel(Inventory inventory) async {
     printLongLogMessage("start to download LPN Label for lpn ${inventory.lpn}");
-
 
     Dio httpClient = CWMSHttpClient.getDio();
 
@@ -516,55 +528,49 @@ class InventoryService {
     // download PDF:
     // https://staging.claytechsuite.com/api/resource/report-histories/preview/4/6/LPN_LABEL/LPN_LABEL_1743551794620_0109.lbl?token=eyJhbGciOiJIUzI1NiJ9.eyJjb21wYW55SWQiOi0xLCJzdWIiOiJHWkhBTkciLCJpYXQiOjE3NDM1NTE0MzUsImV4cCI6MTc0MzU4NzQzNX0.l4xWVEA5dQSwhGUtVqAGEqFDQYsrMl784Y0N-rkUkJQ&companyId=4
 
-
     Response response = await httpClient.post(
-        "/inventory/inventories/${Global.currentWarehouse!.id}/${inventory.lpn}/lpn-label",
-        queryParameters: {'warehouseId': Global.currentWarehouse!.id},
+      "/inventory/inventories/${Global.currentWarehouse!.id}/${inventory.lpn}/lpn-label",
+      queryParameters: {'warehouseId': Global.currentWarehouse!.id},
     );
 
     // printLongLogMessage("get response from allocateLocation ${response.toString()}");
 
-
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("allocateLocation / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "allocateLocation / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
-    return ReportHistory.fromJson(responseString["data"] as Map<String, dynamic>);
-
+    return ReportHistory.fromJson(
+        responseString["data"] as Map<String, dynamic>);
   }
 
   // tryTime: we may need to wait for a while when print LPN labels
   // for work order producing or inbound receiving
   // as we may use asynchronously receiving for work order producing or inbound receiving
-  static Future<void> autoPrintLPNLabelByLpn(BuildContext context, String lpn, {int tryTime = 10}) async {
-
+  static Future<void> autoPrintLPNLabelByLpn(BuildContext context, String lpn,
+      {int tryTime = 10}) async {
     if (tryTime > 0) {
-
-      InventoryService.findInventory(lpn : lpn, includeDetails: true)
+      InventoryService.findInventory(lpn: lpn, includeDetails: true)
           .then((inventoryList) {
-
         if (inventoryList.isNotEmpty) {
-
           autoPrintLPNLabel(context, inventoryList[0]);
-        }
-        else {
+        } else {
           Future.delayed(const Duration(milliseconds: 1000),
-                  () => autoPrintLPNLabelByLpn(context, lpn, tryTime: tryTime - 1));
+              () => autoPrintLPNLabelByLpn(context, lpn, tryTime: tryTime - 1));
         }
       });
     }
-
-
   }
 
-  static Future<void> autoPrintLPNLabel(BuildContext context, Inventory invenotry) async {
-
-
-        InventoryService.generateLPNLabel(invenotry).then((reportHistory) {
-          PrintingService.downloadFile(reportHistory).then((filePath) {
-            /**
+  static Future<void> autoPrintLPNLabel(
+      BuildContext context, Inventory invenotry) async {
+    InventoryService.generateLPNLabel(invenotry).then((reportHistory) {
+      PrintingService.downloadFile(reportHistory).then((filePath) {
+        /**
             FlutterBluetoothPrinter.selectDevice(context).then((device) {
 
                 if (device != null){
@@ -575,7 +581,7 @@ class InventoryService {
             });
                 **/
 
-            /*
+        /*
 
             PrinterService.getDefaultBluetoothPrinter().then((defaultPrinter) {
               
@@ -600,50 +606,53 @@ class InventoryService {
                 });
             });
              */
- /*
+        /*
             PrintingService.sendFileToPrinter(filePath).then((value) => {
               printLongLogMessage("$filePath is printed")
             });
 
   */
-          });
-        });
-
+      });
+    });
   }
 
-  static Future<List<QCInspectionRequest>> getPendingQCInspectionRequest(Inventory inventory) async {
-
-    printLongLogMessage("start to get qc inspection request for lpn ${inventory.lpn}");
+  static Future<List<QCInspectionRequest>> getPendingQCInspectionRequest(
+      Inventory inventory) async {
+    printLongLogMessage(
+        "start to get qc inspection request for lpn ${inventory.lpn}");
 
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.get(
-        "/inventory/qc-inspection-requests/pending",
-      queryParameters: {'warehouseId': Global.currentWarehouse!.id,
-        'inventoryId': inventory.id},
+      "/inventory/qc-inspection-requests/pending",
+      queryParameters: {
+        'warehouseId': Global.currentWarehouse!.id,
+        'inventoryId': inventory.id
+      },
     );
 
-    printLongLogMessage("get response from getPendingQCInspectionRequest ${response.toString()}");
-
+    printLongLogMessage(
+        "get response from getPendingQCInspectionRequest ${response.toString()}");
 
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("getPendingQCInspectionRequest / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "getPendingQCInspectionRequest / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
-    List<QCInspectionRequest> qcInspectionRequests
-      = (responseString["data"] as List).map((e) => QCInspectionRequest.fromJson(e as Map<String, dynamic>))
-          .toList();
-
+    List<QCInspectionRequest> qcInspectionRequests =
+        (responseString["data"] as List)
+            .map((e) => QCInspectionRequest.fromJson(e as Map<String, dynamic>))
+            .toList();
 
     return qcInspectionRequests;
   }
 
-
   static Future<Inventory> reverseReceivedInventory(int inventoryId,
       {bool reverseQCQuantity = false, bool allowReuseLPN = true}) async {
-
     // send the receiving request to the server
     Dio httpClient = CWMSHttpClient.getDio();
 
@@ -653,28 +662,30 @@ class InventoryService {
           "reverseQCQuantity": reverseQCQuantity,
           "allowReuseLPN": allowReuseLPN,
           'warehouseId': Global.currentWarehouse!.id,
-        }
-    );
+        });
 
     // printLongLogMessage("response from receiving: $response");
     Map<String, dynamic> responseString = json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("reverseReceivedInventory / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "reverseReceivedInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
     return Inventory.fromJson(responseString["data"]);
   }
 
-
   static Future<List<Inventory>> findPickableInventory(
-      int itemId,
-      int inventoryStatusId,
-      {String lpn = "", String color = "", String productSize = "",
-        String style = "",String receiptNumber = "", int? locationId}
-      )  async {
-
+      int itemId, int inventoryStatusId,
+      {String lpn = "",
+      String color = "",
+      String productSize = "",
+      String style = "",
+      String receiptNumber = "",
+      int? locationId}) async {
     printLongLogMessage("will find pickable inventory by ");
     printLongLogMessage("item id : $itemId");
     printLongLogMessage("inventory status id : $inventoryStatusId");
@@ -684,7 +695,6 @@ class InventoryService {
     printLongLogMessage("style : $style");
     printLongLogMessage("receiptNumber : $receiptNumber");
     printLongLogMessage("locationId : $locationId");
-
 
     Dio httpClient = CWMSHttpClient.getDio();
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
@@ -714,34 +724,30 @@ class InventoryService {
       queryParameters["locationId"] = locationId;
     }
 
-    Response response = await httpClient.get(
-        "/inventory/inventories/pickable",
-        queryParameters: queryParameters
-    );
+    Response response = await httpClient.get("/inventory/inventories/pickable",
+        queryParameters: queryParameters);
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from findPickableInventory ${response.toString()}");
+    printLongLogMessage(
+        "get response from findPickableInventory ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("findPickableInventory / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "findPickableInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
-    List<Inventory> inventories
-    = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+    List<Inventory> inventories = (responseString["data"] as List)
+        .map((e) => Inventory.fromJson(e as Map<String, dynamic>))
         .toList();
-
 
     return inventories;
   }
 
-
-
-  static Future<Inventory> relabelInventory(
-      int inventoryId, String newLPN, {bool mergeWithExistingInventory = true} )  async {
-
-
-
+  static Future<Inventory> relabelInventory(int inventoryId, String newLPN,
+      {bool mergeWithExistingInventory = true}) async {
     Dio httpClient = CWMSHttpClient.getDio();
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
@@ -752,27 +758,26 @@ class InventoryService {
 
     Response response = await httpClient.post(
         "/inventory/inventories/${inventoryId}/relabel",
-        queryParameters: queryParameters
-    );
+        queryParameters: queryParameters);
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from relabelInventory ${response.toString()}");
+    printLongLogMessage(
+        "get response from relabelInventory ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("relabelInventory / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "relabelInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
-
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
   }
 
-
   static Future<List<Inventory>> relabelInventories(
-      String inventoryIds, String newLPN, {bool mergeWithExistingInventory = true} )  async {
-
-
-
+      String inventoryIds, String newLPN,
+      {bool mergeWithExistingInventory = true}) async {
     Dio httpClient = CWMSHttpClient.getDio();
     Map<String, dynamic> queryParameters = new Map<String, dynamic>();
 
@@ -782,84 +787,88 @@ class InventoryService {
     queryParameters["newLPN"] = newLPN;
     queryParameters["mergeWithExistingInventory"] = mergeWithExistingInventory;
 
-    Response response = await httpClient.post(
-        "/inventory/inventories/relabel",
-        queryParameters: queryParameters
-    );
+    Response response = await httpClient.post("/inventory/inventories/relabel",
+        queryParameters: queryParameters);
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from relabelInventories ${response.toString()}");
-
+    printLongLogMessage(
+        "get response from relabelInventories ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("relabelInventories / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "relabelInventories / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
-    List<Inventory> inventories
-    = (responseString["data"] as List).map((e) => Inventory.fromJson(e as Map<String, dynamic>))
-          .toList();
-
+    List<Inventory> inventories = (responseString["data"] as List)
+        .map((e) => Inventory.fromJson(e as Map<String, dynamic>))
+        .toList();
 
     return inventories;
   }
 
-
-  static Future<List<QCInspectionRequest>> getManualQCInspectionRequest(Inventory inventory) async {
-
-    printLongLogMessage("start to get manual qc inspection request for lpn ${inventory.lpn}");
+  static Future<List<QCInspectionRequest>> getManualQCInspectionRequest(
+      Inventory inventory) async {
+    printLongLogMessage(
+        "start to get manual qc inspection request for lpn ${inventory.lpn}");
 
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.post(
       "/inventory/inventories/qc-inspection-requests/manual",
-      queryParameters: {'warehouseId': Global.currentWarehouse!.id,
-        'inventoryId': inventory.id},
+      queryParameters: {
+        'warehouseId': Global.currentWarehouse!.id,
+        'inventoryId': inventory.id
+      },
     );
 
-    printLongLogMessage("get response from getPendingQCInspectionRequest ${response.toString()}");
-
+    printLongLogMessage(
+        "get response from getPendingQCInspectionRequest ${response.toString()}");
 
     Map<String, dynamic> responseString = json.decode(response.toString());
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("getPendingQCInspectionRequest / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "getPendingQCInspectionRequest / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
 
-    List<QCInspectionRequest> qcInspectionRequests
-    = (responseString["data"] as List).map((e) => QCInspectionRequest.fromJson(e as Map<String, dynamic>))
-        .toList();
-
+    List<QCInspectionRequest> qcInspectionRequests =
+        (responseString["data"] as List)
+            .map((e) => QCInspectionRequest.fromJson(e as Map<String, dynamic>))
+            .toList();
 
     return qcInspectionRequests;
   }
 
-  static Future<Inventory> removeInventory( int inventoryId )  async {
-
-
-
+  static Future<Inventory> removeInventory(int inventoryId) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     Response response = await httpClient.delete(
-        "/inventory/inventory/${inventoryId}",
+      "/inventory/inventory/${inventoryId}",
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from removeInventory ${response.toString()}");
+    printLongLogMessage(
+        "get response from removeInventory ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("removeInventory / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "removeInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
-
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
   }
 
-  static Future<Inventory> changeQuantity( int inventoryId , int newQuantity)  async {
-
+  static Future<Inventory> changeQuantity(
+      int inventoryId, int newQuantity) async {
     Dio httpClient = CWMSHttpClient.getDio();
-
 
     Response response = await httpClient.post(
       "/inventory/inventory/${inventoryId}/adjust-quantity",
@@ -867,105 +876,109 @@ class InventoryService {
     );
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from changeQuantity ${response.toString()}");
+    printLongLogMessage(
+        "get response from changeQuantity ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("removeInventory / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "removeInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
-
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
   }
 
-
-  static InventoryQuantityForDisplay getInventoryQuantityForDisplay(Inventory inventory) {
+  static InventoryQuantityForDisplay getInventoryQuantityForDisplay(
+      Inventory inventory) {
     // first of all, let's get the display UOM
     // if there're multiple defined, let's get the biggest one
-    List<ItemUnitOfMeasure> displayItemUnitOfMeasures =
-        inventory.itemPackageType?.itemUnitOfMeasures
+    List<ItemUnitOfMeasure> displayItemUnitOfMeasures = inventory
+            .itemPackageType?.itemUnitOfMeasures
             .where((itemUnitOfMeasure) =>
                 itemUnitOfMeasure.defaultForDisplay == true &&
-                inventory.quantity! % itemUnitOfMeasure.quantity! == 0).toList() ?? [];
+                inventory.quantity! % itemUnitOfMeasure.quantity! == 0)
+            .toList() ??
+        [];
 
-    ItemUnitOfMeasure? biggestDisplayItemUnitOfMeasure = getBiggestItemUnitOfMeasure(displayItemUnitOfMeasures);
+    ItemUnitOfMeasure? biggestDisplayItemUnitOfMeasure =
+        getBiggestItemUnitOfMeasure(displayItemUnitOfMeasures);
 
     // let's get the display UOM, let's return the biggest one
     if (biggestDisplayItemUnitOfMeasure != null) {
-      return new InventoryQuantityForDisplay(inventory,
-          biggestDisplayItemUnitOfMeasure, (inventory.quantity! / biggestDisplayItemUnitOfMeasure.quantity!).round());
+      return new InventoryQuantityForDisplay(
+          inventory,
+          biggestDisplayItemUnitOfMeasure,
+          (inventory.quantity! / biggestDisplayItemUnitOfMeasure.quantity!)
+              .round());
     }
 
     // there's no UOM setup for display, let's return the biggest unit of measure that
     // can be divided evenly by the inventory's quantity
 
-    List<ItemUnitOfMeasure> itemUnitOfMeasures =
-        inventory.itemPackageType?.itemUnitOfMeasures
+    List<ItemUnitOfMeasure> itemUnitOfMeasures = inventory
+            .itemPackageType?.itemUnitOfMeasures
             .where((itemUnitOfMeasure) =>
-            inventory.quantity! % itemUnitOfMeasure.quantity! == 0).toList() ?? [];
+                inventory.quantity! % itemUnitOfMeasure.quantity! == 0)
+            .toList() ??
+        [];
 
-    ItemUnitOfMeasure? biggestItemUnitOfMeasure = getBiggestItemUnitOfMeasure(itemUnitOfMeasures);
+    ItemUnitOfMeasure? biggestItemUnitOfMeasure =
+        getBiggestItemUnitOfMeasure(itemUnitOfMeasures);
 
     // let's get the display UOM, let's return the biggest one
-      return new InventoryQuantityForDisplay(inventory,
-          biggestItemUnitOfMeasure!, (inventory.quantity! / biggestItemUnitOfMeasure.quantity!).round());
-
+    return new InventoryQuantityForDisplay(inventory, biggestItemUnitOfMeasure!,
+        (inventory.quantity! / biggestItemUnitOfMeasure.quantity!).round());
   }
 
   // get the biggest item unit of measures from a list of item unit of measures
   // we will compare the quantity first, if the quantities are the same for 2 UOM
   // then we compare the size;
-  static ItemUnitOfMeasure? getBiggestItemUnitOfMeasure(List<ItemUnitOfMeasure> itemUnitOfMeasures) {
+  static ItemUnitOfMeasure? getBiggestItemUnitOfMeasure(
+      List<ItemUnitOfMeasure> itemUnitOfMeasures) {
     if (itemUnitOfMeasures.length == 0) {
       return null;
     }
 
-    itemUnitOfMeasures..sort((a, b)  {
-      if (a.quantity! != b.quantity!) {
-        return b.quantity!.compareTo(a.quantity!);
-      }
-      else if (a.length != b.length){
-        return b.length!.compareTo(a.length!);
-
-      }
-      else if (a.width != b.width){
-        return b.width!.compareTo(a.width!);
-
-      }
-      else if (a.height != b.height){
-        return b.height!.compareTo(a.height!);
-
-      }
-      else if (a.weight != b.weight){
-        return b.weight!.compareTo(a.weight!);
-      }
-      return 1;
-    });
+    itemUnitOfMeasures
+      ..sort((a, b) {
+        if (a.quantity! != b.quantity!) {
+          return b.quantity!.compareTo(a.quantity!);
+        } else if (a.length != b.length) {
+          return b.length!.compareTo(a.length!);
+        } else if (a.width != b.width) {
+          return b.width!.compareTo(a.width!);
+        } else if (a.height != b.height) {
+          return b.height!.compareTo(a.height!);
+        } else if (a.weight != b.weight) {
+          return b.weight!.compareTo(a.weight!);
+        }
+        return 1;
+      });
 
     return itemUnitOfMeasures.first;
-
   }
 
-  static Future<Inventory> changeInventory(Inventory inventory)  async {
-
+  static Future<Inventory> changeInventory(Inventory inventory) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
-
     Response response = await httpClient.put(
-      "/inventory/inventory/${inventory.id}",
-        data: jsonEncode(inventory)
-    );
+        "/inventory/inventory/${inventory.id}",
+        data: jsonEncode(inventory));
 
     Map<String, dynamic> responseString = json.decode(response.toString());
-    printLongLogMessage("get response from changeInventory ${response.toString()}");
+    printLongLogMessage(
+        "get response from changeInventory ${response.toString()}");
 
     if (responseString["result"] as int != 0) {
-      printLongLogMessage("changeInventory / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() + ":" + responseString["message"]);
+      printLongLogMessage(
+          "changeInventory / Start to raise error with message: ${responseString["message"]}");
+      throw new WebAPICallException(responseString["result"].toString() +
+          ":" +
+          responseString["message"]);
     }
-
 
     return Inventory.fromJson(responseString["data"] as Map<String, dynamic>);
   }
-
 }

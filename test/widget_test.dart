@@ -14,6 +14,7 @@ void main() {
   testWidgets('MES app starts on the server selection screen',
       (WidgetTester tester) async {
     await tester.pumpWidget(MyApp(enableDebugAutoConnect: false));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pump();
 
     expect(find.byType(MaterialApp), findsOneWidget);

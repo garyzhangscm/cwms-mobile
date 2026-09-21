@@ -60,7 +60,7 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Cycle Count - ${_cycleCountRequest?.location?.name}")),
+      appBar: AppBar(title: Text("Claytech One - Cycle Count - ${_cycleCountRequest?.location?.name}")),
       resizeToAvoidBottomInset: true,
       body: _buildInventorySummaryList(context),
       bottomNavigationBar:_buildBottomNavigationBar(context),

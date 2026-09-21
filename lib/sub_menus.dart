@@ -1,113 +1,64 @@
-
-
-import 'package:cwms_mobile/auth/models/menu_sub_group.dart';
-import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/shared/MyDrawer.dart';
-import 'package:cwms_mobile/shared/global.dart';
 import 'package:flutter/material.dart';
+import 'auth/models/menu_sub_group.dart';
+import 'i18n/localization_intl.dart';
+import 'shared/MyDrawer.dart';
+import 'shared/workspace_ui.dart';
 
-import 'auth/models/menu.dart';
-
-
-
-class SubMenus extends StatefulWidget {
-    @override
-    _SubMenusState createState() => new _SubMenusState();
-}
-
-class _SubMenusState extends State<SubMenus> {
-
-
-  MenuSubGroup? _menuSubGroup;
-
-  @override
-  void initState() {
-    super.initState();
-    print("sub menu state init!");
-    // _retrieveIcons();
-    // 初始化数据
-  }
-
+class SubMenus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
-    _menuSubGroup = ModalRoute.of(context)!.settings.arguments as MenuSubGroup;
-
+    final group = ModalRoute.of(context)!.settings.arguments as MenuSubGroup;
+    final zh = workspaceIsChinese(context);
+    final title = CWMSLocalizations.of(context)
+        .getMenuDisplayText(group.i18n ?? '', group.text ?? group.name ?? '');
     return Scaffold(
-        appBar: AppBar(title: Text("CWMS - ${_menuSubGroup?.text}")),
-      resizeToAvoidBottomInset: true,
-        body: Stack(
-          children:  [
-            Container(
-              child: Column(
-                children: <Widget>[
-                  menuItems
-                ],
-              ),
-            )
-          ],
-        ),
-        // bottomNavigationBar: buildBottomNavigationBar(context)
-        endDrawer: MyDrawer(),
+      backgroundColor: workspaceBackground,
+      appBar: AppBar(
+          title: Text(title),
+          backgroundColor: workspaceBackground,
+          foregroundColor: workspaceNavy,
+          elevation: 0,
+          scrolledUnderElevation: 0),
+      endDrawer: MyDrawer(),
+      body: SafeArea(
+          child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        child: Center(
+            child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      WorkspaceHeader(
+                          title: title,
+                          subtitle: zh
+                              ? '选择作业，开始处理。'
+                              : 'Choose an operation to get started.'),
+                      const SizedBox(height: 28),
+                      Text(zh ? '作业功能' : 'Operations',
+                          style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: workspaceNavy)),
+                      const SizedBox(height: 16),
+                      if (group.menus.isEmpty)
+                        Text(zh ? '暂无可用作业' : 'No operations available'),
+                      WorkspaceGrid(
+                          children: List.generate(group.menus.length, (index) {
+                        final menu = group.menus[index];
+                        return WorkspaceTile(
+                            title: CWMSLocalizations.of(context)
+                                .getMenuDisplayText(menu.i18n ?? '',
+                                    menu.text ?? menu.name ?? ''),
+                            identity: '${menu.name} ${menu.link}',
+                            index: index,
+                            onTap: menu.link?.isNotEmpty == true
+                                ? () =>
+                                    Navigator.of(context).pushNamed(menu.link!)
+                                : null);
+                      })),
+                    ]))),
+      )),
     );
   }
-
-
-  get menuItems => Expanded(
-    child: Container(
-      padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
-      child: GridView.count(
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        crossAxisCount: 2,
-        childAspectRatio: .90,
-        children: List.generate(
-            _menuSubGroup == null ? 0 : _menuSubGroup!.menus.length,
-                (index) {
-              return Card(
-                child: InkWell(
-                  onTap: () {
-                    _onPressed(_menuSubGroup!.menus[index]);
-                  },
-                  child:
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        // FlutterLogo(),
-                        Image(
-                          image: NetworkImage(
-                              Global.currentServer!.url! + "/resource/assets/images/mobile/" + _menuSubGroup!.menus[index].icon!),
-                              // Global.currentServer!.url + "/resource/assets/images/image_missing.png"),
-                          //  "http://k8s-staging-zuulserv-707034e5d3-1316291729.us-west-1.elb.amazonaws.com/api/resource/assets/images/mobile/menu_outbound.jpg"),
-                          width: 100.0,
-                        ),
-                        Text(CWMSLocalizations.of(context)
-                            .getMenuDisplayText(
-                            _menuSubGroup!.menus[index].i18n!,
-                            _menuSubGroup!.menus[index].text!))],
-                    ),
-                  ),
-                ),
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)
-                ),
-              );
-            }),
-      ),
-    ),
-  );
-
-
-  void _onPressed(Menu menu){
-
-
-    Navigator.of(context).pushNamed(menu.link!
-    );
-  }
-
-
-
-
 }

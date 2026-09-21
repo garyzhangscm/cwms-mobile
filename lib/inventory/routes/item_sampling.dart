@@ -67,7 +67,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Item Sampling")),
+      appBar: AppBar(title: Text("Claytech One - Item Sampling")),
       resizeToAvoidBottomInset: true,
       body:
           Column(

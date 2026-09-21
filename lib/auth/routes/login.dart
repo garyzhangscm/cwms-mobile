@@ -11,6 +11,7 @@ import 'package:cwms_mobile/shared/models/rf_app_version.dart';
 import 'package:cwms_mobile/shared/services/rf_app_version.dart';
 import 'package:cwms_mobile/shared/services/rf_configuration.dart';
 import 'package:cwms_mobile/shared/services/warehouse_configuration.dart';
+import 'package:cwms_mobile/shared/workspace_ui.dart';
 
 import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
 import 'package:cwms_mobile/warehouse_layout/services/company.dart';
@@ -74,44 +75,227 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = CWMSLocalizations.of(context);
+    final serverUrl = Global.geturrentServer().url ?? '';
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).login)),
+      backgroundColor: workspaceBackground,
+      appBar: AppBar(
+        title: Text(localizations.login),
+        backgroundColor: workspaceBackground,
+        foregroundColor: workspaceNavy,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
       resizeToAvoidBottomInset: true,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
-          child: Column(
-            children: <Widget>[
-              _buildCompanyCodeControl(context),
-              _buildUserNameControl(context),
-              _buildPasswordControl(context),
-              _buildRFCodeControl(context),
-              _buildWarehouseControl(context),
-              _buildCurrentLocationControl(context),
-              _buildRememberMeControl(context),
-              _buildButtons(context)
-            ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.fromLTRB(18, 8, 18, 20),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 620),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildLoginHero(context, serverUrl),
+                  const SizedBox(height: 12),
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      inputDecorationTheme: InputDecorationTheme(
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                              const BorderSide(color: Color(0xFFE3E8F0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                                color: workspaceBlue, width: 1.5)),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFD85D67))),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFD85D67), width: 1.5)),
+                        prefixIconColor: const Color(0xFF73839A),
+                        labelStyle: const TextStyle(color: Color(0xFF73839A)),
+                      ),
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: .72),
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: const Color(0xFFE4E9F1))),
+                        child: Column(children: [
+                          _buildSectionLabel(context, 'Account & access'),
+                          _buildCompanyCodeControl(context),
+                          const SizedBox(height: 8),
+                          _buildUserNameControl(context),
+                          const SizedBox(height: 8),
+                          _buildPasswordControl(context),
+                          const SizedBox(height: 14),
+                          _buildSectionLabel(context, 'Workstation'),
+                          _buildRFCodeControl(context),
+                          const SizedBox(height: 8),
+                          _buildWarehouseControl(context),
+                          const SizedBox(height: 4),
+                          _buildCurrentLocationControl(context),
+                          const SizedBox(height: 6),
+                          _buildRememberMeControl(context),
+                          const SizedBox(height: 6),
+                          _buildButtons(context),
+                        ]),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Center(
+                      child: Text('Secure access to your operations',
+                          style: TextStyle(
+                              color: Color(0xFF8A97A9), fontSize: 12))),
+                ],
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildButtons(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 5),
-      child: ConstrainedBox(
-        constraints: BoxConstraints.expand(height: 55.0),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Theme.of(context).primaryColor,
-          ),
-          onPressed: selectedWarehouse == null ? null : _onLogin,
-          child: Text("login"),
+  Widget _buildLoginHero(BuildContext context, String serverUrl) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(6, 8, 6, 4),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                color: workspaceNavy, borderRadius: BorderRadius.circular(13)),
+            child: const Icon(Icons.layers_rounded,
+                color: Color(0xFFBBD2FF), size: 22)),
+        const SizedBox(width: 12),
+        Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Claytech One',
+                style: TextStyle(
+                    color: workspaceNavy,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2)),
+            const SizedBox(height: 3),
+            Text(
+                workspaceIsChinese(context)
+                    ? '欢迎回来，登录以继续工作'
+                    : 'Welcome back. Sign in to continue.',
+                style: const TextStyle(color: Color(0xFF7B8798), fontSize: 12)),
+            if (serverUrl.isNotEmpty)
+              Text(serverUrl,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      const TextStyle(color: Color(0xFF9AA8B9), fontSize: 10)),
+          ]),
         ),
+        if (serverUrl.isNotEmpty)
+          const Icon(Icons.verified_user_outlined,
+              color: Color(0xFF9AA8B9), size: 18),
+      ]),
+      /*
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(
+              padding: const EdgeInsets.all(11),
+              decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(14)),
+              child: const Icon(Icons.layers_rounded,
+                  color: Color(0xFFBBD2FF), size: 25)),
+          const SizedBox(width: 12),
+            const Text('Claytech One',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2)),
+        ]),
+        const SizedBox(height: 24),
+        Text(workspaceIsChinese(context) ? '欢迎回来' : 'Welcome back',
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        Text(
+            workspaceIsChinese(context)
+                ? '登录以继续管理你的仓储作业。'
+                : 'Sign in to continue managing your operations.',
+            style: const TextStyle(color: Color(0xFFC3D3EA), fontSize: 14)),
+        if (serverUrl.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          Container(
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+              decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .14),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Row(children: [
+                const Icon(Icons.cloud_done_outlined,
+                    color: Color(0xFF9BC3FF), size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: Text(serverUrl,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Color(0xFFC3D3EA), fontSize: 12)))
+              ])),
+        ],
+      ]),*/
+    );
+  }
+
+  Widget _buildSectionLabel(BuildContext context, String label) => Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Text(label.toUpperCase(),
+              style: const TextStyle(
+                  color: Color(0xFF7B8BA1),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2))));
+
+  Widget _buildButtons(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.white,
+          backgroundColor: workspaceBlue,
+          disabledBackgroundColor: const Color(0xFFB9C5D8),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          elevation: 0,
+        ),
+        onPressed: selectedWarehouse == null ? null : _onLogin,
+        child: Text(CWMSLocalizations.of(context).login,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -120,7 +304,7 @@ class _LoginPageState extends State<LoginPage> {
     return Row(children: <Widget>[
       Checkbox(
         value: _rememberMe,
-        activeColor: Colors.blue, //选中时的颜色
+        activeColor: workspaceBlue,
         onChanged: (value) {
           //重新构建页面
           setState(() {
@@ -128,14 +312,18 @@ class _LoginPageState extends State<LoginPage> {
           });
         },
       ),
-      Text("Remember Me"),
+      const Text("Remember Me", style: TextStyle(color: Color(0xFF61718A))),
     ]);
   }
 
   Widget _buildWarehouseControl(BuildContext context) {
-    return Row(children: <Widget>[
-      Text("Warehouse"),
-      getDropDownButtonsColumnForWarehouse()
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Padding(
+        padding: EdgeInsets.only(left: 4, bottom: 6),
+        child: Text('Warehouse',
+            style: TextStyle(color: Color(0xFF73839A), fontSize: 12)),
+      ),
+      getDropDownButtonsColumnForWarehouse(),
     ]);
   }
 
@@ -235,20 +423,19 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget getDropDownButtonsColumnForWarehouse() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 40, right: 40, bottom: 5, top: 5),
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
       child: Container(
-        height: 35, //gives the height of the dropdown button
-        width: MediaQuery.of(context).size.width -
-            175, //gives the width of the dropdown button
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(3)),
-            color: Color(0xFFF2F2F2)),
+            borderRadius: BorderRadius.circular(14),
+            color: const Color(0xFFF8F9FB),
+            border: Border.all(color: const Color(0xFFE3E8F0))),
         // padding: const EdgeInsets.symmetric(horizontal: 13), //you can include padding to control the menu items
         child: Theme(
             data: Theme.of(context).copyWith(
-                canvasColor: Colors
-                    .yellowAccent, // background color for the dropdown items
+                canvasColor: Colors.white,
                 buttonTheme: ButtonTheme.of(context).copyWith(
                   alignedDropdown:
                       true, //If false (the default), then the dropdown's menu will be wider than its button.
@@ -256,8 +443,7 @@ class _LoginPageState extends State<LoginPage> {
             child: DropdownButtonHideUnderline(
               // to hide the default underline of the dropdown button
               child: DropdownButton<String>(
-                iconEnabledColor:
-                    Color(0xFF595959), // icon color of the dropdown button
+                iconEnabledColor: const Color(0xFF73839A),
                 items: _validWarehouses.isEmpty
                     ? []
                     : _validWarehouses.map((Warehouse warehouse) {
@@ -270,7 +456,8 @@ class _LoginPageState extends State<LoginPage> {
                       }).toList(),
                 hint: Text(
                   "empty warehouse",
-                  style: TextStyle(color: Color(0xFF8B8B8B), fontSize: 15),
+                  style:
+                      const TextStyle(color: Color(0xFF8B8B8B), fontSize: 14),
                 ), // setting hint
                 onChanged: (String? value) {
                   setState(() {
@@ -485,16 +672,15 @@ class _LoginPageState extends State<LoginPage> {
 
         // load the rf configuration
         try {
-          RFConfigurationService.getRFConfiguration(Global.lastLoginRFCode!)
-              .then((rfConfiguration) {
-            // if the configuration is not setup yet, use the default one
-            // which should be already setup when we launch the app
-            if (rfConfiguration != null) {
-              Global.setRFConfiguration(rfConfiguration);
-              printLongLogMessage(
-                  "rf configuration is setup to ${rfConfiguration.toJson()}");
-            }
-          });
+          final rfConfiguration =
+              await RFConfigurationService.getRFConfiguration(
+                  Global.lastLoginRFCode!);
+          // If the configuration is not setup yet, keep the default one.
+          if (rfConfiguration != null) {
+            Global.setRFConfiguration(rfConfiguration);
+            printLongLogMessage(
+                "rf configuration is setup to ${rfConfiguration.toJson()}");
+          }
         } on WebAPICallException {
           // ignore the except and continue with the default configuration
         }

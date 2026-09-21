@@ -1,6 +1,7 @@
 
 
 import 'package:cwms_mobile/inbound/models/receipt.dart';
+import 'package:cwms_mobile/shared/workspace_ui.dart';
 import 'package:flutter/material.dart';
 
 class ReceiptListItem extends StatefulWidget {
@@ -35,45 +36,47 @@ class _ReceiptListItemState extends State<ReceiptListItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 2.0),
-      child: Material(
-        // If the user highlight the widget, display green
-        // otherwise if there's no open pick, display grey
-        color: widget.highlighted ? Colors.lightGreen: Colors.white,
-        shape: BorderDirectional(
-          bottom: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: .5,
-          ),
-        ),
-        child: InkWell(
-          onTap: _onToggleHightlighted,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 0.0, bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                ListTile(
-                  dense: true,
-                  // tileColor: widget.highlighted ? Colors.lightGreen:
-                  //     widget.order.totalOpenPickQuantity == 0 ?
-                  //                Colors.grey : Colors.white,
-                  title: Text(
-                    widget.receipt.number ?? "",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
+    final zh = workspaceIsChinese(context);
+    final expected = widget.receipt.totalExpectedQuantity ?? 0;
+    final received = widget.receipt.totalReceivedQuantity ?? 0;
+    return Material(
+      color: widget.highlighted ? const Color(0xFFEAF3FF) : Colors.white,
+      child: InkWell(
+        onTap: _onToggleHightlighted,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 15, 18, 15),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.receipt.number ?? "",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF142D4E),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-
-                  ),
-                  subtitle: Text(
-                      widget.receipt.totalExpectedQuantity.toString() + " / " + widget.receipt.totalReceivedQuantity.toString()),
+                    const SizedBox(height: 6),
+                    Text(
+                      zh
+                          ? '已收 $received  ·  应收 $expected'
+                          : 'Received $received  ·  Expected $expected',
+                      style: const TextStyle(
+                        color: Color(0xFF748297),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const Icon(Icons.chevron_right_rounded,
+                  color: Color(0xFF9AA8B8), size: 22),
+            ],
           ),
         ),
       ),

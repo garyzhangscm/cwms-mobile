@@ -1,5 +1,3 @@
-
-
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/states/profile_change_notifier.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +9,7 @@ class LanguageRoute extends StatelessWidget {
     var color = Theme.of(context).primaryColor;
     var localeModel = Provider.of<LocaleModel>(context);
     var gm = CWMSLocalizations.of(context);
-    Widget _buildLanguageItem(String lan, value) {
+    Widget _buildLanguageItem(String lan, String? value) {
       return ListTile(
         title: Text(
           lan,

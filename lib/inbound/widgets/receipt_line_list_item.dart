@@ -1,13 +1,13 @@
-
-
 import 'package:cwms_mobile/inbound/models/receipt_line.dart';
 import 'package:flutter/material.dart';
 
 class ReceiptLineListItem extends StatefulWidget {
-  ReceiptLineListItem({required this.index, required this.receiptLine,
-          this.highlighted = false,
-          required this.onToggleHightlighted}
-       ) : super(key: ValueKey(receiptLine.number));
+  ReceiptLineListItem(
+      {required this.index,
+      required this.receiptLine,
+      this.highlighted = false,
+      required this.onToggleHightlighted})
+      : super(key: ValueKey(receiptLine.number));
 
   final ValueChanged<bool> onToggleHightlighted;
 
@@ -16,16 +16,11 @@ class ReceiptLineListItem extends StatefulWidget {
   final int index;
   final ReceiptLine receiptLine;
 
-
-
   @override
   _ReceiptLineListItemState createState() => _ReceiptLineListItemState();
-
-
 }
 
 class _ReceiptLineListItemState extends State<ReceiptLineListItem> {
-
   void _onToggleHightlighted() {
     setState(() {
       widget.highlighted = !widget.highlighted;
@@ -35,12 +30,15 @@ class _ReceiptLineListItemState extends State<ReceiptLineListItem> {
 
   @override
   Widget build(BuildContext context) {
+    final itemName = widget.receiptLine.item?.name;
+    final lineNumber = widget.receiptLine.number;
+    final canSelect = widget.receiptLine.item != null;
     return Padding(
       padding: const EdgeInsets.only(top: 2.0),
       child: Material(
         // If the user highlight the widget, display green
         // otherwise if there's no open pick, display grey
-        color: widget.highlighted ? Colors.lightGreen: Colors.white,
+        color: widget.highlighted ? Colors.lightGreen : Colors.white,
         shape: BorderDirectional(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
@@ -48,7 +46,7 @@ class _ReceiptLineListItemState extends State<ReceiptLineListItem> {
           ),
         ),
         child: InkWell(
-          onTap: _onToggleHightlighted,
+          onTap: canSelect ? _onToggleHightlighted : null,
           child: Padding(
             padding: const EdgeInsets.only(top: 0.0, bottom: 16),
             child: Column(
@@ -60,17 +58,26 @@ class _ReceiptLineListItemState extends State<ReceiptLineListItem> {
                   //     widget.order.totalOpenPickQuantity == 0 ?
                   //                Colors.grey : Colors.white,
                   title: Text(
-                    widget.receiptLine.item!.name ?? "",
+                    (itemName?.trim().isNotEmpty ?? false)
+                        ? itemName!
+                        : (lineNumber?.trim().isNotEmpty ?? false)
+                            ? 'Line $lineNumber'
+                            : 'Item unavailable',
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,
                       color: Colors.blueGrey[700],
                       fontSize: 17,
                     ),
-
                   ),
                   subtitle: Text(
-                      widget.receiptLine.receivedQuantity.toString() + " / " + widget.receiptLine.expectedQuantity.toString()),
+                    "${widget.receiptLine.receivedQuantity ?? 0} / ${widget.receiptLine.expectedQuantity ?? 0}"
+                    "${canSelect ? '' : '  •  Item details unavailable'}",
+                    style: TextStyle(
+                        color: canSelect
+                            ? Colors.blueGrey[600]
+                            : Colors.orange[800]),
+                  ),
                 ),
               ],
             ),

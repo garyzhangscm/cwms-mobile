@@ -19,19 +19,14 @@ import '../../shared/models/barcode.dart';
 
 import '../../shared/http_client.dart';
 
-
-class InventoryDepositPage extends StatefulWidget{
-
+class InventoryDepositPage extends StatefulWidget {
   InventoryDepositPage({Key? key}) : super(key: key);
-
 
   @override
   State<StatefulWidget> createState() => _InventoryDepositPageState();
-
 }
 
 class _InventoryDepositPageState extends State<InventoryDepositPage> {
-
   // show LPN and Item
   // allow the user to choose LPN or Item if there're
   // multiple LPN to deposit, or multiple Item on the same LPN to deposit
@@ -40,13 +35,16 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   List<Inventory> inventoryOnRF = [];
   InventoryDepositRequest? inventoryDepositRequest;
 
-  final  _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   FocusNode _locationFocusNode = FocusNode();
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
   bool _depositInProcess = false;
-
-
+  bool _initialInventoryReady = false;
+  final Map<String, WarehouseLocation> _locationCache = {};
+  int _loadedLpnLimit = 10;
+  bool _loadingMoreInventory = false;
+  bool _hasMoreInventory = true;
 
   // The user will need to relabel the LPN if there're multiple destination
   // from the inventory list from the same LPN
@@ -61,15 +59,17 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     _depositInProcess = false;
 
     _locationFocusNode.addListener(() {
-      if (!_locationFocusNode.hasFocus && _locationController.text.isNotEmpty && !_depositInProcess) {
+      if (!_locationFocusNode.hasFocus &&
+          _locationController.text.isNotEmpty &&
+          !_depositInProcess) {
         // if we tab out, then add the LPN to the list
         // _onDepositConfirmAsync(inventoryDepositRequest);
         setState(() {
           _depositInProcess = true;
         });
-        printLongLogMessage("start to deposit LPN when confirm in the location field");
+        printLongLogMessage(
+            "start to deposit LPN when confirm in the location field");
         _onDepositConfirm(inventoryDepositRequest!);
-
       }
     });
 
@@ -85,50 +85,65 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
           if (lpn == "") {
-
             showErrorDialog(context, "can't get LPN from the barcode");
             return;
-          }
-          else {
+          } else {
             _lpnController.text = lpn;
           }
         }
 
-        inventoryDepositRequest = await _getNextInventoryToDeposit(_lpnController.text);
+        inventoryDepositRequest =
+            await _getNextInventoryToDeposit(_lpnController.text);
         if (inventoryDepositRequest == null) {
-          showErrorDialog(context, "can't find inventory with lpn ${_lpnController.text} to deposit");
-
-        }
-        else {
+          showErrorDialog(context,
+              "can't find inventory with lpn ${_lpnController.text} to deposit");
+        } else {
           // move focus to the location
           _locationFocusNode.requestFocus();
         }
-        setState(() {
-
-        });
-
+        setState(() {});
       }
     });
 
     _locationController.clear();
     _locationFocusNode.requestFocus();
+  }
 
-    Future.delayed(Duration.zero, () {
-      _refreshInventoryOnRF();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialInventoryReady) return;
+    _initialInventoryReady = true;
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (arguments is List<Inventory>) {
+        inventoryOnRF = List<Inventory>.from(arguments);
+        _displayInventoryForDeposit();
+      } else {
+        // The local RF list already knows which inventory was moved. Remove it
+        // immediately instead of waiting for a second full inventory request.
+        // The batch helper may have moved several LPNs, so refresh once after
+        // the batch completes.
+        _refreshInventoryOnRF(maxLPNCount: _loadedLpnLimit);
+      }
     });
   }
+
   // remove the inventory from inventory On RF once we complete a inventory deposit
   // request. We will remove the inventory from the local
-  Future<void>  _removeInventoryOnRf(InventoryDepositRequest inventoryDepositRequest) async{
-
-    inventoryOnRF = inventoryOnRF.where((inventory) =>
-        !inventoryDepositRequest.inventoryIdList.contains(inventory.id)
-    ).toList();
+  Future<void> _removeInventoryOnRf(
+      InventoryDepositRequest inventoryDepositRequest) async {
+    inventoryOnRF = inventoryOnRF
+        .where((inventory) =>
+            !inventoryDepositRequest.inventoryIdList.contains(inventory.id))
+        .toList();
     await _displayInventoryForDeposit();
   }
-  Future<void> _displayInventoryForDeposit() async {
 
-    printLongLogMessage("inventory_deposit / _displayInventoryForDeposit: start to display the ${inventoryOnRF.length} inventory on the RF for deposit");
+  Future<void> _displayInventoryForDeposit() async {
+    printLongLogMessage(
+        "inventory_deposit / _displayInventoryForDeposit: start to display the ${inventoryOnRF.length} inventory on the RF for deposit");
 
     if (inventoryOnRF.isEmpty) {
       // no inventory on the RF yet
@@ -137,64 +152,101 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       await showDialog(
           context: context,
           builder: (context) {
-            return
-              AlertDialog(
-                title: Text(""),
-                content: Text("No more inventory on the RF"),
-                actions: <Widget>[
-
-                  ElevatedButton(
-                    child: Text("Confirm"),
-                    onPressed: () {
-                      _lpnController.clear();
-                      inventoryDepositRequest = null;
-                      Navigator.of(context).pop(); //关闭对话框
-                      printLongLogMessage("=====  close the dialog =====");
-                    },
-                  ),
-                ],
-              );
-          }
-      );
+            return AlertDialog(
+              title: Text(""),
+              content: Text("No more inventory on the RF"),
+              actions: <Widget>[
+                ElevatedButton(
+                  child: Text("Confirm"),
+                  onPressed: () {
+                    _lpnController.clear();
+                    inventoryDepositRequest = null;
+                    Navigator.of(context).pop(); //关闭对话框
+                    printLongLogMessage("=====  close the dialog =====");
+                  },
+                ),
+              ],
+            );
+          });
       printLongLogMessage("=====  Return to previous page =====");
       // return to the previous page after display the message
       Navigator.of(context).pop();
       // Navigator.of(context).pop();
-    }
-    else {
-      printLongLogMessage("inventory_deposit / _displayInventoryForDeposit: start to get next deposit inventory");
+    } else {
+      printLongLogMessage(
+          "inventory_deposit / _displayInventoryForDeposit: start to get next deposit inventory");
       inventoryDepositRequest = await _getNextInventoryToDeposit();
       _lpnController.text = inventoryDepositRequest!.lpn!;
 
       setState(() {
-
         // see if we will need to
-      // _locationController.text = "";
+        // _locationController.text = "";
       });
     }
   }
-  void _refreshInventoryOnRF() {
+
+  void _refreshInventoryOnRF({int? maxLPNCount}) {
     showLoading(context);
 
-    printLongLogMessage("inventory_deposit / _refreshInventoryOnRF: start to load inventory on the RF");
+    printLongLogMessage(
+        "inventory_deposit / _refreshInventoryOnRF: start to load inventory on the RF");
 
-    InventoryService.getInventoryOnCurrentRF().then((value)  async {
-
-      printLongLogMessage("inventory_deposit / _refreshInventoryOnRF: get ${value.length} inventory");
+    InventoryService.getInventoryOnCurrentRF(maxLPNCount: maxLPNCount)
+        .then((value) async {
+      printLongLogMessage(
+          "inventory_deposit / _refreshInventoryOnRF: get ${value.length} inventory");
       inventoryOnRF = value;
+      _hasMoreInventory = maxLPNCount != null && value.isNotEmpty;
       Navigator.of(context).pop();
 
       await _displayInventoryForDeposit();
+    }).catchError((error) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      printLongLogMessage("Unable to load RF inventory for deposit: $error");
+    });
+  }
+
+  Future<void> _loadMoreInventory() async {
+    if (_loadingMoreInventory || !_hasMoreInventory) return;
+    setState(() {
+      _loadingMoreInventory = true;
     });
 
+    try {
+      final existingIds =
+          inventoryOnRF.map((inventory) => inventory.id).toSet();
+      final nextLimit = _loadedLpnLimit + 10;
+      final nextInventory = await InventoryService.getInventoryOnCurrentRF(
+          maxLPNCount: nextLimit);
+      final newInventory = nextInventory
+          .where((inventory) => !existingIds.contains(inventory.id))
+          .toList();
+
+      if (!mounted) return;
+      setState(() {
+        inventoryOnRF = [...inventoryOnRF, ...newInventory];
+        _loadedLpnLimit = nextLimit;
+        _hasMoreInventory = newInventory.isNotEmpty;
+      });
+    } catch (error) {
+      printLongLogMessage("Unable to load more RF inventory: $error");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingMoreInventory = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
+    final request = inventoryDepositRequest;
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: Text("CWMS - Deposit")),
+      appBar: AppBar(title: Text("Claytech One - Deposit")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -202,48 +254,59 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
           // autovalidateMode: AutovalidateMode.always, //开启自动校验
           child: Column(
             children: <Widget>[
-              _buildLPNScanner(context),
-              buildTwoSectionInformationRow(
-                  "Item:",
-                  inventoryDepositRequest?.itemName ?? "",
-              ),
-              buildTwoSectionInformationRow(
-                "Item:", inventoryDepositRequest?.itemDescription ?? "",
-              ),
-              buildTwoSectionInformationRow(
-                "Inventory Status:", inventoryDepositRequest?.inventoryStatusDescription ?? "",
-              ),
-              buildTwoSectionInformationRow(
-                "Quantity:", inventoryDepositRequest?.quantity.toString() ?? ""
-              ),
-              _buildDestinationLocationRow(context),
-              _buildLocationScanner(context),
-              Padding(
-                padding: const EdgeInsets.only(top: 25),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints.expand(height: 55.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Theme.of(context).primaryColor,
-                    ),
-                    onPressed: inventoryDepositRequest == null || inventoryDepositRequest?.lpn == null
-                        || inventoryDepositRequest?.lpn!.isEmpty == true
-                        || _depositInProcess?
-                       null :
-                       () {
-                         if (_formKey.currentState!.validate() && !_depositInProcess) {
-                           setState(() {
-                             _depositInProcess = true;
-                           });
-                           print("form validation passed");
-                           // _onDepositConfirmAsync(inventoryDepositRequest);
-                           _onDepositConfirm(inventoryDepositRequest!);
-                         }
-
-                      },
-                    child: Text("Confirm"),
+              Expanded(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: Column(
+                    children: [
+                      _buildLPNScanner(context),
+                      const SizedBox(height: 14),
+                      _buildInventorySummaryCard(context, request),
+                      const SizedBox(height: 14),
+                      _buildDestinationLocationRow(context),
+                      const SizedBox(height: 4),
+                      _buildLocationScanner(context),
+                    ],
                   ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  onPressed: request == null ||
+                          request.lpn == null ||
+                          request.lpn!.isEmpty ||
+                          _depositInProcess
+                      ? null
+                      : () {
+                          if (_formKey.currentState!.validate() &&
+                              !_depositInProcess) {
+                            setState(() {
+                              _depositInProcess = true;
+                            });
+                            _onDepositConfirm(request);
+                          }
+                        },
+                  child: _depositInProcess
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text("Confirm"),
                 ),
               ),
             ],
@@ -254,144 +317,165 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     );
   }
 
-  Widget _buildDestinationLocationRow(BuildContext context) {
+  Widget _buildInventorySummaryCard(
+      BuildContext context, InventoryDepositRequest? request) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Column(
+        children: [
+          _buildSummaryRow("Item", request?.itemName ?? ""),
+          _buildSummaryRow("Description", request?.itemDescription ?? ""),
+          _buildSummaryRow("Status", request?.inventoryStatusDescription ?? ""),
+          _buildSummaryRow("Quantity", request?.quantity?.toString() ?? ""),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildSummaryRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 96,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.blueGrey.shade600,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value.isEmpty ? "—" : value,
+              textAlign: TextAlign.right,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF192C49),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDestinationLocationRow(BuildContext context) {
     if (inventoryDepositRequest == null) {
       // there's no more to deposit
-      return
-        buildTwoSectionInformationRow(
-          "Location:", ""
-        );
-    }
-    else if (inventoryDepositRequest?.nextLocation == null) {
+      return buildTwoSectionInformationRow("Location:", "");
+    } else if (inventoryDepositRequest?.nextLocation == null) {
       // the inventory has no destination location assigned yet, let the user
       // to allocate one or manually choose one destination
       return Padding(
         padding: EdgeInsets.only(top: 5, bottom: 5),
-        child:
-        Row(
-            children: <Widget>[
-              Padding(padding: EdgeInsets.only(right: 10),
-                child: Text("Location:", textAlign: TextAlign.left),
-              ),
-              IconButton(
-                onPressed: () => _allocateLocation(),
-                icon: Icon(Icons.approval_rounded),
-              ),
-            ]
-        ),
+        child: Row(children: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Text("Location:", textAlign: TextAlign.left),
+          ),
+          IconButton(
+            onPressed: () => _allocateLocation(),
+            icon: Icon(Icons.approval_rounded),
+          ),
+        ]),
       );
-    }
-    else {
-
+    } else {
       // there's already destination location assigned, show the location
       return buildTwoSectionInformationRow(
-        "Location:", inventoryDepositRequest?.nextLocation?.name ?? "",
+        "Location:",
+        inventoryDepositRequest?.nextLocation?.name ?? "",
       );
     }
   }
 
   // scan in barcode to add a order into current batch
   Widget _buildLPNScanner(BuildContext context) {
-    return
-      Focus(
-          child:
-          RawKeyboardListener(
-              focusNode: _lpnFocusNode,
-              child:
-              TextFormField(
-                  controller: _lpnController,
-                  showCursor: true,
-                  autofocus: true,
-                  focusNode: _lpnControllerFocusNode,
-
-                  decoration: InputDecoration(
-                    suffixIcon:
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                      mainAxisSize: MainAxisSize.min, // added line
-                      children: <Widget>[
-                        IconButton(
-                          onPressed: () => _clearField(),
-                          icon: Icon(Icons.close),
-                        ),
-                        IconButton(
-                          onPressed: () => _relabelCurrentLPN(),
-                          icon: Icon(Icons.library_books_outlined),
-                        ),
-                        IconButton(
-                          onPressed: _singleLPNDeposit() ? null : _showLPNDialog,
-                          icon: Icon(Icons.list),
-                        ),
-                        IconButton(
-                            icon: new Icon(Icons.print),
-                            onPressed: () => _printLPNLabel()
-                        ),
-                      ],
-                    ),
-                  )
-
-              )
-          )
-      );
-
-
-    return
-      Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Column(
-             children: <Widget>[
-                 TextFormField(
-                    controller: _lpnController,
-                    // readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: CWMSLocalizations
-                          .of(context)
-                          .lpn,
-                      hintText: CWMSLocalizations
-                          .of(context)
-                          .inputLPNHint,
-                      suffixIcon:
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                          mainAxisSize: MainAxisSize.min, // added line
-                          children: <Widget>[
-                            IconButton(
-                              onPressed: () => _clearField(),
-                              icon: Icon(Icons.close),
-                            ),
-                            IconButton(
-                              onPressed: _singleLPNDeposit() ? null : _showLPNDialog,
-                              icon: Icon(Icons.list),
-                            ),
-                          ],
-                        ),
-                    ),
-                 ),
-
-             ]
-          )
-      );
+    return Focus(
+        child: RawKeyboardListener(
+            focusNode: _lpnFocusNode,
+            child: TextFormField(
+                controller: _lpnController,
+                showCursor: true,
+                autofocus: true,
+                focusNode: _lpnControllerFocusNode,
+                decoration: InputDecoration(
+                  labelText: CWMSLocalizations.of(context).lpn,
+                  filled: true,
+                  fillColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceVariant
+                      .withOpacity(.45),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor, width: 1.5),
+                  ),
+                  suffixIcon: Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween, // added line
+                    mainAxisSize: MainAxisSize.min, // added line
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: () => _clearField(),
+                        icon: Icon(Icons.close),
+                      ),
+                      IconButton(
+                        onPressed: () => _relabelCurrentLPN(),
+                        icon: Icon(Icons.library_books_outlined),
+                      ),
+                      IconButton(
+                        onPressed: _singleLPNDeposit() ? null : _showLPNDialog,
+                        icon: Icon(Icons.list),
+                      ),
+                      IconButton(
+                          icon: new Icon(Icons.print),
+                          onPressed: () => _printLPNLabel()),
+                    ],
+                  ),
+                ))));
   }
 
   _relabelCurrentLPN() {
-
     if (_lpnController.text.isNotEmpty) {
-
       setState(() async {
-
-        String newLPN = await splitDepositInventory(inventoryDepositRequest!, true);
+        String newLPN =
+            await splitDepositInventory(inventoryDepositRequest!, true);
 
         inventoryDepositRequest?.lpn = newLPN;
         _lpnController.text = inventoryDepositRequest!.lpn ?? "";
-        printLongLogMessage("relabeld current inventory deposit request to lpn ${inventoryDepositRequest?.lpn}");
-
+        printLongLogMessage(
+            "relabeld current inventory deposit request to lpn ${inventoryDepositRequest?.lpn}");
       });
     }
   }
+
   void _printLPNLabel() {
     if (_lpnController.text.isNotEmpty) {
-
       InventoryService.printLPNLabel(_lpnController.text);
     }
   }
@@ -402,125 +486,150 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       inventoryDepositRequest = new InventoryDepositRequest();
     });
     _lpnControllerFocusNode.requestFocus();
-
   }
 
   _allocateLocation() async {
     // allocatet a location for the inventory. If the LPN
     // already has a location , reallocate the inventory
     showLoading(context);
-    List<Inventory> inventoryList = await InventoryService.findInventory(lpn: inventoryDepositRequest!.lpn!);
+    List<Inventory> inventoryList = await InventoryService.findInventory(
+        lpn: inventoryDepositRequest!.lpn!);
 
-    for(var inventory in inventoryList) {
-
+    for (var inventory in inventoryList) {
       printLongLogMessage("will allocate location for lpn ${inventory.lpn}");
       // printLongLogMessage("item family: ${inventory.item?.toJson()}");
-      Inventory allocatedInventory = await InventoryService.allocateLocation(inventory);
+      Inventory allocatedInventory =
+          await InventoryService.allocateLocation(inventory);
       // update the movement path for the inventory on rf to reflect the result of the
       // system assigned destination location
-      printLongLogMessage("find the inventory with id ${allocatedInventory.id}");
+      printLongLogMessage(
+          "find the inventory with id ${allocatedInventory.id}");
 
-      inventoryOnRF.where((inv) => inv.id == allocatedInventory.id)
-          .forEach((inv)=> inv.inventoryMovements = allocatedInventory.inventoryMovements);
+      inventoryOnRF.where((inv) => inv.id == allocatedInventory.id).forEach(
+          (inv) =>
+              inv.inventoryMovements = allocatedInventory.inventoryMovements);
     }
 
-
-    inventoryDepositRequest = await _getNextInventoryToDeposit(inventoryDepositRequest!.lpn!);
-    printLongLogMessage("inventoryDepositRequest?.nextLocationId : ${inventoryDepositRequest?.nextLocationId}");
-    printLongLogMessage("inventoryDepositRequest?.nextLocation : ${inventoryDepositRequest?.nextLocation?.name}");
+    inventoryDepositRequest =
+        await _getNextInventoryToDeposit(inventoryDepositRequest!.lpn!);
+    printLongLogMessage(
+        "inventoryDepositRequest?.nextLocationId : ${inventoryDepositRequest?.nextLocationId}");
+    printLongLogMessage(
+        "inventoryDepositRequest?.nextLocation : ${inventoryDepositRequest?.nextLocation?.name}");
     setState(() {
       inventoryDepositRequest;
     });
     Navigator.of(context).pop();
-
   }
+
   // scan in location barcode to confirm
   Widget _buildLocationScanner(BuildContext context) {
-    return
-      Padding(
-          padding: const EdgeInsets.only(top: 1),
-          child: Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: _locationController,
-                  autofocus: true,
-                  focusNode: _locationFocusNode,
-                  decoration: InputDecoration(
-                    labelText: CWMSLocalizations
-                        .of(context)
-                        .location,
-                    hintText: CWMSLocalizations
-                        .of(context)
-                        .inputLocationHint,
-
-
-                  ),
-                ),
-
-              ]
-          )
-      );
+    return Padding(
+        padding: const EdgeInsets.only(top: 1),
+        child: Column(children: <Widget>[
+          TextFormField(
+            controller: _locationController,
+            autofocus: true,
+            focusNode: _locationFocusNode,
+            decoration: InputDecoration(
+              labelText: CWMSLocalizations.of(context).location,
+              hintText: CWMSLocalizations.of(context).inputLocationHint,
+            ),
+          ),
+        ]));
   }
 
-  Future<InventoryDepositRequest?> _getNextInventoryToDeposit([String? lpn]) async {
-
-    printLongLogMessage("inventory_deposit / _getNextInventoryToDeposit with lpn ${lpn}");
+  Future<InventoryDepositRequest?> _getNextInventoryToDeposit(
+      [String? lpn]) async {
+    printLongLogMessage(
+        "inventory_deposit / _getNextInventoryToDeposit with lpn ${lpn}");
     InventoryDepositRequest? inventoryDepositRequest;
-    if (lpn != null && lpn.isNotEmpty) {
-      printLongLogMessage(" inventory_deposit / _getNextInventoryToDeposit: LPN is passed in, will just return this LPN");
-      inventoryDepositRequest = InventoryService.getNextInventoryDepositRequest(
-          inventoryOnRF.where((inventory) => inventory.lpn == lpn).toList(), true, true);
+    var sourceInventory = lpn != null && lpn.isNotEmpty
+        ? inventoryOnRF.where((inventory) => inventory.lpn == lpn).toList()
+        : inventoryOnRF;
+    // The initial page is intentionally limited to ten LPNs. If the user
+    // scans an LPN outside that page, load only that LPN from the RF staging
+    // location instead of bringing the complete RF inventory back.
+    if (lpn != null && lpn.isNotEmpty && sourceInventory.isEmpty) {
+      sourceInventory = await InventoryService.findInventory(
+          locationName: Global.getLastLoginRFCode(),
+          lpn: lpn,
+          includeDetails: true);
+      if (sourceInventory.isNotEmpty && mounted) {
+        setState(() {
+          final existingIds =
+              inventoryOnRF.map((inventory) => inventory.id).toSet();
+          inventoryOnRF = [
+            ...inventoryOnRF,
+            ...sourceInventory
+                .where((inventory) => !existingIds.contains(inventory.id)),
+          ];
+        });
+      }
     }
-    inventoryDepositRequest = InventoryService.getNextInventoryDepositRequest(inventoryOnRF, true, true);
+    if (lpn != null && lpn.isNotEmpty) {
+      printLongLogMessage(
+          " inventory_deposit / _getNextInventoryToDeposit: LPN is passed in, will just return this LPN");
+      inventoryDepositRequest = InventoryService.getNextInventoryDepositRequest(
+          sourceInventory, true, true);
+    }
+    inventoryDepositRequest ??= InventoryService.getNextInventoryDepositRequest(
+        sourceInventory, true, true);
     // see if we will need to split the inventory
     if (inventoryDepositRequest == null) {
       return null;
     }
-    printLongLogMessage(" inventory_deposit / _getNextInventoryToDeposit: we are going to deposit LPN ${inventoryDepositRequest.lpn}");
-    printLongLogMessage(" inventory_deposit / _getNextInventoryToDeposit: let's see if we will need to split the LPN due to different destination on the same LPN");
+    printLongLogMessage(
+        " inventory_deposit / _getNextInventoryToDeposit: we are going to deposit LPN ${inventoryDepositRequest.lpn}");
+    printLongLogMessage(
+        " inventory_deposit / _getNextInventoryToDeposit: let's see if we will need to split the LPN due to different destination on the same LPN");
     List<Inventory> inventorySameLPNDifferentDestinationLocation =
         inventoryOnRF.where((inventory) {
-          if (inventory.lpn != inventoryDepositRequest?.lpn) {
-            // inventory has a different LPN return false;
-            return false;
-          }
-          // make sure the inventory goes to the same destination
-          if (inventoryDepositRequest?.nextLocationId == null &&
-              inventory.getNextDepositLocaiton() != null) {
-            printLongLogMessage(" lpn ${inventoryDepositRequest?.lpn}'s next location id is null " +
+      if (inventory.lpn != inventoryDepositRequest?.lpn) {
+        // inventory has a different LPN return false;
+        return false;
+      }
+      // make sure the inventory goes to the same destination
+      if (inventoryDepositRequest?.nextLocationId == null &&
+          inventory.getNextDepositLocaiton() != null) {
+        printLongLogMessage(
+            " lpn ${inventoryDepositRequest?.lpn}'s next location id is null " +
                 " but current inventory ${inventory.id} / ${inventory.lpn}'s next location is ${inventory.getNextDepositLocaiton()?.name}, "
                     " will need to SPLIT");
-            return true;
-          }
-          else if (inventoryDepositRequest?.nextLocationId != null &&
-              inventory.getNextDepositLocaiton() == null) {
-            printLongLogMessage(" lpn ${inventoryDepositRequest?.lpn}'s next location id is NOT null(${inventoryDepositRequest?.nextLocationId}) " +
+        return true;
+      } else if (inventoryDepositRequest?.nextLocationId != null &&
+          inventory.getNextDepositLocaiton() == null) {
+        printLongLogMessage(
+            " lpn ${inventoryDepositRequest?.lpn}'s next location id is NOT null(${inventoryDepositRequest?.nextLocationId}) " +
                 " but current inventory ${inventory.id} / ${inventory.lpn}'s next location NULL, "
                     " will need to SPLIT");
-            return true;
-          }
-          else if (inventoryDepositRequest?.nextLocationId != null &&
-              inventory.getNextDepositLocaiton() != null &&
-              inventoryDepositRequest?.nextLocationId !=
-                  inventory.getNextDepositLocaiton()?.id) {
-            printLongLogMessage(" lpn ${inventoryDepositRequest?.lpn}'s next location id is ${inventoryDepositRequest?.nextLocationId} " +
+        return true;
+      } else if (inventoryDepositRequest?.nextLocationId != null &&
+          inventory.getNextDepositLocaiton() != null &&
+          inventoryDepositRequest?.nextLocationId !=
+              inventory.getNextDepositLocaiton()?.id) {
+        printLongLogMessage(
+            " lpn ${inventoryDepositRequest?.lpn}'s next location id is ${inventoryDepositRequest?.nextLocationId} " +
                 " but current inventory ${inventory.id} / ${inventory.lpn}'s next location ID is ${inventory.getNextDepositLocaiton()?.id}, "
                     " will need to SPLIT");
-            return true;
-          }
-          printLongLogMessage("current inventory ${inventory.id} / ${inventory.lpn} has the same next location as the other inventory in the same LPN ${inventoryDepositRequest?.lpn}, "
-                  " no need to SPLIT");
-          // inventory has the same LPN and same destination
-          return false;
-        }).toList();
+        return true;
+      }
+      printLongLogMessage(
+          "current inventory ${inventory.id} / ${inventory.lpn} has the same next location as the other inventory in the same LPN ${inventoryDepositRequest?.lpn}, "
+          " no need to SPLIT");
+      // inventory has the same LPN and same destination
+      return false;
+    }).toList();
 
     if (inventorySameLPNDifferentDestinationLocation.isEmpty) {
       // all inventory in the LPN has the same destination
-      printLongLogMessage("all ${inventoryDepositRequest.inventoryIdList.length} inventory in LPN ${inventoryDepositRequest.lpn} has the same destination");
+      printLongLogMessage(
+          "all ${inventoryDepositRequest.inventoryIdList.length} inventory in LPN ${inventoryDepositRequest.lpn} has the same destination");
       return inventoryDepositRequest;
     }
-    printLongLogMessage("we found ${inventorySameLPNDifferentDestinationLocation.length} inventory out of " +
-        " ${inventoryDepositRequest.inventoryIdList.length} inventory in LPN ${inventoryDepositRequest.lpn} has different destination");
+    printLongLogMessage(
+        "we found ${inventorySameLPNDifferentDestinationLocation.length} inventory out of " +
+            " ${inventoryDepositRequest.inventoryIdList.length} inventory in LPN ${inventoryDepositRequest.lpn} has different destination");
     // we will ask the user to relabel the inventory that already in the inventory deposit request and then
     // deposit the relabeled one.
 
@@ -529,11 +638,11 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
     inventoryDepositRequest.lpn = newLPN;
     return inventoryDepositRequest;
-
-
   }
 
-  Future<String> splitDepositInventory(InventoryDepositRequest inventoryDepositRequest, bool allowCancellation) async {
+  Future<String> splitDepositInventory(
+      InventoryDepositRequest inventoryDepositRequest,
+      bool allowCancellation) async {
     // prompt a dialog and ask the user to input a new LPN
     String newLPN = "";
     _relabelLPNController.clear();
@@ -542,137 +651,130 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     Map<String, int> itemQuantityMap = new Map<String, int>();
     inventoryDepositRequest.inventoryIdList.forEach((inventoryId) {
       // find the inventory from inventory on the RF
-      Inventory inventory = inventoryOnRF.where((element) => element.id == inventoryId).first;
+      Inventory inventory =
+          inventoryOnRF.where((element) => element.id == inventoryId).first;
       if (itemQuantityMap[inventory.item?.name] == null) {
         itemQuantityMap[inventory.item!.name!] = inventory.quantity!;
+      } else {
+        itemQuantityMap[inventory.item!.name!] =
+            itemQuantityMap[inventory.item!.name!]! + inventory.quantity!;
       }
-      else {
-        itemQuantityMap[inventory.item!.name!] = itemQuantityMap[inventory.item!.name!]! + inventory.quantity!;
-      }
-
     });
 
     printLongLogMessage("itemQuantityMap.length: ${itemQuantityMap.length}");
 
-
-    while(newLPN.isEmpty) {
-
+    while (newLPN.isEmpty) {
       await showDialog(
           context: context,
           builder: (context) {
-            return
-                  AlertDialog(
-                    scrollable: true,
-
-                    title: Text('Relabel'),
-                    content:
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("Please relabel the following inventory into a new LPN"),
-                          SizedBox(
-                            height: 100,
-                            width: MediaQuery.of(context).size.width,
-                            child: ListView.builder(
-                                itemCount: itemQuantityMap.length,
-                                shrinkWrap: true,
-                                itemBuilder: (BuildContext context, int index) {
-
-                                  String itemName = itemQuantityMap.keys.elementAt(index);
-                                  return ListTile(
-                                    title: Text(itemName),
-                                    subtitle: Text("quantity: " + itemQuantityMap[itemName].toString() + ", LPN: " + (inventoryDepositRequest.lpn ?? "")),
-                                  );
-                                }),
-                          ),
-                          TextFormField(
-                            controller: _relabelLPNController,
-                            autofocus: true,
-                            decoration: InputDecoration(
-                              hintText: "New LPN",
-                              suffixIcon:
-                                IconButton(
-                                  onPressed: () {
-                                    _relabelLPNController.clear();
-                                  },
-                                  icon: Icon(Icons.close),
-                                ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child:
-                                  ElevatedButton(
-                                  onPressed: () async {
-                                    showLoading(context);
-                                    if (_relabelLPNController.text.isEmpty) {
-                                      Navigator.pop(context);
-                                      newLPN = "";
-                                      return;
-                                    }
-                                    try {
-                                      // make sure it is a valid new LPN
-                                      String errorMessage = await InventoryService.validateNewLpn(_relabelLPNController.text);
-                                      if (errorMessage.isNotEmpty) {
-                                        Navigator.pop(context);
-                                        newLPN = "";
-                                        showErrorDialog(context, errorMessage);
-                                        return;
-                                      }
-                                      else {
-                                        String inventoryIds = inventoryDepositRequest.inventoryIdList.join(",");
-                                        await InventoryService.relabelInventories(inventoryIds, _relabelLPNController.text, mergeWithExistingInventory: true);
-
-                                        Navigator.pop(context);
-                                        newLPN = _relabelLPNController.text;
-
-                                        // relabel is done
-                                        Navigator.pop(context);
-
-                                      }
-                                    }
-                                    on WebAPICallException catch(ex) {
-                                      Navigator.pop(context);
-
-                                      newLPN = "";
-                                      showErrorDialog(context, ex.errMsg());
-                                      return;
-
-                                    }
-                                  },
-                                  child: Text(CWMSLocalizations
-                                      .of(context).confirm),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child:
-                                    ElevatedButton(
-                                      onPressed: allowCancellation ? () {
-                                        // the user cancelled the relabel, we will assigned the
-                                        // new lpn with the original LPN so no relabel will happen
-                                        newLPN = inventoryDepositRequest.lpn!;
-                                        Navigator.of(context).pop();
-                                      } : null,
-                                      child: Text(CWMSLocalizations
-                                          .of(context).cancel),
-                                  ),
-                              ),
-                            ],
-                          ),
-
-                        ],
+            return AlertDialog(
+              scrollable: true,
+              title: Text('Relabel'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Please relabel the following inventory into a new LPN"),
+                  SizedBox(
+                    height: 100,
+                    width: MediaQuery.of(context).size.width,
+                    child: ListView.builder(
+                        itemCount: itemQuantityMap.length,
+                        shrinkWrap: true,
+                        itemBuilder: (BuildContext context, int index) {
+                          String itemName =
+                              itemQuantityMap.keys.elementAt(index);
+                          return ListTile(
+                            title: Text(itemName),
+                            subtitle: Text("quantity: " +
+                                itemQuantityMap[itemName].toString() +
+                                ", LPN: " +
+                                (inventoryDepositRequest.lpn ?? "")),
+                          );
+                        }),
+                  ),
+                  TextFormField(
+                    controller: _relabelLPNController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: "New LPN",
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          _relabelLPNController.clear();
+                        },
+                        icon: Icon(Icons.close),
+                      ),
                     ),
-                  );
+                  ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            showLoading(context);
+                            if (_relabelLPNController.text.isEmpty) {
+                              Navigator.pop(context);
+                              newLPN = "";
+                              return;
+                            }
+                            try {
+                              // make sure it is a valid new LPN
+                              String errorMessage =
+                                  await InventoryService.validateNewLpn(
+                                      _relabelLPNController.text);
+                              if (errorMessage.isNotEmpty) {
+                                Navigator.pop(context);
+                                newLPN = "";
+                                showErrorDialog(context, errorMessage);
+                                return;
+                              } else {
+                                String inventoryIds = inventoryDepositRequest
+                                    .inventoryIdList
+                                    .join(",");
+                                await InventoryService.relabelInventories(
+                                    inventoryIds, _relabelLPNController.text,
+                                    mergeWithExistingInventory: true);
 
-         });
+                                Navigator.pop(context);
+                                newLPN = _relabelLPNController.text;
+
+                                // relabel is done
+                                Navigator.pop(context);
+                              }
+                            } on WebAPICallException catch (ex) {
+                              Navigator.pop(context);
+
+                              newLPN = "";
+                              showErrorDialog(context, ex.errMsg());
+                              return;
+                            }
+                          },
+                          child: Text(CWMSLocalizations.of(context).confirm),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ElevatedButton(
+                          onPressed: allowCancellation
+                              ? () {
+                                  // the user cancelled the relabel, we will assigned the
+                                  // new lpn with the original LPN so no relabel will happen
+                                  newLPN = inventoryDepositRequest.lpn!;
+                                  Navigator.of(context).pop();
+                                }
+                              : null,
+                          child: Text(CWMSLocalizations.of(context).cancel),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          });
     }
     return newLPN;
   }
-
-
 
   // return true if we only have one LPN to be deposit
   // then we will not allow the user to choose or scan in
@@ -682,23 +784,19 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       return true;
     }
     String firstLPN = inventoryOnRF[0].lpn!;
-    return inventoryOnRF.indexWhere((inventory) => inventory.lpn != firstLPN) < 0;
-
+    return inventoryOnRF.indexWhere((inventory) => inventory.lpn != firstLPN) <
+        0;
   }
-
 
   // prompt a dialog for user to choose valid orders
   Future<void> _showLPNDialog() async {
-
     print("start to show LPN choose dialog");
     await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         var child = Column(
           children: <Widget>[
-            ListTile(title: Text(CWMSLocalizations
-                .of(context)
-                .chooseLPN)),
+            ListTile(title: Text(CWMSLocalizations.of(context).chooseLPN)),
             _buildDepositRequestList(context)
           ],
         );
@@ -712,76 +810,94 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   Widget _buildDepositRequestList(BuildContext context) {
     List<InventoryDepositRequest> inventoryDepositRequests =
         InventoryService.getInventoryDepositRequests(inventoryOnRF, true, true);
-    return
-      Expanded(
-        child: ListView.builder(
-            itemCount: inventoryDepositRequests.length,
-            itemBuilder: (BuildContext context, int index) {
-
-              return InventoryDepositRequestItem(
-                  index: index,
-                  inventoryDepositRequest: inventoryDepositRequests[index],
-                  onToggleHightlighted:  (selected) {
-                    // reset the selected inventory
-                    _onSelecteInventoryDepositRequest(selected, inventoryDepositRequests[index]);
-                    // hide the dialog
-                    Navigator.of(context).pop();
-                  }
-              );
-            }),
-      );
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * .88,
+      height: MediaQuery.of(context).size.height * .68,
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+                itemCount: inventoryDepositRequests.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return InventoryDepositRequestItem(
+                      index: index,
+                      inventoryDepositRequest: inventoryDepositRequests[index],
+                      onToggleHightlighted: (selected) {
+                        _onSelecteInventoryDepositRequest(
+                            selected, inventoryDepositRequests[index]);
+                        Navigator.of(context).pop();
+                      });
+                }),
+          ),
+          if (_hasMoreInventory)
+            TextButton.icon(
+              onPressed: _loadingMoreInventory ? null : _loadMoreInventory,
+              icon: _loadingMoreInventory
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.expand_more),
+              label: Text(_loadingMoreInventory ? "Loading..." : "Load more"),
+            ),
+        ],
+      ),
+    );
   }
 
-  Future<void> _onSelecteInventoryDepositRequest(bool selected, InventoryDepositRequest selectedInventoryDepositRequest) async {
-
+  Future<void> _onSelecteInventoryDepositRequest(bool selected,
+      InventoryDepositRequest selectedInventoryDepositRequest) async {
     if (selected) {
       inventoryDepositRequest = selectedInventoryDepositRequest;
       print("inventory to be deposit: $inventoryDepositRequest");
       _lpnController.text = inventoryDepositRequest?.lpn ?? "";
       _locationController.text = "";
       _locationFocusNode.requestFocus();
-    }
-    else {
+    } else {
       inventoryDepositRequest = await _getNextInventoryToDeposit();
       _lpnController.text = inventoryDepositRequest?.lpn ?? "";
       _locationController.text = "";
       _locationFocusNode.requestFocus();
     }
 
-    setState(()  {
-    });
-
+    setState(() {});
   }
 
-  void _onDepositConfirm(InventoryDepositRequest inventoryDepositRequest) async {
+  void _onDepositConfirm(
+      InventoryDepositRequest inventoryDepositRequest) async {
     // let's
-    bool result = await _confirmInventoryDepositRequest(inventoryDepositRequest);
+    bool result =
+        await _confirmInventoryDepositRequest(inventoryDepositRequest);
     // we will need to deposit all the LPNs with same destination
     // if the system is setup to do so
     if (result == true) {
-
-      printLongLogMessage("Global.getRFConfiguration.autoDepositForLpnWithSameDestination: ${Global.getRFConfiguration.autoDepositForLpnWithSameDestination}");
-      printLongLogMessage("current inventory's destination: ${inventoryDepositRequest.nextLocationId}");
-      if (Global.getRFConfiguration.autoDepositForLpnWithSameDestination == true &&
+      printLongLogMessage(
+          "Global.getRFConfiguration.autoDepositForLpnWithSameDestination: ${Global.getRFConfiguration.autoDepositForLpnWithSameDestination}");
+      printLongLogMessage(
+          "current inventory's destination: ${inventoryDepositRequest.nextLocationId}");
+      if (Global.getRFConfiguration.autoDepositForLpnWithSameDestination ==
+              true &&
           inventoryDepositRequest.nextLocationId != null) {
-          printLongLogMessage("the system is setup to auto deposit the same destination LPNs");
-          printLongLogMessage("let's see if we can deposit more into the same destination ${inventoryDepositRequest.nextLocationId}");
+        printLongLogMessage(
+            "the system is setup to auto deposit the same destination LPNs");
+        printLongLogMessage(
+            "let's see if we can deposit more into the same destination ${inventoryDepositRequest.nextLocationId}");
 
-          await _depositLPNsWithSameDestination(inventoryDepositRequest.nextLocationId!);
+        await _depositLPNsWithSameDestination(
+            inventoryDepositRequest.nextLocationId!);
 
-          _locationController.clear();
-          _locationFocusNode.requestFocus();
+        _locationController.clear();
+        _locationFocusNode.requestFocus();
 
-          setState(() {
-            _depositInProcess = false;
-          });
+        setState(() {
+          _depositInProcess = false;
+        });
 
-          _refreshInventoryOnRF();
-
-
-      }
-      else {
-
+        // The batch helper may have moved several LPNs, so refresh once after
+        // the batch completes.
+        _refreshInventoryOnRF();
+      } else {
         // the system is configured not to auto deposit LPNs with same destination
         // let's refresh the inventory on the RF and continue with next inventory
 
@@ -791,14 +907,15 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         setState(() {
           _depositInProcess = false;
         });
-        _refreshInventoryOnRF();
+        await _removeInventoryOnRf(inventoryDepositRequest);
       }
     }
-
   }
 
-  Future<void> _depositLPNsWithSameDestination(int destinationLocationId) async {
-    printLongLogMessage("inventory_deposit / _depositLPNsWithSameDestination: start to load inventory on the RF");
+  Future<void> _depositLPNsWithSameDestination(
+      int destinationLocationId) async {
+    printLongLogMessage(
+        "inventory_deposit / _depositLPNsWithSameDestination: start to load inventory on the RF");
 
     showLoading(context);
 
@@ -807,21 +924,22 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     // get the inventory deposit request based on the current inventory on the RF
 
     List<InventoryDepositRequest> inventoryDepositRequests =
-        InventoryService.getInventoryDepositRequests(
-            inventoryOnRF, true, true);
+        InventoryService.getInventoryDepositRequests(inventoryOnRF, true, true);
 
     // get the sub list of inventory that has the same destination location
-    inventoryDepositRequests = inventoryDepositRequests.where(
-            (inventoryDepositRequest) => inventoryDepositRequest.nextLocationId != null
-                && inventoryDepositRequest.nextLocationId == destinationLocationId).toList();
+    inventoryDepositRequests = inventoryDepositRequests
+        .where((inventoryDepositRequest) =>
+            inventoryDepositRequest.nextLocationId != null &&
+            inventoryDepositRequest.nextLocationId == destinationLocationId)
+        .toList();
 
     Navigator.of(context).pop();
 
     if (inventoryDepositRequests.isEmpty) {
-      printLongLogMessage("there's no inventory on the RF that has the same destination as the current one's id ${destinationLocationId}");
+      printLongLogMessage(
+          "there's no inventory on the RF that has the same destination as the current one's id ${destinationLocationId}");
       return;
     }
-
 
     // let's loop through each request and start to deposit each one
     // _confirmInventoryDepositRequests(inventoryDepositRequests);
@@ -830,78 +948,81 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         _depositInProcess = true;
       });
       _lpnController.text = inventoryDepositRequest.lpn ?? "";
-      printLongLogMessage("we will automatically deposit inventory from request ${inventoryDepositRequest.inventoryIdList} to location ${inventoryDepositRequest.nextLocationId}");
+      printLongLogMessage(
+          "we will automatically deposit inventory from request ${inventoryDepositRequest.inventoryIdList} to location ${inventoryDepositRequest.nextLocationId}");
       await _confirmInventoryDepositRequest(inventoryDepositRequest);
-
     }
   }
 
-  Future<bool> _confirmInventoryDepositRequest(InventoryDepositRequest inventoryDepositRequest) async {
-
-
-    printLongLogMessage("start to deposit inventory ${inventoryDepositRequest.lpn}");
+  Future<bool> _confirmInventoryDepositRequest(
+      InventoryDepositRequest inventoryDepositRequest) async {
+    final perf = Stopwatch()..start();
+    printLongLogMessage(
+        "[PERF] deposit start lpn=${inventoryDepositRequest.lpn} items=${inventoryDepositRequest.inventoryIdList.length}");
 
     showLoading(context, "Deposit LPN " + inventoryDepositRequest.lpn! + "...");
     // Let's get the location first
 
     WarehouseLocation destinationLocation;
     try {
-      printLongLogMessage("start to get destination location by name ${_locationController.text}");
+      printLongLogMessage(
+          "start to get destination location by name ${_locationController.text}");
 
-      destinationLocation =
+      final locationName = _locationController.text.trim();
+      final locationTimer = Stopwatch()..start();
+      destinationLocation = _locationCache[locationName] ??
           await WarehouseLocationService.getWarehouseLocationByName(
-              _locationController.text
-          );
-
+              locationName);
+      _locationCache[locationName] = destinationLocation;
+      printLongLogMessage(
+          "[PERF] destination lookup ${locationTimer.elapsedMilliseconds}ms");
 
       // make sure the location is a valid location for deposit
       // it should be either the same location as indicated,
       // or a pickup and deposit location
-      printLongLogMessage("inventoryDepositRequest.nextLocation: ${inventoryDepositRequest.nextLocation == null ? "" : inventoryDepositRequest.nextLocation?.id} " +
-          "/ ${inventoryDepositRequest.nextLocation == null ? "" : inventoryDepositRequest.nextLocation?.name}");
-      printLongLogMessage("destinationLocation: ${destinationLocation.id} / ${destinationLocation.name}, P&D? ${destinationLocation.locationGroup?.locationGroupType?.pickupAndDeposit}");
+      printLongLogMessage(
+          "inventoryDepositRequest.nextLocation: ${inventoryDepositRequest.nextLocation == null ? "" : inventoryDepositRequest.nextLocation?.id} " +
+              "/ ${inventoryDepositRequest.nextLocation == null ? "" : inventoryDepositRequest.nextLocation?.name}");
+      printLongLogMessage(
+          "destinationLocation: ${destinationLocation.id} / ${destinationLocation.name}, P&D? ${destinationLocation.locationGroup?.locationGroupType?.pickupAndDeposit}");
       if (inventoryDepositRequest.nextLocation != null &&
           destinationLocation.id != inventoryDepositRequest.nextLocation?.id &&
-          destinationLocation.locationGroup?.locationGroupType?.pickupAndDeposit == false) {
-
-          throw new WebAPICallException("should only deposit to  ${inventoryDepositRequest.nextLocation?.name} or a Pickup and Deposit location");
+          destinationLocation
+                  .locationGroup?.locationGroupType?.pickupAndDeposit ==
+              false) {
+        throw new WebAPICallException(
+            "should only deposit to  ${inventoryDepositRequest.nextLocation?.name} or a Pickup and Deposit location");
       }
-
-    }
-    on WebAPICallException catch(ex) {
-
+    } on WebAPICallException catch (ex) {
       Navigator.of(context).pop();
       showErrorDialog(context, ex.errMsg());
-      _locationController.selection = TextSelection(baseOffset: 0,
-          extentOffset: _locationController.text.length);
+      _locationController.selection = TextSelection(
+          baseOffset: 0, extentOffset: _locationController.text.length);
       setState(() {
         _depositInProcess = false;
       });
       return false;
-
     }
-
-
 
     printLongLogMessage("location ${destinationLocation.name} verified!");
 
-    printLongLogMessage("start to move inventories ${inventoryDepositRequest.inventoryIdList}");
+    printLongLogMessage(
+        "start to move inventories ${inventoryDepositRequest.inventoryIdList}");
+    final moveTimer = Stopwatch()..start();
     for (int i = 0; i < inventoryDepositRequest.inventoryIdList.length; i++) {
       int inventoryId = inventoryDepositRequest.inventoryIdList.elementAt(i);
+      final singleMoveTimer = Stopwatch()..start();
 
       try {
-
         await InventoryService.moveInventory(
-            inventoryId: inventoryId,
-            destinationLocation: destinationLocation
-        );
-      }
-      on WebAPICallException catch(ex) {
-
+            inventoryId: inventoryId, destinationLocation: destinationLocation);
+        printLongLogMessage(
+            "[PERF] move inventory=$inventoryId ${singleMoveTimer.elapsedMilliseconds}ms");
+      } on WebAPICallException catch (ex) {
         Navigator.of(context).pop();
         showErrorDialog(context, ex.errMsg());
-        _locationController.selection = TextSelection(baseOffset: 0,
-          extentOffset: _locationController.text.length);
+        _locationController.selection = TextSelection(
+            baseOffset: 0, extentOffset: _locationController.text.length);
         setState(() {
           _depositInProcess = false;
         });
@@ -909,83 +1030,85 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       }
     }
 
-    printLongLogMessage("all inventory is deposit");
+    printLongLogMessage(
+        "[PERF] all moves ${moveTimer.elapsedMilliseconds}ms total=${perf.elapsedMilliseconds}ms");
     Navigator.of(context).pop();
 
     showToast("inventory deposit");
     RFService.changeCurrentRFLocation(destinationLocation.id!).then((value) =>
-        printLongLogMessage("current RF's location is changed to ${destinationLocation.name}"));
+        printLongLogMessage(
+            "current RF's location is changed to ${destinationLocation.name}"));
 
     return true;
-    
-
-
   }
 
-  Future<void> _onDepositConfirmAsync(InventoryDepositRequest inventoryDepositRequest,
-    {int retryTime = 0}) async {
-
-
-    printLongLogMessage("start to deposit invenotry ${inventoryDepositRequest.lpn}");
+  Future<void> _onDepositConfirmAsync(
+      InventoryDepositRequest inventoryDepositRequest,
+      {int retryTime = 0}) async {
+    printLongLogMessage(
+        "start to deposit invenotry ${inventoryDepositRequest.lpn}");
 
     WarehouseLocationService.getWarehouseLocationByName(
-        _locationController.text
-    ).then((destinationLocation) async {
+            _locationController.text)
+        .then((destinationLocation) async {
       if (inventoryDepositRequest.nextLocation != null &&
           destinationLocation.id != inventoryDepositRequest.nextLocation?.id &&
-          destinationLocation.locationGroup?.locationGroupType?.pickupAndDeposit == false) {
-
-        throw new WebAPICallException("should only deposit to  ${inventoryDepositRequest.nextLocation?.name} or a Pickup and Deposit location");
-
+          destinationLocation
+                  .locationGroup?.locationGroupType?.pickupAndDeposit ==
+              false) {
+        throw new WebAPICallException(
+            "should only deposit to  ${inventoryDepositRequest.nextLocation?.name} or a Pickup and Deposit location");
       }
 
-      printLongLogMessage("start to move inventory with ids ${inventoryDepositRequest.inventoryIdList}");
+      printLongLogMessage(
+          "start to move inventory with ids ${inventoryDepositRequest.inventoryIdList}");
 
       for (int i = 0; i < inventoryDepositRequest.inventoryIdList.length; i++) {
         int inventoryId = inventoryDepositRequest.inventoryIdList.elementAt(i);
-          await InventoryService.moveInventory(
-              inventoryId: inventoryId,
-              destinationLocation: destinationLocation
-          );
+        await InventoryService.moveInventory(
+            inventoryId: inventoryId, destinationLocation: destinationLocation);
       }
 
       showToast("inventory deposit");
 
       // let's get next inventory to be deposit
-
     }).catchError((err) {
-      printLongLogMessage("Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
+      printLongLogMessage(
+          "Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
       if (err is DioException) {
-          // err.type == DioErrorType.connectTimeout &&) {
+        // err.type == DioErrorType.connectTimeout &&) {
         // for timeout error and we are still in the retry threshold, let's try again
 
         if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
-
-          Future.delayed(const Duration(milliseconds: 2000),
-                  () => _onDepositConfirmAsync(inventoryDepositRequest, retryTime: retryTime + 1));
-        }
-        else {
+          Future.delayed(
+              const Duration(milliseconds: 2000),
+              () => _onDepositConfirmAsync(inventoryDepositRequest,
+                  retryTime: retryTime + 1));
+        } else {
           // do nothing as we already running out of retry time
-          showErrorDialog(context, "Fail to deposit LPN: " + inventoryDepositRequest.lpn! + " after trying ${CWMSHttpClient.timeoutRetryTime} times");
+          showErrorDialog(
+              context,
+              "Fail to deposit LPN: " +
+                  inventoryDepositRequest.lpn! +
+                  " after trying ${CWMSHttpClient.timeoutRetryTime} times");
         }
-
-      }
-      else if (err is WebAPICallException){
+      } else if (err is WebAPICallException) {
         // for any other error display it
         final webAPICallException = err;
-        showErrorDialog(context, webAPICallException.errMsg() + ", LPN: " + inventoryDepositRequest.lpn!);
-      }
-      else {
-
-        showErrorDialog(context, err.toString() + ", LPN: " + inventoryDepositRequest.lpn!);
+        showErrorDialog(
+            context,
+            webAPICallException.errMsg() +
+                ", LPN: " +
+                inventoryDepositRequest.lpn!);
+      } else {
+        showErrorDialog(
+            context, err.toString() + ", LPN: " + inventoryDepositRequest.lpn!);
       }
       // ignore any other error
-
     });
     _locationController.clear();
     _locationFocusNode.requestFocus();
 
     await _removeInventoryOnRf(inventoryDepositRequest);
-
   }
 }

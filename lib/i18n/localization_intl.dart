@@ -19,9 +19,9 @@ class CWMSLocalizations {
 
   String get title {
     return Intl.message(
-      'CWMS',
+      'Claytech One',
       name: 'title',
-      desc: 'CWMS',
+      desc: 'Claytech One',
     );
   }
   String get home => Intl.message('Home', name: 'home');
@@ -335,7 +335,7 @@ class CWMSLocalizations {
   }
   String greetingMessage(Object name) {
     return Intl.message(
-      'Hi $name, Welcome to CWMS',
+      'Hi $name, Welcome to Claytech One',
       name: 'greetingMessage',
       desc: '',
       args: [name],

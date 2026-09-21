@@ -1,4 +1,3 @@
-
 import 'dart:collection';
 import 'dart:core';
 
@@ -18,24 +17,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
 
-
-class WorkOrderProducePage extends StatefulWidget{
-
+class WorkOrderProducePage extends StatefulWidget {
   WorkOrderProducePage({Key? key}) : super(key: key);
-
 
   @override
   State<StatefulWidget> createState() => _WorkOrderProducePageState();
-
 }
 
 class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
-
   // input batch id
-  TextEditingController _workOrderNumberController = new TextEditingController();
+  TextEditingController _workOrderNumberController =
+      new TextEditingController();
   FocusNode _workOrderNumberFocusNode = FocusNode();
   FocusNode _workOrderNumberControllerFocusNode = FocusNode();
-
 
   TextEditingController _productionLineController = new TextEditingController();
   FocusNode _productionLineFocusNode = FocusNode();
@@ -46,7 +40,6 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
   ProductionLine? _assignedProductionLine;
   ProductionLineAssignment? _selectedProductionLineAssignment;
 
-
   @override
   void initState() {
     super.initState();
@@ -56,49 +49,113 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
     _productionLineFocusNode.addListener(() {
       // print("_productionLineFocusNode.hasFocus: ${_productionLineFocusNode.hasFocus}");
-      if (!_productionLineFocusNode.hasFocus && _productionLineController.text.isNotEmpty) {
+      if (!_productionLineFocusNode.hasFocus &&
+          _productionLineController.text.isNotEmpty) {
         _enterOnProductionLineController(10);
       }
     });
 
     _workOrderNumberFocusNode.addListener(() {
       // print("_workOrderNumberFocusNode.hasFocus: ${_workOrderNumberFocusNode.hasFocus}");
-      if (!_workOrderNumberFocusNode.hasFocus && _workOrderNumberController.text.isNotEmpty) {
+      if (!_workOrderNumberFocusNode.hasFocus &&
+          _workOrderNumberController.text.isNotEmpty) {
         _enterOnWorkOrderController(10);
       }
     });
-
   }
-
 
   GlobalKey _formKey = new GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
-
     // printLongLogMessage("rebuild work order produce");
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
+      appBar:
+          AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
       resizeToAvoidBottomInset: true,
-      body:
-          Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-
-              // input controller for work order number
-              _buildWorkOrderNumberInput(context),
-              // If the user start with a work order, show the dropdown list to select production line
-              // if the user start with a production line, show a text box
-
-              _currentWorkOrder == null || _scannedProductionLine != null ?
-              _buildProductionLineTextBox(context) :
-              _buildProductionLineAssignmentSelection(context),
-
-              // _buildWorkOrderNumberAndProductionLineScanner(context),
-              _buildButtons(context)
+              _buildProduceHeader(context),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant),
+                ),
+                child: Column(
+                  children: [
+                    _buildWorkOrderNumberInput(context),
+                    const SizedBox(height: 12),
+                    _currentWorkOrder == null || _scannedProductionLine != null
+                        ? _buildProductionLineTextBox(context)
+                        : _buildProductionLineAssignmentSelection(context),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              _buildButtons(context),
             ],
           ),
+        ),
+      ),
       // bottomNavigationBar: buildBottomNavigationBar(context)
       endDrawer: MyDrawer(),
+    );
+  }
+
+  Widget _buildProduceHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF172F50),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.precision_manufacturing_outlined,
+                color: Color(0xFF9FC5FF), size: 27),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  CWMSLocalizations.of(context).workOrderProduce,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Select a work order and production line",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(.72),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -152,140 +209,175 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 **/
 
   Widget _buildWorkOrderNumberInput(BuildContext context) {
-    return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).workOrderNumber,
-        _getWorkOrderInputWidget(context));
+    return _getWorkOrderInputWidget(context);
   }
 
   Widget _getWorkOrderInputWidget(BuildContext context) {
-    return
-      Focus(
-          child:
-          RawKeyboardListener(
-              focusNode: _workOrderNumberFocusNode,
-              onKey: (event) {
+    return Focus(
+        child: RawKeyboardListener(
+            focusNode: _workOrderNumberFocusNode,
+            onKey: (event) {
+              printLongLogMessage("event: ${event.logicalKey}");
+              if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                // Do something
 
-                printLongLogMessage("event: ${event.logicalKey}");
-                if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
-                  // Do something
-
-                 // _enterOnWorkOrderController(10);
-                }
-              },
-              child:
-              TextFormField(
-                  controller: _workOrderNumberController,
-                  showCursor: true,
-                  autofocus: true,
-                  focusNode: _workOrderNumberControllerFocusNode,
-
-                  decoration: InputDecoration(
-                    suffixIcon:
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                      mainAxisSize: MainAxisSize.min, // added line
-                      children: <Widget>[
-                        IconButton(
-                          onPressed: () => _clearField(),
-                          icon: Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                  )
-
-              )
-          )
-      );
-
-
+                // _enterOnWorkOrderController(10);
+              }
+            },
+            child: TextFormField(
+                controller: _workOrderNumberController,
+                showCursor: true,
+                autofocus: true,
+                focusNode: _workOrderNumberControllerFocusNode,
+                decoration: InputDecoration(
+                  labelText: CWMSLocalizations.of(context).workOrderNumber,
+                  hintText:
+                      CWMSLocalizations.of(context).inputWorkOrderNumberHint,
+                  prefixIcon: const Icon(Icons.assignment_outlined),
+                  filled: true,
+                  fillColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withOpacity(.45),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor, width: 1.5),
+                  ),
+                  suffixIcon: Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween, // added line
+                    mainAxisSize: MainAxisSize.min, // added line
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: () => _clearField(),
+                        icon: Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ))));
   }
 
   Widget _buildProductionLineTextBox(BuildContext context) {
-    return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).productionLine,
-        _getProductionLineInputWidget(context));
+    return _getProductionLineInputWidget(context);
   }
 
   Widget _getProductionLineInputWidget(BuildContext context) {
-    return
-      Focus(
-          child:
-          RawKeyboardListener(
-              focusNode: _productionLineFocusNode,
-
-              onKey: (event) {
-
-                printLongLogMessage("event: ${event.logicalKey}");
-                if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
-                  // Do something
-                  // _enterOnProductionLineController(10);
-                }
-              },
-              child:
-              TextFormField(
-                  controller: _productionLineController,
-                  showCursor: true,
-                  autofocus: true,
-                  focusNode: _productionLineControllerFocusNode,
-                  decoration: InputDecoration(
-                    suffixIcon:
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                      mainAxisSize: MainAxisSize.min, // added line
-                      children: <Widget>[
-                        IconButton(
-                          onPressed: () => _clearField(),
-                          icon: Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                  )
-
-              )
-          )
-      );
-
-
+    return Focus(
+        child: RawKeyboardListener(
+            focusNode: _productionLineFocusNode,
+            onKey: (event) {
+              printLongLogMessage("event: ${event.logicalKey}");
+              if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                // Do something
+                // _enterOnProductionLineController(10);
+              }
+            },
+            child: TextFormField(
+                controller: _productionLineController,
+                showCursor: true,
+                autofocus: true,
+                focusNode: _productionLineControllerFocusNode,
+                decoration: InputDecoration(
+                  labelText: CWMSLocalizations.of(context).productionLine,
+                  hintText:
+                      CWMSLocalizations.of(context).inputProductionLineHint,
+                  prefixIcon: const Icon(Icons.factory_outlined),
+                  filled: true,
+                  fillColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withOpacity(.45),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor, width: 1.5),
+                  ),
+                  suffixIcon: Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween, // added line
+                    mainAxisSize: MainAxisSize.min, // added line
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: () => _clearField(),
+                        icon: Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ))));
   }
 
-
   Widget _buildProductionLineAssignmentSelection(BuildContext context) {
-    return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).productionLine,
-        DropdownButton(
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: CWMSLocalizations.of(context).productionLine,
+        prefixIcon: const Icon(Icons.factory_outlined),
+        filled: true,
+        fillColor: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withOpacity(.45),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<ProductionLineAssignment>(
           hint: Text(CWMSLocalizations.of(context).pleaseSelect),
           items: _getProductionLineAssignmentItems(),
           value: _selectedProductionLineAssignment,
-          elevation: 1,
           isExpanded: true,
-          icon: Icon(
-            Icons.list,
-            size: 20,
-          ),
+          icon: const Icon(Icons.expand_more),
           onChanged: (ProductionLineAssignment? value) {
-            //下拉菜单item点击之后的回调
             setState(() {
               _selectedProductionLineAssignment = value;
-              _assignedProductionLine = _selectedProductionLineAssignment?.productionLine;
-
+              _assignedProductionLine = value?.productionLine;
             });
           },
-        )
+        ),
+      ),
     );
   }
 
-  List<DropdownMenuItem<ProductionLineAssignment>> _getProductionLineAssignmentItems()  {
+  List<DropdownMenuItem<ProductionLineAssignment>>
+      _getProductionLineAssignmentItems() {
     List<DropdownMenuItem<ProductionLineAssignment>> items = [];
 
-    if (_currentWorkOrder?.productionLineAssignments == null || _currentWorkOrder?.productionLineAssignments.length == 0) {
+    if (_currentWorkOrder?.productionLineAssignments == null ||
+        _currentWorkOrder?.productionLineAssignments.length == 0) {
       return items;
     }
 
     // _selectedInventoryStatus = _validInventoryStatus[0];
-    for (int i = 0; i < _currentWorkOrder!.productionLineAssignments.length; i++) {
+    for (int i = 0;
+        i < _currentWorkOrder!.productionLineAssignments.length;
+        i++) {
       items.add(DropdownMenuItem(
         value: _currentWorkOrder?.productionLineAssignments[i],
-        child: Text(_currentWorkOrder?.productionLineAssignments[i].productionLine?.name ?? ""),
+        child: Text(_currentWorkOrder
+                ?.productionLineAssignments[i].productionLine?.name ??
+            ""),
       ));
     }
 
@@ -295,65 +387,70 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
       // default the selection to it
       // if the user has not select any inventdry status yet, then
       // default the value to the first option as well
-      _selectedProductionLineAssignment = _currentWorkOrder?.productionLineAssignments[0];
+      _selectedProductionLineAssignment =
+          _currentWorkOrder?.productionLineAssignments[0];
 
-      printLongLogMessage("setup the _assignedProductionLine to ${_selectedProductionLineAssignment?.productionLine?.name}");
-      _assignedProductionLine = _selectedProductionLineAssignment?.productionLine;
+      printLongLogMessage(
+          "setup the _assignedProductionLine to ${_selectedProductionLineAssignment?.productionLine?.name}");
+      _assignedProductionLine =
+          _selectedProductionLineAssignment?.productionLine;
     }
     return items;
   }
 
   void _enterOnProductionLineController(int tryTime) async {
-
     printLongLogMessage("_enterOnProductionLineController");
     // if the user input an empty work order number, then clear the page
     if (_productionLineController.text.isEmpty) {
       _clearField();
       return;
     }
-    printLongLogMessage("_enterOnProductionLineController: Start to get production line information, tryTime = $tryTime");
+    printLongLogMessage(
+        "_enterOnProductionLineController: Start to get production line information, tryTime = $tryTime");
     if (tryTime <= 0) {
       // do nothing as we run out of try time
       return;
     }
-    printLongLogMessage("_enterOnProductionLineController / _productionLineControllerFocusNode.hasFocus:   ${_productionLineControllerFocusNode.hasFocus}");
+    printLongLogMessage(
+        "_enterOnProductionLineController / _productionLineControllerFocusNode.hasFocus:   ${_productionLineControllerFocusNode.hasFocus}");
     if (_productionLineControllerFocusNode.hasFocus) {
       // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
       Future.delayed(const Duration(milliseconds: 100),
-              () => _enterOnProductionLineController(tryTime - 1));
+          () => _enterOnProductionLineController(tryTime - 1));
 
       return;
-
     }
 
     showLoading(context);
 
-
     try {
-      printLongLogMessage("start to get the production line by name ${_productionLineController.text}");
+      printLongLogMessage(
+          "start to get the production line by name ${_productionLineController.text}");
       _scannedProductionLine =
-          await ProductionLineService.getProductionLineByNumber(_productionLineController.text, loadDetails : false, loadWorkOrderDetails: false);
+          await ProductionLineService.getProductionLineByNumber(
+              _productionLineController.text,
+              loadDetails: false,
+              loadWorkOrderDetails: false);
 
-      printLongLogMessage("## Production line ${_productionLineController.text} found!");
-    }
-    on WebAPICallException {
+      printLongLogMessage(
+          "## Production line ${_productionLineController.text} found!");
+    } on WebAPICallException {
       Navigator.of(context).pop();
-      showErrorDialog(context, "can't find production line by name ${_productionLineController.text}");
+      showErrorDialog(context,
+          "can't find production line by name ${_productionLineController.text}");
       return;
     }
-    if(_scannedProductionLine == null) {
-
+    if (_scannedProductionLine == null) {
       Navigator.of(context).pop();
-      showErrorDialog(context, "can't find production line by name ${_productionLineController.text}");
+      showErrorDialog(context,
+          "can't find production line by name ${_productionLineController.text}");
       return;
     }
 
     printLongLogMessage("get production line: ${_scannedProductionLine?.name}");
     try {
       _currentWorkOrder = await _getAssignedWorkOrder(_scannedProductionLine!);
-
-    }
-    on WebAPICallException catch(ex) {
+    } on WebAPICallException catch (ex) {
       Navigator.of(context).pop();
       showErrorDialog(context, ex.errMsg());
       return;
@@ -365,11 +462,11 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     Navigator.of(context).pop();
 
     if (_currentWorkOrder?.item == null) {
-
-      ItemService.getItemById(_currentWorkOrder!.itemId!).then((item) => _currentWorkOrder!.item = item);
+      ItemService.getItemById(_currentWorkOrder!.itemId!)
+          .then((item) => _currentWorkOrder!.item = item);
     }
 
-    setState(()  {
+    setState(() {
       _currentWorkOrder;
       _scannedProductionLine;
       _assignedProductionLine;
@@ -388,33 +485,32 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
   }
 
   void _enterOnWorkOrderController(int tryTime) async {
-
     // if the user input an empty work order number, then clear the page
     if (_workOrderNumberController.text.isEmpty) {
       _clearField();
       return;
     }
-    printLongLogMessage("_enterOnWorkOrderController: Start to get work order information, tryTime = $tryTime");
+    printLongLogMessage(
+        "_enterOnWorkOrderController: Start to get work order information, tryTime = $tryTime");
     if (tryTime <= 0) {
       // do nothing as we run out of try time
       return;
     }
-    printLongLogMessage("_enterOnWorkOrderController / _workOrderNumberControllerFocusNode.hasFocus:   ${_workOrderNumberControllerFocusNode.hasFocus}");
+    printLongLogMessage(
+        "_enterOnWorkOrderController / _workOrderNumberControllerFocusNode.hasFocus:   ${_workOrderNumberControllerFocusNode.hasFocus}");
     if (_workOrderNumberControllerFocusNode.hasFocus) {
       // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
       Future.delayed(const Duration(milliseconds: 100),
-              () => _enterOnWorkOrderController(tryTime - 1));
+          () => _enterOnWorkOrderController(tryTime - 1));
 
       return;
-
     }
     showLoading(context);
 
     try {
-      _currentWorkOrder = await WorkOrderService.getWorkOrderByNumber(_workOrderNumberController.text);
-
-    }
-    on WebAPICallException catch(ex) {
+      _currentWorkOrder = await WorkOrderService.getWorkOrderByNumber(
+          _workOrderNumberController.text);
+    } on WebAPICallException catch (ex) {
       Navigator.of(context).pop();
       showErrorDialog(context, ex.errMsg());
       return;
@@ -422,28 +518,31 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
     Navigator.of(context).pop();
 
-
-    if(_currentWorkOrder == null) {
-
-      showErrorDialog(context, "can't find Work order with number ${_workOrderNumberController.text}");
+    if (_currentWorkOrder == null) {
+      showErrorDialog(context,
+          "can't find Work order with number ${_workOrderNumberController.text}");
       return;
     }
     // make sure the work order already have production line assigned
-    if(_currentWorkOrder?.productionLineAssignments.isEmpty == true) {
-
-      showErrorDialog(context, "Work order " + (_currentWorkOrder?.number ?? "") + " doesn't have any production line assigned yet");
-      setState(()  {
+    if (_currentWorkOrder?.productionLineAssignments.isEmpty == true) {
+      showErrorDialog(
+          context,
+          "Work order " +
+              (_currentWorkOrder?.number ?? "") +
+              " doesn't have any production line assigned yet");
+      setState(() {
         _currentWorkOrder = null;
       });
       return;
     }
-    if (_currentWorkOrder!.status == WorkOrderStatus.CANCELLED || _currentWorkOrder!.status == WorkOrderStatus.CLOSED
-           || _currentWorkOrder!.status == WorkOrderStatus.COMPLETED) {
-
-
-      showErrorDialog(context, "Work order ${_currentWorkOrder!.number} " +
-          " is already ${_currentWorkOrder!.status.toString().split(".").last}");
-      setState(()  {
+    if (_currentWorkOrder!.status == WorkOrderStatus.CANCELLED ||
+        _currentWorkOrder!.status == WorkOrderStatus.CLOSED ||
+        _currentWorkOrder!.status == WorkOrderStatus.COMPLETED) {
+      showErrorDialog(
+          context,
+          "Work order ${_currentWorkOrder!.number} " +
+              " is already ${_currentWorkOrder!.status.toString().split(".").last}");
+      setState(() {
         _currentWorkOrder = null;
       });
       return;
@@ -452,39 +551,43 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     //printLongLogMessage("start to work on work order ${_currentWorkOrder.number} with item ${_currentWorkOrder.item.id}");
 
     if (_currentWorkOrder!.item == null) {
-
-      ItemService.getItemById(_currentWorkOrder!.itemId!).then((item) => _currentWorkOrder!.item = item);
+      ItemService.getItemById(_currentWorkOrder!.itemId!)
+          .then((item) => _currentWorkOrder!.item = item);
     }
 
-    setState(()  {
+    setState(() {
       _currentWorkOrder;
     });
   }
 
   Widget _buildButtons(BuildContext context) {
-
-    return
-      SizedBox(
+    return SizedBox(
         width: double.infinity,
-          height: 50,
-        child:
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Theme.of(context).primaryColor,
+        height: 50,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).primaryColor,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
             ),
-            onPressed: _currentWorkOrder == null || _assignedProductionLine == null ? null : _onStartProduce,
-            child: Text(CWMSLocalizations.of(context).workOrderProduce),
-          )
-        );
+          ),
+          onPressed:
+              _currentWorkOrder == null || _assignedProductionLine == null
+                  ? null
+                  : _onStartProduce,
+          child: Text(CWMSLocalizations.of(context).workOrderProduce),
+        ));
   }
 
   Future<void> _onStartProduce() async {
-
     if (_currentWorkOrder == null || _assignedProductionLine == null) {
-      showErrorDialog(context, "can't get the work order or production line information from the input" +
-      ".please try again");
-      return ;
+      showErrorDialog(
+          context,
+          "can't get the work order or production line information from the input" +
+              ".please try again");
+      return;
     }
     Map argumentMap = new HashMap();
     argumentMap['workOrder'] = _currentWorkOrder;
@@ -493,39 +596,35 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
     printLongLogMessage("flow to produce inventory page");
 
-    await Navigator.of(context).pushNamed("work_order_produce_inventory", arguments: argumentMap);
+    await Navigator.of(context)
+        .pushNamed("work_order_produce_inventory", arguments: argumentMap);
   }
 
-
-  Future<WorkOrder?> _getAssignedWorkOrder(ProductionLine productionLine) async {
-
+  Future<WorkOrder?> _getAssignedWorkOrder(
+      ProductionLine productionLine) async {
     WorkOrder? assignedWorkOrder;
-    List<WorkOrder> workOrders =
-        await ProductionLineAssignmentService.getAssignedWorkOrderByProductionLine(productionLine);
+    List<WorkOrder> workOrders = await ProductionLineAssignmentService
+        .getAssignedWorkOrderByProductionLine(productionLine);
 
     printLongLogMessage("workOrders.length: ${workOrders.length}");
     if (workOrders.length == 0) {
       // we should only have one work order that assigned to the specific production line
       // at a time
       throw new WebAPICallException(
-          "Can't find any work order that assigned to the production line ${productionLine.name}"
-      );
-
-    }
-    else if (workOrders.length == 1 ){
+          "Can't find any work order that assigned to the production line ${productionLine.name}");
+    } else if (workOrders.length == 1) {
       assignedWorkOrder = workOrders[0];
     }
     // we found multiple work order that assigned to the production line, make sure
     // the user specify the work order number as well
     else if (_workOrderNumberController.text.isEmpty) {
       throw new WebAPICallException(
-          "multiple work orders found. please specify the work order number as well"
-      );
-    }
-    else {
+          "multiple work orders found. please specify the work order number as well");
+    } else {
       // see if the work order number specified by the user matches any of the work order that
       // assigned to the production
-      assignedWorkOrder = workOrders.firstWhereOrNull((workOrder) => _workOrderNumberController.text == workOrder.number);
+      assignedWorkOrder = workOrders.firstWhereOrNull(
+          (workOrder) => _workOrderNumberController.text == workOrder.number);
     }
     // make sure the assigned work has BOM assigned.
     // right now we are only allow the user to consume the material by BOM
@@ -542,20 +641,10 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     return assignedWorkOrder;
   }
 
-
-
-
-
   Future<void> _startBarcodeScanner() async {
     // String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
     //     "#ff6666", "Cancel", true, ScanMode.BARCODE);
     // print("barcode scanned: $barcodeScanRes");
     // _workOrderNumberController.text = barcodeScanRes;
-
   }
-
-
-
-
-
 }

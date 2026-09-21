@@ -1,4 +1,3 @@
-
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/states/profile_change_notifier.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +31,6 @@ class MyDrawer extends StatelessWidget {
   Widget _buildHeader() {
     return Consumer<UserModel>(
       builder: (BuildContext context, UserModel value, Widget? child) {
-
         return GestureDetector(
           child: Container(
             color: Theme.of(context).primaryColor,
@@ -42,10 +40,10 @@ class MyDrawer extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ClipOval(
-                    child:  Image.asset(
-                        "assets/images/avatar.png",
-                        width: 80,
-                      ),
+                    child: Image.asset(
+                      "assets/images/avatar.png",
+                      width: 80,
+                    ),
                   ),
                 ),
                 Text(
@@ -103,7 +101,8 @@ class MyDrawer extends StatelessWidget {
                           onPressed: () {
                             //该赋值语句会触发MaterialApp rebuild
                             Global.logout();
-                            Navigator.popUntil(context, ModalRoute.withName('login_page'));
+                            Navigator.popUntil(
+                                context, ModalRoute.withName('login_page'));
                           },
                         ),
                       ],
@@ -113,22 +112,26 @@ class MyDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context).version + ": " + (Global.currentAPPVersion ?? "")),
+              title: const Text("Version: 1.62.e"),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context).warehouse + ": " + (Global.currentWarehouse!.name ?? "")),
+              title: Text(CWMSLocalizations.of(context).warehouse +
+                  ": " +
+                  (Global.currentWarehouse!.name ?? "")),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context).rfCode + ": " + Global.getLastLoginRFCode()),
+              title: Text(CWMSLocalizations.of(context).rfCode +
+                  ": " +
+                  Global.getLastLoginRFCode()),
             ),
             ListTile(
-              title: Text(CWMSLocalizations.of(context).currentLocation + ": " + (Global.getLastLoginRF().currentLocationName ?? "" )),
+              title: Text(CWMSLocalizations.of(context).currentLocation +
+                  ": " +
+                  (Global.getLastLoginRF().currentLocationName ?? "")),
             ),
           ],
         );
       },
     );
-
   }
-
 }

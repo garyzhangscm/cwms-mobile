@@ -90,9 +90,67 @@ class MyApp extends StatelessWidget {
         builder:
             (BuildContext context, themeModel, localeModel, Widget? child) {
           return MaterialApp(
-            // theme: ThemeData(
-            //  primarySwatch: themeModel.theme,
-            //),
+            // Keep every page's top bar compact and consistent. Individual
+            // screens can still provide their own colors and actions.
+            theme: ThemeData(
+              appBarTheme: const AppBarTheme(
+                toolbarHeight: 50,
+                titleSpacing: 16,
+                titleTextStyle: TextStyle(
+                  color: Color(0xFF142D4E),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                ),
+                iconTheme: IconThemeData(size: 21),
+              ),
+              // Keep selector menus visually consistent across the app. The
+              // project uses the legacy DropdownButton API on older screens,
+              // so its popup inherits these menu and canvas colors.
+              canvasColor: Colors.white,
+              popupMenuTheme: PopupMenuThemeData(
+                color: Colors.white,
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: const BorderSide(color: Color(0xFFE1E7EF)),
+                ),
+                textStyle: const TextStyle(
+                  color: Color(0xFF142D4E),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              dropdownMenuTheme: DropdownMenuThemeData(
+                textStyle: const TextStyle(
+                  color: Color(0xFF142D4E),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+                inputDecorationTheme: InputDecorationTheme(
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: Color(0xFFDCE4EE)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: Color(0xFFDCE4EE)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF2864DC),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
             navigatorKey: navigatorKey,
             onGenerateTitle: (context) {

@@ -6,6 +6,7 @@ import 'package:cwms_mobile/shared/models/http_response_wrapper.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:convert';
 
 class LaunchPage extends StatefulWidget {
@@ -17,17 +18,43 @@ class LaunchPage extends StatefulWidget {
   State<StatefulWidget> createState() => _LaunchPageState();
 }
 
-class _LaunchPageState extends State<LaunchPage> {
+class _LaunchPageState extends State<LaunchPage>
+    with SingleTickerProviderStateMixin {
   // AutoConnect to certian server
   bool _autoConnect = false;
 
   TextEditingController? _serverURLController;
 
   final _formKey = new GlobalKey<FormState>();
+  late final AnimationController _splashController;
+  late final Animation<double> _splashScale;
+  late final Animation<double> _splashFade;
+  Timer? _splashTimer;
+  bool _showSplash = true;
 
   @override
   void initState() {
     super.initState();
+    _splashController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    )..forward();
+    _splashScale = Tween<double>(begin: .94, end: 1).animate(
+      CurvedAnimation(parent: _splashController, curve: Curves.easeOutCubic),
+    );
+    _splashFade = CurvedAnimation(
+      parent: _splashController,
+      curve: Curves.easeOut,
+    );
+    // Keep the manual server-selection test path immediate while the normal
+    // app launch gets the short branded transition.
+    if (kDebugMode && !widget.enableDebugAutoConnect) {
+      _showSplash = false;
+    } else {
+      _splashTimer = Timer(const Duration(milliseconds: 460), () {
+        if (mounted) setState(() => _showSplash = false);
+      });
+    }
     CWMSSiteInformation? server = Global.getAutoConnectServer();
     print("get auto connect server? ${server == null ? '' : server.url}");
 
@@ -53,7 +80,58 @@ class _LaunchPageState extends State<LaunchPage> {
   }
 
   @override
+  void dispose() {
+    _splashTimer?.cancel();
+    _splashController.dispose();
+    _serverURLController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_showSplash) return _buildSplash();
+    return _buildServerSelection();
+  }
+
+  Widget _buildSplash() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F5F9),
+      body: Center(
+        child: AnimatedBuilder(
+          animation: _splashController,
+          builder: (context, child) => FadeTransition(
+            opacity: _splashFade,
+            child: Transform.scale(scale: _splashScale.value, child: child),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: Image.asset(
+                  'assets/icon/claytech_one_grid.png',
+                  width: 112,
+                  height: 112,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Claytech One',
+                style: TextStyle(
+                  color: Color(0xFF142D4E),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServerSelection() {
     return Scaffold(
       appBar: AppBar(
         title: Text(CWMSLocalizations.of(context).chooseServer),

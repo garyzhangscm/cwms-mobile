@@ -67,7 +67,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Inventory")),
+      appBar: AppBar(title: Text("Claytech One - Inventory")),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),

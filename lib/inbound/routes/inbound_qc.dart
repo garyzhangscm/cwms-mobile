@@ -1,4 +1,3 @@
-
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -13,18 +12,14 @@ import '../../shared/models/barcode.dart';
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
 // with or without any pre-assigned destination
-class InboundQCPage extends StatefulWidget{
-
+class InboundQCPage extends StatefulWidget {
   InboundQCPage({Key? key}) : super(key: key);
-
 
   @override
   State<StatefulWidget> createState() => _InboundQCPageState();
-
 }
 
 class _InboundQCPageState extends State<InboundQCPage> {
-
   // allow user to scan in LPN
   TextEditingController _lpnController = new TextEditingController();
 
@@ -35,7 +30,6 @@ class _InboundQCPageState extends State<InboundQCPage> {
   Inventory? _inventoryForQC;
   int _selectedInventoryIndex = 0;
 
-
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _startQCButtonFocusNode = FocusNode();
 
@@ -44,7 +38,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
     super.initState();
     _itemName = "";
     _itemDescription = "";
-    _lpn =  "";
+    _lpn = "";
     _readyForQCResult = false;
     _inventoryForQC = null;
 
@@ -60,17 +54,14 @@ class _InboundQCPageState extends State<InboundQCPage> {
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
           if (lpn == "") {
-
             showErrorDialog(context, "can't get LPN from the barcode");
             return;
-          }
-          else {
+          } else {
             _lpnController.text = lpn;
           }
         }
 
         _onLPNScanned();
-
       }
     });
 
@@ -80,73 +71,181 @@ class _InboundQCPageState extends State<InboundQCPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Inventory QC")),
+      appBar: AppBar(title: Text("Claytech One - Inventory QC")),
       resizeToAvoidBottomInset: true,
-      body:
-        Padding(padding: EdgeInsets.all(10),
-          child:
-            Column(
-              children: [
-                _buildLPNScanner(context),
-                _buildButtons(context),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn, _lpn),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemName),
-                buildTwoSectionInformationRow(CWMSLocalizations.of(context).item, _itemDescription),
-                _buildQCResultButtons(context),
-              ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildQCHeader(context),
+              const SizedBox(height: 16),
+              _buildLPNScanner(context),
+              const SizedBox(height: 10),
+              _buildButtons(context),
+              const SizedBox(height: 16),
+              _buildInventoryCard(context),
+              const SizedBox(height: 16),
+              _buildQCResultButtons(context),
+            ],
+          ),
         ),
-
       ),
       endDrawer: MyDrawer(),
     );
   }
 
+  Widget _buildQCHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF172F50),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.verified_user_outlined,
+              color: Color(0xFF9FC5FF), size: 34),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text("Inbound quality check",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 21,
+                        fontWeight: FontWeight.w700)),
+                SizedBox(height: 4),
+                Text("Scan an LPN to begin inspection",
+                    style: TextStyle(color: Color(0xB8FFFFFF), fontSize: 14)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLPNScanner(BuildContext context) {
     return TextFormField(
-        controller: _lpnController,
-        focusNode: _lpnFocusNode,
-        autofocus: true,
-        decoration: InputDecoration(
-          labelText: CWMSLocalizations.of(context).lpn,
-        ),);
+      controller: _lpnController,
+      focusNode: _lpnFocusNode,
+      autofocus: true,
+      decoration: InputDecoration(
+        labelText: CWMSLocalizations.of(context).lpn,
+        hintText: "Scan or enter LPN",
+        prefixIcon: const Icon(Icons.qr_code_scanner),
+        filled: true,
+        fillColor: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withOpacity(.45),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide:
+                BorderSide(color: Theme.of(context).primaryColor, width: 1.5)),
+      ),
+    );
   }
-
-
 
   Widget _buildButtons(BuildContext context) {
-
     return
-      // confirm input and clear input
-      buildTwoButtonRow(context,
-        ElevatedButton(
-            onPressed: _onLPNScanned,
-            child: Text(CWMSLocalizations.of(context).confirm)
-        ),
-        ElevatedButton(
-            onPressed: _onClear,
-            child: Text(CWMSLocalizations.of(context).clear)
-        ),
-
-      ) ;
+        // confirm input and clear input
+        buildTwoButtonRow(
+      context,
+      _secondaryButton(context, Icons.search,
+          CWMSLocalizations.of(context).confirm, _onLPNScanned),
+      _secondaryButton(context, Icons.refresh,
+          CWMSLocalizations.of(context).clear, _onClear),
+    );
   }
 
+  Widget _secondaryButton(BuildContext context, IconData icon, String label,
+      VoidCallback onPressed) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 19),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        elevation: 0,
+        foregroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
+  }
+
+  Widget _buildInventoryCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Column(
+        children: [
+          _infoRow("LPN", _lpn),
+          _infoRow("Item", _itemName),
+          _infoRow("Description", _itemDescription),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SizedBox(
+            width: 100,
+            child: Text(label,
+                style: TextStyle(
+                    color: Colors.blueGrey.shade600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600))),
+        Expanded(
+            child: Text(value.isEmpty ? "—" : value,
+                textAlign: TextAlign.right,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Color(0xFF172F50),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600))),
+      ]),
+    );
+  }
 
   Widget _buildQCResultButtons(BuildContext context) {
-
     return
-      // confirm input and clear input
-      buildSingleButtonRow(context,
-        ElevatedButton(
-            focusNode: _startQCButtonFocusNode,
-            onPressed:
-            _readyForQCResult ? _onStartQC : null,
-            child: Text(CWMSLocalizations.of(context).startQC)
-        ),
-      ) ;
+        // confirm input and clear input
+        buildSingleButtonRow(
+      context,
+      ElevatedButton(
+          focusNode: _startQCButtonFocusNode,
+          onPressed: _readyForQCResult ? _onStartQC : null,
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size.fromHeight(54),
+            elevation: 0,
+            foregroundColor: Colors.white,
+            backgroundColor: Theme.of(context).primaryColor,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          ),
+          child: Text(CWMSLocalizations.of(context).startQC)),
+    );
   }
-
 
   _onStartQC() async {
     // get the qc inspection request from the qc sample and
@@ -155,54 +254,49 @@ class _InboundQCPageState extends State<InboundQCPage> {
     showLoading(context);
     try {
       List<QCInspectionRequest> qcInspectionRequests =
-          await InventoryService.getPendingQCInspectionRequest(_inventoryForQC!);
+          await InventoryService.getPendingQCInspectionRequest(
+              _inventoryForQC!);
 
       printLongLogMessage("find ${qcInspectionRequests.length} qc request");
       Navigator.of(context).pop();
       if (qcInspectionRequests.isEmpty) {
-
-        showWarningDialog(context, CWMSLocalizations.of(context).inventoryNotQCRequired);
-      }
-      else {
-
+        showWarningDialog(
+            context, CWMSLocalizations.of(context).inventoryNotQCRequired);
+      } else {
         int qcInspectionRequestItemsCount = 0;
-        for(final qcInspectionRequest in qcInspectionRequests){
+        for (final qcInspectionRequest in qcInspectionRequests) {
           if (qcInspectionRequest.qcInspectionRequestItems.isNotEmpty) {
-            await Navigator.of(context).pushNamed("qc_inspection", arguments: qcInspectionRequest);
-            qcInspectionRequestItemsCount += qcInspectionRequest.qcInspectionRequestItems.length;
+            await Navigator.of(context)
+                .pushNamed("qc_inspection", arguments: qcInspectionRequest);
+            qcInspectionRequestItemsCount +=
+                qcInspectionRequest.qcInspectionRequestItems.length;
           }
         }
         _onClear();
         if (qcInspectionRequestItemsCount == 0) {
-
-          showWarningDialog(context, CWMSLocalizations.of(context).inventoryNotQCRequired);
+          showWarningDialog(
+              context, CWMSLocalizations.of(context).inventoryNotQCRequired);
         }
-
       }
-
-    }
-    on WebAPICallException catch(ex) {
-
+    } on WebAPICallException catch (ex) {
       printLongLogMessage("error while starting qc for work order");
 
       Navigator.of(context).pop();
       showErrorDialog(context, ex.errMsg());
       return;
-
     }
-
   }
 
   _onLPNScanned() async {
-
     String lpn = _lpnController.text;
     if (lpn.isNotEmpty) {
       showLoading(context);
       try {
-        List<Inventory> inventoryList = await InventoryService.findInventory(
-            lpn: lpn);
+        List<Inventory> inventoryList =
+            await InventoryService.findInventory(lpn: lpn);
 
-        printLongLogMessage("get ${inventoryList.length} inventory by lpn $lpn");
+        printLongLogMessage(
+            "get ${inventoryList.length} inventory by lpn $lpn");
         printLongLogMessage("hide the loading prompt");
         Navigator.of(context).pop();
         // TO-DO, we will support only one inventory record for now
@@ -210,8 +304,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
           // ok, we find only one
           _inventoryForQC = inventoryList.first;
           setupDisplay(_inventoryForQC!);
-        }
-        else if (inventoryList.length > 1) {
+        } else if (inventoryList.length > 1) {
           // now we only allow qc by inventory, prompt dialog to let the user
           // choose only one inventory
           _showInventoryDialog(inventoryList);
@@ -219,24 +312,16 @@ class _InboundQCPageState extends State<InboundQCPage> {
             setupDisplay(_inventoryForQC!);
           }
         }
-
-      }
-      on WebAPICallException catch (ex) {
+      } on WebAPICallException catch (ex) {
         Navigator.of(context).pop();
         showErrorDialog(context, ex.errMsg());
         return;
       }
     }
-
   }
 
-
   setupDisplay(Inventory inventory) {
-
-
     setState(() {
-
-
       _itemName = inventory.item!.name ?? "";
       _itemDescription = inventory.item!.description ?? "";
       _lpn = inventory.lpn!;
@@ -245,9 +330,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
       if (inventory.inboundQCRequired == false) {
         // showWarningDialog(context,  CWMSLocalizations.of(context).inventoryNotQCRequired);
         _readyForQCResult = false;
-      }
-      else {
-
+      } else {
         _readyForQCResult = true;
       }
 
@@ -256,9 +339,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
   }
 
   _onClear() {
-
     setState(() {
-
       _itemName = "";
       _itemDescription = "";
       _lpn = "";
@@ -270,10 +351,8 @@ class _InboundQCPageState extends State<InboundQCPage> {
     });
   }
 
-
   // prompt a dialog for user to choose valid orders
   Future<void> _showInventoryDialog(List<Inventory> inventoryList) async {
-
     await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -282,15 +361,11 @@ class _InboundQCPageState extends State<InboundQCPage> {
             Row(
               children: [
                 ElevatedButton(
-                  child: Text(CWMSLocalizations
-                      .of(context)
-                      .cancel),
+                  child: Text(CWMSLocalizations.of(context).cancel),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 ElevatedButton(
-                  child: Text(CWMSLocalizations
-                      .of(context)
-                      .confirm),
+                  child: Text(CWMSLocalizations.of(context).confirm),
                   onPressed: () {
                     _confirmInvenotrySelection(inventoryList);
                     Navigator.of(context).pop();
@@ -308,44 +383,39 @@ class _InboundQCPageState extends State<InboundQCPage> {
     );
   }
 
-  Widget _buildInventoryList(BuildContext context,
-      List<Inventory> inventoryList) {
-    return
-      Expanded(
-        child: ListView.builder(
-            itemCount: inventoryList.length,
-            itemBuilder: (BuildContext context, int index) {
-
-              return
-                Ink(
-                  color: _selectedInventoryIndex == index ? Colors.lightGreen : Colors.grey,
-                  child:
-                    ListTile(
-                      dense: true,
-                      onTap: () {
-                        setState(() {
-                          _selectedInventoryIndex = index;
-                        });
-                      },
-                      title: Text(
-                        inventoryList[index].lpn ?? "",
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        ),
-                      ),
-                      subtitle: Text(inventoryList[index].item?.description ?? ""),
-                    )
-                );
-
-            }),
-      );
+  Widget _buildInventoryList(
+      BuildContext context, List<Inventory> inventoryList) {
+    return Expanded(
+      child: ListView.builder(
+          itemCount: inventoryList.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Ink(
+                color: _selectedInventoryIndex == index
+                    ? Colors.lightGreen
+                    : Colors.grey,
+                child: ListTile(
+                  dense: true,
+                  onTap: () {
+                    setState(() {
+                      _selectedInventoryIndex = index;
+                    });
+                  },
+                  title: Text(
+                    inventoryList[index].lpn ?? "",
+                    style: TextStyle(
+                      height: 1.15,
+                      color: Colors.blueGrey[700],
+                      fontSize: 17,
+                    ),
+                  ),
+                  subtitle: Text(inventoryList[index].item?.description ?? ""),
+                ));
+          }),
+    );
   }
 
   void _confirmInvenotrySelection(List<Inventory> inventoryList) {
     setState(() {
-
       _inventoryForQC = inventoryList[_selectedInventoryIndex];
     });
   }

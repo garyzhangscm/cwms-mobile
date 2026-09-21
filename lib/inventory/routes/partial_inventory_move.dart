@@ -113,7 +113,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Partial Inventory Move")),
+      appBar: AppBar(title: Text("Claytech One - Partial Inventory Move")),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),

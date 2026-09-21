@@ -1,5 +1,3 @@
-
-
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/profile.dart';
@@ -33,8 +31,9 @@ class UserModel extends ProfileChangeNotifier {
 
 class ThemeModel extends ProfileChangeNotifier {
   // 获取当前主题，如果为设置主题，则默认使用蓝色主题
-  ColorSwatch get theme => Global.themes
-      .firstWhere((e) => e.toARGB32() == _profile.theme, orElse: () => Colors.blue);
+  ColorSwatch get theme =>
+      Global.themes.firstWhere((e) => e.toARGB32() == _profile.theme,
+          orElse: () => Colors.blue);
 
   // 主题改变后，通知其依赖项，新主题会立即生效
   set theme(ColorSwatch color) {
@@ -50,14 +49,15 @@ class LocaleModel extends ProfileChangeNotifier {
   Locale? getLocale() {
     if (_profile.locale == null) return null;
     var t = _profile.locale!.split("_");
+    if (t.length != 2 || t[0].isEmpty || t[1].isEmpty) return null;
     return Locale(t[0], t[1]);
   }
 
   // 获取当前Locale的字符串表示
-  String get locale => _profile.locale!;
+  String? get locale => _profile.locale;
 
   // 用户改变APP语言后，通知依赖项更新，新语言会立即生效
-  set locale(String locale) {
+  set locale(String? locale) {
     if (locale != _profile.locale) {
       _profile.locale = locale;
       notifyListeners();

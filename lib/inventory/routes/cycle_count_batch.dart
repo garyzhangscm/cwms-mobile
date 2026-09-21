@@ -55,7 +55,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("CWMS - Cycle Count")),
+      appBar: AppBar(title: Text("Claytech One - Cycle Count")),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),

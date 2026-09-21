@@ -17,7 +17,7 @@
     <!--    android:name="io.flutter.app.FlutterApplication"  -->
     <application
         android:name="${applicationName}"
-        android:label="cwms_mobile"
+        android:label="Claytech One"
         android:icon="@mipmap/launcher_icon">
 
         <activity
