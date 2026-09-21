@@ -970,18 +970,21 @@ class _ReceivingPageState extends State<ReceivingPage> {
   // 2. default item package type of the item
   // 3. first item package type of the item
   ItemPackageType? getDefaultItemPackageType(ReceiptLine receiptLine) {
+    final packageTypes = receiptLine.item?.itemPackageTypes ?? [];
+    if (packageTypes.isEmpty) return null;
+
     if (receiptLine.itemPackageTypeId != null) {
-      return _currentReceiptLine!.item!.itemPackageTypes.firstWhereOrNull(
+      final linePackageType = packageTypes.firstWhereOrNull(
           (element) => element.id == receiptLine.itemPackageTypeId);
+      if (linePackageType != null) return linePackageType;
     }
 
-    ItemPackageType? defaultItemPackageType = _currentReceiptLine!
-        .item!.itemPackageTypes
-        .firstWhereOrNull((element) => element.defaultFlag == true);
+    final defaultItemPackageType =
+        packageTypes.firstWhereOrNull((element) => element.defaultFlag == true);
 
-    return defaultItemPackageType == null
-        ? _currentReceiptLine!.item!.itemPackageTypes[0]
-        : defaultItemPackageType;
+    // If no configured default exists, always select the first available
+    // package type so receiving can continue without an extra tap.
+    return defaultItemPackageType ?? packageTypes.first;
   }
 
   List<DropdownMenuItem<ItemUnitOfMeasure>> _getItemUnitOfMeasures() {
