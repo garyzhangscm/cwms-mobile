@@ -10,7 +10,7 @@ bool workspaceIsChinese(BuildContext context) =>
 IconData workspaceIcon(String name) {
   final value = name.toLowerCase();
   if (value.contains('inbound') || value.contains('receiv'))
-    return Icons.move_to_inbox_outlined;
+    return Icons.inbox_outlined;
   if (value.contains('outbound') || value.contains('pick'))
     return Icons.local_shipping_outlined;
   if (value.contains('inventory') || value.contains('count'))
@@ -104,8 +104,6 @@ class WorkspaceTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14)),
                   child: Icon(workspaceIcon(identity), color: color, size: 26)),
               const Spacer(),
-              const Icon(Icons.arrow_outward_rounded,
-                  size: 18, color: Color(0xFF8997AA)),
             ]),
             const SizedBox(height: 20),
             Text(title,
