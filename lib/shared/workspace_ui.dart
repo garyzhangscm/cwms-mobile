@@ -9,14 +9,18 @@ bool workspaceIsChinese(BuildContext context) =>
 
 IconData workspaceIcon(String name) {
   final value = name.toLowerCase();
+  if (value.contains('barcode') || value.contains('scan'))
+    return Icons.qr_code_scanner_outlined;
+  if (value.contains('reverse') || value.contains('return'))
+    return Icons.undo_rounded;
+  if (value.contains('qc') || value.contains('quality'))
+    return Icons.fact_check_outlined;
   if (value.contains('inbound') || value.contains('receiv'))
     return Icons.inbox_outlined;
   if (value.contains('outbound') || value.contains('pick'))
     return Icons.local_shipping_outlined;
   if (value.contains('inventory') || value.contains('count'))
     return Icons.inventory_2_outlined;
-  if (value.contains('qc') || value.contains('quality'))
-    return Icons.fact_check_outlined;
   if (value.contains('work') || value.contains('produc'))
     return Icons.precision_manufacturing_outlined;
   return Icons.dashboard_outlined;
@@ -94,24 +98,22 @@ class WorkspaceTile extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                      color: color.withValues(alpha: .09),
-                      borderRadius: BorderRadius.circular(14)),
-                  child: Icon(workspaceIcon(identity), color: color, size: 26)),
-              const Spacer(),
-            ]),
-            const SizedBox(height: 20),
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: workspaceNavy,
-                    height: 1.3)),
+          child: Row(children: [
+            Container(
+                padding: const EdgeInsets.all(13),
+                decoration: BoxDecoration(
+                    color: color.withValues(alpha: .09),
+                    borderRadius: BorderRadius.circular(15)),
+                child: Icon(workspaceIcon(identity), color: color, size: 28)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(title,
+                  style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: workspaceNavy,
+                      height: 1.25)),
+            ),
           ]),
         ),
       ),
