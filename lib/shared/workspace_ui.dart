@@ -107,12 +107,18 @@ class WorkspaceTile extends StatelessWidget {
                 child: Icon(workspaceIcon(identity), color: color, size: 28)),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(title,
-                  style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: workspaceNavy,
-                      height: 1.25)),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(title,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: workspaceNavy,
+                        height: 1.25)),
+              ),
             ),
           ]),
         ),
