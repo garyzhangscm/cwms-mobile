@@ -5,12 +5,23 @@ import 'shared/MyDrawer.dart';
 import 'shared/workspace_ui.dart';
 
 class SubMenus extends StatelessWidget {
+  String _inventoryOperationTitle(String title) {
+    final normalized = title.trim().toLowerCase();
+    if (normalized == 'inventory lost and found') return 'Lost & Found';
+    if (normalized == 'partial inventory move') return 'Partial Move';
+    if (normalized == 'inventory putaway') return 'Putaway';
+    if (normalized == 'inventory qc') return 'QC';
+    return title;
+  }
+
   @override
   Widget build(BuildContext context) {
     final group = ModalRoute.of(context)!.settings.arguments as MenuSubGroup;
     final zh = workspaceIsChinese(context);
     final title = CWMSLocalizations.of(context)
         .getMenuDisplayText(group.i18n ?? '', group.text ?? group.name ?? '');
+    final isInventoryPage = title.trim().toLowerCase() == 'inventory' ||
+        group.name?.trim().toLowerCase() == 'inventory';
     return Scaffold(
       backgroundColor: workspaceBackground,
       appBar: AppBar(
@@ -46,10 +57,13 @@ class SubMenus extends StatelessWidget {
                       WorkspaceGrid(
                           children: List.generate(group.menus.length, (index) {
                         final menu = group.menus[index];
+                        final menuTitle = CWMSLocalizations.of(context)
+                            .getMenuDisplayText(
+                                menu.i18n ?? '', menu.text ?? menu.name ?? '');
                         return WorkspaceTile(
-                            title: CWMSLocalizations.of(context)
-                                .getMenuDisplayText(menu.i18n ?? '',
-                                    menu.text ?? menu.name ?? ''),
+                            title: isInventoryPage
+                                ? _inventoryOperationTitle(menuTitle)
+                                : menuTitle,
                             identity: '${menu.name} ${menu.link}',
                             index: index,
                             onTap: menu.link?.isNotEmpty == true
