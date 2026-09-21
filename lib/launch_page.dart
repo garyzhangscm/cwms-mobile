@@ -109,7 +109,7 @@ class _LaunchPageState extends State<LaunchPage>
               ClipRRect(
                 borderRadius: BorderRadius.circular(28),
                 child: Image.asset(
-                  'assets/icon/claytech_one_icon_v2.png',
+                  'assets/icon/claytech_one_grid.png',
                   width: 112,
                   height: 112,
                 ),
