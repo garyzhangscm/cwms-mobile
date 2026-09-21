@@ -9,12 +9,25 @@ bool workspaceIsChinese(BuildContext context) =>
 
 IconData workspaceIcon(String name) {
   final value = name.toLowerCase();
+  // Keep each operation visually distinct. These are semantic symbols rather
+  // than one generic box recoloured for every menu item.
+  if (value.contains('partial') && value.contains('move'))
+    return Icons.compare_arrows_outlined;
+  if (value.contains('putaway') || value.contains('put-away'))
+    return Icons.drive_file_move_outlined;
+  if (value.contains('lost') || value.contains('found'))
+    return Icons.find_in_page_outlined;
+  if (value.contains('sampling') || value.contains('sample'))
+    return Icons.science_outlined;
+  if (value.contains('audit')) return Icons.playlist_add_check_outlined;
+  if (value.contains('cycle') && value.contains('count'))
+    return Icons.fact_check_outlined;
   if (value.contains('barcode') || value.contains('scan'))
     return Icons.qr_code_scanner_outlined;
   if (value.contains('reverse') || value.contains('return'))
     return Icons.undo_rounded;
   if (value.contains('qc') || value.contains('quality'))
-    return Icons.fact_check_outlined;
+    return Icons.verified_outlined;
   if (value.contains('inbound') || value.contains('receiv'))
     return Icons.inbox_outlined;
   if (value.contains('outbound') || value.contains('pick'))
