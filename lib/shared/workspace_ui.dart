@@ -109,31 +109,30 @@ class WorkspaceTile extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(children: [
-            Container(
-                padding: const EdgeInsets.all(13),
-                decoration: BoxDecoration(
-                    color: color.withValues(alpha: .09),
-                    borderRadius: BorderRadius.circular(15)),
-                child: Icon(workspaceIcon(identity), color: color, size: 28)),
-            const SizedBox(width: 16),
-            Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 112),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: Row(children: [
+              Container(
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                      color: color.withValues(alpha: .09),
+                      borderRadius: BorderRadius.circular(15)),
+                  child: Icon(workspaceIcon(identity), color: color, size: 28)),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Text(title,
-                    maxLines: 1,
-                    softWrap: false,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
                         color: workspaceNavy,
-                        height: 1.25)),
+                        height: 1.18)),
               ),
-            ),
-          ]),
+            ]),
+          ),
         ),
       ),
     );
