@@ -9,19 +9,14 @@ import 'package:flutter/material.dart';
 import '../../shared/models/barcode.dart';
 import '../../shared/services/barcode_service.dart';
 
-
-class InventoryQueryPage extends StatefulWidget{
-
+class InventoryQueryPage extends StatefulWidget {
   InventoryQueryPage({Key? key}) : super(key: key);
-
 
   @override
   State<StatefulWidget> createState() => _InventoryQueryPageState();
-
 }
 
 class _InventoryQueryPageState extends State<InventoryQueryPage> {
-
   // show LPN and Item
   // allow the user to choose LPN or Item if there're
   // multiple LPN to deposit, or multiple Item on the same LPN to deposit
@@ -30,14 +25,11 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   FocusNode _lpnFocusNode = FocusNode();
   TextEditingController _itemController = new TextEditingController();
 
-
-  final  _formKey = GlobalKey<FormState>();
-
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-
 
     _lpnFocusNode.addListener(() {
       print("_lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
@@ -49,25 +41,38 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
           String lpn = BarcodeService.getLPN(barcode);
           printLongLogMessage("get lpn from lpn?: ${lpn}");
           if (lpn == "") {
-
             showErrorDialog(context, "can't get LPN from the barcode");
             return;
-          }
-          else {
+          } else {
             _lpnController.text = lpn;
           }
         }
-
       }
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(title: Text("Claytech One - Inventory")),
+      appBar: AppBar(
+        title: Text("Claytech One - Inventory"),
+        actions: [
+          IconButton(
+            tooltip: 'Multiple LPN Capture',
+            icon: const Icon(Icons.document_scanner_outlined),
+            onPressed: () async {
+              final lpns =
+                  await Navigator.of(context).pushNamed('multiple_lpn_capture');
+              if (!mounted || lpns is! List<String> || lpns.isEmpty) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(
+                        '${lpns.length} LPN(s) captured for the next operation.')),
+              );
+            },
+          ),
+        ],
+      ),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -76,10 +81,27 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
           autovalidateMode: AutovalidateMode.always, //开启自动校验
           child: Column(
             children: <Widget>[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    final lpns = await Navigator.of(context)
+                        .pushNamed('multiple_lpn_capture');
+                    if (!mounted || lpns is! List<String> || lpns.isEmpty)
+                      return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              '${lpns.length} LPN(s) captured for the next operation.')),
+                    );
+                  },
+                  icon: const Icon(Icons.document_scanner_outlined),
+                  label: const Text('Multiple LPN Capture'),
+                ),
+              ),
               _buildLocationScanner(context),
               _buildLPNScanner(context),
               _buildItemScanner(context),
-
               Padding(
                 padding: const EdgeInsets.only(top: 25),
                 child: ConstrainedBox(
@@ -90,10 +112,10 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
                     onPressed: () {
-                       if (_formKey.currentState!.validate()) {
-                         print("form validation passed");
-                         _onInventoryQuery();
-                       }
+                      if (_formKey.currentState!.validate()) {
+                        print("form validation passed");
+                        _onInventoryQuery();
+                      }
                     },
                     child: Text(CWMSLocalizations.of(context).query),
                   ),
@@ -107,144 +129,105 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
     );
   }
 
-
   // scan in barcode to add a order into current batch
   Widget _buildLPNScanner(BuildContext context) {
-    return
-      Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Column(
-             children: <Widget>[
-                 TextFormField(
-                    controller: _lpnController,
-                    focusNode: _lpnFocusNode,
-                    decoration: InputDecoration(
-                      labelText: CWMSLocalizations
-                          .of(context)
-                          .lpn,
-                      hintText: CWMSLocalizations
-                          .of(context)
-                          .inputLPNHint,
-                      suffixIcon:
-                        IconButton(
-                          onPressed: () => _clearLpnField(),
-                          icon: Icon(Icons.close),
-                        ),
-                    ),
-                 ),
-
-             ]
-          )
-      );
+    return Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Column(children: <Widget>[
+          TextFormField(
+            controller: _lpnController,
+            focusNode: _lpnFocusNode,
+            decoration: InputDecoration(
+              labelText: CWMSLocalizations.of(context).lpn,
+              hintText: CWMSLocalizations.of(context).inputLPNHint,
+              suffixIcon: IconButton(
+                onPressed: () => _clearLpnField(),
+                icon: Icon(Icons.close),
+              ),
+            ),
+          ),
+        ]));
   }
 
   // scan in location barcode to confirm
   Widget _buildLocationScanner(BuildContext context) {
-    return
-      Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: _locationController,
-                  decoration: InputDecoration(
-                    labelText: CWMSLocalizations
-                        .of(context)
-                        .location,
-                    hintText: CWMSLocalizations
-                        .of(context)
-                        .inputLocationHint,
-                    suffixIcon:
-                      IconButton(
-                        onPressed: () => _clearLocationField(),
-                        icon: Icon(Icons.close),
-                      ),
-
-                  ),
-                ),
-
-              ]
-          )
-      );
+    return Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Column(children: <Widget>[
+          TextFormField(
+            controller: _locationController,
+            decoration: InputDecoration(
+              labelText: CWMSLocalizations.of(context).location,
+              hintText: CWMSLocalizations.of(context).inputLocationHint,
+              suffixIcon: IconButton(
+                onPressed: () => _clearLocationField(),
+                icon: Icon(Icons.close),
+              ),
+            ),
+          ),
+        ]));
   }
-
 
   // scan in location barcode to confirm
   Widget _buildItemScanner(BuildContext context) {
-    return
-      Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: _itemController,
-                  decoration: InputDecoration(
-                    labelText: CWMSLocalizations
-                        .of(context)
-                        .item,
-                    hintText: CWMSLocalizations
-                        .of(context)
-                        .inputItemHint,
-                    suffixIcon:
-                      IconButton(
-                        onPressed: () => _clearItemField(),
-                        icon: Icon(Icons.close),
-                      ),
-
-                  ),
-                ),
-
-              ]
-          )
-      );
+    return Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Column(children: <Widget>[
+          TextFormField(
+            controller: _itemController,
+            decoration: InputDecoration(
+              labelText: CWMSLocalizations.of(context).item,
+              hintText: CWMSLocalizations.of(context).inputItemHint,
+              suffixIcon: IconButton(
+                onPressed: () => _clearItemField(),
+                icon: Icon(Icons.close),
+              ),
+            ),
+          ),
+        ]));
   }
 
   _onInventoryQuery() async {
-
     showLoading(context);
-    List<Inventory> inventories =
-        await InventoryService.findInventory(
-          locationName: _locationController.text,
-          itemName: _itemController.text,
-          lpn: _lpnController.text,
-        );
-
+    List<Inventory> inventories = await InventoryService.findInventory(
+      locationName: _locationController.text,
+      itemName: _itemController.text,
+      lpn: _lpnController.text,
+    );
 
     Navigator.of(context).pop();
 
     if (inventories.length == 0) {
-
       showToast(CWMSLocalizations.of(context).noInventoryFound);
-    }
-    else {
+    } else {
       // load the location for each inventory
       for (var inventory in inventories) {
         if (inventory.location == null && inventory.locationId != null) {
-          inventory.location = await WarehouseLocationService.getWarehouseLocationById(inventory.locationId!);
+          inventory.location =
+              await WarehouseLocationService.getWarehouseLocationById(
+                  inventory.locationId!);
         }
 
-        printLongLogMessage("INVENTORY ${inventory.lpn} 's location is setup to ${inventory.location?.name}");
+        printLongLogMessage(
+            "INVENTORY ${inventory.lpn} 's location is setup to ${inventory.location?.name}");
       }
 
-      printLongLogMessage("will flow to invenory with ${inventories.length} inventory records");
+      printLongLogMessage(
+          "will flow to invenory with ${inventories.length} inventory records");
       Navigator.of(context)
           .pushNamed("inventory_display", arguments: inventories);
-
-
     }
   }
 
   _clearLpnField() {
     _lpnController.clear();
   }
+
   _clearItemField() {
     _itemController.clear();
   }
+
   _clearLocationField() {
     _locationController.clear();
   }
-
-
-
-
 }
