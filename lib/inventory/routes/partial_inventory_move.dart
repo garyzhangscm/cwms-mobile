@@ -46,6 +46,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
   var _itemNames = Set<String>();
   Map<String, Item> _itemMap = HashMap();
+  Map<String, List<int>> _itemInventoryIdMap = HashMap();
   // map to save the total quantity of the map so that
   // the partial move won't exceed the total quantity of the
   // item on the LPN
@@ -64,6 +65,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     inventoryOnRF = [];
     _itemNames = Set<String>();
     _itemMap.clear();
+    _itemInventoryIdMap.clear();
     _itemQuantityMap.clear();
     _selectedItemName = "";
     _inventoryDepositRequests = [];
@@ -162,6 +164,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       _lpnController.text = "";
       _itemNames = Set<String>();
       _itemMap.clear();
+      _itemInventoryIdMap.clear();
       _itemQuantityMap.clear();
       _selectedItemName = "";
       _quantityController.clear();
@@ -339,6 +342,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     setState(() {
       _itemNames.clear();
       _itemMap.clear();
+      _itemInventoryIdMap.clear();
       _itemQuantityMap.clear();
       _selectedItemName = "";
       _quantityController.clear();
@@ -363,6 +367,11 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         if (itemName == null) continue;
         _itemNames.add(itemName);
         _itemMap[itemName] = item!;
+        if (inventory.id != null) {
+          _itemInventoryIdMap
+              .putIfAbsent(itemName, () => [])
+              .add(inventory.id!);
+        }
         _itemQuantityMap[itemName] =
             (_itemQuantityMap[itemName] ?? 0) + (inventory.quantity ?? 0);
       }
@@ -738,9 +747,13 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
     _inventoryDepositRequests.insert(0, inventoryDepositRequest);
 
+    final inventoryIds =
+        _itemInventoryIdMap[_selectedItemName] ?? const <int>[];
+    final directInventoryId =
+        inventoryIds.length == 1 ? inventoryIds.first : null;
     _moveInventoryAsync(inventoryDepositRequest,
         _selectedItemUnitOfMeasure!.unitOfMeasure!.name!,
-        retryTime: 0);
+        inventoryId: directInventoryId, retryTime: 0);
 
     // Navigator.of(context).pop();
     showToast("LPN putaway request sent");
@@ -748,6 +761,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       _lpnController.text = "";
       _itemNames = Set<String>();
       _itemMap.clear();
+      _itemInventoryIdMap.clear();
       _itemQuantityMap.clear();
       _selectedItemName = "";
     });
@@ -767,16 +781,25 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
   Future<void> _moveInventoryAsync(
       InventoryDepositRequest inventoryDepositRequest, String unitOfMeasure,
-      {int retryTime = 0}) async {
+      {int? inventoryId, int retryTime = 0}) async {
     const maxMoveRetries = 2;
+    final totalPerf = Stopwatch()..start();
     try {
+      final locationPerf = Stopwatch()..start();
+      final locationWasCached = _cachedRfLocation != null;
       final rfLocation = await _getCachedRfLocation();
+      printLongLogMessage(
+          "[PERF] partial move location=${locationPerf.elapsedMilliseconds}ms cached=$locationWasCached");
+      final movePerf = Stopwatch()..start();
       final resultInventories = await InventoryService.moveInventory(
+          inventoryId: inventoryId,
           lpn: inventoryDepositRequest.lpn!,
           quantity: inventoryDepositRequest.quantity!,
           itemName: inventoryDepositRequest.itemName!,
           unitOfMeasure: unitOfMeasure,
           destinationLocation: rfLocation);
+      printLongLogMessage(
+          "[PERF] partial move API inventory=$inventoryId request=${movePerf.elapsedMilliseconds}ms total=${totalPerf.elapsedMilliseconds}ms result=${resultInventories.length}");
 
       if (!mounted) return;
       _reloadInventoryOnRF();
@@ -795,7 +818,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
           return _moveInventoryAsync(inventoryDepositRequest, unitOfMeasure,
-              retryTime: retryTime + 1);
+              inventoryId: inventoryId, retryTime: retryTime + 1);
         }
         return;
       }
