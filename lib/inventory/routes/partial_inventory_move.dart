@@ -477,7 +477,12 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   // call the deposit form to deposit the inventory on the RF
   Future<void> _startDeposit() async {
     _timer?.cancel();
-    await Navigator.of(context).pushNamed("inventory_deposit");
+    // The partial-move page already has the RF inventory list. Reusing it
+    // avoids a second full RF inventory request when Deposit opens.
+    await Navigator.of(context).pushNamed(
+      "inventory_deposit",
+      arguments: List<Inventory>.from(inventoryOnRF),
+    );
 
     // refresh the inventory on the RF
     // when we come back from the deposit page, we will refresh
