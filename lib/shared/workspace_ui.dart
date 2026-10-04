@@ -146,9 +146,9 @@ class WorkspaceGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       LayoutBuilder(builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 850
+        final columns = constraints.maxWidth >= 1000
             ? 4
-            : constraints.maxWidth >= 580
+            : constraints.maxWidth >= 700
                 ? 3
                 : constraints.maxWidth >= 340
                     ? 2
@@ -177,5 +177,65 @@ class WorkspaceGrid extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: rows,
         );
+      });
+}
+
+/// A persistent navigation panel on large windows, with the same route actions
+/// as the phone menus. No additional API request is needed for this layout.
+class WorkspaceNavigation extends StatelessWidget {
+  const WorkspaceNavigation(
+      {super.key,
+      required this.child,
+      required this.title,
+      this.destinations = const []});
+  final Widget child;
+  final String title;
+  final List<Widget> destinations;
+
+  @override
+  Widget build(BuildContext context) =>
+      LayoutBuilder(builder: (context, constraints) {
+        if (constraints.maxWidth < 1000) return child;
+        final zh = workspaceIsChinese(context);
+        return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          SizedBox(
+              width: 220,
+              child: Material(
+                  color: Colors.white,
+                  child: ListView(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 24),
+                      children: [
+                        const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Text('CLAYTECH ONE',
+                                style: TextStyle(
+                                    color: workspaceNavy,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1))),
+                        const SizedBox(height: 16),
+                        ListTile(
+                            leading: const Icon(Icons.grid_view_rounded),
+                            title: Text(zh ? '工作台' : 'Workspace'),
+                            onTap: () => Navigator.of(context).popUntil(
+                                (route) =>
+                                    route.settings.name == 'menus_page' ||
+                                    route.isFirst)),
+                        ...destinations,
+                        const Divider(height: 32),
+                        ListTile(
+                            leading: const Icon(Icons.badge_outlined),
+                            title: Text(zh ? '作业配置' : 'Work profile'),
+                            onTap: () => Navigator.of(context)
+                                .pushNamed('work_profile')),
+                        ListTile(
+                            leading: const Icon(Icons.language),
+                            title: Text(zh ? '语言' : 'Language'),
+                            onTap: () =>
+                                Navigator.of(context).pushNamed('language')),
+                      ]))),
+          const VerticalDivider(width: 1, color: Color(0xFFE4E9F1)),
+          Expanded(child: child),
+        ]);
       });
 }

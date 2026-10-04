@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:collection/collection.dart';
 
 import 'package:badges/badges.dart' as badge;
@@ -278,7 +279,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
+              constraints: const BoxConstraints(maxWidth: 1180),
               child: Theme(
                 data: Theme.of(context).copyWith(
                   inputDecorationTheme: InputDecorationTheme(
@@ -303,165 +304,156 @@ class _ReceivingPageState extends State<ReceivingPage> {
                   ),
                 ),
                 child: Form(
-                  key: _formKey,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildReceivingStatusCard(context),
-                        const SizedBox(height: 12),
-                        _buildSectionCard(context,
-                            workspaceIsChinese(context) ? '收货单' : 'Receipt', [
-                          _buildReceiptNumberControl(context),
-                          buildTwoSectionInputRow(
-                            l10n.item,
-                            TextFormField(
-                              controller: _itemController,
-                              textInputAction: TextInputAction.next,
-                              focusNode: _itemFocusNode,
-                              autofocus: true,
-                              onEditingComplete: () =>
-                                  _quantityFocusNode.requestFocus(),
-                              decoration: InputDecoration(
-                                  suffixIcon: IconButton(
-                                      onPressed: _showChoosingItemsDialog,
-                                      icon: const Icon(Icons.list_rounded))),
-                              validator: (v) => v?.trim().isEmpty ?? true
-                                  ? "please scan in item"
-                                  : null,
-                            ),
+                    key: _formKey,
+                    child: AdaptiveSections(
+                      header: _buildReceivingStatusCard(context),
+                      primary: _buildSectionCard(context,
+                          workspaceIsChinese(context) ? '收货单' : 'Receipt', [
+                        _buildReceiptNumberControl(context),
+                        buildTwoSectionInputRow(
+                          l10n.item,
+                          TextFormField(
+                            controller: _itemController,
+                            textInputAction: TextInputAction.next,
+                            focusNode: _itemFocusNode,
+                            autofocus: true,
+                            onEditingComplete: () =>
+                                _quantityFocusNode.requestFocus(),
+                            decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                    onPressed: _showChoosingItemsDialog,
+                                    icon: const Icon(Icons.list_rounded))),
+                            validator: (v) => v?.trim().isEmpty ?? true
+                                ? "please scan in item"
+                                : null,
                           ),
-                          buildTwoSectionInformationRow(l10n.item,
-                              _currentReceiptLine?.item?.description ?? ""),
-                          buildFourSectionInformationRow(
-                              l10n.expectedQuantity,
-                              _currentReceiptLine?.expectedQuantity
-                                      .toString() ??
-                                  "",
-                              l10n.receivedQuantity,
-                              _currentReceiptLine?.receivedQuantity
-                                      .toString() ??
-                                  ""),
-                        ]),
-                        const SizedBox(height: 12),
-                        _buildSectionCard(
-                            context,
-                            workspaceIsChinese(context)
-                                ? '入库明细'
-                                : 'Inventory details',
-                            [
-                              buildTwoSectionInputRow(
-                                  l10n.itemPackageType,
-                                  _buildValidatedSelectionField(
-                                      _packageTypeField,
-                                      _getItemPackageTypeItems().isEmpty
-                                          ? const Text("Not configured")
-                                          : DropdownButton(
-                                              items: _getItemPackageTypeItems(),
-                                              value: _selectedItemPackageType,
-                                              elevation: 1,
-                                              isExpanded: true,
-                                              icon: const Icon(Icons
-                                                  .keyboard_arrow_down_rounded),
-                                              onChanged:
-                                                  (ItemPackageType? value) {
-                                                setState(() {
-                                                  _selectedItemPackageType =
-                                                      value;
-                                                  _selectionErrors.remove(
-                                                      _packageTypeField);
-                                                  _selectionErrors.remove(
-                                                      _unitOfMeasureField);
-                                                });
-                                              }))),
-                              buildTwoSectionInputRow(
-                                  l10n.inventoryStatus,
-                                  _buildValidatedSelectionField(
-                                      _inventoryStatusField,
-                                      DropdownButton(
-                                          items: _getInventoryStatusItems(),
-                                          value: _selectedInventoryStatus,
-                                          elevation: 1,
-                                          isExpanded: true,
-                                          icon: const Icon(Icons
-                                              .keyboard_arrow_down_rounded),
-                                          onChanged: (InventoryStatus? value) {
-                                            setState(() {
-                                              _selectedInventoryStatus = value;
-                                              _selectionErrors.remove(
-                                                  _inventoryStatusField);
-                                            });
-                                          }))),
-                              buildThreeSectionInputRow(
-                                  "RCV Quantity:",
-                                  TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      controller: _quantityController,
-                                      textInputAction: TextInputAction.next,
-                                      autofocus: true,
-                                      focusNode: _quantityFocusNode,
-                                      onFieldSubmitted: (v) =>
-                                          _lpnFocusNode.requestFocus(),
-                                      decoration: const InputDecoration(),
-                                      validator: (v) {
-                                        if (v?.trim().isEmpty ?? true)
-                                          return "please type in quantity";
-                                        final receivingQuantity =
-                                            int.tryParse(v!.trim());
-                                        if (receivingQuantity == null ||
-                                            receivingQuantity <= 0)
-                                          return "please type in a valid quantity";
-                                        if (!_validateOverReceiving(
-                                            _currentReceiptLine!,
-                                            receivingQuantity))
-                                          return "over receive is not allowed";
-                                        return null;
-                                      }),
-                                  _buildValidatedSelectionField(
-                                      _unitOfMeasureField,
-                                      _getItemUnitOfMeasures().isEmpty
-                                          ? const Text("Not configured")
-                                          : DropdownButton(
-                                              hint: Text(l10n.pleaseSelect),
-                                              items: _getItemUnitOfMeasures(),
-                                              value: _selectedItemUnitOfMeasure,
-                                              elevation: 1,
-                                              isExpanded: true,
-                                              icon: const Icon(Icons
-                                                  .keyboard_arrow_down_rounded),
-                                              onChanged:
-                                                  (ItemUnitOfMeasure? value) {
-                                                setState(() {
-                                                  _selectedItemUnitOfMeasure =
-                                                      value;
-                                                  _selectionErrors.remove(
-                                                      _unitOfMeasureField);
-                                                });
-                                              }))),
-                              buildTwoSectionInputRow(
-                                  l10n.lpn + ": ",
-                                  Focus(
-                                      child: SystemControllerNumberTextBox(
-                                          type: "lpn",
-                                          controller: _lpnController,
-                                          readOnly: false,
-                                          showKeyboard: false,
-                                          focusNode: _lpnFocusNode,
-                                          autofocus: true,
-                                          validator: (v) {
-                                            if ((v?.trim().isEmpty ?? true) &&
-                                                _getRequiredLPNCount(int.parse(
-                                                        _quantityController
-                                                            .text)) ==
-                                                    1)
-                                              return l10n
-                                                  .missingField(l10n.lpn);
-                                            return null;
-                                          }))),
-                            ]),
-                        const SizedBox(height: 12),
-                        _buildButtons(context),
+                        ),
+                        buildTwoSectionInformationRow(l10n.item,
+                            _currentReceiptLine?.item?.description ?? ""),
+                        buildFourSectionInformationRow(
+                            l10n.expectedQuantity,
+                            _currentReceiptLine?.expectedQuantity.toString() ??
+                                "",
+                            l10n.receivedQuantity,
+                            _currentReceiptLine?.receivedQuantity.toString() ??
+                                ""),
                       ]),
-                ),
+                      secondary: _buildSectionCard(
+                          context,
+                          workspaceIsChinese(context)
+                              ? '入库明细'
+                              : 'Inventory details',
+                          [
+                            buildTwoSectionInputRow(
+                                l10n.itemPackageType,
+                                _buildValidatedSelectionField(
+                                    _packageTypeField,
+                                    _getItemPackageTypeItems().isEmpty
+                                        ? const Text("Not configured")
+                                        : DropdownButton(
+                                            items: _getItemPackageTypeItems(),
+                                            value: _selectedItemPackageType,
+                                            elevation: 1,
+                                            isExpanded: true,
+                                            icon: const Icon(Icons
+                                                .keyboard_arrow_down_rounded),
+                                            onChanged:
+                                                (ItemPackageType? value) {
+                                              setState(() {
+                                                _selectedItemPackageType =
+                                                    value;
+                                                _selectionErrors
+                                                    .remove(_packageTypeField);
+                                                _selectionErrors.remove(
+                                                    _unitOfMeasureField);
+                                              });
+                                            }))),
+                            buildTwoSectionInputRow(
+                                l10n.inventoryStatus,
+                                _buildValidatedSelectionField(
+                                    _inventoryStatusField,
+                                    DropdownButton(
+                                        items: _getInventoryStatusItems(),
+                                        value: _selectedInventoryStatus,
+                                        elevation: 1,
+                                        isExpanded: true,
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down_rounded),
+                                        onChanged: (InventoryStatus? value) {
+                                          setState(() {
+                                            _selectedInventoryStatus = value;
+                                            _selectionErrors
+                                                .remove(_inventoryStatusField);
+                                          });
+                                        }))),
+                            buildThreeSectionInputRow(
+                                "RCV Quantity:",
+                                TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    controller: _quantityController,
+                                    textInputAction: TextInputAction.next,
+                                    autofocus: true,
+                                    focusNode: _quantityFocusNode,
+                                    onFieldSubmitted: (v) =>
+                                        _lpnFocusNode.requestFocus(),
+                                    decoration: const InputDecoration(),
+                                    validator: (v) {
+                                      if (v?.trim().isEmpty ?? true)
+                                        return "please type in quantity";
+                                      final receivingQuantity =
+                                          int.tryParse(v!.trim());
+                                      if (receivingQuantity == null ||
+                                          receivingQuantity <= 0)
+                                        return "please type in a valid quantity";
+                                      if (!_validateOverReceiving(
+                                          _currentReceiptLine!,
+                                          receivingQuantity))
+                                        return "over receive is not allowed";
+                                      return null;
+                                    }),
+                                _buildValidatedSelectionField(
+                                    _unitOfMeasureField,
+                                    _getItemUnitOfMeasures().isEmpty
+                                        ? const Text("Not configured")
+                                        : DropdownButton(
+                                            hint: Text(l10n.pleaseSelect),
+                                            items: _getItemUnitOfMeasures(),
+                                            value: _selectedItemUnitOfMeasure,
+                                            elevation: 1,
+                                            isExpanded: true,
+                                            icon: const Icon(Icons
+                                                .keyboard_arrow_down_rounded),
+                                            onChanged:
+                                                (ItemUnitOfMeasure? value) {
+                                              setState(() {
+                                                _selectedItemUnitOfMeasure =
+                                                    value;
+                                                _selectionErrors.remove(
+                                                    _unitOfMeasureField);
+                                              });
+                                            }))),
+                            buildTwoSectionInputRow(
+                                l10n.lpn + ": ",
+                                Focus(
+                                    child: SystemControllerNumberTextBox(
+                                        type: "lpn",
+                                        controller: _lpnController,
+                                        readOnly: false,
+                                        showKeyboard: false,
+                                        focusNode: _lpnFocusNode,
+                                        autofocus: true,
+                                        validator: (v) {
+                                          if ((v?.trim().isEmpty ?? true) &&
+                                              _getRequiredLPNCount(int.parse(
+                                                      _quantityController
+                                                          .text)) ==
+                                                  1)
+                                            return l10n.missingField(l10n.lpn);
+                                          return null;
+                                        }))),
+                          ]),
+                      footer: _buildButtons(context),
+                    )),
               ),
             ),
           ),

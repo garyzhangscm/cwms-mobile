@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'dart:io';
 
 import 'package:cwms_mobile/auth/models/user.dart';
@@ -93,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.fromLTRB(18, 8, 18, 20),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 620),
+              constraints: const BoxConstraints(maxWidth: 1024),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -138,25 +139,29 @@ class _LoginPageState extends State<LoginPage> {
                             color: Colors.white.withValues(alpha: .72),
                             borderRadius: BorderRadius.circular(22),
                             border: Border.all(color: const Color(0xFFE4E9F1))),
-                        child: Column(children: [
-                          _buildSectionLabel(context, 'Account & access'),
-                          _buildCompanyCodeControl(context),
-                          const SizedBox(height: 8),
-                          _buildUserNameControl(context),
-                          const SizedBox(height: 8),
-                          _buildPasswordControl(context),
-                          const SizedBox(height: 14),
-                          _buildSectionLabel(context, 'Workstation'),
-                          _buildRFCodeControl(context),
-                          const SizedBox(height: 8),
-                          _buildWarehouseControl(context),
-                          const SizedBox(height: 4),
-                          _buildCurrentLocationControl(context),
-                          const SizedBox(height: 6),
-                          _buildRememberMeControl(context),
-                          const SizedBox(height: 6),
-                          _buildButtons(context),
-                        ]),
+                        child: AdaptiveSections(
+                          primary: Column(children: [
+                            _buildSectionLabel(context, 'Account & access'),
+                            _buildCompanyCodeControl(context),
+                            const SizedBox(height: 8),
+                            _buildUserNameControl(context),
+                            const SizedBox(height: 8),
+                            _buildPasswordControl(context),
+                          ]),
+                          secondary: Column(children: [
+                            _buildSectionLabel(context, 'Workstation'),
+                            _buildRFCodeControl(context),
+                            const SizedBox(height: 8),
+                            _buildWarehouseControl(context),
+                            const SizedBox(height: 4),
+                            _buildCurrentLocationControl(context),
+                          ]),
+                          footer: Column(children: [
+                            _buildRememberMeControl(context),
+                            const SizedBox(height: 6),
+                            _buildButtons(context),
+                          ]),
+                        ),
                       ),
                     ),
                   ),

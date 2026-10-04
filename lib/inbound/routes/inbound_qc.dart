@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -77,19 +78,24 @@ class _InboundQCPageState extends State<InboundQCPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildQCHeader(context),
-              const SizedBox(height: 16),
-              _buildLPNScanner(context),
-              const SizedBox(height: 10),
-              _buildButtons(context),
-              const SizedBox(height: 16),
-              _buildInventoryCard(context),
-              const SizedBox(height: 16),
-              _buildQCResultButtons(context),
-            ],
+          child: TabletContent(
+            child: AdaptiveSections(
+              header: _buildQCHeader(context),
+              primary: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildLPNScanner(context),
+                    const SizedBox(height: 12),
+                    _buildButtons(context)
+                  ]),
+              secondary: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildInventoryCard(context),
+                    const SizedBox(height: 16),
+                    _buildQCResultButtons(context)
+                  ]),
+            ),
           ),
         ),
       ),

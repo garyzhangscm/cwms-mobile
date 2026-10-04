@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
@@ -56,20 +57,48 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 8, 18, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildQCHeader(context, theme),
-              if (_qcInspectionRequest!.workOrderQCSampleId != null) ...[
-                const SizedBox(height: 12),
-                _buildQCQuantity(context),
-              ],
-              const SizedBox(height: 14),
-              _buildQCItemOptionList(context),
-              const SizedBox(height: 8),
-              _buildQCResultButtons(context),
-            ],
-          ),
+          child: TabletContent(
+              child: LayoutBuilder(builder: (context, constraints) {
+            if (constraints.maxWidth < 900)
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildQCHeader(context, theme),
+                  if (_qcInspectionRequest!.workOrderQCSampleId != null) ...[
+                    const SizedBox(height: 12),
+                    _buildQCQuantity(context),
+                  ],
+                  const SizedBox(height: 14),
+                  _buildQCItemOptionList(context),
+                  const SizedBox(height: 8),
+                  _buildQCResultButtons(context),
+                ],
+              );
+            return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                      width: 320,
+                      child: SingleChildScrollView(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                            _buildQCHeader(context, theme),
+                            if (_qcInspectionRequest!.workOrderQCSampleId !=
+                                null) ...[
+                              const SizedBox(height: 12),
+                              _buildQCQuantity(context),
+                            ],
+                          ]))),
+                  const SizedBox(width: 24),
+                  Expanded(
+                      child: Column(children: [
+                    _buildQCItemOptionList(context),
+                    const SizedBox(height: 12),
+                    _buildQCResultButtons(context),
+                  ])),
+                ]);
+          })),
         ),
       ),
       endDrawer: MyDrawer(),

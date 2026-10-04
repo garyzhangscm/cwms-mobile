@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'dart:async';
 
 import 'package:cwms_mobile/common/services/rf.dart';
@@ -249,7 +250,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       appBar: AppBar(title: Text("Claytech One - Deposit")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
+        child: TabletContent(
+            child: Form(
           key: _formKey,
           // autovalidateMode: AutovalidateMode.always, //开启自动校验
           child: Column(
@@ -258,16 +260,17 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                 child: SingleChildScrollView(
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
-                  child: Column(
-                    children: [
+                  child: AdaptiveSections(
+                    primary: Column(children: [
                       _buildLPNScanner(context),
                       const SizedBox(height: 14),
                       _buildInventorySummaryCard(context, request),
-                      const SizedBox(height: 14),
+                    ]),
+                    secondary: Column(children: [
                       _buildDestinationLocationRow(context),
                       const SizedBox(height: 4),
                       _buildLocationScanner(context),
-                    ],
+                    ]),
                   ),
                 ),
               ),
@@ -311,7 +314,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
               ),
             ],
           ),
-        ),
+        )),
       ),
       endDrawer: MyDrawer(),
     );
@@ -811,7 +814,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     List<InventoryDepositRequest> inventoryDepositRequests =
         InventoryService.getInventoryDepositRequests(inventoryOnRF, true, true);
     return SizedBox(
-      width: MediaQuery.of(context).size.width * .88,
+      width: (MediaQuery.of(context).size.width * .88).clamp(0.0, 720.0),
       height: MediaQuery.of(context).size.height * .68,
       child: Column(
         children: [
