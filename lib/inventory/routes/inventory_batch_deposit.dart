@@ -284,231 +284,65 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
       BuildContext context, int index) {
     String key = _inventoryDepositRequests.keys.elementAt(index);
 
-    // printLongLogMessage("_inventoryDepositRequests[key].requestInProcess: ${_inventoryDepositRequests[key]!.requestInProcess}");
-    // printLongLogMessage("_inventoryDepositRequests[key].requestResult: ${_inventoryDepositRequests[key]!.requestResult}");
-    if (_inventoryDepositRequests[key]!.requestInProcess == true) {
-      // show loading indicator if the inventory still reverse in progress
-      printLongLogMessage(
-          "show loading for index $index / ${_inventoryDepositRequests[key]!.lpn!}");
-      return SizedBox(
-          height: 90,
-          child: Stack(
-            alignment: Alignment.center,
-            fit: StackFit.expand, //未定位widget占满Stack整个空间
-            children: <Widget>[
-              ListTile(
-                title: Text(CWMSLocalizations.of(context).lpn +
-                    ": " +
-                    _inventoryDepositRequests[key]!.lpn!),
-                subtitle: Column(children: <Widget>[
-                  Row(children: <Widget>[
-                    Text(CWMSLocalizations.of(context).item + ": ",
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                    Text(_inventoryDepositRequests[key]!.itemName!,
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                  ]),
-                  Row(children: <Widget>[
-                    Text(CWMSLocalizations.of(context).quantity + ": ",
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                    Text(_inventoryDepositRequests[key]!.quantity.toString(),
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                  ]),
-                  Row(children: <Widget>[
-                    Text(CWMSLocalizations.of(context).location + ": ",
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                    Text(_inventoryDepositRequests[key]!.currentLocationName!,
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                  ]),
-                ]),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 5, bottom: 5),
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: Column(children: [CircularProgressIndicator()]),
-                      ),
-                      // Expanded(child: Container(color: Colors.amber)),
-                    ]),
-              ),
-            ],
-          ));
-    } else if (_inventoryDepositRequests[key]!.requestResult == true) {
-      return SizedBox(
-          height: 90,
-          child: ListTile(
-            title: Text(CWMSLocalizations.of(context).lpn +
-                ": " +
-                _inventoryDepositRequests[key]!.lpn!),
-            subtitle: Column(children: <Widget>[
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).item + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[key]!.itemName!,
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).quantity + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[key]!.quantity.toString(),
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).location + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[key]!.currentLocationName!,
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-            ]),
-            tileColor: Colors.lightGreen,
-          ));
-    } else {
-      double height = min(
-          75 + (_inventoryDepositRequests[key]!.result!.length / 50) * 15, 120);
-      return SizedBox(
-          height: height,
-          child: CheckboxListTile(
-            title: Text(CWMSLocalizations.of(context).lpn +
-                ": " +
-                _inventoryDepositRequests[key]!.lpn!),
-            subtitle: Column(children: <Widget>[
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).item + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[key]!.itemName!,
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).quantity + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[key]!.quantity.toString(),
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).location + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[key]!.currentLocationName!,
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Padding(
-                  padding: const EdgeInsets.only(left: 26.0),
-                  child: Text(CWMSLocalizations.of(context).nextLocation + ": ",
-                      textScaleFactor: .9,
-                      style: TextStyle(
-                        height: 1.15,
-                        color: Colors.blueGrey[700],
-                        fontSize: 17,
-                      )),
-                ),
-                Text(_inventoryDepositRequests[key]!.nextLocationName!,
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-            ]),
-            value:
-                _selectedLPNMap.containsKey(key) ? _selectedLPNMap[key] : false,
-            onChanged: (bool? selected) {
-              setState(() {
-                _selectedLPNMap[key] = selected ?? false;
-              });
-            },
-            tileColor: Colors.white,
-          ));
+    final request = _inventoryDepositRequests[key]!;
+    final labels = CWMSLocalizations.of(context);
+    final inProcess = request.requestInProcess == true;
+    final completed = request.requestResult == true;
+    final title = Text("${labels.lpn}: ${request.lpn ?? ''}");
+    final subtitle = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDepositDetail("${labels.item}: ${request.itemName ?? ''}"),
+        _buildDepositDetail("${labels.quantity}: ${request.quantity}"),
+        _buildDepositDetail(
+            "${labels.location}: ${request.currentLocationName ?? ''}"),
+        if (!inProcess && !completed)
+          _buildDepositDetail(
+              "${labels.nextLocation}: ${request.nextLocationName ?? ''}"),
+      ],
+    );
+    // Let each record grow with its text so the separator stays below it.
+    const contentPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+    if (inProcess || completed) {
+      return ListTile(
+        contentPadding: contentPadding,
+        title: title,
+        subtitle: subtitle,
+        trailing: inProcess
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : null,
+        tileColor: completed && !inProcess ? Colors.lightGreen : null,
+      );
     }
+    return CheckboxListTile(
+      contentPadding: contentPadding,
+      title: title,
+      subtitle: subtitle,
+      value: _selectedLPNMap[key] ?? false,
+      onChanged: (bool? selected) {
+        setState(() {
+          _selectedLPNMap[key] = selected ?? false;
+        });
+      },
+      tileColor: Colors.white,
+    );
+  }
+
+  Widget _buildDepositDetail(String text) {
+    return Text(
+      text,
+      textScaleFactor: .9,
+      style: TextStyle(
+        height: 1.15,
+        color: Colors.blueGrey[700],
+        fontSize: 17,
+      ),
+    );
   }
 
   @override
