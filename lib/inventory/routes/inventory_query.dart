@@ -1,5 +1,6 @@
 import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/inventory/inventory_delete_policy.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
@@ -27,6 +28,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   TextEditingController _itemController = new TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  bool _deletingLpn = false;
 
   @override
   void initState() {
@@ -53,6 +55,15 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   }
 
   @override
+  void dispose() {
+    _locationController.dispose();
+    _lpnController.dispose();
+    _lpnFocusNode.dispose();
+    _itemController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -62,15 +73,13 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
             tooltip: 'Multiple LPN Capture',
             icon: const Icon(Icons.document_scanner_outlined),
             onPressed: () async {
-              final lpns = await Navigator.of(context)
-                  .pushNamed('multiple_lpn_capture');
+              final lpns =
+                  await Navigator.of(context).pushNamed('multiple_lpn_capture');
               if (!mounted || lpns is! List<String> || lpns.isEmpty) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    '${lpns.length} LPN(s) captured for the next operation.',
-                  ),
-                ),
+                    content: Text(
+                        '${lpns.length} LPN(s) captured for the next operation.')),
               );
             },
           ),
@@ -80,31 +89,52 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: TabletContent(
-          maxWidth: 720,
-          child: SingleChildScrollView(
-            child: Form(
+            maxWidth: 720,
+            child: SingleChildScrollView(
+                child: Form(
               key: _formKey,
               autovalidateMode: AutovalidateMode.always, //开启自动校验
               child: Column(
                 children: <Widget>[
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final lpns = await Navigator.of(context)
-                            .pushNamed('multiple_lpn_capture');
-                        if (!mounted || lpns is! List<String> || lpns.isEmpty)
-                          return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${lpns.length} LPN(s) captured for the next operation.',
-                            ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final lpns = await Navigator.of(context)
+                                .pushNamed('multiple_lpn_capture');
+                            if (!mounted ||
+                                lpns is! List<String> ||
+                                lpns.isEmpty) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      '${lpns.length} LPN(s) captured for the next operation.')),
+                            );
+                          },
+                          icon: const Icon(Icons.document_scanner_outlined),
+                          label: const Text('Multiple LPN Capture'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _deletingLpn ? null : _openDeleteLpn,
+                          icon: _deletingLpn
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.delete_outline),
+                          label: const Text('Delete LPN'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor:
+                                Theme.of(context).colorScheme.error,
                           ),
-                        );
-                      },
-                      icon: const Icon(Icons.document_scanner_outlined),
-                      label: const Text('Multiple LPN Capture'),
+                        ),
+                      ],
                     ),
                   ),
                   _buildLocationScanner(context),
@@ -131,9 +161,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
                   ),
                 ],
               ),
-            ),
-          ),
-        ),
+            ))),
       ),
       endDrawer: MyDrawer(),
     );
@@ -142,9 +170,8 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   // scan in barcode to add a order into current batch
   Widget _buildLPNScanner(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Column(
-        children: <Widget>[
+        padding: const EdgeInsets.only(top: 10),
+        child: Column(children: <Widget>[
           TextFormField(
             controller: _lpnController,
             focusNode: _lpnFocusNode,
@@ -157,17 +184,14 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
               ),
             ),
           ),
-        ],
-      ),
-    );
+        ]));
   }
 
   // scan in location barcode to confirm
   Widget _buildLocationScanner(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Column(
-        children: <Widget>[
+        padding: const EdgeInsets.only(top: 10),
+        child: Column(children: <Widget>[
           TextFormField(
             controller: _locationController,
             decoration: InputDecoration(
@@ -179,17 +203,14 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
               ),
             ),
           ),
-        ],
-      ),
-    );
+        ]));
   }
 
   // scan in location barcode to confirm
   Widget _buildItemScanner(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Column(
-        children: <Widget>[
+        padding: const EdgeInsets.only(top: 10),
+        child: Column(children: <Widget>[
           TextFormField(
             controller: _itemController,
             decoration: InputDecoration(
@@ -201,9 +222,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
               ),
             ),
           ),
-        ],
-      ),
-    );
+        ]));
   }
 
   _onInventoryQuery() async {
@@ -224,21 +243,155 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
         if (inventory.location == null && inventory.locationId != null) {
           inventory.location =
               await WarehouseLocationService.getWarehouseLocationById(
-                inventory.locationId!,
-              );
+                  inventory.locationId!);
         }
 
         printLongLogMessage(
-          "INVENTORY ${inventory.lpn} 's location is setup to ${inventory.location?.name}",
-        );
+            "INVENTORY ${inventory.lpn} 's location is setup to ${inventory.location?.name}");
       }
 
       printLongLogMessage(
-        "will flow to invenory with ${inventories.length} inventory records",
-      );
+          "will flow to invenory with ${inventories.length} inventory records");
       Navigator.of(context)
           .pushNamed("inventory_display", arguments: inventories);
     }
+  }
+
+  Future<void> _openDeleteLpn() async {
+    String enteredLpn = _lpnController.text.trim();
+    final scannedLpn = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: const Text('Delete LPN'),
+          content: TextFormField(
+            initialValue: enteredLpn,
+            autofocus: true,
+            textCapitalization: TextCapitalization.characters,
+            decoration: const InputDecoration(labelText: 'LPN'),
+            onChanged: (value) => setDialogState(() => enteredLpn = value),
+            onFieldSubmitted: (value) {
+              if (value.trim().isNotEmpty) {
+                Navigator.of(dialogContext).pop(value.trim());
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: enteredLpn.trim().isEmpty
+                  ? null
+                  : () => Navigator.of(dialogContext).pop(enteredLpn.trim()),
+              child: const Text('Find'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || scannedLpn == null) return;
+
+    String lpn = scannedLpn;
+    try {
+      final barcode = BarcodeService.parseBarcode(lpn);
+      if (barcode.is_2d == true) {
+        lpn = BarcodeService.getLPN(barcode);
+      }
+    } catch (_) {
+      _showDeleteMessage('Unable to read this barcode.');
+      return;
+    }
+    lpn = lpn.trim();
+    if (lpn.isEmpty) {
+      _showDeleteMessage('No LPN found in the scanned barcode.');
+      return;
+    }
+
+    setState(() => _deletingLpn = true);
+    Inventory inventory;
+    try {
+      final inventories = await InventoryService.findInventory(lpn: lpn);
+      if (inventories.length == 1 &&
+          inventories.single.location == null &&
+          inventories.single.locationId != null) {
+        inventories.single.location =
+            await WarehouseLocationService.getWarehouseLocationById(
+                inventories.single.locationId!);
+      }
+      inventory = requireSingleOutInventory(inventories, lpn);
+    } catch (error) {
+      if (mounted) _showDeleteMessage(_deleteErrorMessage(error));
+      return;
+    } finally {
+      if (mounted) setState(() => _deletingLpn = false);
+    }
+    if (!mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete LPN?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('LPN: ${inventory.lpn}'),
+            Text('Item: ${inventory.item?.name ?? '-'}'),
+            Text('Location: ${inventory.location?.name}'),
+            Text('Quantity: ${inventory.quantity ?? '-'}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+
+    setState(() => _deletingLpn = true);
+    var deleteAccepted = false;
+    try {
+      await InventoryService.removeInventory(inventory.id!);
+      deleteAccepted = true;
+      final remaining = await InventoryService.findInventory(lpn: lpn);
+      if (remaining.isNotEmpty) {
+        throw StateError(
+            'Delete returned success, but the LPN is still found.');
+      }
+      if (mounted) {
+        _lpnController.clear();
+        _showDeleteMessage('$lpn deleted and verified.');
+      }
+    } catch (error) {
+      if (mounted) {
+        _showDeleteMessage(deleteAccepted
+            ? 'Deletion was accepted, but verification failed: $error'
+            : _deleteErrorMessage(error));
+      }
+    } finally {
+      if (mounted) setState(() => _deletingLpn = false);
+    }
+  }
+
+  String _deleteErrorMessage(Object error) =>
+      error is StateError ? error.message.toString() : 'Delete failed: $error';
+
+  void _showDeleteMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   _clearLpnField() {

@@ -19,23 +19,19 @@ import 'package:flutter/material.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 import '../../shared/models/barcode.dart';
+import '../widgets/barcode_receiving_layout.dart';
 
-
-class BarcodeReceivingPage extends StatefulWidget{
-
+class BarcodeReceivingPage extends StatefulWidget {
   BarcodeReceivingPage({Key? key}) : super(key: key);
-
 
   @override
   State<StatefulWidget> createState() => _BarcodeReceivingPageState();
-
 }
 
 class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
-
   // input batch id
 
-  List<Inventory>  _inventoryOnRF = [];
+  List<Inventory> _inventoryOnRF = [];
   Inventory? _lastReceivedInventory;
   Receipt? _lastReceivedReceipt;
 
@@ -48,14 +44,14 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
   void initState() {
     super.initState();
 
-
     _inventoryOnRF = [];
 
     _lastReceivedInventory = null;
     _lastReceivedReceipt = null;
 
     _barcodeFocusNode.addListener(() {
-      printLongLogMessage("_barcodeFocusNode.hasFocus: ${_barcodeFocusNode.hasFocus}");
+      printLongLogMessage(
+          "_barcodeFocusNode.hasFocus: ${_barcodeFocusNode.hasFocus}");
       if (!_barcodeFocusNode.hasFocus && _barcodeController.text.isNotEmpty) {
         // if we tab out, then add the LPN to the list
         _enterOnBarcodeController();
@@ -64,167 +60,133 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
     _reloadInventoryOnRF();
   }
-  final  _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _barcodeFocusNode.dispose();
+    _barcodeController.dispose();
+    super.dispose();
+  }
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).barcodeReceiving)),
+      appBar:
+          AppBar(title: Text(CWMSLocalizations.of(context).barcodeReceiving)),
       resizeToAvoidBottomInset: true,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Form(
-          key: _formKey,
-          // autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
-          child: Column(
-            children: <Widget>[
-
-              Row(
-                children: [
-                  Text(CWMSLocalizations.of(context).barcodeLastReceivingVerbiage,
-                      style: DefaultTextStyle.of(context).style.apply(fontSizeFactor: 0.5))
-                ],
-              ),
-              _lastReceivedInventory == null ?
-                  _buildEmptyReceivingInformationDisplay(context) :
-                  _buildPreviousReceivingInformationDisplay(context),
-              Row(
-                children: [
-                  Text(CWMSLocalizations.of(context).barcodeReceivingVerbiage,
-                      style: TextStyle(fontWeight: FontWeight.bold))
-                ],
-              ),
-              _buildBarcodeTextInput(context),
-              _buildButtons(context)
-            ],
-          ),
-        ),
+      body: BarcodeReceivingLayout(
+        scanTitle: CWMSLocalizations.of(context).barcodeReceiving,
+        scanInstructions:
+            CWMSLocalizations.of(context).barcodeReceivingVerbiage,
+        recentTitle: CWMSLocalizations.of(context).barcodeLastReceivingVerbiage,
+        barcodeInput:
+            Form(key: _formKey, child: _buildBarcodeTextInput(context)),
+        actions: _buildButtons(context),
+        recentInventory: _lastReceivedInventory == null
+            ? null
+            : _buildPreviousReceivingInformationDisplay(context),
       ),
       endDrawer: MyDrawer(),
     );
   }
 
-  Widget _buildEmptyReceivingInformationDisplay(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 10),
-      child: IntrinsicHeight(
-        child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Column(children: [
-                  Container(height: 240.0),
-                ]),
-              ),
-              // Expanded(child: Container(color: Colors.amber)),
-            ]),
-      ),
-    );
-
-  }
   Widget _buildPreviousReceivingInformationDisplay(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 10),
-      child: IntrinsicHeight(
-        child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Column(children: [
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).receiptNumber,
-                      _lastReceivedReceipt?.number ?? ""),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).lpn,
-                      _lastReceivedInventory?.lpn ?? ""),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                      _lastReceivedInventory?.item?.name ?? ""),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).item,
-                      _lastReceivedInventory?.item?.description ?? ""),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity,
-                      (_lastReceivedInventory?.quantity.toString()  ?? "") + " " +
-                          (_lastReceivedInventory?.itemPackageType?.stockItemUnitOfMeasure?.unitOfMeasure?.description ?? "")),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).quantity,
-                      _lastReceivedInventory == null ? "" :
-                          (_getDisplayQuantity(_lastReceivedInventory!).toString()
-                              + " " + _getDisplayUOM(_lastReceivedInventory!))),
-                  buildTwoSectionInformationRow(CWMSLocalizations.of(context).inventoryStatus,
-                      _lastReceivedInventory?.inventoryStatus?.description ?? ""),
-                ]),
-              ),
-              // Expanded(child: Container(color: Colors.amber)),
-          ]),
-      ),
+    final labels = CWMSLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _informationRow(
+            labels.receiptNumber, _lastReceivedReceipt?.number ?? ''),
+        _informationRow(labels.lpn, _lastReceivedInventory?.lpn ?? ''),
+        _informationRow(labels.item, _lastReceivedInventory?.item?.name ?? ''),
+        _informationRow(
+            labels.item, _lastReceivedInventory?.item?.description ?? ''),
+        _informationRow(labels.quantity,
+            '${_lastReceivedInventory?.quantity ?? ''} ${_lastReceivedInventory?.itemPackageType?.stockItemUnitOfMeasure?.unitOfMeasure?.description ?? ''}'),
+        _informationRow(labels.quantity,
+            '${_getDisplayQuantity(_lastReceivedInventory!)} ${_getDisplayUOM(_lastReceivedInventory!)}'),
+        _informationRow(labels.inventoryStatus,
+            _lastReceivedInventory?.inventoryStatus?.description ?? ''),
+      ],
     );
-
   }
+
+  Widget _informationRow(String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label,
+              style: const TextStyle(fontSize: 12, color: Colors.blueGrey)),
+          const SizedBox(height: 3),
+          Text(value,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        ]),
+      );
+
   Widget _buildBarcodeTextInput(BuildContext context) {
     return TextFormField(
-        controller: _barcodeController,
-        showCursor: true,
-        // showKeyboard: widget.showKeyboard,
-        autofocus: true,
-        focusNode: _barcodeFocusNode,
-
-
+      controller: _barcodeController,
+      showCursor: true,
+      // showKeyboard: widget.showKeyboard,
+      autofocus: false,
+      focusNode: _barcodeFocusNode,
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      ),
     );
   }
+
   Widget _buildButtons(BuildContext context) {
     return buildTwoButtonRow(
-      context,
-      ElevatedButton(
-        onPressed: _showQRCodeView,
-        child: Text(CWMSLocalizations
-            .of(context)
-            .startCamera),
-      ),
-      badge.Badge(
-        showBadge: true,
-        badgeStyle: badge.BadgeStyle(
-          padding: EdgeInsets.all(8),
-          badgeColor: Colors.deepPurple,
+        context,
+        ElevatedButton(
+          onPressed: _showQRCodeView,
+          child: Text(CWMSLocalizations.of(context).startCamera),
         ),
-        badgeContent: Text(
-          _inventoryOnRF.length == 0 ? "0" : _inventoryOnRF.length.toString(),
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        child:
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
+        badge.Badge(
+          showBadge: true,
+          badgeStyle: badge.BadgeStyle(
+            padding: EdgeInsets.all(8),
+            badgeColor: Colors.deepPurple,
+          ),
+          badgeContent: Text(
+            _inventoryOnRF.length == 0 ? "0" : _inventoryOnRF.length.toString(),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          child: SizedBox(
+            width: double.infinity,
             child: ElevatedButton(
               onPressed: _inventoryOnRF.length == 0 ? null : _startDeposit,
               child: Text(CWMSLocalizations.of(context).depositInventory),
             ),
           ),
-      )
-    );
-
+        ));
   }
 
-
-
   void _enterOnBarcodeController({int tryTime = 10}) async {
-
-
+    if (!mounted) return;
     if (_barcodeFocusNode.hasFocus) {
-      printLongLogMessage("barcode controller still have focus, will wait for 100 ms and try again");
+      printLongLogMessage(
+          "barcode controller still have focus, will wait for 100 ms and try again");
       Future.delayed(const Duration(milliseconds: 100),
-              () => _enterOnBarcodeController(tryTime: tryTime - 1));
+          () => _enterOnBarcodeController(tryTime: tryTime - 1));
 
       return;
-
     }
 
     String barcode = _barcodeController.text.trim();
 
     bool result = await _processBarcode(barcode);
 
+    if (!mounted) return;
     if (result == true) {
       _barcodeController.clear();
     }
 
     _barcodeFocusNode.requestFocus();
-
   }
 
   // call the deposit form to deposit the inventory on the RF
@@ -234,12 +196,13 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     // refresh the inventory on the RF
     _reloadInventoryOnRF();
   }
+
   _showQRCodeView() async {
-    final barcode = await Navigator.of(context)
-        .pushNamed("qr_code_view");
+    final barcode = await Navigator.of(context).pushNamed("qr_code_view");
 
     bool result = await _processBarcode(barcode.toString());
 
+    if (!mounted) return;
     if (result == true) {
       _barcodeController.clear();
       _barcodeFocusNode.requestFocus();
@@ -247,27 +210,24 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
   }
 
   Future<bool> _processBarcode(String barcode) async {
-
-    var parameters =  new Map();
+    var parameters = new Map();
 
     try {
-
       Barcode barcodeResult = BarcodeService.parseBarcode(barcode);
-      if (barcodeResult.is_2d == false || barcodeResult.result?.isEmpty == true) {
+      if (barcodeResult.is_2d == false ||
+          barcodeResult.result?.isEmpty == true) {
         Navigator.of(context).pop();
-        await showBlockedErrorDialog(context, "Can't parse the barcode " + barcode);
+        await showBlockedErrorDialog(
+            context, "Can't parse the barcode " + barcode);
         return false;
       }
       parameters = barcodeResult.result!;
-    }
-    on Exception {
-
+    } on Exception {
       Navigator.of(context).pop();
-      await showBlockedErrorDialog(context, "Can't parse the barcode " + barcode);
+      await showBlockedErrorDialog(
+          context, "Can't parse the barcode " + barcode);
       return false;
-
     }
-
 
     String receiptIdString = parameters["receiptId"];
     String receiptLineIdString = parameters["receiptLineId"];
@@ -278,22 +238,36 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     String lpn = parameters["lpn"];
     //inventory attribute
 
-    String color = parameters.containsKey("color") ? parameters["color"]:"";
-    String productSize = parameters.containsKey("productSize") ? parameters["productSize"]:"";
-    String style = parameters.containsKey("style") ? parameters["style"]:"";
+    String color = parameters.containsKey("color") ? parameters["color"] : "";
+    String productSize =
+        parameters.containsKey("productSize") ? parameters["productSize"] : "";
+    String style = parameters.containsKey("style") ? parameters["style"] : "";
 
-    String inventoryAttribute1 = parameters.containsKey("inventoryAttribute1") ? parameters["inventoryAttribute1"]:"";
-    String inventoryAttribute2 = parameters.containsKey("inventoryAttribute2") ? parameters["inventoryAttribute2"]:"";
-    String inventoryAttribute3 = parameters.containsKey("inventoryAttribute3") ? parameters["inventoryAttribute3"]:"";
-    String inventoryAttribute4 = parameters.containsKey("inventoryAttribute4") ? parameters["inventoryAttribute4"]:"";
-    String inventoryAttribute5 = parameters.containsKey("inventoryAttribute5") ? parameters["inventoryAttribute5"]:"";
+    String inventoryAttribute1 = parameters.containsKey("inventoryAttribute1")
+        ? parameters["inventoryAttribute1"]
+        : "";
+    String inventoryAttribute2 = parameters.containsKey("inventoryAttribute2")
+        ? parameters["inventoryAttribute2"]
+        : "";
+    String inventoryAttribute3 = parameters.containsKey("inventoryAttribute3")
+        ? parameters["inventoryAttribute3"]
+        : "";
+    String inventoryAttribute4 = parameters.containsKey("inventoryAttribute4")
+        ? parameters["inventoryAttribute4"]
+        : "";
+    String inventoryAttribute5 = parameters.containsKey("inventoryAttribute5")
+        ? parameters["inventoryAttribute5"]
+        : "";
 
     // validate the barcode
     // we will need to pass in either
     // 1. receiptId and receiptLineId and Item
-    if (receiptIdString.isEmpty || receiptLineIdString.isEmpty || quantityString.isEmpty || lpn.isEmpty) {
-
-      await showBlockedErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
+    if (receiptIdString.isEmpty ||
+        receiptLineIdString.isEmpty ||
+        quantityString.isEmpty ||
+        lpn.isEmpty) {
+      await showBlockedErrorDialog(
+          context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
       return false;
     }
     showLoading(context);
@@ -301,68 +275,80 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     InventoryStatus? inventoryStatus;
     if (inventoryStatusString.isEmpty) {
       // if inventory status is not passed in, receive by default available inventory status
-      inventoryStatus = await InventoryStatusService.getAvaiableInventoryStatus();
-    }
-    else {
-      inventoryStatus = await InventoryStatusService.getInventoryStatusByName(inventoryStatusString);
+      inventoryStatus =
+          await InventoryStatusService.getAvaiableInventoryStatus();
+    } else {
+      inventoryStatus = await InventoryStatusService.getInventoryStatusByName(
+          inventoryStatusString);
     }
     if (inventoryStatus == null) {
-
       Navigator.of(context).pop();
-      await showBlockedErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
+      await showBlockedErrorDialog(
+          context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
       return false;
     }
 
-    Receipt receipt = await ReceiptService.getReceiptById(int.parse(receiptIdString));
-    ReceiptLine receiptLine = await ReceiptService.getReceiptLineById(int.parse(receiptLineIdString));
+    Receipt receipt =
+        await ReceiptService.getReceiptById(int.parse(receiptIdString));
+    ReceiptLine receiptLine =
+        await ReceiptService.getReceiptLineById(int.parse(receiptLineIdString));
 
     ItemPackageType? itemPackageType;
     if (itemPackageTypeString.isEmpty) {
       // if item package type is not passed, get the default item package type from the item
 
-      itemPackageType = receiptLine.item?.defaultItemPackageType != null ?
-          receiptLine.item?.defaultItemPackageType :
-          receiptLine.item?.itemPackageTypes.length == 1 ?
-              receiptLine.item?.itemPackageTypes[0] : null;
-    }
-    else {
+      itemPackageType = receiptLine.item?.defaultItemPackageType != null
+          ? receiptLine.item?.defaultItemPackageType
+          : receiptLine.item?.itemPackageTypes.length == 1
+              ? receiptLine.item?.itemPackageTypes[0]
+              : null;
+    } else {
       itemPackageType = await ItemPackageTypeService.getItemPackageTypeByName(
-          receiptLine.item!.id!, itemPackageTypeString
-      );
+          receiptLine.item!.id!, itemPackageTypeString);
     }
     if (itemPackageType == null) {
-
       Navigator.of(context).pop();
-      await showBlockedErrorDialog(context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
+      await showBlockedErrorDialog(
+          context, CWMSLocalizations.of(context).incorrectBarcodeFormat);
       return false;
     }
 
     printLongLogMessage("start to receive inventory with attribute:");
-    printLongLogMessage("color: $color" );
-    printLongLogMessage("productSize: $productSize" );
-    printLongLogMessage("style: $style" );
-    printLongLogMessage("inventoryAttribute1: $inventoryAttribute1" );
-    printLongLogMessage("inventoryAttribute2: $inventoryAttribute2" );
-    printLongLogMessage("inventoryAttribute3: $inventoryAttribute3" );
-    printLongLogMessage("inventoryAttribute4: $inventoryAttribute4" );
-    printLongLogMessage("inventoryAttribute5: $inventoryAttribute5" );
-    return _onReceivingSingleLpnConfirm(receipt, receiptLine, int.parse(quantityString),
-        inventoryStatus, itemPackageType, lpn,
-    color, productSize, style,
-    inventoryAttribute1,
-      inventoryAttribute2,
-      inventoryAttribute3,
-      inventoryAttribute4,
-      inventoryAttribute5);
-
+    printLongLogMessage("color: $color");
+    printLongLogMessage("productSize: $productSize");
+    printLongLogMessage("style: $style");
+    printLongLogMessage("inventoryAttribute1: $inventoryAttribute1");
+    printLongLogMessage("inventoryAttribute2: $inventoryAttribute2");
+    printLongLogMessage("inventoryAttribute3: $inventoryAttribute3");
+    printLongLogMessage("inventoryAttribute4: $inventoryAttribute4");
+    printLongLogMessage("inventoryAttribute5: $inventoryAttribute5");
+    return _onReceivingSingleLpnConfirm(
+        receipt,
+        receiptLine,
+        int.parse(quantityString),
+        inventoryStatus,
+        itemPackageType,
+        lpn,
+        color,
+        productSize,
+        style,
+        inventoryAttribute1,
+        inventoryAttribute2,
+        inventoryAttribute3,
+        inventoryAttribute4,
+        inventoryAttribute5);
   }
 
-  Future<bool> _onReceivingSingleLpnConfirm(Receipt receipt,
-      ReceiptLine receiptLine, int quantity,
+  Future<bool> _onReceivingSingleLpnConfirm(
+      Receipt receipt,
+      ReceiptLine receiptLine,
+      int quantity,
       InventoryStatus inventoryStatus,
       ItemPackageType itemPackageType,
       String lpn,
-      String color, String productSize, String style,
+      String color,
+      String productSize,
+      String style,
       String inventoryAttribute1,
       String inventoryAttribute2,
       String inventoryAttribute3,
@@ -381,34 +367,38 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
         await showBlockedErrorDialog(context, errorMessage);
         return false;
       }
-    }
-    on CWMSHttpException catch(ex) {
-
+    } on CWMSHttpException catch (ex) {
       Navigator.of(context).pop();
       await showBlockedErrorDialog(context, "${ex.code} - ${ex.message}");
       return false;
-
     }
     try {
       Inventory inventory = await ReceiptService.receiveInventory(
-          receipt, receiptLine,
-          lpn, inventoryStatus,
-          itemPackageType, quantity,
-          color, productSize, style,
+          receipt,
+          receiptLine,
+          lpn,
+          inventoryStatus,
+          itemPackageType,
+          quantity,
+          color,
+          productSize,
+          style,
           inventoryAttribute1,
           inventoryAttribute2,
           inventoryAttribute3,
           inventoryAttribute4,
           inventoryAttribute5,
-        false, false
-      );
+          false,
+          false);
       qcRequired = inventory.inboundQCRequired!;
-      printLongLogMessage("inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
+      printLongLogMessage(
+          "inventory ${inventory.lpn} received and need QC? ${inventory.inboundQCRequired}");
       if (qcRequired) {
         // for any inventory that needs qc, let's allocate the location automatically
         // for the inventory
 
-        printLongLogMessage("allocate location for the QC needed inventory ${inventory.lpn}");
+        printLongLogMessage(
+            "allocate location for the QC needed inventory ${inventory.lpn}");
         InventoryService.allocateLocation(inventory);
       }
 
@@ -420,20 +410,15 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
         _lastReceivedInventory = inventory;
       });
       // get the inventory with latest information
-    }
-    on WebAPICallException catch(ex) {
-
-
+    } on WebAPICallException catch (ex) {
       Navigator.of(context).pop();
       await showBlockedErrorDialog(context, ex.errMsg());
       return false;
-
     }
 
     _refreshScreenAfterReceive(qcRequired);
 
     return true;
-
   }
 
   _refreshScreenAfterReceive(bool qcRequired) {
@@ -448,75 +433,75 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
 
     // refresh the inventory on the RF
     _reloadInventoryOnRF();
-
   }
+
   num _getDisplayQuantity(Inventory inventory) {
     // get the display UOM
     // display by the display UOM only if the display UOM is defined and the quantity
     // of the inventory can be divided by the display UOM
-    ItemUnitOfMeasure displayItemUnitOfMeasure = _getDisplayItemUnitOfMeasure(inventory);
+    ItemUnitOfMeasure displayItemUnitOfMeasure =
+        _getDisplayItemUnitOfMeasure(inventory);
 
     if (inventory.quantity! % displayItemUnitOfMeasure.quantity! == 0) {
-    printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
-    printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
-    printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
+      printLongLogMessage(
+          "displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
+      printLongLogMessage(
+          "inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
+      printLongLogMessage(
+          "inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
 
-    return inventory.quantity! / displayItemUnitOfMeasure.quantity!;
+      return inventory.quantity! / displayItemUnitOfMeasure.quantity!;
+    } else {
+      printLongLogMessage(
+          "displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
+      printLongLogMessage(
+          "inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
+      printLongLogMessage(
+          "inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
+      return inventory.quantity!;
+    }
   }
-  else {
 
-    printLongLogMessage("displayItemUnitOfMeasure: ${displayItemUnitOfMeasure.toJson()}");
-    printLongLogMessage("inventory.quantity: ${inventory.quantity}, displayItemUnitOfMeasure.quantity: ${displayItemUnitOfMeasure.quantity}");
-    printLongLogMessage("inventory.quantity % displayItemUnitOfMeasure.quantity:${inventory.quantity! % displayItemUnitOfMeasure.quantity!}");
-    return inventory.quantity!;
-  }
-
-  }
   String _getDisplayUOM(Inventory inventory) {
     // get the display UOM
     // display by the display UOM only if the display UOM is defined and the quantity
     // of the inventory can be divided by the display UOM
-    ItemUnitOfMeasure displayItemUnitOfMeasure = _getDisplayItemUnitOfMeasure(inventory);
+    ItemUnitOfMeasure displayItemUnitOfMeasure =
+        _getDisplayItemUnitOfMeasure(inventory);
     if (inventory.quantity! % displayItemUnitOfMeasure.quantity! == 0) {
-    return displayItemUnitOfMeasure.unitOfMeasure?.description ?? "";
+      return displayItemUnitOfMeasure.unitOfMeasure?.description ?? "";
+    } else {
+      return "";
+    }
   }
-  else {
 
-    return "";
-  }
-
-  }
   ItemUnitOfMeasure _getDisplayItemUnitOfMeasure(Inventory inventory) {
-    printLongLogMessage("start to get display item unit of measure from inventory:\n ${inventory.toJson()}");
-    printLongLogMessage("inventory.itemPackageType: \n ${inventory.itemPackageType?.toJson()}");
+    printLongLogMessage(
+        "start to get display item unit of measure from inventory:\n ${inventory.toJson()}");
+    printLongLogMessage(
+        "inventory.itemPackageType: \n ${inventory.itemPackageType?.toJson()}");
 
     if (inventory.itemPackageType?.displayItemUnitOfMeasure != null) {
-       printLongLogMessage("inventory.itemPackageType.displayItemUnitOfMeasure: \n ${inventory.itemPackageType!.displayItemUnitOfMeasure?.toJson()}");
+      printLongLogMessage(
+          "inventory.itemPackageType.displayItemUnitOfMeasure: \n ${inventory.itemPackageType!.displayItemUnitOfMeasure?.toJson()}");
     }
 
-    return inventory.itemPackageType!.displayItemUnitOfMeasure != null ?
-          inventory.itemPackageType!.displayItemUnitOfMeasure! :
-          inventory.itemPackageType!.stockItemUnitOfMeasure!;
+    return inventory.itemPackageType!.displayItemUnitOfMeasure != null
+        ? inventory.itemPackageType!.displayItemUnitOfMeasure!
+        : inventory.itemPackageType!.stockItemUnitOfMeasure!;
   }
 
   void _reloadInventoryOnRF() {
-
     try {
-
-      InventoryService.getInventoryOnCurrentRF()
-          .then((value) {
+      InventoryService.getInventoryOnCurrentRF().then((value) {
         setState(() {
           _inventoryOnRF = value;
         });
       });
-    }
-    on WebAPICallException catch(ex) {
-
+    } on WebAPICallException catch (ex) {
       Navigator.of(context).pop();
       showBlockedErrorDialog(context, ex.errMsg());
       return;
-
     }
-
   }
 }

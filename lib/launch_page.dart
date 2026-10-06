@@ -132,6 +132,10 @@ class _LaunchPageState extends State<LaunchPage>
   }
 
   Widget _buildServerSelection() {
+    final serverAddressLabel =
+        Localizations.localeOf(context).languageCode == 'zh'
+            ? '服务器地址'
+            : 'Server address';
     return Scaffold(
       appBar: AppBar(
         title: Text(CWMSLocalizations.of(context).chooseServer),
@@ -150,8 +154,8 @@ class _LaunchPageState extends State<LaunchPage>
                   autofocus: true,
                   controller: _serverURLController, //设置controller
                   decoration: InputDecoration(
-                    labelText: "Server URL",
-                    hintText: "Server URL",
+                    labelText: serverAddressLabel,
+                    hintText: serverAddressLabel,
                     prefixIcon: Icon(Icons.web),
                     suffixIcon: IconButton(
                       onPressed: () => _clearField(),

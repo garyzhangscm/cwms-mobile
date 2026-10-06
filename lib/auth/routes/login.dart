@@ -1,5 +1,7 @@
 import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'dart:io';
+import 'dart:async';
+import 'package:cwms_mobile/shared/routes/app_information.dart';
 
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/auth/services/login.dart';
@@ -26,7 +28,9 @@ import '../../shared/models/rf.dart';
 import '../../warehouse_layout/models/warehouse_location.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({Key? key}) : super(key: key);
+  LoginPage({Key? key, this.warehouseLoader}) : super(key: key);
+
+  final Future<List<Warehouse>> Function(String, String)? warehouseLoader;
 
   @override
   State<StatefulWidget> createState() => _LoginPageState();
@@ -42,6 +46,10 @@ class _LoginPageState extends State<LoginPage> {
   List<Warehouse> _validWarehouses = [];
   Warehouse? selectedWarehouse;
   bool pwdShow = false;
+  bool _warehousesLoading = false;
+  String? _warehouseError;
+  int _warehouseRequest = 0;
+  Timer? _warehouseDebounce;
   GlobalKey _formKey = new GlobalKey<FormState>();
 
   bool _rememberMe = false;
@@ -165,7 +173,15 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
+                  Center(
+                      child: TextButton(
+                    onPressed: () => openAppPrivacy(context),
+                    child: Text(workspaceIsChinese(context)
+                        ? '隐私政策'
+                        : 'Privacy Policy'),
+                  )),
+                  const SizedBox(height: 2),
                   Center(
                       child: Text('Secure access to your operations',
                           style: TextStyle(
@@ -298,7 +314,8 @@ class _LoginPageState extends State<LoginPage> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           elevation: 0,
         ),
-        onPressed: selectedWarehouse == null ? null : _onLogin,
+        onPressed:
+            selectedWarehouse == null || _warehousesLoading ? null : _onLogin,
         child: Text(CWMSLocalizations.of(context).login,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
       ),
@@ -329,6 +346,16 @@ class _LoginPageState extends State<LoginPage> {
             style: TextStyle(color: Color(0xFF73839A), fontSize: 12)),
       ),
       getDropDownButtonsColumnForWarehouse(),
+      if (_warehouseError != null)
+        Row(children: [
+          Expanded(
+              child: Text(_warehouseError!,
+                  style:
+                      const TextStyle(color: Color(0xFFD85D67), fontSize: 12))),
+          TextButton(
+              onPressed: _loadWarehouses,
+              child: Text(workspaceIsChinese(context) ? '重试' : 'Retry')),
+        ]),
     ]);
   }
 
@@ -385,6 +412,7 @@ class _LoginPageState extends State<LoginPage> {
     return Focus(
       child: TextFormField(
           controller: _unameController,
+          onChanged: (_) => _scheduleWarehouseLoad(),
           decoration: InputDecoration(
             labelText: "username",
             hintText: "please input username",
@@ -408,6 +436,7 @@ class _LoginPageState extends State<LoginPage> {
     return Focus(
       child: TextFormField(
           controller: _companyCodeController,
+          onChanged: (_) => _scheduleWarehouseLoad(),
           decoration: InputDecoration(
             labelText: "company code",
             hintText: "please input your company code",
@@ -448,6 +477,7 @@ class _LoginPageState extends State<LoginPage> {
             child: DropdownButtonHideUnderline(
               // to hide the default underline of the dropdown button
               child: DropdownButton<String>(
+                isExpanded: true,
                 iconEnabledColor: const Color(0xFF73839A),
                 items: _validWarehouses.isEmpty
                     ? []
@@ -460,16 +490,24 @@ class _LoginPageState extends State<LoginPage> {
                         );
                       }).toList(),
                 hint: Text(
-                  "empty warehouse",
+                  _warehousesLoading
+                      ? (workspaceIsChinese(context)
+                          ? '正在加载仓库…'
+                          : 'Loading warehouses…')
+                      : (workspaceIsChinese(context)
+                          ? '请输入公司代码和用户名'
+                          : 'Enter company code and username'),
                   style:
                       const TextStyle(color: Color(0xFF8B8B8B), fontSize: 14),
                 ), // setting hint
-                onChanged: (String? value) {
-                  setState(() {
-                    selectedWarehouse = _validWarehouses.firstWhereOrNull(
-                        (warehouse) => warehouse.name == value);
-                  });
-                },
+                onChanged: _warehousesLoading || _validWarehouses.isEmpty
+                    ? null
+                    : (String? value) {
+                        setState(() {
+                          selectedWarehouse = _validWarehouses.firstWhereOrNull(
+                              (warehouse) => warehouse.id.toString() == value);
+                        });
+                      },
                 value: selectedWarehouse == null
                     ? null
                     : selectedWarehouse!.id
@@ -562,8 +600,6 @@ class _LoginPageState extends State<LoginPage> {
       showLoading(context);
       User? user;
       int? companyId;
-
-      WarehouseLocation currentLocation;
 
       try {
         // make sure the rf code is still valid
@@ -729,42 +765,79 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _loadWarehouses() async {
-    if (_companyCodeController.text.isEmpty || _unameController.text.isEmpty) {
-      // we will need to get the company code and user name so we can know
-      // which warehouse the user has access to
-      // simply reset the valid warehouse to empty list will disable the control
+  void _scheduleWarehouseLoad() {
+    _warehouseDebounce?.cancel();
+    _warehouseRequest++; // Ignore responses for a previous account.
+    setState(() {
+      _validWarehouses = [];
+      selectedWarehouse = null;
+      _warehousesLoading = false;
+      _warehouseError = null;
+    });
+    _warehouseDebounce =
+        Timer(const Duration(milliseconds: 450), _loadWarehouses);
+  }
+
+  Future<void> _loadWarehouses() async {
+    _warehouseDebounce?.cancel();
+    final companyCode = _companyCodeController.text.trim();
+    final username = _unameController.text.trim();
+    final request = ++_warehouseRequest;
+    if (!mounted) return;
+    if (companyCode.isEmpty || username.isEmpty) {
       setState(() {
         _validWarehouses = [];
         selectedWarehouse = null;
+        _warehousesLoading = false;
+        _warehouseError = null;
       });
-    } else {
-      showLoading(context);
-      List<Warehouse> warehouses = await WarehouseService.getWarehouseByUser(
-          _companyCodeController.text, _unameController.text);
-      Navigator.of(context).pop();
-
-      if (warehouses.isEmpty) {
-        showErrorToast(CWMSLocalizations.of(context).cannotFindWarehouse);
-        setState(() {
-          _validWarehouses = [];
-          selectedWarehouse = null;
-        });
-        return;
-      }
-      print(
-          "get ${warehouses.length} warheouses from server: ${warehouses.join('####')}");
+      return;
+    }
+    setState(() {
+      _warehousesLoading = true;
+      _warehouseError = null;
+    });
+    try {
+      final loader =
+          widget.warehouseLoader ?? WarehouseService.getWarehouseByUser;
+      final warehouses = await loader(companyCode, username);
+      if (!mounted || request != _warehouseRequest) return;
       setState(() {
+        final selectedId = selectedWarehouse?.id;
         _validWarehouses = warehouses;
-
-        if (_validWarehouses.isNotEmpty) {
-          // automatically select the first warehouse
-          selectedWarehouse = _validWarehouses[0];
-
-          print("set selectedWarehouses to ${_validWarehouses[0].name}");
-        }
+        selectedWarehouse =
+            warehouses.firstWhereOrNull((w) => w.id == selectedId) ??
+                warehouses.firstOrNull;
+        _warehousesLoading = false;
+        _warehouseError = warehouses.isEmpty
+            ? (workspaceIsChinese(context)
+                ? '此账号没有可用仓库，请联系管理员。'
+                : 'No warehouses available for this account. Contact your administrator.')
+            : null;
+      });
+    } catch (_) {
+      if (!mounted || request != _warehouseRequest) return;
+      setState(() {
+        _validWarehouses = [];
+        selectedWarehouse = null;
+        _warehousesLoading = false;
+        _warehouseError = workspaceIsChinese(context)
+            ? '仓库加载失败，请检查网络后重试。'
+            : 'Could not load warehouses. Check your connection and retry.';
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _warehouseDebounce?.cancel();
+    _warehouseRequest++;
+    _companyCodeController.dispose();
+    _unameController.dispose();
+    _pwdController.dispose();
+    _rfCodeController.dispose();
+    _currentLocationController.dispose();
+    super.dispose();
   }
 
   Future<String> _getCurrentVersion() async {

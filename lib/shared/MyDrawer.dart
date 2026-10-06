@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'global.dart';
+import 'routes/app_information.dart';
+import 'workspace_ui.dart';
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({
@@ -34,18 +36,9 @@ class MyDrawer extends StatelessWidget {
         return GestureDetector(
           child: Container(
             color: Theme.of(context).primaryColor,
-            padding: EdgeInsets.only(top: 80, bottom: 20),
+            padding: EdgeInsets.only(top: 80, bottom: 20, left: 16, right: 16),
             child: Row(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ClipOval(
-                    child: Image.asset(
-                      "assets/images/avatar.png",
-                      width: 80,
-                    ),
-                  ),
-                ),
                 Text(
                   Global.currentUser!.username!,
                   style: TextStyle(
@@ -82,6 +75,17 @@ class MyDrawer extends StatelessWidget {
               onTap: () => Navigator.pushNamed(context, "work_profile"),
             ),
             ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: Text(workspaceIsChinese(context)
+                  ? '关于 Claytech One'
+                  : 'About Claytech One'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => const AppInformationPage()));
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.power_settings_new),
               title: Text(gm.logout),
               onTap: () {
@@ -110,9 +114,6 @@ class MyDrawer extends StatelessWidget {
                   },
                 );
               },
-            ),
-            ListTile(
-              title: const Text("Version: 1.62.e"),
             ),
             ListTile(
               title: Text(CWMSLocalizations.of(context).warehouse +

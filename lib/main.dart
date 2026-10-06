@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 import 'package:cwms_mobile/inbound/routes/barcode_receiving.dart';
 import 'package:cwms_mobile/inbound/routes/inbound_qc.dart';
@@ -63,6 +65,10 @@ import 'outbound/routes/pick_by_list.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    final text = await rootBundle.loadString('assets/licenses/cwms-mobile-LICENSE.txt');
+    yield LicenseEntryWithLineBreaks(['CWMS Mobile (upstream project)'], text);
+  });
   if (Platform.isAndroid) {
     await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
   }
@@ -91,6 +97,7 @@ class MyApp extends StatelessWidget {
         builder:
             (BuildContext context, themeModel, localeModel, Widget? child) {
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             // Keep every page's top bar compact and consistent. Individual
             // screens can still provide their own colors and actions.
             theme: ThemeData(
