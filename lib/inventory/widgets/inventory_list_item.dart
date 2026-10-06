@@ -95,18 +95,9 @@ class _InventoryListItemState extends State<InventoryListItem> {
                     ),**/
                   trailing: PopupMenuButton<String>(
                     onSelected: (String? value) {
-                      if (value == "print_label") {
-
-
-                        showToast("print label from PDA is not support");
-                      }
-                      else if (value == "change_quantity") {
+                      if (value == "change_quantity") {
 
                         _openChangeQuantityDialog();
-                      }
-                      else if (value == "change_attribute") {
-
-                        showToast("change attribute from PDA is not support");
                       }
                       else if (value == "change_status") {
 
@@ -116,20 +107,12 @@ class _InventoryListItemState extends State<InventoryListItem> {
                     itemBuilder:
                         (BuildContext context) => <PopupMenuEntry<String>>[
                             const PopupMenuItem<String>(
-                              value: "print_label",
-                              child: Text("Print"),
-                            ),
-                            const PopupMenuItem<String>(
                               value: "change_quantity",
                               child: Text("Change Quantity"),
                             ),
                             const PopupMenuItem<String>(
                               value: "change_status",
                               child: Text("Change Status"),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: "change_attribute",
-                              child: Text("Change Attribute"),
                             ),
                         ],
                   ),

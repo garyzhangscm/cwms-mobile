@@ -131,19 +131,6 @@ class _CountResultListItemState extends State<CountResultListItem> {
                               textAlign: TextAlign.end,
                               controller: _itemController,
                               onChanged: (value) => _onItemValueChange(value),
-                              decoration: InputDecoration(
-                                suffixIcon:
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                                  mainAxisSize: MainAxisSize.min, // added line
-                                  children: <Widget>[
-                                    IconButton(
-                                      onPressed: _startItemBarcodeScanner,
-                                      icon: Icon(Icons.scanner),
-                                    )
-                                  ],
-                                ),
-                              ),
                             )
                         )
                         :
@@ -229,19 +216,6 @@ class _CountResultListItemState extends State<CountResultListItem> {
             ]
         ),
       );
-  }
-
-  Future<void> _startItemBarcodeScanner() async {
-/*
-*
-    String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
-    printLongLogMessage("barcode scanned: $barcodeScanRes");
-    return barcodeScanRes;
-*
-* **/
-
-
   }
 
 

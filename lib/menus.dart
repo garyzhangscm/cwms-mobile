@@ -3,6 +3,7 @@ import 'auth/models/menu_group.dart';
 import 'auth/services/menu_service.dart';
 import 'i18n/localization_intl.dart';
 import 'shared/MyDrawer.dart';
+import 'shared/menu_navigation.dart';
 import 'shared/workspace_ui.dart';
 
 class Menus extends StatefulWidget {
@@ -45,7 +46,9 @@ class _MenusState extends State<Menus> {
   @override
   Widget build(BuildContext context) {
     final zh = workspaceIsChinese(context);
-    final groups = _menuGroup?.menuSubGroups ?? [];
+    final groups = (_menuGroup?.menuSubGroups ?? [])
+        .where((group) => hasAvailableMenuGroup(context, group))
+        .toList();
     String title(int index) => CWMSLocalizations.of(context).getMenuDisplayText(
         groups[index].i18n ?? '',
         groups[index].text ?? groups[index].name ?? '');

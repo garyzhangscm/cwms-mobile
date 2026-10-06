@@ -82,11 +82,6 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
         decoration: InputDecoration(
           labelText: "batch ID",
           hintText: "please input batch id",
-          suffixIcon:
-          IconButton(
-            onPressed: _startBarcodeScanner,
-            icon: Icon(Icons.scanner),
-          ),
         ),
         // 校验用户名（不能为空）
         validator: (v) {
@@ -181,17 +176,6 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
   void _removeCycleCountRequests(CycleCountBatch countBatch) {
     _assignedCycleCountRequests.removeWhere(
             (cycleCountRequest) => cycleCountRequest.batchId == countBatch.batchId);
-  }
-
-  _startBarcodeScanner() async {
-/*
-*
-    String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
-    printLongLogMessage("barcode scanned: $barcodeScanRes");
-    _batchIdController.text = barcodeScanRes;
-* */
-
   }
 
   _onAddingCountBatch() async {

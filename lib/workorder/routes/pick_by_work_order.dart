@@ -122,10 +122,6 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
                         hintText: CWMSLocalizations
                             .of(context)
                             .inputWorkOrderNumberHint,
-                        suffixIcon: IconButton(
-                          onPressed: () => _startBarcodeScanner(),
-                          icon: Icon(Icons.scanner),
-                        ),
                       ),
                     ),
                   ]
@@ -510,20 +506,6 @@ class _PickByWorkOrderPageState extends State<PickByWorkOrderPage> {
     }
 
     return workOrder;
-  }
-
-  Future<void> _startBarcodeScanner() async {
-
-    /*
-    *
-    String barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666", "Cancel", true, ScanMode.BARCODE);
-    print("barcode scanned: $barcodeScanRes");
-    _workOrderNumberController.text = barcodeScanRes;
-    * */
-
-
-
   }
 
   Pick? _getNextValidPick() {
