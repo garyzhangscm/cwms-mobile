@@ -1,3 +1,4 @@
+import 'models/factory_profile.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cwms_mobile/auth/models/user.dart';
@@ -37,6 +38,52 @@ class Global {
   static SharedPreferences? _prefs;
   // current connection
   static CWMSSiteInformation? currentServer;
+  static FactoryProfile? currentFactory;
+
+  static Future<void> selectFactory(
+      FactoryProfile factory, CWMSSiteInformation server) async {
+    final prefs = await SharedPreferences.getInstance();
+    final previousId =
+        currentFactory?.id ?? prefs.getString('selected_factory');
+    if (previousId != factory.id) {
+      // Factory identity matters even when two factories share an API URL.
+      currentUser = null;
+      currentUsername = null;
+      autoLoginUser = null;
+      currentWarehouse = null;
+      autoLoginWarehouse = null;
+      _autoLoginCompany = null;
+      lastLoginRF = null;
+      lastLoginRFCode = null;
+      lastLoginCompanyId = null;
+      _lastActivityLocation = null;
+      currentInventoryConfiguration = null;
+      _rfConfiguration = RFConfiguration();
+      _warehouseConfiguration = WarehouseConfiguration();
+      profile.user = null;
+      profile.token = null;
+      for (final key in [
+        'auto_login_user',
+        'auto_login_warehouse',
+        'auto_login_company',
+        'last_login_rf',
+        'last_login_rf_code',
+        'lastLoginCompanyId',
+        'lastLoginCompanyCode'
+      ]) {
+        await prefs.remove(key);
+      }
+      await prefs.setString('profile', jsonEncode(profile.toJson()));
+    }
+    currentFactory = factory;
+    currentServer = server;
+    lastLoginCompanyCode = factory.companyCode;
+    httpClient = null;
+    CWMSHttpClient.resetForServer();
+    await prefs.setString('selected_factory', factory.id);
+    await prefs.setString('lastLoginCompanyCode', factory.companyCode);
+  }
+
   // current Login
   static User? currentUser;
   static String? currentUsername;
@@ -63,7 +110,8 @@ class Global {
   static Profile profile = Profile();
 
   static RFConfiguration _rfConfiguration = RFConfiguration();
-  static WarehouseConfiguration _warehouseConfiguration = WarehouseConfiguration();
+  static WarehouseConfiguration _warehouseConfiguration =
+      WarehouseConfiguration();
 
   // 可选的主题列表
   static List<MaterialColor> get themes => _themes;
@@ -77,13 +125,13 @@ class Global {
 
   static CWMSHttpClientAdapter? httpClient;
 
-
   // 是否为release版
   static bool get isRelease => bool.fromEnvironment("dart.vm.product");
 
   static RFConfiguration get getRFConfiguration => _rfConfiguration;
 
-  static WarehouseConfiguration get warehouseConfiguration => _warehouseConfiguration;
+  static WarehouseConfiguration get warehouseConfiguration =>
+      _warehouseConfiguration;
 
   //初始化全局信息
   static Future init() async {
@@ -95,7 +143,6 @@ class Global {
     _initAutoLoginCompany();
     _initLastLoginRFCode();
     _initLastLoginRF();
-
 
     // initial profile
     var _profile = _prefs?.getString("profile");
@@ -116,8 +163,6 @@ class Global {
     //初始化网络请求相关配置
     CWMSHttpClient.init();
 
-
-
     // hard code company id to -1
     lastLoginCompanyId = _prefs?.getInt("lastLoginCompanyId");
     lastLoginCompanyCode = _prefs?.getString("lastLoginCompanyCode");
@@ -125,7 +170,7 @@ class Global {
     // initial download flugin
     // await FlutterDownloader.initialize(
     //     debug: true // optional: set false to disable printing logs to console
-   //  );
+    //  );
 
     // default configuration
     _rfConfiguration = RFConfiguration();
@@ -133,38 +178,34 @@ class Global {
     _warehouseConfiguration = WarehouseConfiguration();
     printLongLogMessage("setup the default warehouse configuration");
 
-    PackageInfo.fromPlatform().then((packageInfo) =>
-        currentAPPVersion = packageInfo.version
-    );
+    PackageInfo.fromPlatform()
+        .then((packageInfo) => currentAPPVersion = packageInfo.version);
   }
+
   static _initServers() {
     var _servers = _prefs?.getString("servers");
-    if (_servers != null ) {
+    if (_servers != null) {
       try {
         List<dynamic> serverList = jsonDecode(_servers);
         if (serverList.isEmpty) {
           servers = <CWMSSiteInformation>[];
-        }
-        else {
+        } else {
           servers = CWMSSiteInformation.decodeServers(_servers);
-
         }
       } catch (e) {
         print(e);
       }
-    }
-    else {
+    } else {
       servers = <CWMSSiteInformation>[];
     }
-
   }
 
-  static _initAutoLoginUser(){
+  static _initAutoLoginUser() {
     var _user = _prefs?.getString("auto_login_user");
     print("_initAutoLingUser: ${_user}");
-    if (_user != null ) {
+    if (_user != null) {
       try {
-          autoLoginUser = User.fromJson(json.decode(_user));
+        autoLoginUser = User.fromJson(json.decode(_user));
       } catch (e) {
         print(e);
       }
@@ -175,10 +216,10 @@ class Global {
     _prefs?.setString("auto_login_user", "");
   }
 
-  static _initAutoLoginWarehouse(){
+  static _initAutoLoginWarehouse() {
     var _warehouse = _prefs?.getString("auto_login_warehouse");
     print("_initAutoLingWarehouse: ${_warehouse}");
-    if (_warehouse != null ) {
+    if (_warehouse != null) {
       try {
         autoLoginWarehouse = Warehouse.fromJson(json.decode(_warehouse));
       } catch (e) {
@@ -189,18 +230,18 @@ class Global {
 
   static initInventoryConfiguration() {
     InventoryConfigurationService.getInventoryConfiguration().then(
-            (inventoryConfiguration) => currentInventoryConfiguration = inventoryConfiguration
-    );
+        (inventoryConfiguration) =>
+            currentInventoryConfiguration = inventoryConfiguration);
   }
 
   static _clearAutoLoginWarehouse() {
     _prefs?.setString("auto_login_warehouse", "");
   }
 
-  static _initAutoLoginCompany(){
+  static _initAutoLoginCompany() {
     var _company = _prefs?.getString("auto_login_company");
     print("_initAutoLingCompany: ${_company}");
-    if (_company != null ) {
+    if (_company != null) {
       try {
         _autoLoginCompany = Company.fromJson(json.decode(_company));
       } catch (e) {
@@ -213,10 +254,11 @@ class Global {
     _prefs?.setString("auto_login_company", "");
   }
 
-  static _initLastLoginRFCode(){
+  static _initLastLoginRFCode() {
     lastLoginRFCode = _prefs?.getString("last_login_rf_code");
   }
-  static _initLastLoginRF(){
+
+  static _initLastLoginRF() {
     var _lastLoginRF = _prefs?.getString("last_login_rf");
     if (_lastLoginRF != null) {
       try {
@@ -225,36 +267,37 @@ class Global {
         print(e);
       }
     }
-
   }
 
-  static String getLastLoginRFCode(){
+  static String getLastLoginRFCode() {
     return lastLoginRFCode ?? "";
   }
-  static setLastLoginRFCode(String rfCode){
+
+  static setLastLoginRFCode(String rfCode) {
     lastLoginRFCode = rfCode;
 
     _prefs?.setString("last_login_rf_code", lastLoginRFCode!);
   }
-  static RF getLastLoginRF(){
+
+  static RF getLastLoginRF() {
     return lastLoginRF!;
   }
-  static setLastLoginRF(RF rf){
+
+  static setLastLoginRF(RF rf) {
     lastLoginRF = rf;
 
     _prefs?.setString("last_login_rf", jsonEncode(rf.toJson()));
   }
 
-  static Warehouse getAutoLoginWarehouse(){
+  static Warehouse getAutoLoginWarehouse() {
     return autoLoginWarehouse!;
   }
-  static Company getAutoLoginCompany(){
+
+  static Company getAutoLoginCompany() {
     return _autoLoginCompany!;
   }
 
-
-  static setAutoLoginWarehouse(Warehouse warehouse)  async {
-
+  static setAutoLoginWarehouse(Warehouse warehouse) async {
     _prefs = await SharedPreferences.getInstance();
     _prefs?.setString("auto_login_warehouse", json.encode(warehouse.toJson()));
 
@@ -262,8 +305,7 @@ class Global {
     autoLoginWarehouse = warehouse;
   }
 
-  static setAutoLoginCompany(Company company)  async {
-
+  static setAutoLoginCompany(Company company) async {
     _prefs = await SharedPreferences.getInstance();
     _prefs?.setString("auto_login_company", json.encode(company.toJson()));
 
@@ -271,28 +313,27 @@ class Global {
     _autoLoginCompany = company;
   }
 
-
   static addServer(CWMSSiteInformation server) async {
-
-    CWMSSiteInformation? matchedServer
-      = servers!.firstWhereOrNull((element) => element.url?.compareTo(server.url!) == 0);
+    CWMSSiteInformation? matchedServer = servers!.firstWhereOrNull(
+        (element) => element.url?.compareTo(server.url!) == 0);
 
     if (matchedServer != null) {
       // OK, we get a matched server, let's update it based on the new configuration
       matchedServer.autoConnectFlag = server.autoConnectFlag;
       if (matchedServer.cwmsApplicationInformation == null) {
-        matchedServer.cwmsApplicationInformation = new CWMSApplicationInformation();
+        matchedServer.cwmsApplicationInformation =
+            new CWMSApplicationInformation();
       }
-      matchedServer.cwmsApplicationInformation!.name = server.cwmsApplicationInformation!.name;
-      matchedServer.cwmsApplicationInformation!.version = server.cwmsApplicationInformation!.version;
-    }
-    else {
+      matchedServer.cwmsApplicationInformation!.name =
+          server.cwmsApplicationInformation!.name;
+      matchedServer.cwmsApplicationInformation!.version =
+          server.cwmsApplicationInformation!.version;
+    } else {
       // we will save the new server.
       // If the new server is configured as 'auto connect' then
       // we will cancel the auto connect flag of other server to make sure
       // we will only have one auto connect server
       if (server.autoConnectFlag == true) {
-
         CWMSSiteInformation? autoConnectServer = getAutoConnectServer();
         if (autoConnectServer != null) {
           autoConnectServer.autoConnectFlag = false;
@@ -303,37 +344,33 @@ class Global {
 
     _prefs = await SharedPreferences.getInstance();
     _prefs?.setString("servers", CWMSSiteInformation.encodeServers(servers!));
-
   }
-
 
   static setCurrentServer(CWMSSiteInformation server) {
     currentServer = server;
   }
+
   static CWMSSiteInformation geturrentServer() {
     return currentServer!;
   }
 
-
   static CWMSSiteInformation? getAutoConnectServer() {
     if (servers == null || servers!.isEmpty == true) {
       return null;
-    }
-    else {
-      return servers!.firstWhereOrNull((element) => element.isAutoConnect() == true);
+    } else {
+      return servers!
+          .firstWhereOrNull((element) => element.isAutoConnect() == true);
     }
   }
-
 
   static setCurrentUser(User user) {
     currentUser = user;
   }
 
-  static addAutoLoginUser(User user) async{
+  static addAutoLoginUser(User user) async {
     print("start to add user to the auto login: ${user.username}");
     _prefs = await SharedPreferences.getInstance();
     _prefs?.setString("auto_login_user", json.encode(user.toJson()));
-
 
     var _user = _prefs?.getString("auto_login_user");
     print("after adding  auto login: ${_user}");
@@ -346,13 +383,16 @@ class Global {
   static int getLastLoginCompanyId() {
     return lastLoginCompanyId!;
   }
+
   static setLastLoginCompanyId(int _lastLoginCompanyId) {
     _prefs?.setInt("lastLoginCompanyId", _lastLoginCompanyId);
     lastLoginCompanyId = _lastLoginCompanyId;
   }
+
   static String getLastLoginCompanyCode() {
     return lastLoginCompanyCode!;
   }
+
   static setLastLoginCompanyCode(String _lastLoginCompanyCode) {
     _prefs?.setString("lastLoginCompanyCode", _lastLoginCompanyCode);
     lastLoginCompanyCode = _lastLoginCompanyCode;
@@ -361,6 +401,7 @@ class Global {
   static void movingForward() {
     _lastActivityDirection = 1;
   }
+
   static void movingBackward() {
     _lastActivityDirection = -1;
   }
@@ -370,16 +411,16 @@ class Global {
   }
 
   static void setupHttpClient() {
-    CWMSHttpConfig dioConfig =
-        CWMSHttpConfig(
-          baseUrl: Global.currentServer!.url!,
-          headers: {
-            HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser!.token}",
-            "rfCode": Global.lastLoginRFCode,
-            "warehouseId": Global.currentWarehouse!.id,
-            "companyId": Global.lastLoginCompanyId
-          },);
+    CWMSHttpConfig dioConfig = CWMSHttpConfig(
+      baseUrl: Global.currentServer!.url!,
+      headers: {
+        HttpHeaders.acceptHeader: "application/json",
+        HttpHeaders.authorizationHeader: "Bearer ${Global.currentUser!.token}",
+        "rfCode": Global.lastLoginRFCode,
+        "warehouseId": Global.currentWarehouse!.id,
+        "companyId": Global.lastLoginCompanyId
+      },
+    );
     httpClient = CWMSHttpClientAdapter(dioConfig: dioConfig);
 
     CWMSHttpClient.resetDio();
@@ -388,7 +429,6 @@ class Global {
 // 持久化Profile信息
   static saveProfile() =>
       _prefs?.setString("profile", jsonEncode(profile.toJson()));
-
 
   static WarehouseLocation getLastActivityLocation() {
     return _lastActivityLocation!;
@@ -403,7 +443,8 @@ class Global {
     _rfConfiguration = rfConfiguration;
   }
 
-  static void setWarehouseConfiguration(WarehouseConfiguration warehouseConfiguration) {
+  static void setWarehouseConfiguration(
+      WarehouseConfiguration warehouseConfiguration) {
     _warehouseConfiguration = warehouseConfiguration;
   }
 
@@ -411,24 +452,28 @@ class Global {
     Map<String, dynamic> configurations = _rfConfiguration.toJson();
 
     // return false by default for boolean value
-    return configurations.containsKey(key) && configurations[key] != null ? configurations[key] as bool :
-        false;
+    return configurations.containsKey(key) && configurations[key] != null
+        ? configurations[key] as bool
+        : false;
   }
+
   static String getConfigurationAsString(String key) {
     Map<String, dynamic> configurations = _rfConfiguration.toJson();
 
     // return empty string by default for String value
-    return configurations.containsKey(key) && configurations[key] != null ? configurations[key] as String :
-        "";
+    return configurations.containsKey(key) && configurations[key] != null
+        ? configurations[key] as String
+        : "";
   }
+
   static int getConfigurationAsInt(String key) {
     Map<String, dynamic> configurations = _rfConfiguration.toJson();
 
     // return 0  by default for int value
-    return configurations.containsKey(key) && configurations[key] != null ? configurations[key] as int :
-     0;
+    return configurations.containsKey(key) && configurations[key] != null
+        ? configurations[key] as int
+        : 0;
   }
-
 
   // logout the current user
   static logout() {
@@ -441,6 +486,5 @@ class Global {
 
     lastLoginCompanyCode = "";
     lastLoginCompanyId = null;
-
   }
 }

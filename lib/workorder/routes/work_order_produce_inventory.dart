@@ -1,3 +1,4 @@
+import '../services/production_submission.dart';
 import '../services/defective_machines.dart';
 import 'package:cwms_mobile/common/models/reason_code.dart';
 import 'package:cwms_mobile/common/models/reason_code_type.dart';
@@ -41,12 +42,14 @@ class WorkOrderProduceInventoryPage extends StatefulWidget {
       this.defective = false,
       this.statusLoader,
       this.reasonLoader,
+      this.bomLoader,
       this.autoPromptReason = true})
       : super(key: key);
   final bool defective;
   final bool autoPromptReason;
   final Future<List<InventoryStatus>> Function()? statusLoader;
   final Future<List<ReasonCode>> Function()? reasonLoader;
+  final Future<BillOfMaterial?> Function(WorkOrder)? bomLoader;
 
   @override
   State<StatefulWidget> createState() => _WorkOrderProduceInventoryPageState();
@@ -77,9 +80,14 @@ class _WorkOrderProduceInventoryPageState
   ProgressDialog? _progressDialog;
 
   BillOfMaterial? _matchedBillOfMaterial;
+  bool _bomAttempted = false;
+  bool _bomLoading = false;
+  bool _bomFailed = false;
   FocusNode lpnFocusNode = FocusNode();
   FocusNode _lpnControllerFocusNode = FocusNode();
   FocusNode quantityFocusNode = FocusNode();
+  final _submission = ProductionSubmission();
+  bool get _submitting => _submission.busy;
   bool _readyToConfirm = true; // whether we can confirm the produced inventory
 
   List<ReasonCode> _validReasonCodes = [];
@@ -276,14 +284,21 @@ class _WorkOrderProduceInventoryPageState
     _loadMatchedBillOfMaterial();
   }
 
-  _loadMatchedBillOfMaterial() {
-    if (_matchedBillOfMaterial != null) {
-      return;
-    } else if (_currentWorkOrder?.consumeByBom != null) {
-      _matchedBillOfMaterial = _currentWorkOrder?.consumeByBom;
-    } else {
-      BillOfMaterialService.findMatchedBillOfMaterial(_currentWorkOrder!)
-          .then((value) => _matchedBillOfMaterial = value);
+  Future<void> _loadMatchedBillOfMaterial({bool retry = false}) async {
+    // Dependencies also change for keyboard/focus updates. A null result is a
+    // completed lookup, not a reason to request the same BOM again.
+    if (_bomLoading || (_bomAttempted && !retry)) return;
+    _bomAttempted = true;
+    _bomLoading = true;
+    _bomFailed = false;
+    try {
+      _matchedBillOfMaterial = await (widget.bomLoader ??
+          BillOfMaterialService.loadForReporting)(_currentWorkOrder!);
+    } catch (_) {
+      _bomFailed = true;
+    } finally {
+      _bomLoading = false;
+      if (mounted) setState(() {});
     }
   }
 
@@ -300,6 +315,15 @@ class _WorkOrderProduceInventoryPageState
           child: SingleChildScrollView(
               child: Column(
             children: <Widget>[
+              if (_bomFailed)
+                ListTile(
+                  title: const Text(
+                      'Unable to load material consumption details.'),
+                  trailing: TextButton(
+                    onPressed: () => _loadMatchedBillOfMaterial(retry: true),
+                    child: const Text('Retry'),
+                  ),
+                ),
               buildTwoSectionInformationRowWithWidget(
                   CWMSLocalizations.of(context).workOrderNumber,
                   _getWorkOrderDisplayWidget(context, _currentWorkOrder!)),
@@ -483,7 +507,8 @@ class _WorkOrderProduceInventoryPageState
                   focusNode: lpnFocusNode,
                   onKey: (event) {
                     if (event.isKeyPressed(LogicalKeyboardKey.enter) &&
-                        _readyToConfirm) {
+                        _readyToConfirm &&
+                        !_submitting) {
                       // Do something
 
                       setState(() {
@@ -533,7 +558,9 @@ class _WorkOrderProduceInventoryPageState
     return buildSingleButtonRow(
         context,
         ElevatedButton(
-          onPressed: !_readyToConfirm || _selectedInventoryStatus == null
+          onPressed: _submitting ||
+                  !_readyToConfirm ||
+                  _selectedInventoryStatus == null
               ? null
               : () {
                   _readyToConfirm = false;
@@ -568,7 +595,7 @@ class _WorkOrderProduceInventoryPageState
             OutlinedButton.icon(
                 key: const Key('defective-reason-picker'),
                 onPressed: _chooseDefectiveReason,
-                icon: const Icon(Icons.list_alt_rounded),
+                icon: const Icon(Icons.list_rounded),
                 label: Text(_selectedReasonCode?.name ??
                     (workspaceIsChinese(context)
                         ? '选择废品原因'
@@ -876,7 +903,30 @@ class _WorkOrderProduceInventoryPageState
     });
   }
 
-  void _onWorkOrderProduceConfirm() async {
+  Future<void> _onWorkOrderProduceConfirm() async {
+    if (_submitting) return;
+    final pending = _submission.run(_submitWorkOrderProduce);
+    setState(() {});
+    try {
+      await pending;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _readyToConfirm = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _submitWorkOrderProduce() async {
+    if (_bomLoading || _bomFailed) {
+      showErrorDialog(
+          context,
+          _bomLoading
+              ? 'Material consumption details are loading. Please wait.'
+              : 'Retry loading material consumption details before confirming.');
+      return;
+    }
     if (_selectedInventoryStatus == null ||
         (widget.defective &&
             _selectedInventoryStatus !=
@@ -932,7 +982,7 @@ class _WorkOrderProduceInventoryPageState
     }
 
     try {
-      _confirmWorkOrderProduce(
+      await _confirmWorkOrderProduce(
           _currentWorkOrder!, inventoryQuantity, _lpnController.text);
     } finally {
       _lpnControllerFocusNode.requestFocus();
@@ -941,27 +991,8 @@ class _WorkOrderProduceInventoryPageState
     }
   }
 
-  void _confirmWorkOrderProduce(
+  Future<void> _confirmWorkOrderProduce(
       WorkOrder workOrder, int inventoryQuantity, String lpn) async {
-    if (lpn.isNotEmpty) {
-      showLoading(context);
-      // first of all, validate the LPN
-      try {
-        String errorMessage = await InventoryService.validateNewLpn(lpn);
-        if (errorMessage.isNotEmpty) {
-          Navigator.of(context).pop();
-          showErrorDialog(context, errorMessage);
-
-          return;
-        }
-      } on CWMSHttpException catch (ex) {
-        Navigator.of(context).pop();
-        showErrorDialog(context, "${ex.code} - ${ex.message}");
-        return;
-      }
-      Navigator.of(context).pop();
-    }
-
     int lpnCount = _getRequiredLPNCount(inventoryQuantity);
 
     // see if we are receiving single lpn or multiple lpn
@@ -976,7 +1007,8 @@ class _WorkOrderProduceInventoryPageState
       bool validateLPNQuantity =
           await _validateQuantityForSingleLPN(inventoryQuantity);
       if (validateLPNQuantity) {
-        _onWorkOrderProduceSingleLPNConfirm(workOrder, inventoryQuantity, lpn);
+        await _onWorkOrderProduceSingleLPNConfirm(
+            workOrder, inventoryQuantity, lpn);
       } else {
         // quantity is not valid(normally it means we only need one LPN but the total
         // quantity exceed the standard LPN's quantity
@@ -984,7 +1016,8 @@ class _WorkOrderProduceInventoryPageState
         return;
       }
     } else {
-      _onWorkOrderProduceMiltipleLPNConfirm(workOrder, inventoryQuantity, lpn);
+      await _onWorkOrderProduceMiltipleLPNConfirm(
+          workOrder, inventoryQuantity, lpn);
     }
   }
 
@@ -1039,55 +1072,52 @@ class _WorkOrderProduceInventoryPageState
     }
   }
 
-  void _onWorkOrderProduceSingleLPNConfirm(
+  Future<void> _onWorkOrderProduceSingleLPNConfirm(
       WorkOrder workOrder, int inventoryQuantity, String lpn) async {
     showLoading(context);
-
-    // make sure the user input a valid LPN
+    Object? failure;
+    bool saved = false;
+    final timer = Stopwatch()..start();
     try {
-      String errorMessage = await InventoryService.validateNewLpn(lpn);
-      if (errorMessage.isNotEmpty) {
-        Navigator.of(context).pop();
-        showErrorDialog(context, errorMessage);
-        _lpnControllerFocusNode.requestFocus();
-        return;
-      }
-    } on CWMSHttpException catch (ex) {
-      Navigator.of(context).pop();
-      showErrorDialog(context, "${ex.code} - ${ex.message}");
-      _lpnControllerFocusNode.requestFocus();
-      return;
-    }
-
-    WorkOrderProduceTransaction workOrderProduceTransaction =
-        generateWorkOrderProduceTransaction(
-            lpn,
-            _selectedInventoryStatus!,
-            _selectedItemPackageType!,
-            inventoryQuantity,
-            _getReasonCodeForProducingInventory());
-
-    try {
-      await _ensureDefectiveAssignment();
+      // Both checks must succeed. Run them together and validate each LPN once.
+      final errorMessage = await validateProductionSubmission(
+          () => InventoryService.validateNewLpn(lpn),
+          _ensureDefectiveAssignment);
+      if (errorMessage.isNotEmpty) throw WebAPICallException(errorMessage);
+      debugPrint('[Produce timing] preflight: ${timer.elapsedMilliseconds} ms');
       if (!mounted) return;
-      await WorkOrderService.saveWorkOrderProduceTransaction(
-          workOrderProduceTransaction);
-    } on WebAPICallException catch (ex) {
-      Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
+      final transaction = generateWorkOrderProduceTransaction(
+          lpn,
+          _selectedInventoryStatus!,
+          _selectedItemPackageType!,
+          inventoryQuantity,
+          _getReasonCodeForProducingInventory());
+      await WorkOrderService.saveWorkOrderProduceTransaction(transaction);
+      saved = true;
+      debugPrint(
+          '[Produce timing] preflight + submit: ${timer.elapsedMilliseconds} ms');
+    } catch (error) {
+      failure = error;
+    } finally {
+      if (mounted) Navigator.of(context).pop();
+    }
+    if (!mounted) return;
+    if (failure != null) {
+      final message = failure is WebAPICallException
+          ? failure.errMsg()
+          : failure is CWMSHttpException
+              ? '${failure.code} - ${failure.message}'
+              : 'Unable to confirm production. Check the LPN result before retrying.';
+      showErrorDialog(context, message);
       _lpnControllerFocusNode.requestFocus();
       return;
     }
-
+    if (!saved) return;
     if (Global.warehouseConfiguration.newLPNPrintLabelAtProducingFlag == true &&
         Global.warehouseConfiguration.printingStrategy ==
             PrintingStrategy.LOCAL_PRINTER_SERVER_DATA) {
-      // we will print the LPN label
-      // we will download the LPN label as PDF and then print from the printer that attached to the RF
       _printLPNLabel(lpn);
     }
-
-    Navigator.of(context).pop();
     _refreshScreenAfterProducing();
   }
 
@@ -1112,7 +1142,7 @@ class _WorkOrderProduceInventoryPageState
     }
   }
 
-  _onWorkOrderProduceMiltipleLPNConfirm(
+  Future<void> _onWorkOrderProduceMiltipleLPNConfirm(
       WorkOrder workOrder, int inventoryQuantity, String lpn) async {
     // let's see how many LPNs we will need
     int lpnCount = _getRequiredLPNCount(inventoryQuantity);
@@ -1124,7 +1154,8 @@ class _WorkOrderProduceInventoryPageState
       bool validateLPNQuantity =
           await _validateQuantityForSingleLPN(inventoryQuantity);
       if (validateLPNQuantity) {
-        _onWorkOrderProduceSingleLPNConfirm(workOrder, inventoryQuantity, lpn);
+        await _onWorkOrderProduceSingleLPNConfirm(
+            workOrder, inventoryQuantity, lpn);
       } else {
         // quantity is not valid(normally it means we only need one LPN but the total
         // quantity exceed the standard LPN's quantity
@@ -1164,11 +1195,11 @@ class _WorkOrderProduceInventoryPageState
         return null;
       }
       // receive with multiple LPNs
-      _produceMultipleLpns(lpnCaptureRequest);
+      await _produceMultipleLpns(lpnCaptureRequest);
     }
   }
 
-  void _produceMultipleLpns(LpnCaptureRequest lpnCaptureRequest) async {
+  Future<void> _produceMultipleLpns(LpnCaptureRequest lpnCaptureRequest) async {
     showLoading(context);
     // make sure the user input a valid LPN
     try {

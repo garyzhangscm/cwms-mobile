@@ -42,6 +42,32 @@ class _SubMenusState extends State<SubMenus> {
     final menus = withDefectiveProductionMenu(group.menus)
         .where((menu) => hasRegisteredMenuRoute(context, menu.link))
         .toList();
+    if (menus.any((menu) => menu.link == 'work_order_produce')) {
+      // Pair related operations in the order used on the shop floor.
+      const order = [
+        'work_order_produce',
+        'work_order_reverse_production',
+        'work_order_qc_sampling',
+        'work_order_qc',
+        'production_line_check_in',
+        'production_line_check_out',
+        'pick_by_work_order',
+        'work_order_manual_pick',
+        'work_order_defective',
+      ];
+      final originalOrder = List.of(menus);
+      int rank(String? link) {
+        final index = order.indexOf(link ?? '');
+        return index < 0 ? order.length : index;
+      }
+
+      menus.sort((a, b) {
+        final comparison = rank(a.link).compareTo(rank(b.link));
+        return comparison != 0
+            ? comparison
+            : originalOrder.indexOf(a).compareTo(originalOrder.indexOf(b));
+      });
+    }
     final zh = workspaceIsChinese(context);
     final title = CWMSLocalizations.of(context)
         .getMenuDisplayText(group.i18n ?? '', group.text ?? group.name ?? '');

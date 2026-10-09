@@ -60,7 +60,9 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     // check if this is a single company site
 
-    if (Global.geturrentServer().isSingleCompanySite() == true) {
+    if (Global.currentFactory != null) {
+      defaultCompanyCode = Global.currentFactory!.companyCode;
+    } else if (Global.geturrentServer().isSingleCompanySite() == true) {
       defaultCompanyCode = Global.geturrentServer().getDefaultCompanyCode()!;
     } else {
       defaultCompanyCode = Global.lastLoginCompanyCode ?? "";
@@ -85,11 +87,20 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final localizations = CWMSLocalizations.of(context);
-    final serverUrl = Global.geturrentServer().url ?? '';
+    final serverUrl =
+        Global.currentFactory?.name ?? Global.geturrentServer().url ?? '';
     return Scaffold(
       backgroundColor: workspaceBackground,
       appBar: AppBar(
         title: Text(localizations.login),
+        actions: [
+          if (Global.currentFactory != null)
+            TextButton(
+                onPressed: () =>
+                    Navigator.of(context).popUntil((route) => route.isFirst),
+                child: Text(
+                    workspaceIsChinese(context) ? '切换工厂' : 'Switch factory')),
+        ],
         backgroundColor: workspaceBackground,
         foregroundColor: workspaceNavy,
         elevation: 0,
@@ -230,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style:
-                      const TextStyle(color: Color(0xFF9AA8B9), fontSize: 10)),
+                      const TextStyle(color: Color(0xFF718096), fontSize: 12)),
           ]),
         ),
         if (serverUrl.isNotEmpty)
@@ -436,9 +447,14 @@ class _LoginPageState extends State<LoginPage> {
     return Focus(
       child: TextFormField(
           controller: _companyCodeController,
+          readOnly: Global.currentFactory != null,
+          enableInteractiveSelection: Global.currentFactory == null,
           onChanged: (_) => _scheduleWarehouseLoad(),
           decoration: InputDecoration(
             labelText: "company code",
+            suffixIcon: Global.currentFactory != null
+                ? const Icon(Icons.lock_outline)
+                : null,
             hintText: "please input your company code",
             prefixIcon: Icon(Icons.person),
           ),
@@ -495,8 +511,8 @@ class _LoginPageState extends State<LoginPage> {
                           ? '正在加载仓库…'
                           : 'Loading warehouses…')
                       : (workspaceIsChinese(context)
-                          ? '请输入公司代码和用户名'
-                          : 'Enter company code and username'),
+                          ? (Global.currentFactory != null ? '输入用户名后加载仓库' : '请输入公司代码和用户名')
+                          : (Global.currentFactory != null ? 'Enter username to load warehouses' : 'Enter company code and username')),
                   style:
                       const TextStyle(color: Color(0xFF8B8B8B), fontSize: 14),
                 ), // setting hint
@@ -538,7 +554,8 @@ class _LoginPageState extends State<LoginPage> {
       selectedWarehouse = Global.getAutoLoginWarehouse();
       _rfCodeController.text = Global.getLastLoginRFCode();
 
-      _companyCodeController.text = Global.getAutoLoginCompany().code!;
+      _companyCodeController.text = Global.currentFactory?.companyCode ??
+          Global.getAutoLoginCompany().code!;
       _unameController.text = user.username!;
       _pwdController.text = user.password!;
       _rememberMe = true;
@@ -594,6 +611,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onLogin() async {
+    if (Global.currentFactory != null) {
+      _companyCodeController.text = Global.currentFactory!.companyCode;
+    }
     // 先验证各个表单字段是否合法
     if ((_formKey.currentState as FormState).validate()) {
       print("start to login");

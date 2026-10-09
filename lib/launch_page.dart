@@ -1,270 +1,196 @@
-import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/shared/functions.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
-import 'package:cwms_mobile/shared/models/http_response_wrapper.dart';
+import 'package:cwms_mobile/shared/models/factory_profile.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LaunchPage extends StatefulWidget {
-  LaunchPage({Key? key, this.enableDebugAutoConnect = true}) : super(key: key);
-
+  const LaunchPage(
+      {Key? key, this.enableDebugAutoConnect = true, this.connector})
+      : super(key: key);
   final bool enableDebugAutoConnect;
-
+  final Future<CWMSSiteInformation> Function(FactoryProfile)? connector;
   @override
-  State<StatefulWidget> createState() => _LaunchPageState();
+  State<LaunchPage> createState() => _LaunchPageState();
 }
 
-class _LaunchPageState extends State<LaunchPage>
-    with SingleTickerProviderStateMixin {
-  // AutoConnect to certian server
-  bool _autoConnect = false;
-
-  TextEditingController? _serverURLController;
-
-  final _formKey = new GlobalKey<FormState>();
-  late final AnimationController _splashController;
-  late final Animation<double> _splashScale;
-  late final Animation<double> _splashFade;
-  Timer? _splashTimer;
-  bool _showSplash = true;
+class _LaunchPageState extends State<LaunchPage> {
+  String? _lastFactoryId;
+  String? _connectingId;
+  String? _error;
+  bool get _chinese => Localizations.localeOf(context).languageCode == 'zh';
 
   @override
   void initState() {
     super.initState();
-    _splashController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    )..forward();
-    _splashScale = Tween<double>(begin: .94, end: 1).animate(
-      CurvedAnimation(parent: _splashController, curve: Curves.easeOutCubic),
-    );
-    _splashFade = CurvedAnimation(
-      parent: _splashController,
-      curve: Curves.easeOut,
-    );
-    // Keep the manual server-selection test path immediate while the normal
-    // app launch gets the short branded transition.
-    if (kDebugMode && !widget.enableDebugAutoConnect) {
-      _showSplash = false;
-    } else {
-      _splashTimer = Timer(const Duration(milliseconds: 460), () {
-        if (mounted) setState(() => _showSplash = false);
-      });
-    }
-    CWMSSiteInformation? server = Global.getAutoConnectServer();
-    print("get auto connect server? ${server == null ? '' : server.url}");
+    _restore();
+  }
 
-    if (kDebugMode && widget.enableDebugAutoConnect) {
-      String url = 'https://prod.claytechsuite.com/api/';
-      // in debug mode
-      _serverURLController = TextEditingController(text: url);
-      // text: 'http。 ://k8s-staging-zuulserv-707034e5d3-990722035.us-west-1.elb.amazonaws.com/api/');
-      _autoConnect = true;
-      printLongLogMessage("In debug mode, we will always auto connect");
-      _onConnect(url, true);
-    } else if (server != null) {
-      // _serverURLController =  TextEditingController(text: server.url);
-      _serverURLController = TextEditingController(text: server.url);
-
-      _autoConnect = server.autoConnectFlag ?? false;
-      _onAutoConnect(server);
-    } else {
-      _serverURLController =
-          TextEditingController(text: 'https://prod.claytechsuite.com/api/');
-      _autoConnect = true;
+  Future<void> _restore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final factory = FactoryProfile.byId(prefs.getString('selected_factory'));
+    if (!mounted) return;
+    setState(() => _lastFactoryId = factory?.id);
+    if (factory != null && widget.enableDebugAutoConnect) {
+      await _connect(factory);
     }
   }
 
-  @override
-  void dispose() {
-    _splashTimer?.cancel();
-    _splashController.dispose();
-    _serverURLController?.dispose();
-    super.dispose();
+  Future<void> _connect(FactoryProfile factory) async {
+    if (_connectingId != null) return;
+    setState(() {
+      _connectingId = factory.id;
+      _error = null;
+    });
+    try {
+      CWMSSiteInformation server;
+      if (widget.connector != null) {
+        server = await widget.connector!(factory);
+      } else {
+        final response = await Dio(BaseOptions(
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 15),
+        )).get('${factory.url}resource/mobile');
+        final body = response.data;
+        if (body is! Map || body['result'] != 0 || body['data'] is! Map) {
+          throw StateError('Invalid server response');
+        }
+        server = CWMSSiteInformation.fromJson(
+            Map<String, dynamic>.from(body['data'] as Map));
+      }
+      if (!mounted) return;
+      server.url = factory.url;
+      server.autoConnectFlag = false;
+      await Global.selectFactory(factory, server);
+      if (!mounted) return;
+      setState(() {
+        _lastFactoryId = factory.id;
+        _connectingId = null;
+      });
+      await Navigator.pushNamed(context, 'login_page');
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = _chinese
+            ? '无法连接到 ${factory.name}，请检查工厂网络或 VPN 后重试。'
+            : 'Cannot connect to ${factory.name}. Check your factory network or VPN and try again.');
+      }
+    } finally {
+      if (mounted) setState(() => _connectingId = null);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_showSplash) return _buildSplash();
-    return _buildServerSelection();
-  }
-
-  Widget _buildSplash() {
+    const navy = Color(0xFF142D4E);
     return Scaffold(
       backgroundColor: const Color(0xFFF3F5F9),
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _splashController,
-          builder: (context, child) => FadeTransition(
-            opacity: _splashFade,
-            child: Transform.scale(scale: _splashScale.value, child: child),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: Image.asset(
-                  'assets/icon/claytech_one_grid.png',
-                  width: 112,
-                  height: 112,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Claytech One',
-                style: TextStyle(
-                  color: Color(0xFF142D4E),
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildServerSelection() {
-    final serverAddressLabel =
-        Localizations.localeOf(context).languageCode == 'zh'
-            ? '服务器地址'
-            : 'Server address';
-    return Scaffold(
       appBar: AppBar(
-        title: Text(CWMSLocalizations.of(context).chooseServer),
-      ),
-      resizeToAvoidBottomInset: true,
-      body: Padding(
-        padding: EdgeInsets.all(18),
-        child: Form(
-          key: _formKey, //设置globalKey，用于后面获取FormState
-          autovalidateMode: AutovalidateMode.always, //开启自动校验
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                  autofocus: true,
-                  controller: _serverURLController, //设置controller
-                  decoration: InputDecoration(
-                    labelText: serverAddressLabel,
-                    hintText: serverAddressLabel,
-                    prefixIcon: Icon(Icons.web),
-                    suffixIcon: IconButton(
-                      onPressed: () => _clearField(),
-                      icon: Icon(Icons.close),
-                    ),
-                  ),
-                  //
-                  validator: (v) {
-                    return v!.trim().length > 0
-                        ? null
-                        : "Please input a valid server";
-                  }),
-              Row(children: <Widget>[
-                Checkbox(
-                  value: _autoConnect,
-                  activeColor: Colors.blue, //选中时的颜色
-                  onChanged: (value) {
-                    //重新构建页面
-                    setState(() {
-                      _autoConnect = value ?? false;
-                    });
-                  },
-                ),
-                Text("Auto Connect"),
-              ]),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                ),
-                // color: Colors.blue,
-                // highlightColor: Colors.blue[700],
-                // colorBrightness: Brightness.dark,
-                // splashColor: Colors.grey,
-                child: Text("Connect"),
-                // shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _onConnect(_serverURLController!.text, _autoConnect);
-                  }
-                },
-              )
-            ],
+          title: const Text('Claytech One'),
+          backgroundColor: const Color(0xFFF3F5F9),
+          foregroundColor: navy,
+          elevation: 0,
+          scrolledUnderElevation: 0),
+      body: SafeArea(
+          child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Center(
+            child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const SizedBox(height: 12),
+            Text(_chinese ? '选择工厂' : 'Choose your factory',
+                style: const TextStyle(
+                    fontSize: 25, fontWeight: FontWeight.w700, color: navy)),
+            const SizedBox(height: 8),
+            Text(
+                _chinese ? '点选工作地点，即可登录。' : 'Select your workplace to sign in.',
+                style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
+            const SizedBox(height: 26),
+            for (var i = 0; i < FactoryProfile.values.length; i++)
+              _factoryCard(FactoryProfile.values[i], i),
+            if (_error != null)
+              Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(_error!,
+                      style: const TextStyle(
+                          color: Color(0xFFB42318), fontSize: 14))),
+            const SizedBox(height: 16),
+            Text(
+                _chinese
+                    ? '系统会记住您上次选择的工厂。'
+                    : 'Your last selected factory will be remembered.',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF718096))),
+          ]),
+        )),
+      )),
+    );
+  }
+
+  Widget _factoryCard(FactoryProfile factory, int index) {
+    final selected = factory.id == _lastFactoryId;
+    final busy = factory.id == _connectingId;
+    const colors = [
+      Color(0xFF2865D9),
+      Color(0xFF168579),
+      Color(0xFF8A6737),
+      Color(0xFF7956B6)
+    ];
+    const symbols = [
+      Icons.precision_manufacturing_outlined,
+      Icons.precision_manufacturing_outlined,
+      Icons.recycling,
+      Icons.work_outline
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Material(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+                color: selected ? colors[index] : const Color(0xFFE0E6EF))),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: ValueKey(factory.id),
+          onTap: _connectingId == null ? () => _connect(factory) : null,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+            child: Row(children: [
+              Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                      color: colors[index].withValues(alpha: .09),
+                      borderRadius: BorderRadius.circular(14)),
+                  child: Icon(symbols[index], color: colors[index], size: 25)),
+              const SizedBox(width: 16),
+              Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text(factory.name,
+                        style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF142D4E))),
+                    if (selected)
+                      Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(_chinese ? '上次选择' : 'Last selected',
+                              style: TextStyle(
+                                  fontSize: 12, color: colors[index]))),
+                  ])),
+              if (busy)
+                const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2)),
+            ]),
           ),
         ),
       ),
     );
-  }
-
-  _clearField() {
-    _serverURLController!.text = "";
-  }
-
-  void _onAutoConnect(CWMSSiteInformation server) async {
-    _onConnect(server.url ?? "", true);
-  }
-
-  // connect to the server
-  // autoConnecting: Whether we are automatically connecting or user key in the
-  //    url and connect
-  void _onConnect(String serverUrl, bool autoConnectFlag) async {
-    // showLoading(context);
-    CWMSSiteInformation? server;
-    try {
-      print("start to connect to $serverUrl");
-      Response response = await Dio().get(serverUrl + "/resource/mobile");
-
-      print("get response from server \n: $response");
-
-      HttpResponseWrapper httpResponseWrapper =
-          HttpResponseWrapper.fromJson(json.decode(response.toString()));
-
-      if (httpResponseWrapper.result == 0) {
-        // ok, we can connect to the server. Add it to the history
-        //
-        server = CWMSSiteInformation.fromJson(httpResponseWrapper.data!);
-
-        print("extracted the server");
-        // The server will return the name / description / version
-        // we will set the url and auto connection flag based on
-        // user's input
-        if (!serverUrl.endsWith("/")) {
-          serverUrl += "/";
-        }
-
-        server.url = serverUrl;
-        server.autoConnectFlag = autoConnectFlag;
-        print("finished setup the server infor");
-      }
-    } catch (e) {
-      //登录失败则提示
-      print(e.toString());
-      // showToast(e.toString());
-      showToast("Can't connect to server $serverUrl");
-      return;
-    } finally {
-      // 隐藏loading框
-      // Navigator.of(context).pop();
-    }
-    if (server != null) {
-      // 返回
-      Global.addServer(server);
-      Global.setCurrentServer(server);
-
-      printLongLogMessage("start login process");
-      Navigator.pushNamed(context, "login_page");
-    }
   }
 }

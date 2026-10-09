@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cwms_mobile/auth/models/menu.dart';
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/auth/models/menu_sub_group.dart';
@@ -31,7 +32,9 @@ InventoryStatus status(String name,
       ..availableStatusFlag = false;
 
 Future<void> openForm(WidgetTester tester, List<InventoryStatus> statuses,
-    {bool defective = true, bool autoPromptReason = false}) async {
+    {bool defective = true,
+    bool autoPromptReason = false,
+    Future<BillOfMaterial?> Function(WorkOrder)? bomLoader}) async {
   Global.currentUser = User()..username = 'TEST';
   final unit = ItemUnitOfMeasure()
     ..id = 1
@@ -50,7 +53,7 @@ Future<void> openForm(WidgetTester tester, List<InventoryStatus> statuses,
   final order = WorkOrder()
     ..id = 3
     ..number = 'TEST-ONLY'
-    ..consumeByBom = BillOfMaterial()
+    ..consumeByBom = bomLoader == null ? BillOfMaterial() : null
     ..item = (Item()
       ..name = 'TEST-ITEM'
       ..description = 'Test item'
@@ -72,6 +75,7 @@ Future<void> openForm(WidgetTester tester, List<InventoryStatus> statuses,
               arguments: {'workOrder': order, 'productionLine': null}),
           builder: (_) => WorkOrderProduceInventoryPage(
               defective: defective,
+              bomLoader: bomLoader ?? (order) async => order.consumeByBom,
               autoPromptReason: autoPromptReason,
               statusLoader: () async => statuses,
               reasonLoader: () async => [
@@ -85,6 +89,43 @@ Future<void> openForm(WidgetTester tester, List<InventoryStatus> statuses,
 }
 
 void main() {
+  testWidgets('BOM lookup is shared across dependency changes, including null',
+      (tester) async {
+    var calls = 0;
+    final pending = Completer<BillOfMaterial?>();
+    await openForm(tester, [status('DMG')], bomLoader: (_) {
+      calls++;
+      return pending.future;
+    });
+    tester.view.viewInsets = const FakeViewPadding(bottom: 180);
+    await tester.pumpAndSettle();
+    expect(calls, 1);
+    pending.complete(null);
+    await tester.pumpAndSettle();
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pumpAndSettle();
+    expect(calls, 1);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('BOM failure is handled and retries explicitly', (tester) async {
+    var calls = 0;
+    await openForm(tester, [status('DMG')], bomLoader: (_) async {
+      calls++;
+      if (calls == 1) throw Exception('Unavailable');
+      return null;
+    });
+    expect(tester.takeException(), isNull);
+    expect(find.text('Unable to load material consumption details.'),
+        findsOneWidget);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 180);
+    await tester.pumpAndSettle();
+    expect(calls, 1);
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+    expect(calls, 2);
+    expect(find.text('Unable to load material consumption details.'),
+        findsNothing);
+  });
   testWidgets('Work Order menu opens the independent Defective flow',
       (tester) async {
     Global.currentUser = User()..username = 'TEST';

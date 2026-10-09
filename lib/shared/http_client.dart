@@ -1,5 +1,3 @@
-
-
 import 'dart:io';
 import 'package:cwms_mobile/shared/RefreshTokenInterceptor.dart';
 import 'package:dio/dio.dart';
@@ -19,18 +17,23 @@ class CWMSHttpClient {
 
   static int timeoutRetryTime = 20;
 
-
   static Dio _dio = new Dio(BaseOptions(
     baseUrl: Global.currentServer!.url!,
     headers: {
       HttpHeaders.acceptHeader: "application/json",
     },
-
   ));
 
   static Dio? _dioWithAuth;
 
-  static Dio get  dio => _dio;
+  static void resetForServer() {
+    _dio = Dio(BaseOptions(
+        baseUrl: Global.currentServer!.url!,
+        headers: {HttpHeaders.acceptHeader: 'application/json'}));
+    _dioWithAuth = null;
+  }
+
+  static Dio get dio => _dio;
 
   static Dio getDio() {
     if (_dioWithAuth == null) {
@@ -40,7 +43,6 @@ class CWMSHttpClient {
   }
 
   static void resetDio() {
-
     _dioWithAuth = new Dio(BaseOptions(
       baseUrl: Global.currentServer!.url!,
       headers: {
@@ -53,11 +55,10 @@ class CWMSHttpClient {
       // connectTimeout: 10000,
       // receiveTimeout: 15000,
       // sendTimeout: 15000,
-
     ));
     _dioWithAuth?.interceptors.add(RefreshTokenInterceptor());
-
   }
+
   static void init() {
     // 添加缓存插件
     // dio.interceptors.add(Global.netCache);
@@ -80,6 +81,4 @@ class CWMSHttpClient {
     }
         ***/
   }
-
-
 }

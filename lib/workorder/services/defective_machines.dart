@@ -153,7 +153,7 @@ class DefectiveMachineService {
   }
 
   static String get _scope =>
-      '${Global.currentServer?.url}|${Global.currentWarehouse?.id}|${Global.lastLoginCompanyId}|${Global.currentUser?.username}|${Global.currentUser?.token}';
+      '${Global.currentFactory?.id}|${Global.currentServer?.url}|${Global.currentWarehouse?.id}|${Global.lastLoginCompanyId}|${Global.currentUser?.username}|${Global.currentUser?.token}';
   static String? _cacheScope;
   static Future<List<DefectiveMachine>>? _inflight;
   static List<DefectiveMachine>? _cached;

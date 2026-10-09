@@ -7,20 +7,24 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:cwms_mobile/main.dart';
 
 void main() {
   testWidgets('MES app starts on the server selection screen',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(MyApp(enableDebugAutoConnect: false));
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump();
 
     expect(find.byType(MaterialApp), findsOneWidget);
-    expect(find.byType(TextFormField), findsOneWidget);
-    expect(find.byType(ElevatedButton), findsOneWidget);
-    expect(find.text('Connect'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNothing);
+    expect(find.text('Colton Injection'), findsOneWidget);
+    expect(find.text('Fay Injection'), findsOneWidget);
+    expect(find.text('Fay Recycle'), findsOneWidget);
+    expect(find.text('Mira Loma Luggage'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
