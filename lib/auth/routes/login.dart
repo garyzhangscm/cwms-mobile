@@ -453,7 +453,7 @@ class _LoginPageState extends State<LoginPage> {
           decoration: InputDecoration(
             labelText: "company code",
             suffixIcon: Global.currentFactory != null
-                ? const Icon(Icons.lock_outline)
+                ? const Icon(Icons.lock)
                 : null,
             hintText: "please input your company code",
             prefixIcon: Icon(Icons.person),

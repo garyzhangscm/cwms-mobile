@@ -140,8 +140,8 @@ class _LaunchPageState extends State<LaunchPage> {
     const symbols = [
       Icons.precision_manufacturing_outlined,
       Icons.precision_manufacturing_outlined,
-      Icons.recycling,
-      Icons.work_outline
+      Icons.refresh_rounded,
+      Icons.inventory_2_outlined
     ];
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
