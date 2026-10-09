@@ -16,15 +16,20 @@ import 'package:cwms_mobile/workorder/services/work_order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
+import '../../shared/workspace_ui.dart';
 
 class WorkOrderProducePage extends StatefulWidget {
-  WorkOrderProducePage({Key? key}) : super(key: key);
+  WorkOrderProducePage({Key? key, this.defective = false}) : super(key: key);
+  final bool defective;
 
   @override
   State<StatefulWidget> createState() => _WorkOrderProducePageState();
 }
 
 class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
+  String get _pageTitle => widget.defective
+      ? (workspaceIsChinese(context) ? '废品报产' : 'Defective')
+      : CWMSLocalizations.of(context).workOrderProduce;
   // input batch id
   TextEditingController _workOrderNumberController =
       new TextEditingController();
@@ -70,8 +75,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     // printLongLogMessage("rebuild work order produce");
 
     return Scaffold(
-      appBar:
-          AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
+      appBar: AppBar(title: Text(_pageTitle)),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -136,7 +140,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  CWMSLocalizations.of(context).workOrderProduce,
+                  _pageTitle,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -577,7 +581,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
               _currentWorkOrder == null || _assignedProductionLine == null
                   ? null
                   : _onStartProduce,
-          child: Text(CWMSLocalizations.of(context).workOrderProduce),
+          child: Text(_pageTitle),
         ));
   }
 
@@ -596,8 +600,11 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
 
     printLongLogMessage("flow to produce inventory page");
 
-    await Navigator.of(context)
-        .pushNamed("work_order_produce_inventory", arguments: argumentMap);
+    await Navigator.of(context).pushNamed(
+        widget.defective
+            ? "work_order_defective_inventory"
+            : "work_order_produce_inventory",
+        arguments: argumentMap);
   }
 
   Future<WorkOrder?> _getAssignedWorkOrder(

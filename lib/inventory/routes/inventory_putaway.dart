@@ -1,20 +1,14 @@
-import 'dart:math';
+import '../services/putaway_sync_queue.dart';
+import '../services/putaway_sync_gateway.dart';
+import 'dart:async';
 
 import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/i18n/localization_intl.dart';
-import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_deposit_request.dart';
-import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
-import 'package:cwms_mobile/shared/global.dart';
-import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
-import 'package:cwms_mobile/warehouse_layout/services/warehouse_location.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../../exception/WebAPICallException.dart';
-import '../../shared/http_client.dart';
 import '../../shared/services/barcode_service.dart';
 import '../../shared/models/barcode.dart';
 
@@ -22,13 +16,16 @@ import '../../shared/models/barcode.dart';
 // The LPN can be in receiving stage / storage location / etc
 // with or without any pre-assigned destination
 class InventoryPutawayPage extends StatefulWidget {
-  InventoryPutawayPage({Key? key}) : super(key: key);
+  InventoryPutawayPage({Key? key, this.queueLoader}) : super(key: key);
+
+  final Future<PutawaySyncQueue> Function()? queueLoader;
 
   @override
   State<StatefulWidget> createState() => _InventoryPutawayPageState();
 }
 
-class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
+class _InventoryPutawayPageState extends State<InventoryPutawayPage>
+    with WidgetsBindingObserver {
   // allow user to scan in LPN
   TextEditingController _lpnController = new TextEditingController();
   GlobalKey _formKey = new GlobalKey<FormState>();
@@ -38,10 +35,95 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   FocusNode lpnFocusNode = FocusNode();
 
   List<InventoryDepositRequest> _inventoryDepositRequests = [];
+  PutawaySyncQueue? _queue;
+  String? _queueError;
+  final Set<String> _savingLpns = {};
+
+  Future<void> _initializeQueue() async {
+    try {
+      final queue = await (widget.queueLoader?.call() ??
+          PutawaySyncGateway.currentQueue());
+      if (!mounted) return;
+      _queue = queue;
+      queue.addListener(_queueChanged);
+      _queueChanged();
+      unawaited(queue.kick());
+    } catch (error) {
+      if (mounted)
+        setState(() {
+          _queueError = 'Unable to open saved scans. $error';
+        });
+    }
+  }
+
+  void _queueChanged() {
+    if (!mounted || _queue == null) return;
+    setState(() {
+      _inventoryDepositRequests = _queue!.entries.map((entry) {
+        return InventoryDepositRequest()
+          ..lpn = entry.lpn
+          ..quantity = entry.quantity
+          ..itemName = entry.itemName.isEmpty ? '—' : entry.itemName
+          ..requestInProcess = entry.state == 'pending' ||
+              entry.state == 'syncing' ||
+              entry.state == 'saving'
+          ..requestResult = entry.state == 'completed'
+          ..result = entry.message;
+      }).toList();
+    });
+    _inventoryCount = _queue!.serverInventoryCount;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final queue = _queue;
+      if (queue != null) unawaited(queue.kick());
+    }
+  }
+
+  Widget _connectionStatus() {
+    final state = _queue?.connection ?? 'checking';
+    final label = _queueError ??
+        ({
+              'online': 'Server connected',
+              'offline': 'Waiting for server — scans saved',
+              'login': 'Sign in again to resume saved scans',
+              'error': 'Unable to synchronize — scans retained',
+              'checking': 'Checking server connection…'
+            }[state] ??
+            'Checking server connection…');
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(children: [
+          Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: state == 'online' ? Colors.green : Colors.orange)),
+          const SizedBox(width: 8),
+          Expanded(
+              child: Text('$label · ${_queue?.pendingCount ?? 0} pending',
+                  style: const TextStyle(fontSize: 12))),
+          if (state == 'login')
+            TextButton(
+                onPressed: () => Navigator.of(context).pushNamed('login_page'),
+                child: const Text('Sign in')),
+          if (_queue != null)
+            TextButton(
+                child: const Text('Sync'),
+                onPressed: () {
+                  unawaited(_queue!.kick());
+                }),
+        ]));
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeQueue();
 
     lpnFocusNode.addListener(() {
       print("lpnFocusNode.hasFocus: ${lpnFocusNode.hasFocus}");
@@ -62,8 +144,6 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         _onAddingLPN();
       }
     });
-
-    _reloadInventoryCount();
   }
 
   @override
@@ -76,13 +156,21 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         child: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
-          child: Column(
-            children: <Widget>[
+          child: CustomScrollView(slivers: [
+            SliverToBoxAdapter(
+                child: Column(children: [
+              _connectionStatus(),
               _buildLPNScanner(context),
               _buildButtons(context),
-              _buildDepositRequestList(context)
-            ],
-          ),
+            ])),
+            SliverList(
+                delegate: SliverChildBuilderDelegate(
+                    (context, index) => Column(children: [
+                          _buildInventoryDepositRequestListTile(context, index),
+                          const Divider(height: 8),
+                        ]),
+                    childCount: _inventoryDepositRequests.length)),
+          ]),
         ),
       ),
       endDrawer: MyDrawer(),
@@ -92,6 +180,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   Widget _buildLPNScanner(BuildContext context) {
     return TextFormField(
         controller: _lpnController,
+        onFieldSubmitted: (_) => _onAddingLPN(),
         focusNode: lpnFocusNode,
         autofocus: true,
         decoration: InputDecoration(
@@ -104,7 +193,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
         ),
         // 校验用户名（不能为空）
         validator: (v) {
-          return v!.trim().isNotEmpty
+          return (v ?? '').trim().isNotEmpty
               ? null
               : CWMSLocalizations.of(context)
                   .missingField(CWMSLocalizations.of(context).lpn);
@@ -114,9 +203,6 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   void _clearLPN() {
     _lpnController.text = "";
     lpnFocusNode.requestFocus();
-    setState(() {
-      _inventoryDepositRequests = [];
-    });
   }
 
   Widget _buildButtons(BuildContext context) {
@@ -169,370 +255,100 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage> {
   }
 
   void _onAddingLPN() async {
-    if (_lpnController.text.isEmpty) {
-      showErrorDialog(context, "please input the LPN number");
+    final input = _lpnController.text.trim();
+    final barcode = BarcodeService.parseBarcode(input);
+    final lpn =
+        (barcode.is_2d == true ? BarcodeService.getLPN(barcode) : input).trim();
+    if (lpn.isEmpty || _savingLpns.contains(lpn)) return;
+    final queue = _queue;
+    if (queue == null) {
+      showErrorDialog(
+          context, _queueError ?? 'Please wait for saved scans to load.');
       return;
     }
-
-    // skip the LPN if it is already added
-    if (!_inventoryDepositRequests.any((inventoryDepositRequest) =>
-        inventoryDepositRequest.lpn == _lpnController.text)) {
-      InventoryDepositRequest inventoryDepositRequest =
-          new InventoryDepositRequest();
-      inventoryDepositRequest.lpn = _lpnController.text;
-      inventoryDepositRequest.requestInProcess = true;
-      inventoryDepositRequest.requestResult = false;
-      inventoryDepositRequest.result = "";
-
-      _inventoryDepositRequests.insert(0, inventoryDepositRequest);
-      setState(() {
-        _inventoryDepositRequests;
-      });
-
-      _moveInventoryAsync(inventoryDepositRequest, retryTime: 0);
+    _savingLpns.add(lpn);
+    try {
+      await queue.add(lpn);
+      if (!mounted) return;
+      if (_lpnController.text.trim() == input ||
+          _lpnController.text.trim() == lpn) _lpnController.clear();
+      lpnFocusNode.requestFocus();
+      showToast('LPN saved for synchronization');
+      unawaited(queue.kick());
+    } catch (error) {
+      if (mounted)
+        showErrorDialog(context, 'Could not save this scan. Please try again.');
+    } finally {
+      _savingLpns.remove(lpn);
     }
-    showToast("LPN putaway request sent");
-    _lpnController.clear();
-    lpnFocusNode.requestFocus();
-  }
-
-  /// move inventory async
-  void _moveInventoryAsync(InventoryDepositRequest inventoryDepositRequest,
-      {int retryTime = 0}) {
-    // showLoading(context);
-    // move the inventory being scanned onto RF
-    printLongLogMessage("==>> Start to adding LPN for deposit");
-    InventoryService.findInventory(
-            lpn: inventoryDepositRequest.lpn!, includeDetails: false)
-        .then((inventories) async {
-      printLongLogMessage(
-          "find ${inventories.length} inventory by lpn ${inventoryDepositRequest.lpn}");
-
-      if (inventories.isNotEmpty) {
-        WarehouseLocation rfLocation =
-            await WarehouseLocationService.getWarehouseLocationByName(
-                Global.lastLoginRFCode!);
-        printLongLogMessage("==>> GOT RF location ");
-
-        int totalInventoryQuantity = 0;
-        for (Inventory inventory in inventories) {
-          printLongLogMessage(
-              "==>> start to move invenotry with id ${inventory.id} lpn ${inventory.lpn}");
-
-          await InventoryService.moveInventory(
-              inventoryId: inventory.id!, destinationLocation: rfLocation);
-          totalInventoryQuantity += inventory.quantity!;
-
-          printLongLogMessage(
-              "==>> finish moving invenotry with id ${inventory.id} lpn ${inventory.lpn}");
-        }
-
-        // Navigator.of(context).pop();
-
-        // showToast(CWMSLocalizations.of(context)!.actionComplete);
-        if (mounted) {
-          setState(() {
-            _inventoryCount += inventories.length;
-          });
-        }
-        inventoryDepositRequest.quantity = totalInventoryQuantity;
-
-        inventoryDepositRequest.requestInProcess = false;
-        inventoryDepositRequest.requestResult = true;
-        inventoryDepositRequest.result = "";
-
-        setState(() {
-          _inventoryDepositRequests;
-        });
-      } else {
-        // show error message
-        inventoryDepositRequest.requestInProcess = false;
-        inventoryDepositRequest.requestResult = false;
-        inventoryDepositRequest.result =
-            CWMSLocalizations.of(context).noInventoryFound;
-
-        setState(() {
-          _inventoryDepositRequests;
-        });
-        return;
-      }
-    }).catchError((err) {
-      printLongLogMessage(
-          "Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
-      if (err is DioException) {
-        // for timeout error and we are still in the retry threshold, let's try again
-        printLongLogMessage(
-            "time out while get inventory by LPN ${inventoryDepositRequest.lpn}, let's try again.");
-        // retry after 2 second
-
-        if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
-          Future.delayed(
-              const Duration(milliseconds: 2000),
-              () => _moveInventoryAsync(inventoryDepositRequest,
-                  retryTime: retryTime + 1));
-        } else {
-          // do nothing as we already running out of retry time
-          inventoryDepositRequest.requestInProcess = false;
-          inventoryDepositRequest.requestResult = false;
-          inventoryDepositRequest.result =
-              "Fail to move LPN: ${inventoryDepositRequest.lpn} after trying ${CWMSHttpClient.timeoutRetryTime}  times";
-
-          setState(() {
-            _inventoryDepositRequests;
-          });
-        }
-      } else if (err is WebAPICallException) {
-        // for any other error display it
-        final webAPICallException = err;
-
-        // do nothing as we already running out of retry time
-        inventoryDepositRequest.requestInProcess = false;
-        inventoryDepositRequest.requestResult = false;
-        inventoryDepositRequest.result = webAPICallException.errMsg() +
-            ", LPN: " +
-            inventoryDepositRequest.lpn!;
-
-        setState(() {
-          _inventoryDepositRequests;
-        });
-      } else {
-        inventoryDepositRequest.requestInProcess = false;
-        inventoryDepositRequest.requestResult = false;
-        inventoryDepositRequest.result =
-            err.toString() + ", LPN: " + inventoryDepositRequest.lpn!;
-
-        setState(() {
-          _inventoryDepositRequests;
-        });
-      }
-      // ignore any other error
-    });
   }
 
   // call the deposit form to deposit the inventory on the RF
   Future<void> _startDeposit() async {
     await Navigator.of(context).pushNamed("inventory_deposit");
-    _reloadInventoryCount();
-    _inventoryDepositRequests = [];
+    final queue = _queue;
+    if (queue != null) {
+      await queue.clearCompleted();
+      unawaited(queue.kick());
+    }
   }
 
   // call the batch deposit form to batch deposit the inventory on the RF
   Future<void> _startBatchDeposit() async {
     await Navigator.of(context).pushNamed("inventory_batch_deposit");
-    _reloadInventoryCount();
-    _inventoryDepositRequests = [];
-  }
-
-  Widget _buildDepositRequestList(BuildContext context) {
-    /**
-    List<InventoryDepositRequest> inventoryDepositRequests =
-       InventoryService.getInventoryDepositRequests(inventoryOnRF, true, true);
-    return
-      Expanded(
-        child: ListView.builder(
-            itemCount: inventoryDepositRequests.length,
-            itemBuilder: (BuildContext context, int index) {
-
-              return InventoryDepositRequestItem(
-                  index: index,
-                  inventoryDepositRequest: inventoryDepositRequests[index],
-              );
-            }),
-      );
-        **/
-    return Expanded(
-        child: ListView.separated(
-      itemCount: _inventoryDepositRequests.length,
-      itemBuilder: (BuildContext context, int index) {
-        return _buildInventoryDepositRequestListTile(context, index);
-      },
-      separatorBuilder: (context, index) => Divider(
-        color: Colors.black,
-      ),
-    ));
+    final queue = _queue;
+    if (queue != null) {
+      await queue.clearCompleted();
+      unawaited(queue.kick());
+    }
   }
 
   Widget _buildInventoryDepositRequestListTile(
       BuildContext context, int index) {
-    if (_inventoryDepositRequests[index].requestInProcess == true) {
-      // show loading indicator if the inventory still reverse in progress
-      printLongLogMessage(
-          "show loading for index $index / ${_inventoryDepositRequests[index].lpn}");
-      return SizedBox(
-          height: 75,
-          child: Stack(
-            alignment: Alignment.center,
-            fit: StackFit.expand, //未定位widget占满Stack整个空间
-            children: <Widget>[
-              ListTile(
-                title: Text(CWMSLocalizations.of(context).lpn +
-                    ": " +
-                    _inventoryDepositRequests[index].lpn!),
-                subtitle: Column(children: <Widget>[
-                  Row(children: <Widget>[
-                    Text(CWMSLocalizations.of(context).item + ": ",
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                    Text(_inventoryDepositRequests[index].itemName!,
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                  ]),
-                  Row(children: <Widget>[
-                    Text(CWMSLocalizations.of(context).quantity + ": ",
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                    Text(_inventoryDepositRequests[index].quantity.toString(),
-                        textScaleFactor: .9,
-                        style: TextStyle(
-                          height: 1.15,
-                          color: Colors.blueGrey[700],
-                          fontSize: 17,
-                        )),
-                  ]),
-                ]),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 5, bottom: 5),
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: Column(children: [CircularProgressIndicator()]),
-                      ),
-                      // Expanded(child: Container(color: Colors.amber)),
-                    ]),
-              ),
-            ],
-          ));
-    } else if (_inventoryDepositRequests[index].requestResult == true) {
-      return SizedBox(
-          height: 75,
-          child: ListTile(
-            title: Text(CWMSLocalizations.of(context).lpn +
-                ": " +
-                _inventoryDepositRequests[index].lpn!),
-            subtitle: Column(children: <Widget>[
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).item + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[index].itemName!,
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).quantity + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[index].quantity.toString(),
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-            ]),
-            tileColor: Colors.lightGreen,
-          ));
-    } else {
-      double height = min(
-          75 + (_inventoryDepositRequests[index].result!.length / 50) * 15,
-          120);
-      return SizedBox(
-          height: height,
-          child: ListTile(
-            title: Text(CWMSLocalizations.of(context).lpn +
-                ": " +
-                _inventoryDepositRequests[index].lpn!),
-            subtitle: Column(children: <Widget>[
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).item + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[index].itemName!,
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-              Row(children: <Widget>[
-                Text(CWMSLocalizations.of(context).quantity + ": ",
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-                Text(_inventoryDepositRequests[index].quantity.toString(),
-                    textScaleFactor: .9,
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    )),
-              ]),
-              Row(children: <Widget>[
-                Flexible(
-                  child: Text(
-                      CWMSLocalizations.of(context).result +
-                          ": " +
-                          _inventoryDepositRequests[index].result.toString(),
-                      maxLines: 3,
-                      style: TextStyle(
-                          color: Colors.lightBlue,
-                          fontWeight: FontWeight.normal)),
-                ),
-              ]),
-            ]),
-            tileColor: Colors.amberAccent,
-          ));
-    }
+    final request = _inventoryDepositRequests[index];
+    final pending = request.requestInProcess == true;
+    final completed = request.requestResult == true;
+    final message = pending
+        ? 'Saved — waiting for synchronization'
+        : completed
+            ? 'Synchronized'
+            : request.result ?? '';
+    return Container(
+        color: completed
+            ? Colors.lightGreen
+            : pending
+                ? Colors.blueGrey.shade50
+                : Colors.amberAccent,
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('LPN: ${request.lpn}'),
+          Text('Item: ${request.itemName ?? '—'}'),
+          Text('Quantity: ${request.quantity?.toString() ?? '—'}'),
+          Text(message, style: const TextStyle(fontSize: 12)),
+          if (!pending && !completed)
+            TextButton(
+                onPressed: () async {
+                  final queue = _queue;
+                  if (queue == null) return;
+                  try {
+                    await queue.add(request.lpn ?? '');
+                    unawaited(queue.kick());
+                  } catch (_) {
+                    if (mounted)
+                      showErrorDialog(
+                          context, 'Could not save retry. Please try again.');
+                  }
+                },
+                child: const Text('Retry this LPN')),
+        ]));
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _queue?.removeListener(_queueChanged);
+    _lpnController.dispose();
+    lpnFocusNode.dispose();
     super.dispose();
-  }
-
-  void _reloadInventoryCount() {
-    InventoryService.getInventoryCountOnCurrentRF().then((value) {
-      if (!mounted) return;
-      setState(() {
-        _inventoryCount = value;
-      });
-    }).catchError((error) {
-      printLongLogMessage("Unable to load RF inventory count: $error");
-    });
   }
 }

@@ -9,6 +9,7 @@ bool workspaceIsChinese(BuildContext context) =>
 
 IconData workspaceIcon(String name) {
   final value = name.toLowerCase();
+  if (value.contains("defective")) return Icons.warning_amber_rounded;
   // Keep each operation visually distinct. These are semantic symbols rather
   // than one generic box recoloured for every menu item.
   if (value.contains('partial') && value.contains('move'))

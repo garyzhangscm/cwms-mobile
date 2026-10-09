@@ -4,8 +4,29 @@ import 'i18n/localization_intl.dart';
 import 'shared/MyDrawer.dart';
 import 'shared/menu_navigation.dart';
 import 'shared/workspace_ui.dart';
+import 'workorder/models/defective_production.dart';
+import 'workorder/services/defective_machines.dart';
 
-class SubMenus extends StatelessWidget {
+class SubMenus extends StatefulWidget {
+  @override
+  State<SubMenus> createState() => _SubMenusState();
+}
+
+class _SubMenusState extends State<SubMenus> {
+  bool _prefetchScheduled = false;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_prefetchScheduled) return;
+    _prefetchScheduled = true;
+    final group = ModalRoute.of(context)?.settings.arguments as MenuSubGroup?;
+    if (withDefectiveProductionMenu(group?.menus ?? [])
+            .any((menu) => menu.link == 'work_order_defective') &&
+        hasRegisteredMenuRoute(context, 'work_order_defective')) {
+      DefectiveMachineService.prefetch();
+    }
+  }
+
   String _inventoryOperationTitle(String title) {
     final normalized = title.trim().toLowerCase();
     if (normalized == 'inventory lost and found') return 'Lost & Found';
@@ -18,7 +39,7 @@ class SubMenus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final group = ModalRoute.of(context)!.settings.arguments as MenuSubGroup;
-    final menus = group.menus
+    final menus = withDefectiveProductionMenu(group.menus)
         .where((menu) => hasRegisteredMenuRoute(context, menu.link))
         .toList();
     final zh = workspaceIsChinese(context);
@@ -67,12 +88,15 @@ class SubMenus extends StatelessWidget {
                               if (menus.isEmpty)
                                 Text(zh ? '暂无可用作业' : 'No operations available'),
                               WorkspaceGrid(
-                                  children: List.generate(menus.length,
-                                      (index) {
+                                  children:
+                                      List.generate(menus.length, (index) {
                                 final menu = menus[index];
-                                final menuTitle = CWMSLocalizations.of(context)
-                                    .getMenuDisplayText(menu.i18n ?? '',
-                                        menu.text ?? menu.name ?? '');
+                                final menuTitle =
+                                    menu.link == 'work_order_defective'
+                                        ? (zh ? '废品报产' : 'Defective')
+                                        : CWMSLocalizations.of(context)
+                                            .getMenuDisplayText(menu.i18n ?? '',
+                                                menu.text ?? menu.name ?? '');
                                 return WorkspaceTile(
                                     title: isInventoryPage
                                         ? _inventoryOperationTitle(menuTitle)

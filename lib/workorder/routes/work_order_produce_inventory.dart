@@ -1,4 +1,4 @@
-
+import '../services/defective_machines.dart';
 import 'package:cwms_mobile/common/models/reason_code.dart';
 import 'package:cwms_mobile/common/models/reason_code_type.dart';
 import 'package:cwms_mobile/common/services/reason_code.dart';
@@ -31,21 +31,36 @@ import 'package:collection/collection.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 import '../../shared/global.dart';
+import '../../shared/workspace_ui.dart';
+import '../models/defective_production.dart';
 import '../../shared/models/printing_strategy.dart';
 
-
-
-class WorkOrderProduceInventoryPage extends StatefulWidget{
-
-  WorkOrderProduceInventoryPage({Key? key}) : super(key: key);
-
+class WorkOrderProduceInventoryPage extends StatefulWidget {
+  WorkOrderProduceInventoryPage(
+      {Key? key,
+      this.defective = false,
+      this.statusLoader,
+      this.reasonLoader,
+      this.autoPromptReason = true})
+      : super(key: key);
+  final bool defective;
+  final bool autoPromptReason;
+  final Future<List<InventoryStatus>> Function()? statusLoader;
+  final Future<List<ReasonCode>> Function()? reasonLoader;
 
   @override
   State<StatefulWidget> createState() => _WorkOrderProduceInventoryPageState();
-
 }
 
-class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventoryPage> {
+class _WorkOrderProduceInventoryPageState
+    extends State<WorkOrderProduceInventoryPage> {
+  String? _statusError;
+  String? _reasonError;
+  bool _reasonsLoaded = false;
+  bool _reasonPromptShown = false;
+  String get _pageTitle => widget.defective
+      ? (workspaceIsChinese(context) ? '废品报产' : 'Defective')
+      : CWMSLocalizations.of(context).workOrderProduce;
 
   // input batch id
 
@@ -67,7 +82,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   FocusNode quantityFocusNode = FocusNode();
   bool _readyToConfirm = true; // whether we can confirm the produced inventory
 
-
   List<ReasonCode> _validReasonCodes = [];
   ReasonCode? _selectedReasonCode;
 
@@ -78,81 +92,214 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   void initState() {
     super.initState();
 
-
     _currentWorkOrder = new WorkOrder();
     _selectedInventoryStatus = null;
     _selectedItemPackageType = null;
 
-    // get all inventory status to display
-    InventoryStatusService.getAllInventoryStatus()
-        .then((value) {
-          setState(() {
-            _validInventoryStatus = value;
-            _selectedInventoryStatus = InventoryStatusService.getDefaultInventoryStatusForNewInventory(_validInventoryStatus);
-            /**
-            if (_validInventoryStatus.length > 0) {
-              _selectedInventoryStatus = _validInventoryStatus[0];
-            }
-                **/
-          });
-    });
+    _forceLPNReceiving = !widget.defective;
+    _loadStatuses();
+    _loadReasons();
 
-    ReasonCodeService.getReasonCodes(ReasonCodeType.Inventory_Status.name)
-        .then((value) {
-      setState(() {
-        _validReasonCodes = value;
-        _selectedReasonCode = null;
-      });
-    });
-
-
-    quantityFocusNode.requestFocus();
+    if (!widget.defective || !widget.autoPromptReason) {
+      quantityFocusNode.requestFocus();
+    }
     // default quantity to 1
-    _quantityController.text = "1";
+    _quantityController.text = widget.defective ? "" : "1";
   }
-  final  _formKey = GlobalKey<FormState>();
+
+  Future<void> _loadStatuses() async {
+    try {
+      final values = await (widget.statusLoader ??
+          InventoryStatusService.getAllInventoryStatus)();
+      if (!mounted) return;
+      setState(() {
+        _validInventoryStatus = values;
+        _selectedInventoryStatus = widget.defective
+            ? findDefectiveInventoryStatus(values)
+            : InventoryStatusService.getDefaultInventoryStatusForNewInventory(
+                values);
+        _statusError = widget.defective && _selectedInventoryStatus == null
+            ? (workspaceIsChinese(context)
+                ? '未找到唯一的 DMG / Damaged 状态，请检查仓库配置。'
+                : 'A unique DMG / Damaged status is required. Check warehouse configuration.')
+            : null;
+      });
+      _maybePromptDefectiveReason();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _statusError = workspaceIsChinese(context)
+          ? '库存状态加载失败，请重试。'
+          : 'Unable to load inventory statuses. Retry.');
+    }
+  }
+
+  Future<void> _loadReasons() async {
+    try {
+      final values = await (widget.reasonLoader ??
+          () => ReasonCodeService.getReasonCodes(
+              ReasonCodeType.Inventory_Status.name))();
+      if (!mounted) return;
+      setState(() {
+        _validReasonCodes =
+            values.where((reason) => reason.id != null).toList();
+        _reasonsLoaded = true;
+        _selectedReasonCode = null;
+        _reasonError = _validReasonCodes.isEmpty
+            ? (workspaceIsChinese(context)
+                ? '暂无可用原因，请在 Master Data 中配置。'
+                : 'No reasons available. Configure them in Master Data.')
+            : null;
+      });
+      _maybePromptDefectiveReason();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _reasonError = workspaceIsChinese(context)
+          ? '原因加载失败，请重试。'
+          : 'Unable to load reasons. Retry.');
+    }
+  }
+
+  void _maybePromptDefectiveReason() {
+    if (!widget.defective ||
+        !widget.autoPromptReason ||
+        _reasonPromptShown ||
+        !_reasonsLoaded ||
+        _selectedInventoryStatus == null) return;
+    _reasonPromptShown = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _chooseDefectiveReason();
+    });
+  }
+
+  Future<void> _chooseDefectiveReason() async {
+    final zh = workspaceIsChinese(context);
+    FocusScope.of(context).unfocus();
+    final reason = await showDialog<ReasonCode>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text(zh ? '选择废品原因' : 'Choose defective reason'),
+              content: SizedBox(
+                  width: 360,
+                  child: _validReasonCodes.isEmpty
+                      ? Text(_reasonError ??
+                          (zh
+                              ? '暂无可用原因，请重试。'
+                              : 'No reasons available. Please retry.'))
+                      : ListView(shrinkWrap: true, children: [
+                          for (final reason in _validReasonCodes)
+                            ListTile(
+                                title: Text(reason.name ?? ''),
+                                subtitle: (reason.description ?? '').isEmpty
+                                    ? null
+                                    : Text(reason.description!),
+                                selected: reason == _selectedReasonCode,
+                                onTap: () => Navigator.pop(context, reason)),
+                        ])),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(zh ? '关闭' : 'Close'))
+              ],
+            ));
+    if (!mounted) return;
+    if (reason != null) setState(() => _selectedReasonCode = reason);
+    quantityFocusNode.requestFocus();
+  }
+
+  Widget _buildDefectiveStatus() => buildTwoSectionInputRow(
+      CWMSLocalizations.of(context).inventoryStatus,
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+            _selectedInventoryStatus == null
+                ? 'DMG / Damaged'
+                : '${_selectedInventoryStatus!.name} · ${_selectedInventoryStatus!.description ?? "Damaged"}',
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, color: Color(0xFFB45309))),
+        if (_statusError != null)
+          Text(_statusError!, style: const TextStyle(color: Colors.red)),
+        if (_selectedInventoryStatus == null)
+          TextButton(
+              onPressed: _loadStatuses,
+              child: Text(workspaceIsChinese(context) ? '重试' : 'Retry')),
+      ]));
+
+  Widget _buildDefectiveQuantity() {
+    final units = _getItemUnitOfMeasures();
+    if (_selectedItemUnitOfMeasure == null && units.isNotEmpty) {
+      _selectedItemUnitOfMeasure = units.first.value;
+    }
+    return buildTwoSectionInputRow(
+        CWMSLocalizations.of(context).quantity,
+        Row(children: [
+          Expanded(
+              child: TextFormField(
+            key: const Key('defective-quantity'),
+            controller: _quantityController,
+            focusNode: quantityFocusNode,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+                hintText: workspaceIsChinese(context)
+                    ? '废品数量'
+                    : 'Defective quantity'),
+            validator: (value) => (int.tryParse(value ?? '') ?? 0) > 0
+                ? null
+                : (workspaceIsChinese(context)
+                    ? '请输入大于零的数量'
+                    : 'Enter a quantity greater than zero'),
+          )),
+          const SizedBox(width: 12),
+          SizedBox(
+              width: 90,
+              child: DropdownButton<ItemUnitOfMeasure>(
+                key: const Key('defective-unit'),
+                isExpanded: true,
+                items: units,
+                value: _selectedItemUnitOfMeasure,
+                hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                onChanged: (value) =>
+                    setState(() => _selectedItemUnitOfMeasure = value),
+              )),
+        ]));
+  }
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void didChangeDependencies() {
-
-    Map arguments  = ModalRoute.of(context)?.settings.arguments as Map ;
+    super.didChangeDependencies();
+    Map arguments = ModalRoute.of(context)?.settings.arguments as Map;
     _currentWorkOrder = arguments['workOrder'];
 
     _currentProductionLine = arguments['productionLine'];
 
     _loadMatchedBillOfMaterial();
   }
+
   _loadMatchedBillOfMaterial() {
     if (_matchedBillOfMaterial != null) {
       return;
-    }
-    else if (_currentWorkOrder?.consumeByBom != null) {
+    } else if (_currentWorkOrder?.consumeByBom != null) {
       _matchedBillOfMaterial = _currentWorkOrder?.consumeByBom;
+    } else {
+      BillOfMaterialService.findMatchedBillOfMaterial(_currentWorkOrder!)
+          .then((value) => _matchedBillOfMaterial = value);
     }
-    else {
-
-      BillOfMaterialService.findMatchedBillOfMaterial(_currentWorkOrder!).then((value) => _matchedBillOfMaterial = value);
-
-    }
-
   }
 
   @override
   Widget build(BuildContext context) {
-
-
-
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderProduce)),
+      appBar: AppBar(title: Text(_pageTitle)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           //autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
-          child: Column(
+          child: SingleChildScrollView(
+              child: Column(
             children: <Widget>[
-
               buildTwoSectionInformationRowWithWidget(
                   CWMSLocalizations.of(context).workOrderNumber,
                   _getWorkOrderDisplayWidget(context, _currentWorkOrder!)),
@@ -174,7 +321,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               // Allow the user to choose item package type
               buildTwoSectionInputRow(
                   CWMSLocalizations.of(context).itemPackageType,
-
                   DropdownButton(
                     hint: Text(CWMSLocalizations.of(context).pleaseSelect),
                     items: _getItemPackageTypeItems(),
@@ -191,33 +337,39 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                         _selectedItemPackageType = value;
                       });
                     },
-                  )
-              ),
+                  )),
               // Allow the user to choose inventory status
-              buildTwoSectionInputRow(
-                  CWMSLocalizations.of(context).inventoryStatus,
-                  DropdownButton(
-                    hint: Text(CWMSLocalizations.of(context).pleaseSelect),
-                    items: _getInventoryStatusItems(),
-                    value: _selectedInventoryStatus,
-                    elevation: 1,
-                    isExpanded: true,
-                    icon: Icon(
-                      Icons.list,
-                      size: 20,
-                    ),
-                    onChanged: (InventoryStatus? value) {
-                      //下拉菜单item点击之后的回调
-                      setState(() {
-                        _selectedInventoryStatus = value;
-                      });
-                    },
-                  )
-              ),
+              widget.defective
+                  ? _buildDefectiveStatus()
+                  : buildTwoSectionInputRow(
+                      CWMSLocalizations.of(context).inventoryStatus,
+                      DropdownButton(
+                        hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+                        items: _getInventoryStatusItems(),
+                        value: _selectedInventoryStatus,
+                        elevation: 1,
+                        isExpanded: true,
+                        icon: Icon(
+                          Icons.list,
+                          size: 20,
+                        ),
+                        onChanged: (InventoryStatus? value) {
+                          //下拉菜单item点击之后的回调
+                          setState(() {
+                            _selectedInventoryStatus = value;
+                          });
+                        },
+                      )),
               _selectedInventoryStatus != null &&
-                  (_selectedInventoryStatus?.reasonRequiredWhenProducing == true
-                      ||  _selectedInventoryStatus?.reasonOptionalWhenProducing == true) ?
-                  _buildReasonCodeDropdown() : Container(),
+                      (widget.defective ||
+                          _selectedInventoryStatus
+                                  ?.reasonRequiredWhenProducing ==
+                              true ||
+                          _selectedInventoryStatus
+                                  ?.reasonOptionalWhenProducing ==
+                              true)
+                  ? _buildReasonCodeDropdown()
+                  : Container(),
               /***
                *
                   buildTwoSectionInputRow(
@@ -238,153 +390,156 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
                   )
                   ),
                */
-              Container(
-                color: _forceLPNReceiving ? Colors.black26 : Colors.transparent,
-                child:
-                    buildFourSectionRow(
-                      Checkbox(
-                          value: !_forceLPNReceiving,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _forceLPNReceiving = (value == false);
-                            });
-                          },
-                      ),
-                      Expanded (
-                        child: Text(CWMSLocalizations.of(context).quantity + ": ", textAlign: TextAlign.left ),
-                      ),
-                      _forceLPNReceiving ?
-                        SizedBox(
-                            width: 20,
-                            child: Text("1", textAlign: TextAlign.left )
-                        )
-                            :
-                        SizedBox(
-                          height: 20,
-                          width: 110,
-                          child:
-                              TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  controller: _quantityController,
-
-                                  enabled: _forceLPNReceiving ? false : true,
-                                  textInputAction: TextInputAction.next,
-                                  autofocus: _forceLPNReceiving ? false : true,
-                                  focusNode: quantityFocusNode,
-                                  onFieldSubmitted: (v){
-
-                                    _lpnControllerFocusNode.requestFocus();
-
-                                  },
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    fillColor: _forceLPNReceiving ? Colors.black12 : Colors.white,
-                                    filled: true,
-                                  ),
-                                  // 校验ITEM NUMBER（不能为空）
-                                  validator: (v) {
-                                    if (v!.trim().isEmpty) {
-                                      return "please type in quantity";
-                                    }
-                                    return null;
-                                  }),
-                      ),
-                      _getItemUnitOfMeasures().isEmpty ?
-                        Container() :
-                        _forceLPNReceiving ?
-                          SizedBox(
-                              width: 60,
-                              child:
-                                Text(_getLPNUOMName() ?? "",
-                                    textAlign: TextAlign.left )
-                          )
-                            :
-                          SizedBox(
-                            height: 38,
-                            width: 90,
-                            child:
-                            DropdownButton(
-
-                                      hint: Text(CWMSLocalizations.of(context).pleaseSelect),
-                                      items: _getItemUnitOfMeasures(),
-                                      value: _selectedItemUnitOfMeasure,
-                                      elevation: 1,
-                                      isExpanded: true,
-                                      icon: Icon(
-                                        Icons.list,
-                                        size: 20,
-                                      ),
-                                      underline: Container(
-                                        height: 0,
-                                        color: Colors.deepPurpleAccent,
-                                      ),
-                                      onChanged: (ItemUnitOfMeasure? value) {
-                                        //下拉菜单item点击之后的回调
-                                        setState(() {
-                                          _selectedItemUnitOfMeasure = value;
-                                        });
+              widget.defective
+                  ? _buildDefectiveQuantity()
+                  : Container(
+                      color: _forceLPNReceiving
+                          ? Colors.black26
+                          : Colors.transparent,
+                      child: buildFourSectionRow(
+                          Checkbox(
+                            value: !_forceLPNReceiving,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _forceLPNReceiving = (value == false);
+                              });
+                            },
+                          ),
+                          Expanded(
+                            child: Text(
+                                CWMSLocalizations.of(context).quantity + ": ",
+                                textAlign: TextAlign.left),
+                          ),
+                          _forceLPNReceiving
+                              ? SizedBox(
+                                  width: 20,
+                                  child: Text("1", textAlign: TextAlign.left))
+                              : SizedBox(
+                                  height: 20,
+                                  width: 110,
+                                  child: TextFormField(
+                                      keyboardType: TextInputType.number,
+                                      controller: _quantityController,
+                                      enabled:
+                                          _forceLPNReceiving ? false : true,
+                                      textInputAction: TextInputAction.next,
+                                      autofocus:
+                                          _forceLPNReceiving ? false : true,
+                                      focusNode: quantityFocusNode,
+                                      onFieldSubmitted: (v) {
+                                        _lpnControllerFocusNode.requestFocus();
                                       },
-                                    )
-                        )
-                    )
-              ),
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        fillColor: _forceLPNReceiving
+                                            ? Colors.black12
+                                            : Colors.white,
+                                        filled: true,
+                                      ),
+                                      // 校验ITEM NUMBER（不能为空）
+                                      validator: (v) {
+                                        if (v!.trim().isEmpty) {
+                                          return "please type in quantity";
+                                        }
+                                        return null;
+                                      }),
+                                ),
+                          _getItemUnitOfMeasures().isEmpty
+                              ? Container()
+                              : _forceLPNReceiving
+                                  ? SizedBox(
+                                      width: 60,
+                                      child: Text(_getLPNUOMName() ?? "",
+                                          textAlign: TextAlign.left))
+                                  : SizedBox(
+                                      height: 38,
+                                      width: 90,
+                                      child: DropdownButton(
+                                        hint: Text(CWMSLocalizations.of(context)
+                                            .pleaseSelect),
+                                        items: _getItemUnitOfMeasures(),
+                                        value: _selectedItemUnitOfMeasure,
+                                        elevation: 1,
+                                        isExpanded: true,
+                                        icon: Icon(
+                                          Icons.list,
+                                          size: 20,
+                                        ),
+                                        underline: Container(
+                                          height: 0,
+                                          color: Colors.deepPurpleAccent,
+                                        ),
+                                        onChanged: (ItemUnitOfMeasure? value) {
+                                          //下拉菜单item点击之后的回调
+                                          setState(() {
+                                            _selectedItemUnitOfMeasure = value;
+                                          });
+                                        },
+                                      )))),
               buildTwoSectionInputRow(
                 CWMSLocalizations.of(context).lpn,
                 Focus(
-                    child:
-                    RawKeyboardListener(
-                      focusNode: lpnFocusNode,
-                      onKey: (event) {
+                    child: RawKeyboardListener(
+                  focusNode: lpnFocusNode,
+                  onKey: (event) {
+                    if (event.isKeyPressed(LogicalKeyboardKey.enter) &&
+                        _readyToConfirm) {
+                      // Do something
 
-                        if (event.isKeyPressed(LogicalKeyboardKey.enter) && _readyToConfirm) {
-                          // Do something
+                      setState(() {
+                        // disable the confirm button
+                        _readyToConfirm = false;
+                      });
 
-                          setState(() {
-                            // disable the confirm button
-                            _readyToConfirm = false;
-                          });
-
-                          _enterOnLPNController(10);
-                        }
-                      },
-                      child:
-                        SystemControllerNumberTextBox(
-                            type: "lpn",
-                            controller: _lpnController,
-                            focusNode: _lpnControllerFocusNode,
-                            readOnly: false,
-                            showKeyboard: false,
-                            validator: (v) {
-                              if (v!.trim().isEmpty &&
-                                  _getRequiredLPNCount(int.parse(_quantityController.text) * _selectedItemUnitOfMeasure!.quantity!) == 1) {
-                                return CWMSLocalizations.of(context).missingField(CWMSLocalizations.of(context).lpn);
-                              }
-
-                              return null;
-                            }),
-                    )
-                ),
+                      _enterOnLPNController(10);
+                    }
+                  },
+                  child: SystemControllerNumberTextBox(
+                    type: "lpn",
+                    controller: _lpnController,
+                    focusNode: _lpnControllerFocusNode,
+                    readOnly: false,
+                    showKeyboard: false,
+                    validator: (v) {
+                      final enteredQuantity =
+                          int.tryParse(_quantityController.text);
+                      final unitQuantity = _selectedItemUnitOfMeasure?.quantity;
+                      if ((v ?? '').trim().isEmpty &&
+                          enteredQuantity != null &&
+                          enteredQuantity > 0 &&
+                          unitQuantity != null &&
+                          _getRequiredLPNCount(
+                                  enteredQuantity * unitQuantity) ==
+                              1) {
+                        return CWMSLocalizations.of(context)
+                            .missingField(CWMSLocalizations.of(context).lpn);
+                      }
+                      return null;
+                    },
+                  ),
+                )),
               ),
 
               _buildButtons(context)
-
             ],
-          ),
+          )),
         ),
       ),
       endDrawer: MyDrawer(),
     );
   }
+
   Widget _buildButtons(BuildContext context) {
-    return buildSingleButtonRow(context,
-      ElevatedButton(
-        onPressed: !_readyToConfirm ? null : () {
+    return buildSingleButtonRow(
+        context,
+        ElevatedButton(
+          onPressed: !_readyToConfirm || _selectedInventoryStatus == null
+              ? null
+              : () {
+                  _readyToConfirm = false;
 
-          _readyToConfirm = false;
-
-
-          if (_formKey.currentState!.validate()) {
-            _onWorkOrderProduceConfirm();
+                  if (_formKey.currentState!.validate()) {
+                    _onWorkOrderProduceConfirm();
 /**
             print("1. _readyToConfirm? $_readyToConfirm");
             if (_readyToConfirm == true) {
@@ -394,75 +549,94 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
               _onWorkOrderProduceConfirm();
             }
     **/
-          }
-        },
-        child: Text(CWMSLocalizations
-            .of(context)
-            .confirm),
-      )
-    );
-
+                  } else {
+                    setState(() => _readyToConfirm = true);
+                  }
+                },
+          child: Text(widget.defective
+              ? (workspaceIsChinese(context) ? '确认废品报产' : 'Confirm Defective')
+              : CWMSLocalizations.of(context).confirm),
+        ));
   }
 
   Widget _buildReasonCodeDropdown() {
     // Allow the user to choose inventory status
     return buildTwoSectionInputRow(
         CWMSLocalizations.of(context).reason,
-        DropdownButton(
-          hint: Text(CWMSLocalizations.of(context).pleaseSelect),
-          items: _getReasonCodeItems(),
-          value: _selectedReasonCode,
-          elevation: 1,
-          isExpanded: true,
-          icon: Icon(
-            Icons.list,
-            size: 20,
-          ),
-          onChanged: (ReasonCode? value) {
-            //下拉菜单item点击之后的回调
-            setState(() {
-              _selectedReasonCode = value;
-            });
-          },
-        )
-    );
-
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (widget.defective)
+            OutlinedButton.icon(
+                key: const Key('defective-reason-picker'),
+                onPressed: _chooseDefectiveReason,
+                icon: const Icon(Icons.list_alt_rounded),
+                label: Text(_selectedReasonCode?.name ??
+                    (workspaceIsChinese(context)
+                        ? '选择废品原因'
+                        : 'Choose defective reason')))
+          else
+            DropdownButton(
+              hint: Text(CWMSLocalizations.of(context).pleaseSelect),
+              items: _getReasonCodeItems(),
+              value: _selectedReasonCode,
+              elevation: 1,
+              isExpanded: true,
+              icon: Icon(
+                Icons.list,
+                size: 20,
+              ),
+              onChanged: (ReasonCode? value) {
+                //下拉菜单item点击之后的回调
+                setState(() {
+                  _selectedReasonCode = value;
+                });
+              },
+            ),
+          if (_reasonError != null)
+            Text(_reasonError!, style: const TextStyle(color: Colors.orange)),
+          if (_reasonError != null)
+            TextButton(
+                onPressed: _loadReasons,
+                child: Text(workspaceIsChinese(context) ? '重试' : 'Retry')),
+        ]));
   }
 
-
   String? _getLPNUOMName() {
-
     ItemUnitOfMeasure? lpnUOM = _getLPNUOM();
-    if ( lpnUOM == null) {
+    if (lpnUOM == null) {
       return "";
     }
     return lpnUOM.unitOfMeasure?.name;
-
   }
-  ItemUnitOfMeasure? _getLPNUOM() {
 
-    if ( _selectedItemPackageType == null || _selectedItemPackageType?.itemUnitOfMeasures == null ||
-        _selectedItemPackageType?.itemUnitOfMeasures.length == 0 || _selectedItemPackageType?.trackingLpnUOM == null) {
+  ItemUnitOfMeasure? _getLPNUOM() {
+    if (_selectedItemPackageType == null ||
+        _selectedItemPackageType?.itemUnitOfMeasures == null ||
+        _selectedItemPackageType?.itemUnitOfMeasures.length == 0 ||
+        _selectedItemPackageType?.trackingLpnUOM == null) {
       return null;
     }
     return _selectedItemPackageType?.trackingLpnUOM;
-
   }
+
   List<DropdownMenuItem<ItemUnitOfMeasure>> _getItemUnitOfMeasures() {
     List<DropdownMenuItem<ItemUnitOfMeasure>> items = [];
 
-    if ( _selectedItemPackageType == null || _selectedItemPackageType?.itemUnitOfMeasures == null ||
+    if (_selectedItemPackageType == null ||
+        _selectedItemPackageType?.itemUnitOfMeasures == null ||
         _selectedItemPackageType?.itemUnitOfMeasures.length == 0) {
       // if the user has not selected any item package type yet
       // return nothing
       return items;
     }
 
-    for (int i = 0; i < _selectedItemPackageType!.itemUnitOfMeasures.length; i++) {
-
+    for (int i = 0;
+        i < _selectedItemPackageType!.itemUnitOfMeasures.length;
+        i++) {
       items.add(DropdownMenuItem(
-        value:  _selectedItemPackageType?.itemUnitOfMeasures[i],
-        child: Text( _selectedItemPackageType?.itemUnitOfMeasures[i].unitOfMeasure?.name ?? ""),
+        value: _selectedItemPackageType?.itemUnitOfMeasures[i],
+        child: Text(_selectedItemPackageType
+                ?.itemUnitOfMeasures[i].unitOfMeasure?.name ??
+            ""),
       ));
     }
 
@@ -473,14 +647,21 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // then we know that we just changed the item package type or item, so we will need
     // to refresh the _selectedItemUnitOfMeasure to the default inbound receiving uom as well
     if (_selectedItemUnitOfMeasure == null ||
-        !_selectedItemPackageType!.itemUnitOfMeasures.any((element) => element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
+        !_selectedItemPackageType!.itemUnitOfMeasures.any((element) =>
+            element.hashCode == _selectedItemUnitOfMeasure.hashCode)) {
       // if the user has not select any item unit of measure yet, then
       // default the value to the one marked as 'default for inbound receiving'
 
       // printLongLogMessage("_currentWorkOrder.item: ${_currentWorkOrder.item.toJson()}");
       // printLongLogMessage("_selectedItemPackageType: ${_selectedItemPackageType.toJson()}");
-      _selectedItemUnitOfMeasure = _selectedItemPackageType?.itemUnitOfMeasures
-          .firstWhereOrNull((element) => element.id == _selectedItemPackageType?.defaultWorkOrderReceivingUOM?.id);
+      _selectedItemUnitOfMeasure = (widget.defective
+              ? findDefectivePiecesUnit(
+                  _selectedItemPackageType!.itemUnitOfMeasures)
+              : null) ??
+          _selectedItemPackageType?.itemUnitOfMeasures.firstWhereOrNull(
+              (element) =>
+                  element.id ==
+                  _selectedItemPackageType?.defaultWorkOrderReceivingUOM?.id);
     }
 
     return items;
@@ -489,64 +670,56 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   Widget _getItemDisplayWidget(BuildContext context, Item item) {
     return new RichText(
         text: new TextSpan(
-                  text: item.name,
-                  style: new TextStyle(color: Colors.blue),
-                  recognizer: new TapGestureRecognizer()
-                    ..onTap = () {
-                      showInformationDialog(
-                        context, item.name ?? "", Column(
-                          children: <Widget>[
-                            buildTwoSectionInformationRow(
-                                CWMSLocalizations.of(context).item,
-                                _currentWorkOrder?.item?.name ?? ""),
-                            buildTwoSectionInformationRow(
-                                CWMSLocalizations.of(context).item,
-                                _currentWorkOrder?.item?.description ?? ""),
-
-                          ]),
-                          verticalPadding: 175.0,
-                          horizontalPadding: 50.0
-
-                      );
-                    },
+      text: item.name,
+      style: new TextStyle(color: Colors.blue),
+      recognizer: new TapGestureRecognizer()
+        ..onTap = () {
+          showInformationDialog(
+              context,
+              item.name ?? "",
+              Column(children: <Widget>[
+                buildTwoSectionInformationRow(
+                    CWMSLocalizations.of(context).item,
+                    _currentWorkOrder?.item?.name ?? ""),
+                buildTwoSectionInformationRow(
+                    CWMSLocalizations.of(context).item,
+                    _currentWorkOrder?.item?.description ?? ""),
+              ]),
+              verticalPadding: 175.0,
+              horizontalPadding: 50.0);
+        },
     ));
-
   }
+
   Widget _getWorkOrderDisplayWidget(BuildContext context, WorkOrder workOrder) {
     return new RichText(
         text: new TextSpan(
-          text: workOrder.number,
-          style: new TextStyle(color: Colors.blue),
-          recognizer: new TapGestureRecognizer()
-            ..onTap = () {
-              showInformationDialog(
-                  context, workOrder.number ?? "", Column(
-                  children: <Widget>[
-
-                    buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context).expectedQuantity,
-                        workOrder.expectedQuantity.toString()),
-                    buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context).billOfMaterial,
-                        _matchedBillOfMaterial?.number ?? ""),
-                    // show the matched BOM
-                    buildTwoSectionInformationRow(
-                        CWMSLocalizations.of(context).producedQuantity,
-                        workOrder.producedQuantity.toString()),
-
-                  ]),
-
-                  verticalPadding: 175.0,
-                  horizontalPadding: 50.0
-              );
-            },
-        ));
-
+      text: workOrder.number,
+      style: new TextStyle(color: Colors.blue),
+      recognizer: new TapGestureRecognizer()
+        ..onTap = () {
+          showInformationDialog(
+              context,
+              workOrder.number ?? "",
+              Column(children: <Widget>[
+                buildTwoSectionInformationRow(
+                    CWMSLocalizations.of(context).expectedQuantity,
+                    workOrder.expectedQuantity.toString()),
+                buildTwoSectionInformationRow(
+                    CWMSLocalizations.of(context).billOfMaterial,
+                    _matchedBillOfMaterial?.number ?? ""),
+                // show the matched BOM
+                buildTwoSectionInformationRow(
+                    CWMSLocalizations.of(context).producedQuantity,
+                    workOrder.producedQuantity.toString()),
+              ]),
+              verticalPadding: 175.0,
+              horizontalPadding: 50.0);
+        },
+    ));
   }
 
-
   List<DropdownMenuItem<ReasonCode>> _getReasonCodeItems() {
-
     List<DropdownMenuItem<ReasonCode>> items = [];
     if (_validReasonCodes.length == 0) {
       _selectedReasonCode = null;
@@ -563,9 +736,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     return items;
   }
 
-
   List<DropdownMenuItem<InventoryStatus>> _getInventoryStatusItems() {
     List<DropdownMenuItem<InventoryStatus>> items = [];
+    if (widget.defective) return items;
     if (_validInventoryStatus.length == 0) {
       return items;
     }
@@ -578,8 +751,7 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       ));
     }
 
-    if (_validInventoryStatus.length == 1 ||
-        _selectedInventoryStatus == null) {
+    if (_validInventoryStatus.length == 1 || _selectedInventoryStatus == null) {
       // if we only have one valid inventory status, then
       // default the selection to it
       // if the user has not select any inventdry status yet, then
@@ -592,16 +764,17 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
   List<DropdownMenuItem<ItemPackageType>> _getItemPackageTypeItems() {
     List<DropdownMenuItem<ItemPackageType>> items = [];
 
-
     if ((_currentWorkOrder?.item?.itemPackageTypes.length ?? 0) > 0) {
       // _selectedItemPackageType = _currentWorkOrder.item.itemPackageTypes[0];
 
-      for (int i = 0; i < _currentWorkOrder!.item!.itemPackageTypes.length; i++) {
-
+      for (int i = 0;
+          i < _currentWorkOrder!.item!.itemPackageTypes.length;
+          i++) {
         // printLongLogMessage("_currentWorkOrder.item.itemPackageTypes[i]: ${_currentWorkOrder.item.itemPackageTypes[i].toJson()}");
         items.add(DropdownMenuItem(
           value: _currentWorkOrder!.item!.itemPackageTypes[i],
-          child: Text(_currentWorkOrder!.item!.itemPackageTypes[i].description ?? ""),
+          child: Text(
+              _currentWorkOrder!.item!.itemPackageTypes[i].description ?? ""),
         ));
       }
       if (_currentWorkOrder!.item!.itemPackageTypes.length == 1 ||
@@ -616,39 +789,37 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     return items;
   }
 
-
-  Future<void> _onWorkOrderProduceWithKPI(WorkOrder workOrder, int confirmedQuantity,
-      String lpn) async {
-
-
+  Future<void> _onWorkOrderProduceWithKPI(
+      WorkOrder workOrder, int confirmedQuantity, String lpn) async {
     showLoading(context);
 
     WorkOrderProduceTransaction workOrderProduceTransaction =
         await generateWorkOrderProduceTransaction(
-        _lpnController.text, _selectedInventoryStatus!,
-        _selectedItemPackageType!, int.parse(_quantityController.text),
-            _getReasonCodeForProducingInventory()!
-    );
+            _lpnController.text,
+            _selectedInventoryStatus!,
+            _selectedItemPackageType!,
+            int.parse(_quantityController.text),
+            _getReasonCodeForProducingInventory());
 
     Navigator.of(context).pop();
     // flow to the KPI capture page
 
     final result = await Navigator.of(context).pushNamed(
-        "work_order_produce_kpi", arguments: workOrderProduceTransaction);
+        "work_order_produce_kpi",
+        arguments: workOrderProduceTransaction);
 
-
-    if (result ==  null) {
+    if (result == null) {
       // the user press Return, let's do nothing
 
       return null;
     }
 
-    if ((result as WorkOrderKPITransactionAction) == WorkOrderKPITransactionAction.CANCELLED) {
+    if ((result as WorkOrderKPITransactionAction) ==
+        WorkOrderKPITransactionAction.CANCELLED) {
       // THE USER cancelled the KPI transaction, let's do nothing and wait the user
       // to either start a new KPI capture transaction, or confirm without KPI
       return null;
-    }
-    else {
+    } else {
       // The user confirmed the whole produce transaction with KPI, let's
       // clear the page
 
@@ -657,8 +828,6 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       _quantityController.text = "1";
     }
   }
-
-
 
   void _enterOnLPNController(int tryTime) async {
     // we may come here when the user scan / press
@@ -678,10 +847,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     if (lpnFocusNode.hasFocus) {
       // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
       Future.delayed(const Duration(milliseconds: 100),
-              () => _enterOnLPNController(tryTime - 1));
+          () => _enterOnLPNController(tryTime - 1));
 
       return;
-
     }
     // if we are here, then it means we already have the full LPN
     // due to how  flutter handle the input, we will get the enter
@@ -690,27 +858,42 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     // printLongLogMessage("lpn controller lost focus, its value is ${_lpnController.text}");
     if (_formKey.currentState!.validate()) {
-        // set ready to confirm to fail so other trigger point
-        // won't process the receiving request
-        // the issue happens when we have 2 trigger point to process
-        // the receiving request
-        // 1. LPN blur
-        // 2. confirm button click
-        // so when we blur the LPN controller by clicking the confirm button, the
-        // _onRecevingConfirm function will be fired twice
-        _readyToConfirm = false;
-        _onWorkOrderProduceConfirm();
+      // set ready to confirm to fail so other trigger point
+      // won't process the receiving request
+      // the issue happens when we have 2 trigger point to process
+      // the receiving request
+      // 1. LPN blur
+      // 2. confirm button click
+      // so when we blur the LPN controller by clicking the confirm button, the
+      // _onRecevingConfirm function will be fired twice
+      _readyToConfirm = false;
+      _onWorkOrderProduceConfirm();
     }
-
 
     setState(() {
       // enable the confirm button
       _readyToConfirm = true;
     });
-
   }
 
   void _onWorkOrderProduceConfirm() async {
+    if (_selectedInventoryStatus == null ||
+        (widget.defective &&
+            _selectedInventoryStatus !=
+                findDefectiveInventoryStatus(_validInventoryStatus))) {
+      _readyToConfirm = true;
+      showErrorDialog(
+          context, _statusError ?? 'Inventory status is not ready.');
+      return;
+    }
+    if (!_forceLPNReceiving &&
+        (_selectedItemUnitOfMeasure?.quantity == null ||
+            _selectedItemUnitOfMeasure!.quantity! <= 0)) {
+      _readyToConfirm = true;
+      showErrorDialog(context,
+          workspaceIsChinese(context) ? '请选择有效单位' : 'Select a valid unit.');
+      return;
+    }
 
     // the user start to confirm receiving from the work order
     // let's calculate the quantity first
@@ -718,53 +901,48 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     int inventoryQuantity = 0;
 
     if (_forceLPNReceiving) {
-
       // if we force the user to receiving by LPN, then default the
       // receiving quantity to one LPN UOM's quantity
       ItemUnitOfMeasure? lpnUOM = _getLPNUOM();
       if (lpnUOM == null) {
-
-        showErrorDialog(context, "LPN UOM is not setup for the item. please specify the quantity");
+        showErrorDialog(context,
+            "LPN UOM is not setup for the item. please specify the quantity");
         // reset ready to confirm flag so the operators can confirm the produce again
         _readyToConfirm = true;
         return;
-
       }
       inventoryQuantity = lpnUOM.quantity!;
-    }
-    else {
-      inventoryQuantity = int.parse(_quantityController.text) * _selectedItemUnitOfMeasure!.quantity!;
+    } else {
+      inventoryQuantity = int.parse(_quantityController.text) *
+          _selectedItemUnitOfMeasure!.quantity!;
     }
 
     // if the inventory status requires reason, then make sure the user input one
-    if (_selectedInventoryStatus != null && _selectedInventoryStatus?.reasonRequiredWhenProducing == true &&
+    if (_selectedInventoryStatus != null &&
+        _selectedInventoryStatus?.reasonRequiredWhenProducing == true &&
         _selectedReasonCode == null) {
-
-      showErrorDialog(context, "Reason for the inventory " +
-          ( _selectedInventoryStatus?.name ?? "") +
-          " is required, please choose the reason!");
+      showErrorDialog(
+          context,
+          "Reason for the inventory " +
+              (_selectedInventoryStatus?.name ?? "") +
+              " is required, please choose the reason!");
       // reset ready to confirm flag so the operators can confirm the produce again
       _readyToConfirm = true;
       return;
-
     }
 
     try {
-
-      _confirmWorkOrderProduce(_currentWorkOrder!,
-          inventoryQuantity,
-          _lpnController.text);
-    }
-    finally {
-
+      _confirmWorkOrderProduce(
+          _currentWorkOrder!, inventoryQuantity, _lpnController.text);
+    } finally {
       _lpnControllerFocusNode.requestFocus();
       // reset ready to confirm flag so the operators can confirm the produce again
       _readyToConfirm = true;
     }
   }
-  void _confirmWorkOrderProduce(WorkOrder workOrder, int inventoryQuantity,
-      String lpn ) async {
 
+  void _confirmWorkOrderProduce(
+      WorkOrder workOrder, int inventoryQuantity, String lpn) async {
     if (lpn.isNotEmpty) {
       showLoading(context);
       // first of all, validate the LPN
@@ -776,18 +954,13 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
           return;
         }
-      }
-      on CWMSHttpException catch(ex) {
-
+      } on CWMSHttpException catch (ex) {
         Navigator.of(context).pop();
         showErrorDialog(context, "${ex.code} - ${ex.message}");
         return;
-
       }
       Navigator.of(context).pop();
     }
-
-
 
     int lpnCount = _getRequiredLPNCount(inventoryQuantity);
 
@@ -797,28 +970,25 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       // or we are receiving at less than LPN uom level,
       // or we are receiving at LPN uom level but we only receive 1 LPN, then proceed with single LPN
 
-
       // before we will receive one LPN, we will verify if the quantity exceed
       // the LPN's standard quantity. If so, then we will warn the user to make sure
       // they don't accidentally input a wrong number
-      bool validateLPNQuantity = await _validateQuantityForSingleLPN(inventoryQuantity);
+      bool validateLPNQuantity =
+          await _validateQuantityForSingleLPN(inventoryQuantity);
       if (validateLPNQuantity) {
         _onWorkOrderProduceSingleLPNConfirm(workOrder, inventoryQuantity, lpn);
-      }
-      else {
+      } else {
         // quantity is not valid(normally it means we only need one LPN but the total
         // quantity exceed the standard LPN's quantity
         _readyToConfirm = true;
         return;
       }
-    }
-    else {
+    } else {
       _onWorkOrderProduceMiltipleLPNConfirm(workOrder, inventoryQuantity, lpn);
     }
   }
 
   Future<bool> _validateQuantityForSingleLPN(int inventoryQuantity) async {
-
     if (_selectedItemPackageType?.trackingLpnUOM == null) {
       // the tracking LPN UOM is not defined for this item package type
       // so no matter what's the quantity the user input, we will always
@@ -829,12 +999,16 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // the user to make sure it is not a typo. Since we already define the LPN
     // uom, normally the quantity of the single LPN won't exceed the standard
     // lpn UOM's quantity
-    if (inventoryQuantity > _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
+    if (inventoryQuantity >
+        _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
       // bool continueWithExceedQuantity = await showYesNoDialog(context, "lpn validation", "lpn quantity exceed the standard quantity, continue?");
       bool continueWithExceedQuantity = false;
-      await showYesNoDialog(context, CWMSLocalizations.of(context).lpnQuantityExceedWarningTitle, CWMSLocalizations.of(context).lpnQuantityExceedWarningMessage,
-            () => continueWithExceedQuantity = true,
-            () => continueWithExceedQuantity = false,
+      await showYesNoDialog(
+        context,
+        CWMSLocalizations.of(context).lpnQuantityExceedWarningTitle,
+        CWMSLocalizations.of(context).lpnQuantityExceedWarningMessage,
+        () => continueWithExceedQuantity = true,
+        () => continueWithExceedQuantity = false,
       );
 
       return continueWithExceedQuantity;
@@ -843,9 +1017,30 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     return true;
   }
 
-  void _onWorkOrderProduceSingleLPNConfirm(WorkOrder workOrder, int inventoryQuantity,
-      String lpn ) async {
+  Future<void> _ensureDefectiveAssignment() async {
+    if (!widget.defective) return;
+    final line = _currentProductionLine;
+    if (line?.id == null || _currentWorkOrder?.id == null) {
+      throw WebAPICallException('Select a valid machine and work order.');
+    }
+    bool valid;
+    try {
+      valid = await DefectiveMachineService.isStillAssigned(
+          _currentWorkOrder!, line!);
+    } catch (_) {
+      throw WebAPICallException(workspaceIsChinese(context)
+          ? '无法验证机器分配，请重试。'
+          : 'Unable to verify machine assignment. Please retry.');
+    }
+    if (!mounted || !valid) {
+      throw WebAPICallException(workspaceIsChinese(context)
+          ? '工单已结束或不再分配于此机器，请返回重新选择。'
+          : 'The work order has ended or is no longer assigned to this machine. Return and select again.');
+    }
+  }
 
+  void _onWorkOrderProduceSingleLPNConfirm(
+      WorkOrder workOrder, int inventoryQuantity, String lpn) async {
     showLoading(context);
 
     // make sure the user input a valid LPN
@@ -857,41 +1052,36 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
         _lpnControllerFocusNode.requestFocus();
         return;
       }
-
-    }
-    on CWMSHttpException catch(ex) {
-
+    } on CWMSHttpException catch (ex) {
       Navigator.of(context).pop();
       showErrorDialog(context, "${ex.code} - ${ex.message}");
       _lpnControllerFocusNode.requestFocus();
       return;
-
     }
 
     WorkOrderProduceTransaction workOrderProduceTransaction =
         generateWorkOrderProduceTransaction(
-            lpn, _selectedInventoryStatus!,
-            _selectedItemPackageType!, inventoryQuantity,
-            _getReasonCodeForProducingInventory()
-        );
-
+            lpn,
+            _selectedInventoryStatus!,
+            _selectedItemPackageType!,
+            inventoryQuantity,
+            _getReasonCodeForProducingInventory());
 
     try {
+      await _ensureDefectiveAssignment();
+      if (!mounted) return;
       await WorkOrderService.saveWorkOrderProduceTransaction(
-          workOrderProduceTransaction
-      );
-    }
-    on WebAPICallException catch(ex) {
-
+          workOrderProduceTransaction);
+    } on WebAPICallException catch (ex) {
       Navigator.of(context).pop();
       showErrorDialog(context, ex.errMsg());
       _lpnControllerFocusNode.requestFocus();
       return;
-
     }
 
     if (Global.warehouseConfiguration.newLPNPrintLabelAtProducingFlag == true &&
-        Global.warehouseConfiguration.printingStrategy == PrintingStrategy.LOCAL_PRINTER_SERVER_DATA) {
+        Global.warehouseConfiguration.printingStrategy ==
+            PrintingStrategy.LOCAL_PRINTER_SERVER_DATA) {
       // we will print the LPN label
       // we will download the LPN label as PDF and then print from the printer that attached to the RF
       _printLPNLabel(lpn);
@@ -899,60 +1089,49 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     Navigator.of(context).pop();
     _refreshScreenAfterProducing();
-
-
   }
 
   void _printLPNLabel(String lpn) {
     // get the default printer that attached to the RF
 
-
     if (Global.getLastLoginRF().printerName == "") {
-      return ;
+      return;
     }
     // download the LPN label
     InventoryService.autoPrintLPNLabelByLpn(context, lpn);
-
   }
 
   ReasonCode? _getReasonCodeForProducingInventory() {
-    if (_selectedInventoryStatus != null && (
-        _selectedInventoryStatus?.reasonRequiredWhenProducing == true ||
-            _selectedInventoryStatus?.reasonOptionalWhenProducing == true
-    )) {
+    if (_selectedInventoryStatus != null &&
+        (widget.defective ||
+            _selectedInventoryStatus?.reasonRequiredWhenProducing == true ||
+            _selectedInventoryStatus?.reasonOptionalWhenProducing == true)) {
       return _selectedReasonCode;
-    }
-    else {
+    } else {
       return null;
     }
   }
 
-  _onWorkOrderProduceMiltipleLPNConfirm(WorkOrder workOrder, int inventoryQuantity,
-      String lpn ) async {
-
+  _onWorkOrderProduceMiltipleLPNConfirm(
+      WorkOrder workOrder, int inventoryQuantity, String lpn) async {
     // let's see how many LPNs we will need
     int lpnCount = _getRequiredLPNCount(inventoryQuantity);
 
-
     if (lpnCount == 1) {
-
-
       // before we will receive one LPN, we will verify if the quantity exceed
       // the LPN's standard quantity. If so, then we will warn the user to make sure
       // they don't accidentally input a wrong number
-      bool validateLPNQuantity = await _validateQuantityForSingleLPN(inventoryQuantity);
+      bool validateLPNQuantity =
+          await _validateQuantityForSingleLPN(inventoryQuantity);
       if (validateLPNQuantity) {
         _onWorkOrderProduceSingleLPNConfirm(workOrder, inventoryQuantity, lpn);
-      }
-      else {
+      } else {
         // quantity is not valid(normally it means we only need one LPN but the total
         // quantity exceed the standard LPN's quantity
         _readyToConfirm = true;
         return;
       }
-
-    }
-    else if (lpnCount > 1) {
+    } else if (lpnCount > 1) {
       // we will need multiple LPNs, let's prompt a dialog to capture the lpns
 
       Set<String> capturedLpn = new Set();
@@ -964,9 +1143,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
           _currentWorkOrder!.item!,
           _selectedItemPackageType!,
           _selectedItemPackageType!.trackingLpnUOM!,
-          lpnCount, capturedLpn,
-          true
-      );
+          lpnCount,
+          capturedLpn,
+          true);
 
       final result = await Navigator.of(context)
           .pushNamed("lpn_capture", arguments: lpnCaptureRequest);
@@ -987,67 +1166,71 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       // receive with multiple LPNs
       _produceMultipleLpns(lpnCaptureRequest);
     }
-
   }
 
-
   void _produceMultipleLpns(LpnCaptureRequest lpnCaptureRequest) async {
-
     showLoading(context);
     // make sure the user input a valid LPN
     try {
       Iterator<String> lpnIterator = lpnCaptureRequest.capturedLpn.iterator;
-      while(lpnIterator.moveNext()) {
-
-        String errorMessage = await InventoryService.validateNewLpn(lpnIterator.current);
+      while (lpnIterator.moveNext()) {
+        String errorMessage =
+            await InventoryService.validateNewLpn(lpnIterator.current);
         if (errorMessage.isNotEmpty) {
           Navigator.of(context).pop();
           showErrorDialog(context, errorMessage);
           return;
         }
       }
-    }
-    on CWMSHttpException catch(ex) {
-
+    } on CWMSHttpException catch (ex) {
       Navigator.of(context).pop();
       showErrorDialog(context, "${ex.code} - ${ex.message}");
       return;
-
     }
     try {
+      await _ensureDefectiveAssignment();
+      if (!mounted) return;
       // start receive LPNs one by one and show the progress bar
       _setupProgressBar();
       Iterator<String> lpnIterator = lpnCaptureRequest.capturedLpn.iterator;
       int totalLPNCount = lpnCaptureRequest.capturedLpn.length;
       int currentLPNIndex = 1;
 
-      while(lpnIterator.moveNext()) {
+      while (lpnIterator.moveNext()) {
         String lpn = lpnIterator.current;
         double progress = currentLPNIndex * 100 / totalLPNCount;
-        String message = CWMSLocalizations.of(context).receivingCurrentLpn + ": " +
-            lpn + ", " + currentLPNIndex.toString() + " / " + totalLPNCount.toString();
+        String message = CWMSLocalizations.of(context).receivingCurrentLpn +
+            ": " +
+            lpn +
+            ", " +
+            currentLPNIndex.toString() +
+            " / " +
+            totalLPNCount.toString();
 
         _progressDialog!.update(progress: progress, message: message);
 
         WorkOrderProduceTransaction workOrderProduceTransaction =
             generateWorkOrderProduceTransaction(
-                lpn, _selectedInventoryStatus!,
-              _selectedItemPackageType!, lpnCaptureRequest.lpnUnitOfMeasure!.quantity!,
-                _getReasonCodeForProducingInventory()
-          );
+                lpn,
+                _selectedInventoryStatus!,
+                _selectedItemPackageType!,
+                lpnCaptureRequest.lpnUnitOfMeasure!.quantity!,
+                _getReasonCodeForProducingInventory());
 
         await WorkOrderService.saveWorkOrderProduceTransaction(
-            workOrderProduceTransaction
-        );
+            workOrderProduceTransaction);
         currentLPNIndex++;
       }
-
-    }
-    on CWMSHttpException catch(ex) {
+    } on WebAPICallException catch (ex) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      showErrorDialog(context, ex.errMsg());
+      setState(() => _readyToConfirm = true);
+      return;
+    } on CWMSHttpException catch (ex) {
       Navigator.of(context).pop();
       showErrorDialog(context, "${ex.code} - ${ex.message}");
       return;
-
     }
 
     if (_progressDialog!.isShowing()) {
@@ -1057,11 +1240,9 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     Navigator.of(context).pop();
 
     _refreshScreenAfterProducing();
-
   }
 
   _setupProgressBar() {
-
     _progressDialog = new ProgressDialog(
       context,
       type: ProgressDialogType.normal,
@@ -1069,11 +1250,13 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       showLogs: true,
     );
 
-    _progressDialog!.style(message: CWMSLocalizations.of(context).receivingMultipleLpns);
+    _progressDialog!
+        .style(message: CWMSLocalizations.of(context).receivingMultipleLpns);
     if (!_progressDialog!.isShowing()) {
       _progressDialog!.show();
     }
   }
+
   _refreshScreenAfterProducing() {
     // refresh the work order to reflect the produced quantity
     _refreshWorkOrderInformation();
@@ -1087,16 +1270,12 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     // FocusScope.of(context).requestFocus(lpnFocusNode);
 
     _readyToConfirm = true;
-
-
   }
-
 
   // check how many LPNs we will need to receive
   // based on the quantity that the user input,
   // the UOM that the user select
   int _getRequiredLPNCount(int totalQuantity) {
-
     // if the user choose force LPN receiving, then
     // we will default to receive by 1 LPN uom
     if (_forceLPNReceiving) {
@@ -1109,36 +1288,37 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
       // the tracking LPN UOM is not defined for this item package type, so we don't know
       // how to calculate how many LPNs we may need based on the UOM and quantity
       lpnCount = 1;
-    }
-    else if (_selectedItemUnitOfMeasure!.quantity! >= _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
+    } else if (_selectedItemUnitOfMeasure!.quantity! >=
+        _selectedItemPackageType!.trackingLpnUOM!.quantity!) {
       // we are receiving at LPN uom level, then see what's the quantity the user specify
-      lpnCount = totalQuantity ~/ _selectedItemPackageType!.trackingLpnUOM!.quantity!;
-    }
-    else {
+      lpnCount =
+          totalQuantity ~/ _selectedItemPackageType!.trackingLpnUOM!.quantity!;
+    } else {
       // we are receiving at some lower level than the tracking LPN UOM,
       // no matter how many we are receiving, we will only need one lpn, we will rely on
       // the user to input the right quantity that can be done in one single lpn
       lpnCount = 1;
     }
     return lpnCount;
-
   }
 
   _refreshWorkOrderInformation() {
     WorkOrderService.getWorkOrderByNumber(_currentWorkOrder!.number!)
-        .then((workOrder)  { 
-
-            setState(() {
-              _currentWorkOrder!.producedQuantity = workOrder?.producedQuantity;
-            });
-        });
-
-
+        .then((workOrder) {
+      setState(() {
+        _currentWorkOrder!.producedQuantity = workOrder?.producedQuantity;
+      });
+    });
   }
+
   WorkOrderProduceTransaction generateWorkOrderProduceTransaction(
-      String lpn, InventoryStatus selectedInventoryStatus,
-      ItemPackageType selectedItemPackageType, int quantity, ReasonCode? reasonCode)   {
-    WorkOrderProduceTransaction workOrderProduceTransaction = new WorkOrderProduceTransaction();
+      String lpn,
+      InventoryStatus selectedInventoryStatus,
+      ItemPackageType selectedItemPackageType,
+      int quantity,
+      ReasonCode? reasonCode) {
+    WorkOrderProduceTransaction workOrderProduceTransaction =
+        new WorkOrderProduceTransaction();
     workOrderProduceTransaction.workOrder = _currentWorkOrder;
     workOrderProduceTransaction.productionLine = _currentProductionLine;
 
@@ -1146,7 +1326,8 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
 
     workOrderProduceTransaction.workOrderKPITransactions = [];
 
-    WorkOrderProducedInventory workOrderProducedInventory = new WorkOrderProducedInventory();
+    WorkOrderProducedInventory workOrderProducedInventory =
+        new WorkOrderProducedInventory();
     workOrderProducedInventory.lpn = lpn;
     workOrderProducedInventory.quantity = quantity;
     workOrderProducedInventory.inventoryStatus = selectedInventoryStatus;
@@ -1156,17 +1337,17 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     List<WorkOrderProducedInventory> workOrderProducedInventoryList = [];
     workOrderProducedInventoryList.add(workOrderProducedInventory);
 
-    workOrderProduceTransaction.workOrderProducedInventories = workOrderProducedInventoryList;
+    workOrderProduceTransaction.workOrderProducedInventories =
+        workOrderProducedInventoryList;
 
-    List<WorkOrderLineConsumeTransaction> workOrderLineConsumeTransactions =
-       [];
+    List<WorkOrderLineConsumeTransaction> workOrderLineConsumeTransactions = [];
     workOrderProduceTransaction.consumeByBomQuantity = true;
     workOrderProduceTransaction.consumeByBom = _matchedBillOfMaterial;
 
     // We are now only allow consume by BOM when producing from mobile
     // in case of consuming by BOM, we won't have to setup the
     // WorkOrderLineConsumeTransaction
-    // setup the work order line consume transaction based on teh 
+    // setup the work order line consume transaction based on teh
     // matched bom
     /**
      *
@@ -1208,17 +1389,11 @@ class _WorkOrderProduceInventoryPageState extends State<WorkOrderProduceInventor
     if (reasonCode != null) {
       workOrderProduceTransaction.reasonCodeId = reasonCode.id;
       workOrderProduceTransaction.reasonCode = reasonCode;
-    }
-    else {
+    } else {
       workOrderProduceTransaction.reasonCodeId = null;
       workOrderProduceTransaction.reasonCode = null;
-
     }
-    
 
     return workOrderProduceTransaction;
   }
-
-
-
 }

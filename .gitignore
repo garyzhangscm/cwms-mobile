@@ -43,3 +43,6 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 /android/app/.cxx/
+
+# Internal release archives are backed up separately in a private repository.
+/release/

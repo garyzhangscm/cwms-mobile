@@ -33,6 +33,7 @@ import 'package:cwms_mobile/workorder/routes/production_line_check_out.dart';
 import 'package:cwms_mobile/workorder/routes/reverse_production.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_manual_pick.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce.dart';
+import 'package:cwms_mobile/workorder/routes/defective_machine_selection.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_inventory.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_produce_kpi.dart';
 import 'package:cwms_mobile/workorder/routes/work_order_qc.dart';
@@ -66,7 +67,8 @@ import 'outbound/routes/pick_by_list.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
-    final text = await rootBundle.loadString('assets/licenses/cwms-mobile-LICENSE.txt');
+    final text =
+        await rootBundle.loadString('assets/licenses/cwms-mobile-LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['CWMS Mobile (upstream project)'], text);
   });
   if (Platform.isAndroid) {
@@ -216,6 +218,12 @@ class MyApp extends StatelessWidget {
               "inventory_putaway": (context) => InventoryPutawayPage(),
               "pick_by_work_order": (context) => PickByWorkOrderPage(),
               "work_order_produce": (context) => WorkOrderProducePage(),
+              "work_order_defective": (context) =>
+                  const DefectiveMachineSelectionPage(),
+              "work_order_defective_manual": (context) =>
+                  WorkOrderProducePage(defective: true),
+              "work_order_defective_inventory": (context) =>
+                  WorkOrderProduceInventoryPage(defective: true),
               "work_order_qc": (context) => WorkOrderQCPage(),
               "work_order_produce_inventory": (context) =>
                   WorkOrderProduceInventoryPage(),
