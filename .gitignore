@@ -44,5 +44,5 @@ app.*.symbols
 app.*.map.json
 /android/app/.cxx/
 
-# Internal release archives are backed up separately in a private repository.
+# Internal release archives are stored locally only.
 /release/
