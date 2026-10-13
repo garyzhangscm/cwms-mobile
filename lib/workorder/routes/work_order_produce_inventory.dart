@@ -1,3 +1,4 @@
+import '../../shared/updates/update_activity.dart';
 import '../services/production_submission.dart';
 import '../services/defective_machines.dart';
 import 'package:cwms_mobile/common/models/reason_code.dart';
@@ -905,7 +906,8 @@ class _WorkOrderProduceInventoryPageState
 
   Future<void> _onWorkOrderProduceConfirm() async {
     if (_submitting) return;
-    final pending = _submission.run(_submitWorkOrderProduce);
+    final pending = _submission
+        .run(() => UpdateActivity.instance.run(_submitWorkOrderProduce));
     setState(() {});
     try {
       await pending;

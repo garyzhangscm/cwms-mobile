@@ -1,3 +1,4 @@
+import '../updates/update_activity_interceptor.dart';
 
 
 import 'package:dio/dio.dart';
@@ -16,6 +17,7 @@ class CWMSDio with DioMixin implements Dio {
             headers: dioConfig?.headers
         );
         this.options = options;
+        interceptors.add(UpdateActivityInterceptor());
 
         // DioCacheManager
         // NOT SUPPORTED IN CURRENT DIO VERSION
@@ -49,7 +51,7 @@ class CWMSDio with DioMixin implements Dio {
                 requestBody: true));
 
         if (dioConfig?.interceptors?.isNotEmpty ?? false) {
-            interceptors.addAll(interceptors);
+            interceptors.addAll(dioConfig!.interceptors!);
         }
         httpClientAdapter = IOHttpClientAdapter();
     }

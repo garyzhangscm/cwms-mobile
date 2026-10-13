@@ -1,3 +1,5 @@
+import 'shared/updates/update_route_observer.dart';
+import 'shared/updates/ota_update_gate.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -82,6 +84,7 @@ class MyApp extends StatelessWidget {
   MyApp({this.enableDebugAutoConnect = true});
 
   final bool enableDebugAutoConnect;
+  final UpdateRouteObserver _updateObserver = UpdateRouteObserver();
 
   // This widget is the root of your application.
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey();
@@ -163,6 +166,10 @@ class MyApp extends StatelessWidget {
             ),
 
             navigatorKey: navigatorKey,
+            navigatorObservers: [_updateObserver],
+            builder: (context, child) => OtaUpdateGate(
+                navigatorKey: navigatorKey,
+                child: child ?? const SizedBox.shrink()),
             onGenerateTitle: (context) {
               return CWMSLocalizations.of(context).title;
             },
