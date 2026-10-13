@@ -1,3 +1,4 @@
+import '../updates/ota_update_scope.dart';
 import 'package:cwms_mobile/shared/workspace_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -27,6 +28,7 @@ class _AppInformationPageState extends State<AppInformationPage> {
   @override
   Widget build(BuildContext context) {
     final zh = workspaceIsChinese(context);
+    final updater = OtaUpdateScope.of(context);
     return Scaffold(
       backgroundColor: workspaceBackground,
       appBar:
@@ -51,10 +53,27 @@ class _AppInformationPageState extends State<AppInformationPage> {
                 builder: (_, snapshot) => Center(
                     child: Text(
                         snapshot.hasData
-                            ? '${snapshot.data!.version} (${snapshot.data!.buildNumber})'
+                            ? '${snapshot.data!.version} (${snapshot.data!.buildNumber})${updater?.initialized == true ? ' · Patch ${updater!.current}' : ''}'
                             : '',
                         style: const TextStyle(color: Colors.grey))),
               ),
+              if (updater?.gateway.available == true) ...[
+                const SizedBox(height: 8),
+                Center(
+                    child: TextButton(
+                  onPressed: updater!.checking ? null : updater.check,
+                  child: Text(updater.checking
+                      ? (zh ? '正在检查更新…' : 'Checking for updates...')
+                      : (zh ? '检查更新' : 'Check for updates')),
+                )),
+                if (updater.error != null)
+                  Text(updater.error!, textAlign: TextAlign.center),
+                if (updater.initialized &&
+                    !updater.checking &&
+                    updater.error == null &&
+                    !updater.ready)
+                  Center(child: Text(zh ? '已是最新版本' : 'App is up to date')),
+              ],
               const SizedBox(height: 24),
               Card(
                   child: Column(children: [

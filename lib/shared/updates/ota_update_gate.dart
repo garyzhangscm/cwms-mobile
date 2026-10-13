@@ -1,3 +1,4 @@
+import 'ota_update_scope.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
@@ -179,67 +180,73 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
         controller.visible &&
         !closing &&
         (!UpdateActivity.instance.busy || enforcing);
-    return Stack(children: [
-      widget.child,
-      if (show)
-        Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            top: controller.mandatory ? 0 : null,
-            child: Material(
-              color: controller.mandatory ? Colors.black54 : Colors.transparent,
-              child: Align(
-                alignment: controller.mandatory
-                    ? Alignment.center
-                    : Alignment.bottomCenter,
-                child: SafeArea(
-                    child: Builder(
-                        builder: (innerContext) => Card(
-                              margin: const EdgeInsets.all(16),
-                              child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                            controller.mandatory
-                                                ? 'Required update ready'
-                                                : 'App update ready',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleLarge),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                            '$release · Patch ${controller.current} -> ${controller.next}'),
-                                        const SizedBox(height: 8),
-                                        Text(controller.policy.message.isEmpty
-                                            ? 'Close and reopen the app to apply the update.'
-                                            : controller.policy.message),
-                                        if (controller.mandatory)
-                                          const Text(
-                                              'Update before starting another operation.'),
-                                        const SizedBox(height: 12),
-                                        Wrap(spacing: 12, children: [
-                                          if (!controller.mandatory)
-                                            TextButton(
-                                                onPressed: controller.defer,
-                                                child: const Text('Later')),
-                                          FilledButton(
-                                              onPressed: closing ||
-                                                      UpdateActivity
-                                                          .instance.busy
-                                                  ? null
-                                                  : () => _close(innerContext),
-                                              child: const Text(
-                                                  'Close and reopen')),
-                                        ]),
-                                      ])),
-                            ))),
-              ),
-            )),
-    ]);
+    return OtaUpdateScope(
+        controller: controller,
+        child: Stack(children: [
+          widget.child,
+          if (show)
+            Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                top: controller.mandatory ? 0 : null,
+                child: Material(
+                  color: controller.mandatory
+                      ? Colors.black54
+                      : Colors.transparent,
+                  child: Align(
+                    alignment: controller.mandatory
+                        ? Alignment.center
+                        : Alignment.bottomCenter,
+                    child: SafeArea(
+                        child: Builder(
+                            builder: (innerContext) => Card(
+                                  margin: const EdgeInsets.all(16),
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                controller.mandatory
+                                                    ? 'Required update ready'
+                                                    : 'App update ready',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleLarge),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                                '$release · Patch ${controller.current} -> ${controller.next}'),
+                                            const SizedBox(height: 8),
+                                            Text(controller
+                                                    .policy.message.isEmpty
+                                                ? 'Close and reopen the app to apply the update.'
+                                                : controller.policy.message),
+                                            if (controller.mandatory)
+                                              const Text(
+                                                  'Update before starting another operation.'),
+                                            const SizedBox(height: 12),
+                                            Wrap(spacing: 12, children: [
+                                              if (!controller.mandatory)
+                                                TextButton(
+                                                    onPressed: controller.defer,
+                                                    child: const Text('Later')),
+                                              FilledButton(
+                                                  onPressed: closing ||
+                                                          UpdateActivity
+                                                              .instance.busy
+                                                      ? null
+                                                      : () =>
+                                                          _close(innerContext),
+                                                  child: const Text(
+                                                      'Close and reopen')),
+                                            ]),
+                                          ])),
+                                ))),
+                  ),
+                )),
+        ]));
   }
 }

@@ -45,6 +45,7 @@ class OtaUpdateController extends ChangeNotifier {
   int next = 0;
   OtaPolicy policy = const OtaPolicy();
   bool checking = false;
+  bool initialized = false;
   String? error;
   DateTime? deferredUntil;
   bool get ready => next > current;
@@ -68,8 +69,10 @@ class OtaUpdateController extends ChangeNotifier {
     if (checking || !gateway.available) return;
     checking = true;
     error = null;
+    notifyListeners();
     try {
       current = await gateway.currentPatch();
+      initialized = true;
       next = await gateway.nextPatch();
       notifyListeners();
       // Failure to reach MES must not prevent Shorebird downloading a patch.
