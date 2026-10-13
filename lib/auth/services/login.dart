@@ -19,7 +19,7 @@ class LoginService {
       data:{"companyId": companyId, "username":username,"password": password}
     );
 
-    print("login response: $response");
+
 
     LoginResponseWrapper loginResponseWrapper =
         LoginResponseWrapper.fromJson(json.decode(response.toString()));

@@ -5,6 +5,7 @@ import 'package:cwms_mobile/shared/routes/app_information.dart';
 
 import 'package:cwms_mobile/auth/models/user.dart';
 import 'package:cwms_mobile/auth/services/login.dart';
+import 'package:cwms_mobile/auth/services/login_tasks.dart';
 import 'package:cwms_mobile/common/services/rf.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -25,6 +26,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:collection/collection.dart';
 
 import '../../shared/models/rf.dart';
+import '../../shared/models/rf_configuration.dart';
 import '../../warehouse_layout/models/warehouse_location.dart';
 
 class LoginPage extends StatefulWidget {
@@ -610,178 +612,202 @@ class _LoginPageState extends State<LoginPage> {
    */
   }
 
+  bool _loginInProgress = false;
+
   void _onLogin() async {
-    if (Global.currentFactory != null) {
-      _companyCodeController.text = Global.currentFactory!.companyCode;
-    }
-    // 先验证各个表单字段是否合法
-    if ((_formKey.currentState as FormState).validate()) {
-      print("start to login");
-      showLoading(context);
-      User? user;
-      int? companyId;
-
-      try {
-        // make sure the rf code is still valid
-
-        print(
-            "will need to get company by code: " + _companyCodeController.text);
-        companyId = await CompanyService.validateCompanyByCode(
-            _companyCodeController.text);
-        print(
-            "get by code: ${_companyCodeController.text}, companyId id: $companyId ");
-
-        if (companyId == null) {
-          showToast(
-              "Can't find company by code: " + _companyCodeController.text);
-          return;
-        }
-
-        printLongLogMessage(
-            "start to validate rf code ${_rfCodeController.text}");
-        bool isRFCodeValid = await RFService.valdiateRFCode(
-            companyId, selectedWarehouse!.id!, _rfCodeController.text);
-
-        if (!isRFCodeValid) {
-          print("login fail as rf code ${_rfCodeController.text} is not valid");
-
-          showToast("rf code ${_rfCodeController.text} is not valid ");
-          return;
-        }
-
-        print(
-            "start to validate the location ${_currentLocationController.text}");
-        bool isLocationValid = await WarehouseLocationService.valdiateLocation(
-            companyId, selectedWarehouse!.id!, _currentLocationController.text);
-
-        if (!isLocationValid) {
-          print(
-              "login fail as location  ${_currentLocationController.text} is not valid");
-
-          showToast(
-              "location ${_currentLocationController.text} is not valid ");
-          return;
-        }
-        user = await LoginService.login(
-            companyId, _unameController.text, _pwdController.text);
-
-        printLongLogMessage("user ${user.username} login successfully ");
-      } catch (e) {
-        //登录失败则提示
-        showToast(e.toString());
-      } finally {
-        // 隐藏loading框
-        Navigator.of(context).pop();
+    if (_loginInProgress) return;
+    _loginInProgress = true;
+    final loginClock = Stopwatch()..start();
+    try {
+      if (Global.currentFactory != null) {
+        _companyCodeController.text = Global.currentFactory!.companyCode;
       }
-      if (user != null) {
-        //
+      // 先验证各个表单字段是否合法
+      if ((_formKey.currentState as FormState).validate()) {
+        print("start to login");
         showLoading(context);
+        User? user;
+        int? companyId;
 
-        // 返回
-        print("_rememberMe? $_rememberMe");
-
-        // setup current user
-        Global.setCurrentUser(user);
-        Global.setCurrentWarehouse(selectedWarehouse!);
-        // setup current company
-        Global.lastLoginCompanyId = companyId!;
-        Global.lastLoginCompanyCode = _companyCodeController.text;
-
-        Global.setLastLoginRFCode(_rfCodeController.text);
-
-        // setup the http client with auth information
-        Global.setupHttpClient();
-
-        // load the configuration and cache
-        Global.initInventoryConfiguration();
-
-        // setup the rf and location
-
-        RF rf = await RFService.getRFByCodeAndWarehouseId(
-            selectedWarehouse!.id!, _rfCodeController.text);
-
-        WarehouseLocation currentLocation = await WarehouseLocationService
-            .getWarehouseLocationByWarehouseIdAndName(
-                selectedWarehouse!.id!, _currentLocationController.text);
-
-        Global.setLastActivityLocation(currentLocation);
-        printLongLogMessage(
-            "start to change rf ${rf.rfCode}'s current location to ${currentLocation.id} / ${currentLocation.name}");
-        rf = await RFService.changeRFLocation(
-            selectedWarehouse!.id!, rf.id!, currentLocation.id!);
-        print(
-            ">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation?.name}");
-
-        Global.setLastLoginRF(rf);
-
-        // Setup auto login user
-        if (_rememberMe) {
-          user.password = _pwdController.text;
-          user.companyId = companyId;
-          Global.addAutoLoginUser(user);
-          Global.setAutoLoginWarehouse(selectedWarehouse!);
-          CompanyService.getCompanyByCode(_companyCodeController.text)
-              .then((company) {
-            Global.setAutoLoginCompany(company!);
-            printLongLogMessage(
-                "auto login company is setup to ${company.name}");
-          });
-        }
-
-        print(
-            "login with user: ${user.username}, token: ${user.token}. companyCode: ${Global.lastLoginCompanyId}, company Id: ${Global.lastLoginCompanyCode}");
-
-        // load the rf configuration
         try {
-          final rfConfiguration =
-              await RFConfigurationService.getRFConfiguration(
-                  Global.lastLoginRFCode!);
-          // If the configuration is not setup yet, keep the default one.
-          if (rfConfiguration != null) {
-            Global.setRFConfiguration(rfConfiguration);
-            printLongLogMessage(
-                "rf configuration is setup to ${rfConfiguration.toJson()}");
+          // make sure the rf code is still valid
+
+          print("will need to get company by code: " +
+              _companyCodeController.text);
+          companyId = await measureLoginStep(
+              "company",
+              () => CompanyService.validateCompanyByCode(
+                  _companyCodeController.text));
+          print(
+              "get by code: ${_companyCodeController.text}, companyId id: $companyId ");
+
+          if (companyId == null) {
+            showToast(
+                "Can't find company by code: " + _companyCodeController.text);
+            return;
           }
-        } on WebAPICallException {
-          // ignore the except and continue with the default configuration
+
+          final checks = await runLoginTasks(
+            () => measureLoginStep(
+                'RF validation',
+                () => RFService.valdiateRFCode(companyId!,
+                    selectedWarehouse!.id!, _rfCodeController.text)),
+            () => measureLoginStep(
+                'location validation',
+                () => WarehouseLocationService.valdiateLocation(companyId!,
+                    selectedWarehouse!.id!, _currentLocationController.text)),
+          );
+          if (!checks.$1) {
+            showToast("rf code ${_rfCodeController.text} is not valid ");
+            return;
+          }
+          if (!checks.$2) {
+            showToast(
+                "location ${_currentLocationController.text} is not valid ");
+            return;
+          }
+          user = await measureLoginStep(
+              "authentication",
+              () => LoginService.login(
+                  companyId!, _unameController.text, _pwdController.text));
+
+          printLongLogMessage("user ${user!.username} login successfully ");
+        } catch (e) {
+          //登录失败则提示
+          showToast(e.toString());
+        } finally {
+          // 隐藏loading框
+          if (mounted) Navigator.of(context).pop();
         }
-        // load the warehouse configuration
-        try {
-          WarehouseConfigurationService.getWarehouseConfiguration()
-              .then((warehouseConfiguration) {
-            // if the configuration is not setup yet, use the default one
-            // which should be already setup when we launch the app
-            if (warehouseConfiguration != null) {
-              Global.setWarehouseConfiguration(warehouseConfiguration);
+        if (!mounted) return;
+        if (user != null) {
+          //
+          showLoading(context);
+
+          // 返回
+          print("_rememberMe? $_rememberMe");
+
+          bool loadingOpen = true;
+          try {
+            // setup current user
+            Global.setCurrentUser(user);
+            Global.setCurrentWarehouse(selectedWarehouse!);
+            // setup current company
+            Global.lastLoginCompanyId = companyId!;
+            Global.lastLoginCompanyCode = _companyCodeController.text;
+
+            Global.setLastLoginRFCode(_rfCodeController.text);
+
+            // setup the http client with auth information
+            Global.setupHttpClient();
+
+            // load the configuration and cache
+            Global.initInventoryConfiguration();
+
+            // setup the rf and location
+
+            final workstation = await runLoginTasks(
+              () => measureLoginStep(
+                  'RF lookup',
+                  () => RFService.getRFByCodeAndWarehouseId(
+                      selectedWarehouse!.id!, _rfCodeController.text)),
+              () => measureLoginStep(
+                  'location lookup',
+                  () => WarehouseLocationService
+                      .getWarehouseLocationByWarehouseIdAndName(
+                          selectedWarehouse!.id!,
+                          _currentLocationController.text)),
+            );
+            RF rf = workstation.$1;
+            WarehouseLocation currentLocation = workstation.$2;
+
+            Global.setLastActivityLocation(currentLocation);
+            printLongLogMessage(
+                "start to change rf ${rf.rfCode}'s current location to ${currentLocation.id} / ${currentLocation.name}");
+            rf = await measureLoginStep(
+                "RF location update",
+                () => RFService.changeRFLocation(
+                    selectedWarehouse!.id!, rf.id!, currentLocation.id!));
+            print(
+                ">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation?.name}");
+
+            Global.setLastLoginRF(rf);
+
+            // Setup auto login user
+            if (_rememberMe) {
+              user.password = _pwdController.text;
+              user.companyId = companyId;
+              Global.addAutoLoginUser(user);
+              Global.setAutoLoginWarehouse(selectedWarehouse!);
+              CompanyService.getCompanyByCode(_companyCodeController.text)
+                  .then((company) {
+                Global.setAutoLoginCompany(company!);
+                printLongLogMessage(
+                    "auto login company is setup to ${company.name}");
+              });
             }
-          });
-        } on WebAPICallException {
-          // ignore the except and continue with the default configuration
+
+            // Both reads are independent of each other. Keep their checks before
+            // opening the menu, but do not pay for two consecutive network trips.
+            final settings = await runLoginTasks(
+              () => measureLoginStep(
+                  'RF configuration', _loadLoginRFConfiguration),
+              () => measureLoginStep(
+                  'version check',
+                  () => RFAppVersionService.getLatestRFAppVersion(
+                      Global.lastLoginRFCode!)),
+            );
+            if (settings.$1 != null) Global.setRFConfiguration(settings.$1!);
+            final latestRFAppVersion = settings.$2;
+            // load the warehouse configuration
+            try {
+              WarehouseConfigurationService.getWarehouseConfiguration()
+                  .then((warehouseConfiguration) {
+                // if the configuration is not setup yet, use the default one
+                // which should be already setup when we launch the app
+                if (warehouseConfiguration != null) {
+                  Global.setWarehouseConfiguration(warehouseConfiguration);
+                }
+              });
+            } on WebAPICallException {
+              // ignore the except and continue with the default configuration
+            }
+
+            bool _appNeedUpdate = false;
+            if (latestRFAppVersion == null) {
+              _appNeedUpdate = false;
+            } else {
+              _appNeedUpdate = await _needUpdate(latestRFAppVersion);
+            }
+            if (mounted) Navigator.of(context).pop();
+            loadingOpen = false;
+
+            if (!mounted) return;
+            if (_appNeedUpdate) {
+              Navigator.of(context)
+                  .pushNamed("app_upgrade", arguments: latestRFAppVersion);
+            } else {
+              Navigator.pushNamed(context, "menus_page");
+            }
+          } catch (e) {
+            if (mounted) showToast(e.toString());
+          } finally {
+            if (loadingOpen && mounted) Navigator.of(context).pop();
+          }
         }
-
-        RFAppVersion? latestRFAppVersion =
-            await RFAppVersionService.getLatestRFAppVersion(
-                Global.lastLoginRFCode!);
-
-        printLongLogMessage(
-            "latestRFAppVersion: ${latestRFAppVersion == null ? "N/A" : latestRFAppVersion.versionNumber}");
-
-        bool _appNeedUpdate = false;
-        if (latestRFAppVersion == null) {
-          _appNeedUpdate = false;
-        } else {
-          _appNeedUpdate = await _needUpdate(latestRFAppVersion);
-        }
-        Navigator.of(context).pop();
-
-        if (_appNeedUpdate) {
-          Navigator.of(context)
-              .pushNamed("app_upgrade", arguments: latestRFAppVersion);
-        } else {
-          Navigator.pushNamed(context, "menus_page");
-        }
-        // Navigator.of(context).pop();
       }
+    } finally {
+      _loginInProgress = false;
+      debugPrint('Login timing: total ${loginClock.elapsedMilliseconds} ms');
+    }
+  }
+
+  Future<RFConfiguration?> _loadLoginRFConfiguration() async {
+    try {
+      return await RFConfigurationService.getRFConfiguration(
+          Global.lastLoginRFCode!);
+    } on WebAPICallException {
+      return null; // Keep the existing default when no configuration is set.
     }
   }
 
