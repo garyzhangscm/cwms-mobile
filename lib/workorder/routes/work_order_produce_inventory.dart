@@ -1113,7 +1113,9 @@ class _WorkOrderProduceInventoryPageState
       return;
     }
     if (!saved) return;
-    if (Global.warehouseConfiguration.newLPNPrintLabelAtProducingFlag == true &&
+    // Defective output uses labels preprinted by QC, so never print again here.
+    if (!widget.defective &&
+        Global.warehouseConfiguration.newLPNPrintLabelAtProducingFlag == true &&
         Global.warehouseConfiguration.printingStrategy ==
             PrintingStrategy.LOCAL_PRINTER_SERVER_DATA) {
       _printLPNLabel(lpn);
