@@ -704,34 +704,52 @@ class _LoginPageState extends State<LoginPage> {
             // load the configuration and cache
             Global.initInventoryConfiguration();
 
-            // setup the rf and location
+            // Prepare the workstation and load settings concurrently. The
+            // workstation branch still waits for both IDs before changing RF
+            // location; the menu opens only when both branches have finished.
+            final prepared = await runLoginTasks(
+              () async {
+                final workstation = await runLoginTasks(
+                  () => measureLoginStep(
+                      'RF lookup',
+                      () => RFService.getRFByCodeAndWarehouseId(
+                          selectedWarehouse!.id!, _rfCodeController.text)),
+                  () => measureLoginStep(
+                      'location lookup',
+                      () => WarehouseLocationService
+                          .getWarehouseLocationByWarehouseIdAndName(
+                              selectedWarehouse!.id!,
+                              _currentLocationController.text)),
+                );
+                RF rf = workstation.$1;
+                WarehouseLocation currentLocation = workstation.$2;
 
-            final workstation = await runLoginTasks(
-              () => measureLoginStep(
-                  'RF lookup',
-                  () => RFService.getRFByCodeAndWarehouseId(
-                      selectedWarehouse!.id!, _rfCodeController.text)),
-              () => measureLoginStep(
-                  'location lookup',
-                  () => WarehouseLocationService
-                      .getWarehouseLocationByWarehouseIdAndName(
-                          selectedWarehouse!.id!,
-                          _currentLocationController.text)),
+                printLongLogMessage(
+                    "start to change rf ${rf.rfCode}'s current location to ${currentLocation.id} / ${currentLocation.name}");
+                rf = await measureLoginStep(
+                    "RF location update",
+                    () => RFService.changeRFLocation(
+                        selectedWarehouse!.id!, rf.id!, currentLocation.id!));
+                print(
+                    ">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation?.name}");
+
+                return (rf, currentLocation);
+              },
+              () => runLoginTasks(
+                () => measureLoginStep(
+                    'RF configuration', _loadLoginRFConfiguration),
+                () => measureLoginStep(
+                    'version check',
+                    () => RFAppVersionService.getLatestRFAppVersion(
+                        Global.lastLoginRFCode!)),
+              ),
             );
-            RF rf = workstation.$1;
-            WarehouseLocation currentLocation = workstation.$2;
-
-            Global.setLastActivityLocation(currentLocation);
-            printLongLogMessage(
-                "start to change rf ${rf.rfCode}'s current location to ${currentLocation.id} / ${currentLocation.name}");
-            rf = await measureLoginStep(
-                "RF location update",
-                () => RFService.changeRFLocation(
-                    selectedWarehouse!.id!, rf.id!, currentLocation.id!));
-            print(
-                ">>> rf ${rf.rfCode}'s current location is changed to ${rf.currentLocation?.name}");
-
-            Global.setLastLoginRF(rf);
+            Global.setLastLoginRF(prepared.$1.$1);
+            Global.setLastActivityLocation(prepared.$1.$2);
+            if (prepared.$2.$1 != null) {
+              Global.setRFConfiguration(prepared.$2.$1!);
+            }
+            final latestRFAppVersion = prepared.$2.$2;
 
             // Setup auto login user
             if (_rememberMe) {
@@ -747,18 +765,6 @@ class _LoginPageState extends State<LoginPage> {
               });
             }
 
-            // Both reads are independent of each other. Keep their checks before
-            // opening the menu, but do not pay for two consecutive network trips.
-            final settings = await runLoginTasks(
-              () => measureLoginStep(
-                  'RF configuration', _loadLoginRFConfiguration),
-              () => measureLoginStep(
-                  'version check',
-                  () => RFAppVersionService.getLatestRFAppVersion(
-                      Global.lastLoginRFCode!)),
-            );
-            if (settings.$1 != null) Global.setRFConfiguration(settings.$1!);
-            final latestRFAppVersion = settings.$2;
             // load the warehouse configuration
             try {
               WarehouseConfigurationService.getWarehouseConfiguration()

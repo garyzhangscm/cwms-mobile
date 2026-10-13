@@ -4,6 +4,47 @@ import 'package:cwms_mobile/auth/services/login_tasks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('settings overlap workstation reads but completion waits for RF update',
+      () async {
+    final rf = Completer<int>();
+    final location = Completer<int>();
+    final config = Completer<String>();
+    final version = Completer<int>();
+    final changed = Completer<String>();
+    final started = <String>[];
+    var updateStarted = false;
+    var loginReady = false;
+    Future<T> load<T>(String name, Completer<T> response) {
+      started.add(name);
+      return response.future;
+    }
+
+    final ready = runLoginTasks(() async {
+      final ids = await runLoginTasks(
+          () => load('rf', rf), () => load('location', location));
+      expect(ids, (7, 12));
+      updateStarted = true;
+      return await changed.future;
+    }, () => runLoginTasks(
+        () => load('configuration', config), () => load('version', version)));
+    final observed = ready.then((result) {
+      loginReady = true;
+      return result;
+    });
+    expect(started, ['rf', 'location', 'configuration', 'version']);
+    config.complete('Main');
+    version.complete(9);
+    rf.complete(7);
+    await Future<void>.delayed(Duration.zero);
+    expect(updateStarted, isFalse);
+    location.complete(12);
+    await Future<void>.delayed(Duration.zero);
+    expect(updateStarted, isTrue);
+    expect(loginReady, isFalse);
+    changed.complete('RF updated');
+    expect(await observed, ('RF updated', ('Main', 9)));
+  });
+
   test('independent reads start before either network response arrives',
       () async {
     final rf = Completer<int>();
