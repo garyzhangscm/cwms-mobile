@@ -89,6 +89,20 @@ Future<void> openForm(WidgetTester tester, List<InventoryStatus> statuses,
 }
 
 void main() {
+  for (final defective in [true, false]) {
+    testWidgets('submission suppresses server printing only for Defective=$defective',
+        (tester) async {
+      final damaged = status('DMG');
+      await openForm(tester, [damaged], defective: defective);
+      final dynamic form = tester.state(find.byType(WorkOrderProduceInventoryPage));
+      final transaction = form.generateWorkOrderProduceTransaction(
+          'L0000116016', damaged, ItemPackageType()..id = 2, 5, null);
+      final json = transaction.toJson() as Map<String, dynamic>;
+      expect(json['suppressLabelPrinting'], defective);
+      expect(transaction.workOrderProducedInventories.single.toJson()['lpn'], 'L0000116016');
+      expect(transaction.workOrderProducedInventories.single.toJson()['quantity'], 5);
+    });
+  }
   testWidgets('BOM lookup is shared across dependency changes, including null',
       (tester) async {
     var calls = 0;

@@ -33,6 +33,9 @@ class WorkOrderProduceTransaction{
   ReasonCode? reasonCode;
   String? rfCode;
 
+  // QC uses preprinted labels; suppress backend printing for this request only.
+  bool suppressLabelPrinting = false;
+
 
 
 

@@ -1358,6 +1358,7 @@ class _WorkOrderProduceInventoryPageState
     workOrderProduceTransaction.productionLine = _currentProductionLine;
 
     workOrderProduceTransaction.rfCode = Global.getLastLoginRFCode();
+    workOrderProduceTransaction.suppressLabelPrinting = widget.defective;
 
     workOrderProduceTransaction.workOrderKPITransactions = [];
 
