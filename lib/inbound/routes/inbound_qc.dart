@@ -2,19 +2,22 @@ import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
-import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/material.dart';
 import '../../shared/services/barcode_service.dart';
 import '../../shared/models/barcode.dart';
+import '../services/inbound_qc_service.dart';
 
 // Page to allow the user scan in an LPN and start the put away process
 // The LPN can be in receiving stage / storage location / etc
 // with or without any pre-assigned destination
 class InboundQCPage extends StatefulWidget {
-  InboundQCPage({Key? key}) : super(key: key);
+  InboundQCPage({super.key, this.inventoryLoader, this.requestLoader});
+
+  final Future<List<Inventory>> Function(String lpn)? inventoryLoader;
+  final Future<InboundQCRequests> Function(Inventory inventory)? requestLoader;
 
   @override
   State<StatefulWidget> createState() => _InboundQCPageState();
@@ -29,7 +32,8 @@ class _InboundQCPageState extends State<InboundQCPage> {
   String _lpn = "";
   bool _readyForQCResult = false;
   Inventory? _inventoryForQC;
-  int _selectedInventoryIndex = 0;
+  bool _busy = false;
+  String? _qcMessage;
 
   FocusNode _lpnFocusNode = FocusNode();
   FocusNode _startQCButtonFocusNode = FocusNode();
@@ -44,24 +48,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
     _inventoryForQC = null;
 
     _lpnFocusNode.addListener(() {
-      print("lpnFocusNode.hasFocus: ${_lpnFocusNode.hasFocus}");
       if (!_lpnFocusNode.hasFocus && _lpnController.text.isNotEmpty) {
-        // if we tab out, then add the LPN to the list
-        // allow the user to input barcode
-
-        Barcode barcode = BarcodeService.parseBarcode(_lpnController.text);
-        if (barcode.is_2d == true) {
-          // for 2d barcode, let's get the result and set the LPN back to the text
-          String lpn = BarcodeService.getLPN(barcode);
-          printLongLogMessage("get lpn from lpn?: ${lpn}");
-          if (lpn == "") {
-            showErrorDialog(context, "can't get LPN from the barcode");
-            return;
-          } else {
-            _lpnController.text = lpn;
-          }
-        }
-
         _onLPNScanned();
       }
     });
@@ -71,9 +58,17 @@ class _InboundQCPageState extends State<InboundQCPage> {
   }
 
   @override
+  void dispose() {
+    _lpnController.dispose();
+    _lpnFocusNode.dispose();
+    _startQCButtonFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Claytech One - Inventory QC")),
+      appBar: AppBar(title: const Text("Inbound QC")),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -85,6 +80,13 @@ class _InboundQCPageState extends State<InboundQCPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _buildLPNScanner(context),
+                    if (_busy) const LinearProgressIndicator(),
+                    if (_qcMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Text(_qcMessage!,
+                            key: const Key('inbound-qc-message')),
+                      ),
                     const SizedBox(height: 12),
                     _buildButtons(context)
                   ]),
@@ -140,6 +142,8 @@ class _InboundQCPageState extends State<InboundQCPage> {
       controller: _lpnController,
       focusNode: _lpnFocusNode,
       autofocus: true,
+      readOnly: _busy,
+      onFieldSubmitted: (_) => _onLPNScanned(),
       decoration: InputDecoration(
         labelText: CWMSLocalizations.of(context).lpn,
         hintText: "Scan or enter LPN",
@@ -148,7 +152,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
         fillColor: Theme.of(context)
             .colorScheme
             .surfaceContainerHighest
-            .withOpacity(.45),
+            .withValues(alpha: .45),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none),
@@ -178,7 +182,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
   Widget _secondaryButton(BuildContext context, IconData icon, String label,
       VoidCallback onPressed) {
     return ElevatedButton.icon(
-      onPressed: onPressed,
+      onPressed: _busy ? null : onPressed,
       icon: Icon(icon, size: 19),
       label: Text(label),
       style: ElevatedButton.styleFrom(
@@ -240,7 +244,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
       context,
       ElevatedButton(
           focusNode: _startQCButtonFocusNode,
-          onPressed: _readyForQCResult ? _onStartQC : null,
+          onPressed: _readyForQCResult && !_busy ? _onStartQC : null,
           style: ElevatedButton.styleFrom(
             minimumSize: const Size.fromHeight(54),
             elevation: 0,
@@ -253,176 +257,170 @@ class _InboundQCPageState extends State<InboundQCPage> {
     );
   }
 
-  _onStartQC() async {
-    // get the qc inspection request from the qc sample and
-    // flow to the QC inspection page
-
-    showLoading(context);
+  Future<void> _onStartQC() async {
+    final inventory = _inventoryForQC;
+    if (_busy || inventory == null || !_readyForQCResult) return;
+    setState(() {
+      _busy = true;
+      _qcMessage = null;
+    });
     try {
-      List<QCInspectionRequest> qcInspectionRequests =
-          await InventoryService.getPendingQCInspectionRequest(
-              _inventoryForQC!);
-
-      printLongLogMessage("find ${qcInspectionRequests.length} qc request");
-      Navigator.of(context).pop();
-      if (qcInspectionRequests.isEmpty) {
-        showWarningDialog(
-            context, CWMSLocalizations.of(context).inventoryNotQCRequired);
-      } else {
-        int qcInspectionRequestItemsCount = 0;
-        for (final qcInspectionRequest in qcInspectionRequests) {
-          if (qcInspectionRequest.qcInspectionRequestItems.isNotEmpty) {
-            await Navigator.of(context)
-                .pushNamed("qc_inspection", arguments: qcInspectionRequest);
-            qcInspectionRequestItemsCount +=
-                qcInspectionRequest.qcInspectionRequestItems.length;
-          }
-        }
-        _onClear();
-        if (qcInspectionRequestItemsCount == 0) {
-          showWarningDialog(
-              context, CWMSLocalizations.of(context).inventoryNotQCRequired);
-        }
+      final result = await (widget.requestLoader?.call(inventory) ??
+          InboundQCService.loadRequests(inventory));
+      if (!mounted) return;
+      final requests = result.requests
+          .where((request) => request.qcInspectionRequestItems.any((item) =>
+              item.qcInspectionRequestItemOptions
+                  .any((option) => option.qcRuleItem?.enabled == true)))
+          .toList();
+      if (requests.isEmpty) {
+        setState(() {
+          _qcMessage = result.requests.isEmpty
+              ? 'No pending inspection was found for this LPN. Check its QC history or ask an administrator to review the task.'
+              : 'This QC task has no enabled inspection checks. Ask an administrator to check the QC rule configuration.';
+        });
+        return;
       }
+      if (result.recoveredLegacy) {
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Unfinished QC task'),
+            content: const Text(
+                'This legacy task has a PASS summary, but all checkpoints are pending and no inspection time is recorded. Complete the inspection before submitting.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('OK'),
+              )
+            ],
+          ),
+        );
+        if (!mounted) return;
+      }
+      for (final request in requests) {
+        await Navigator.of(context)
+            .pushNamed('qc_inspection', arguments: request);
+        if (!mounted) return;
+      }
+      _onClear();
     } on WebAPICallException catch (ex) {
-      printLongLogMessage("error while starting qc for work order");
-
-      Navigator.of(context).pop();
-      showErrorDialog(context, ex.errMsg());
-      return;
+      if (mounted) showErrorDialog(context, ex.errMsg());
+    } catch (_) {
+      if (mounted)
+        showErrorDialog(context,
+            'Could not load the QC inspection. Check your connection and try again.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
-  _onLPNScanned() async {
-    String lpn = _lpnController.text;
-    if (lpn.isNotEmpty) {
-      showLoading(context);
-      try {
-        List<Inventory> inventoryList =
-            await InventoryService.findInventory(lpn: lpn);
-
-        printLongLogMessage(
-            "get ${inventoryList.length} inventory by lpn $lpn");
-        printLongLogMessage("hide the loading prompt");
-        Navigator.of(context).pop();
-        // TO-DO, we will support only one inventory record for now
-        if (inventoryList.length == 1) {
-          // ok, we find only one
-          _inventoryForQC = inventoryList.first;
-          setupDisplay(_inventoryForQC!);
-        } else if (inventoryList.length > 1) {
-          // now we only allow qc by inventory, prompt dialog to let the user
-          // choose only one inventory
-          _showInventoryDialog(inventoryList);
-          if (_inventoryForQC != null) {
-            setupDisplay(_inventoryForQC!);
-          }
-        }
-      } on WebAPICallException catch (ex) {
-        Navigator.of(context).pop();
-        showErrorDialog(context, ex.errMsg());
+  Future<void> _onLPNScanned() async {
+    if (_busy) return;
+    var lpn = _lpnController.text.trim();
+    if (lpn.isEmpty) return;
+    final Barcode barcode = BarcodeService.parseBarcode(lpn);
+    if (barcode.is_2d == true) {
+      lpn = BarcodeService.getLPN(barcode).trim();
+      if (lpn.isEmpty) {
+        showErrorDialog(context, "Can't get LPN from the barcode");
         return;
       }
     }
+    setState(() {
+      _busy = true;
+      _inventoryForQC = null;
+      _readyForQCResult = false;
+      _itemName = _itemDescription = _lpn = '';
+      _qcMessage = null;
+    });
+    try {
+      final inventoryList = await (widget.inventoryLoader?.call(lpn) ??
+          InventoryService.findInventory(lpn: lpn));
+      if (!mounted) return;
+      if (inventoryList.isEmpty) {
+        setState(() => _qcMessage = 'No inventory found for LPN $lpn.');
+        return;
+      }
+      final selected = inventoryList.length == 1
+          ? inventoryList.first
+          : await _showInventoryDialog(inventoryList);
+      if (!mounted || selected == null) return;
+      setupDisplay(selected);
+    } on WebAPICallException catch (ex) {
+      if (mounted) showErrorDialog(context, ex.errMsg());
+    } catch (_) {
+      if (mounted)
+        showErrorDialog(context,
+            'Could not load this LPN. Check your connection and try again.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
-  setupDisplay(Inventory inventory) {
+  void setupDisplay(Inventory inventory) {
     setState(() {
-      _itemName = inventory.item!.name ?? "";
-      _itemDescription = inventory.item!.description ?? "";
-      _lpn = inventory.lpn!;
-
-      // check if the inventory needs qc
-      if (inventory.inboundQCRequired == false) {
-        // showWarningDialog(context,  CWMSLocalizations.of(context).inventoryNotQCRequired);
-        _readyForQCResult = false;
-      } else {
-        _readyForQCResult = true;
-      }
-
+      _inventoryForQC = inventory;
+      _itemName = inventory.item?.name ?? '';
+      _itemDescription = inventory.item?.description ?? '';
+      _lpn = inventory.lpn ?? '';
+      _readyForQCResult = inventory.inboundQCRequired == true;
+      _qcMessage = _readyForQCResult
+          ? null
+          : 'This LPN is not awaiting inbound QC. Review its QC history if an inspection was already completed.';
       _lpnController.clear();
     });
   }
 
-  _onClear() {
+  void _onClear() {
     setState(() {
-      _itemName = "";
-      _itemDescription = "";
-      _lpn = "";
+      _itemName = _itemDescription = _lpn = '';
       _readyForQCResult = false;
       _inventoryForQC = null;
-
+      _qcMessage = null;
       _lpnController.clear();
-      _lpnFocusNode.requestFocus();
     });
+    _lpnFocusNode.requestFocus();
   }
 
-  // prompt a dialog for user to choose valid orders
-  Future<void> _showInventoryDialog(List<Inventory> inventoryList) async {
-    await showDialog<bool>(
+  Future<Inventory?> _showInventoryDialog(List<Inventory> inventories) {
+    int selectedIndex = 0;
+    return showDialog<Inventory>(
       context: context,
-      builder: (BuildContext context) {
-        var child = Column(
-          children: <Widget>[
-            Row(
-              children: [
-                ElevatedButton(
-                  child: Text(CWMSLocalizations.of(context).cancel),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                ElevatedButton(
-                  child: Text(CWMSLocalizations.of(context).confirm),
-                  onPressed: () {
-                    _confirmInvenotrySelection(inventoryList);
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Select inventory for QC'),
+          content: SizedBox(
+            width: 420,
+            height: 300,
+            child: ListView.builder(
+              itemCount: inventories.length,
+              itemBuilder: (context, index) {
+                final inventory = inventories[index];
+                return ListTile(
+                  selected: selectedIndex == index,
+                  leading: Icon(selectedIndex == index
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off),
+                  title: Text(inventory.item?.name ?? inventory.lpn ?? ''),
+                  subtitle: Text(
+                      '${inventory.lpn ?? ""} · Qty ${inventory.quantity ?? 0}'),
+                  onTap: () => setDialogState(() => selectedIndex = index),
+                );
+              },
             ),
-            _buildInventoryList(context, inventoryList)
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(CWMSLocalizations.of(context).cancel)),
+            TextButton(
+                onPressed: () =>
+                    Navigator.of(dialogContext).pop(inventories[selectedIndex]),
+                child: Text(CWMSLocalizations.of(context).confirm)),
           ],
-        );
-        //使用AlertDialog会报错
-        //return AlertDialog(content: child);
-        return Dialog(child: child);
-      },
+        ),
+      ),
     );
-  }
-
-  Widget _buildInventoryList(
-      BuildContext context, List<Inventory> inventoryList) {
-    return Expanded(
-      child: ListView.builder(
-          itemCount: inventoryList.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Ink(
-                color: _selectedInventoryIndex == index
-                    ? Colors.lightGreen
-                    : Colors.grey,
-                child: ListTile(
-                  dense: true,
-                  onTap: () {
-                    setState(() {
-                      _selectedInventoryIndex = index;
-                    });
-                  },
-                  title: Text(
-                    inventoryList[index].lpn ?? "",
-                    style: TextStyle(
-                      height: 1.15,
-                      color: Colors.blueGrey[700],
-                      fontSize: 17,
-                    ),
-                  ),
-                  subtitle: Text(inventoryList[index].item?.description ?? ""),
-                ));
-          }),
-    );
-  }
-
-  void _confirmInvenotrySelection(List<Inventory> inventoryList) {
-    setState(() {
-      _inventoryForQC = inventoryList[_selectedInventoryIndex];
-    });
   }
 }

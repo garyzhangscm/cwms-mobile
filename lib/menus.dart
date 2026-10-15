@@ -105,11 +105,6 @@ class _MenusState extends State<Menus> {
                                           fontSize: 20,
                                           fontWeight: FontWeight.w700,
                                           color: workspaceNavy)),
-                                  const Spacer(),
-                                  if (!_loading && !_failed)
-                                    Text('${groups.length}',
-                                        style: const TextStyle(
-                                            color: Color(0xFF748297)))
                                 ]),
                                 const SizedBox(height: 16),
                                 if (_loading)

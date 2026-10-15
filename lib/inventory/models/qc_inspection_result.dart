@@ -1,7 +1,1 @@
-enum QCInspectionResult{
-  PENDING,
-  PASS,
-  FAIL,
-  SKIPPED,
-  CANCELLED
-}
+enum QCInspectionResult { PENDING, PASS, FAIL, SKIPPED, NOT_APPLY, CANCELLED }

@@ -12,32 +12,38 @@ QCInspectionRequest _$QCInspectionRequestFromJson(Map<String, dynamic> json) {
     ..warehouseId = json['warehouseId']
     ..qcQuantity = json['qcQuantity']
     ..number = json['number']
+    ..type = json['type'] as String?
     ..inventory = json['inventory'] == null
         ? null
         : Inventory.fromJson(json['inventory'] as Map<String, dynamic>)
     ..workOrderQCSampleId = json['workOrderQCSampleId']
     ..qcInspectionResult = json['qcInspectionResult'] == null
-        ? null : EnumToString.fromString(QCInspectionResult.values, json['qcInspectionResult'] as String)
-    ..qcUsername = json['qcUsername']
-    ..qcTime = json['qcTime'] == null
         ? null
-        : DateTime.parse(json['qcTime'] as String)
-    ..qcInspectionRequestItems = json['qcInspectionRequestItems'] == null ?
-        [] :
-        (json['qcInspectionRequestItems'] as List)
-        .map(
-            (e) =>  QCInspectionRequestItem.fromJson(e as Map<String, dynamic>))
-        .toList();
+        : EnumToString.fromString(
+            QCInspectionResult.values, json['qcInspectionResult'] as String)
+    ..qcUsername = json['qcUsername']
+    ..qcTime =
+        json['qcTime'] == null ? null : DateTime.parse(json['qcTime'] as String)
+    ..qcInspectionRequestItems = json['qcInspectionRequestItems'] == null
+        ? []
+        : (json['qcInspectionRequestItems'] as List)
+            .map((e) =>
+                QCInspectionRequestItem.fromJson(e as Map<String, dynamic>))
+            .toList();
 }
 
-Map<String, dynamic> _$QCInspectionRequestToJson(QCInspectionRequest instance) => <String, dynamic>{
+Map<String, dynamic> _$QCInspectionRequestToJson(
+        QCInspectionRequest instance) =>
+    <String, dynamic>{
       'id': instance.id,
       'warehouseId': instance.warehouseId,
       'number': instance.number,
+      'type': instance.type,
       'inventory': instance.inventory,
       'qcQuantity': instance.qcQuantity,
       'workOrderQCSampleId': instance.workOrderQCSampleId,
-      'qcInspectionResult': EnumToString.convertToString(instance.qcInspectionResult),
+      'qcInspectionResult':
+          EnumToString.convertToString(instance.qcInspectionResult),
       'qcUsername': instance.qcUsername,
       'qcTime': instance.qcTime,
       'qcInspectionRequestItems': instance.qcInspectionRequestItems,
