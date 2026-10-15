@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-15",
+  "timezone": "America/Los_Angeles",
+  "sourceCommit": "b1b69d9e9a3d816dd3e72803b3444d7336d3d8d0",
+  "appId": "0ff64904-5fd2-4b65-96ec-896a0e29afcc",
+  "publications": [
+    {
+      "platform": "android",
+      "release": "1.62.4+5",
+      "patch": 13,
+      "track": "stable",
+      "active": true,
+      "artifacts": [
+        {
+          "architecture": "arm",
+          "sha256": "8f4dc32fdca743adaa06b536e51f601b11940a23f3dbe911c8080679c9a89f4e",
+          "bytes": 1685163
+        },
+        {
+          "architecture": "aarch64",
+          "sha256": "2e603fd16b7ba2a56dedcf2e5eade87f55605a47dcea9ccd73fccb841edc76ec",
+          "bytes": 1624096
+        },
+        {
+          "architecture": "x86_64",
+          "sha256": "ea255da3cd686d94651a56ff3c16a8ca0573c7456a4ba8b32ae012f2dfd2a4cd",
+          "bytes": 1609657
+        }
+      ]
+    },
+    {
+      "platform": "ios",
+      "release": "1.62.4+6",
+      "patch": 2,
+      "track": "stable",
+      "active": true,
+      "artifacts": [
+        {
+          "architecture": "aarch64",
+          "sha256": "87279115b85b59a705207fda9055d9f6104df5ebe1cf191cb15139eafbbdb8c7",
+          "bytes": 2470062
+        }
+      ]
+    }
+  ]
+}
