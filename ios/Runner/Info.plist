@@ -28,6 +28,13 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Scan warehouse barcodes and capture quality-control photos.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Connect to your factory's internal MES server and warehouse equipment.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Save quality-control photos to the photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

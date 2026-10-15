@@ -128,7 +128,9 @@ void main() {
   });
 
   Future<void> mount(WidgetTester tester, OtaUpdateController controller,
-      {VoidCallback? close, VoidCallback? action}) async {
+      {VoidCallback? close,
+      VoidCallback? action,
+      OtaHostPlatform platform = OtaHostPlatform.android}) async {
     final key = GlobalKey<NavigatorState>();
     await tester.pumpWidget(MaterialApp(
       navigatorKey: key,
@@ -137,7 +139,7 @@ void main() {
           navigatorKey: key,
           child: child!,
           updateController: controller,
-          androidEnabled: true,
+          hostPlatform: platform,
           releaseVersion: '1.62.4+5',
           closeApp: close),
       home: Scaffold(
@@ -148,6 +150,40 @@ void main() {
                   child: const Text('Business operation')))),
     ));
   }
+
+  testWidgets('iOS offers manual restart instructions and never exits the app',
+      (tester) async {
+    final controller = OtaUpdateController(
+        gateway: FakeGateway(), loadPolicy: () async => const OtaPolicy());
+    var closed = false;
+    await mount(tester, controller,
+        platform: OtaHostPlatform.ios, close: () => closed = true);
+    await controller.check();
+    await tester.pumpAndSettle();
+    expect(find.text('App update ready'), findsOneWidget);
+    await tester.tap(find.text('How to apply update'));
+    await tester.pumpAndSettle();
+    expect(find.text('Apply downloaded update'), findsOneWidget);
+    expect(find.textContaining('app switcher'), findsOneWidget);
+    expect(find.text('Close app'), findsNothing);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(closed, isFalse);
+    expect(find.text('Business operation'), findsOneWidget);
+    await tester.tap(find.text('Later'));
+    await tester.pumpAndSettle();
+    expect(find.text('App update ready'), findsNothing);
+  });
+
+  testWidgets('non-mobile runtime does not show a mobile update prompt',
+      (tester) async {
+    final controller = OtaUpdateController(
+        gateway: FakeGateway(), loadPolicy: () async => const OtaPolicy());
+    await mount(tester, controller, platform: OtaHostPlatform.unsupported);
+    await controller.check();
+    await tester.pumpAndSettle();
+    expect(find.text('App update ready'), findsNothing);
+  });
 
   testWidgets('normal prompt leaves the page usable and Later hides it',
       (tester) async {

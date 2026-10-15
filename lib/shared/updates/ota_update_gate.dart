@@ -9,7 +9,9 @@ import '../global.dart';
 import 'ota_update_controller.dart';
 import 'update_activity.dart';
 
-/// Dart-only: compatible with the existing Android Shorebird baseline.
+enum OtaHostPlatform { android, ios, unsupported }
+
+/// Dart-only manager shared by the Android and iOS Shorebird baselines.
 /// Closing is explicit, with a warning about unsaved input; there is no timer
 /// that kills the process while a production transaction is running.
 class OtaUpdateGate extends StatefulWidget {
@@ -19,12 +21,14 @@ class OtaUpdateGate extends StatefulWidget {
       required this.navigatorKey,
       this.updateController,
       this.androidEnabled,
+      this.hostPlatform,
       this.closeApp,
       this.releaseVersion});
   final Widget child;
   final GlobalKey<NavigatorState> navigatorKey;
   final OtaUpdateController? updateController;
   final bool? androidEnabled;
+  final OtaHostPlatform? hostPlatform;
   final VoidCallback? closeApp;
   final String? releaseVersion;
   @override
@@ -41,7 +45,16 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
   DateTime lastCheck = DateTime.fromMillisecondsSinceEpoch(0);
   bool closing = false;
   bool enforcing = false;
-  bool get enabled => widget.androidEnabled ?? Platform.isAndroid;
+  OtaHostPlatform get hostPlatform =>
+      widget.hostPlatform ??
+      (Platform.isIOS
+          ? OtaHostPlatform.ios
+          : Platform.isAndroid
+              ? OtaHostPlatform.android
+              : OtaHostPlatform.unsupported);
+  bool get isIOS => hostPlatform == OtaHostPlatform.ios;
+  bool get enabled =>
+      widget.androidEnabled ?? hostPlatform != OtaHostPlatform.unsupported;
   @override
   void initState() {
     super.initState();
@@ -74,6 +87,10 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
   }
 
   Future<OtaPolicy> _loadPolicy() async {
+    // The existing MES endpoint contains Android-only minimum-patch rules.
+    // iOS patches have their own numbering and must never inherit those rules.
+    // iOS still checks/downloads patches, using ordinary update prompts.
+    if (isIOS) return const OtaPolicy();
     final server = Global.currentServer?.url;
     if (server != policyServer) {
       policyServer = server;
@@ -144,6 +161,22 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
     if (dialogContext == null) {
       setState(() => closing = false);
       return;
+    }
+    if (isIOS) {
+      await showDialog<void>(
+          context: dialogContext,
+          builder: (context) => AlertDialog(
+                title: const Text('Apply downloaded update'),
+                content: const Text(
+                    'Finish your current task and check its result. Open the app switcher, swipe Claytech One up to close it, then reopen the app to apply the update.'),
+                actions: [
+                  FilledButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'))
+                ],
+              ));
+      if (mounted) setState(() => closing = false);
+      return; // Never call exit(0) or the Android close callback on iOS.
     }
     final confirmed = await showDialog<bool>(
         context: dialogContext,
@@ -240,8 +273,9 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
                                                       ? null
                                                       : () =>
                                                           _close(innerContext),
-                                                  child: const Text(
-                                                      'Close and reopen')),
+                                                  child: Text(isIOS
+                                                      ? 'How to apply update'
+                                                      : 'Close and reopen')),
                                             ]),
                                           ])),
                                 ))),

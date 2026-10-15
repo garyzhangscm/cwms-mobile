@@ -27,7 +27,22 @@ native relaunch.
 
 The first installation of this manager still requires one manual restart to
 receive the bootstrap patch. It cannot change how already running old code works.
-The iOS update path is not enabled by this Android change.
+## iOS baseline and ordinary updates
+
+The iOS baseline is built with `shorebird release ios`, in the same Shorebird
+project as Android and the existing Apple App Store Connect app. A normal
+`flutter build ipa` does not include the Shorebird engine and cannot receive
+patches. Employees must install the OTA-enabled baseline through TestFlight
+first. Android remains on `1.62.4+5`; iOS uses its own Apple build number.
+
+The manager checks and downloads on iOS too. **How to apply update** explains how
+to close Claytech One from the app switcher and reopen it. It never invokes the
+Android process-exit action on iOS. All existing request and production-operation
+guards still apply before showing an update prompt.
+
+iOS uses ordinary update prompts. It does not query the current Android-only MES
+minimum-patch endpoint, because iOS patch numbers are independent. Adding an iOS
+mandatory-update policy requires a separately scoped backend rule first.
 
 ## Server rule
 
