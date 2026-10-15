@@ -12,6 +12,7 @@ class QCInspectionItemOptionListItem extends StatefulWidget {
     this.value,
     this.onChanged,
     this.enabled = true,
+    this.reviewEnabled = true,
   }) : super(
           key: ValueKey(
             qcInspectionRequestItemOption.id ??
@@ -22,6 +23,7 @@ class QCInspectionItemOptionListItem extends StatefulWidget {
   final Object? value;
   final VoidCallback? onChanged;
   final bool enabled;
+  final bool reviewEnabled;
   @override
   State<QCInspectionItemOptionListItem> createState() =>
       _QCInspectionItemOptionListItemState();
@@ -65,7 +67,8 @@ class _QCInspectionItemOptionListItemState
     final option = widget.qcInspectionRequestItemOption;
     final kind = option.qcRuleItem?.qcRuleItemType;
     final labels = QCReviewStrings(context);
-    final failed = QCFailureReview.evaluate(option) == QCInspectionResult.FAIL;
+    final failed = widget.reviewEnabled &&
+        QCFailureReview.evaluate(option) == QCInspectionResult.FAIL;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -157,7 +160,7 @@ class _QCInspectionItemOptionListItemState
                     _changed();
                   },
                 ),
-              if (failed) ...[
+              if (failed && widget.reviewEnabled) ...[
                 const SizedBox(height: 14),
                 Semantics(
                   liveRegion: true,

@@ -18,20 +18,59 @@ class QCInspectionService {
     bool failureAcknowledged = false,
     Dio? client,
   }) async {
+    return _save(requests,
+        failureAcknowledged: failureAcknowledged,
+        client: client,
+        reviewed: true);
+  }
+
+  /// Luggage keeps its existing contract until its backend is upgraded.
+  /// Do not use this method for factories with confirmed QC support.
+  static Future<List<QCInspectionRequest>> saveLegacyQCInspectionRequest(
+    List<QCInspectionRequest> requests, {
+    bool failureAcknowledged = false,
+    Dio? client,
+  }) async {
+    if (Global.currentFactory?.id != 'mira-loma-luggage') {
+      throw QCSubmissionException(
+          'This factory requires the confirmed QC interface.');
+    }
+    return _save(requests,
+        failureAcknowledged: false, client: client, reviewed: false);
+  }
+
+  static Future<List<QCInspectionRequest>> _save(
+    List<QCInspectionRequest> requests, {
+    required bool reviewed,
+    required bool failureAcknowledged,
+    Dio? client,
+  }) async {
     final http = client ?? CWMSHttpClient.getDio();
+    final payload = jsonDecode(jsonEncode(requests)) as List;
+    if (!reviewed) {
+      for (final request in payload) {
+        for (final group in request['qcInspectionRequestItems'] ?? []) {
+          for (final option in group['qcInspectionRequestItemOptions'] ?? []) {
+            option.remove('exceptionNotes');
+          }
+        }
+      }
+    }
     try {
       final response = await http.post(
-        '/inventory/qc-inspection-requests/confirmed',
+        reviewed
+            ? '/inventory/qc-inspection-requests/confirmed'
+            : '/inventory/qc-inspection-requests',
         queryParameters: {
           'warehouseId': Global.currentWarehouse!.id,
-          'failureAcknowledged': failureAcknowledged,
+          if (reviewed) 'failureAcknowledged': failureAcknowledged,
           'rfCode': Global.getLastLoginRFCode(),
         },
         options: Options(
           sendTimeout: const Duration(seconds: 20),
           receiveTimeout: const Duration(seconds: 40),
         ),
-        data: jsonEncode(requests),
+        data: jsonEncode(payload),
       );
       final body = _body(response);
       if (body['data'] is! List)

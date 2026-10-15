@@ -400,8 +400,8 @@ class _InboundQCPageState extends State<InboundQCPage> {
                 return ListTile(
                   selected: selectedIndex == index,
                   leading: Icon(selectedIndex == index
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off),
+                      ? Icons.check_circle
+                      : Icons.check_circle_outline),
                   title: Text(inventory.item?.name ?? inventory.lpn ?? ''),
                   subtitle: Text(
                       '${inventory.lpn ?? ""} · Qty ${inventory.quantity ?? 0}'),

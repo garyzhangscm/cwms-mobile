@@ -42,6 +42,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
   final _formKey = GlobalKey<FormState>();
 
   bool _busy = false, _loading = false, _uncertain = false;
+  bool _reviewEnabled = true;
   String? _prepareError;
   String? _serverUrl;
   int? _warehouseId;
@@ -52,11 +53,13 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     if (_qcInspectionRequest != null) return;
     _qcInspectionRequest =
         ModalRoute.of(context)?.settings.arguments as QCInspectionRequest;
+    _reviewEnabled = Global.currentFactory?.id != 'mira-loma-luggage';
     _serverUrl = Global.currentServer?.url;
     _warehouseId = Global.currentWarehouse?.id;
     _qcQuantityController.text =
         _qcInspectionRequest!.qcQuantity?.toString() ?? '';
-    if (widget.prepare != null || _qcInspectionRequest!.id != null) {
+    if (_reviewEnabled &&
+        (widget.prepare != null || _qcInspectionRequest!.id != null)) {
       _loading = true;
       Future.microtask(_prepareRequest);
     }
@@ -367,6 +370,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
               enabledQCInspectionRequestItemOptions[index],
           value: _getOptionValue(enabledQCInspectionRequestItemOptions[index]),
           enabled: !_busy,
+          reviewEnabled: _reviewEnabled,
           onChanged: () {
             if (mounted) setState(() {});
           },
@@ -579,7 +583,8 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
             .where(
               (o) =>
                   QCFailureReview.evaluate(o) == QCInspectionResult.PENDING ||
-                  QCFailureReview.evaluate(o) == QCInspectionResult.FAIL &&
+                  _reviewEnabled &&
+                      QCFailureReview.evaluate(o) == QCInspectionResult.FAIL &&
                       !QCFailureReview.validNotes(o),
             )
             .toList();
@@ -597,7 +602,9 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
         }
         if (!(_formKey.currentState?.validate() ?? false)) return;
         FocusScope.of(context).unfocus();
-        final failures = QCFailureReview.failures(request);
+        final failures = _reviewEnabled
+            ? QCFailureReview.failures(request)
+            : <QCInspectionRequestItemOption>[];
         final acknowledged =
             failures.isNotEmpty && await _confirmFailures(failures);
         if (!mounted || failures.isNotEmpty && !acknowledged) return;
@@ -605,7 +612,10 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
           await _message('The factory changed. Reopen this inspection.');
           return;
         }
-        await (widget.submit ?? QCInspectionService.saveQCInspectionRequest)([
+        await (widget.submit ??
+            (_reviewEnabled
+                ? QCInspectionService.saveQCInspectionRequest
+                : QCInspectionService.saveLegacyQCInspectionRequest))([
           QCFailureReview.submission(request),
         ], failureAcknowledged: acknowledged);
         if (!mounted || !_sameFactory) return;

@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/models/factory_profile.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -56,7 +57,10 @@ class Adapter implements HttpClientAdapter {
 }
 
 void main() {
-  setUp(() => Global.currentWarehouse = Warehouse()..id = 1);
+  setUp(() {
+    Global.currentWarehouse = Warehouse()..id = 1;
+    Global.currentFactory = null;
+  });
   test(
       'confirmed contract includes acknowledgement and notes; no legacy fallback',
       () async {
@@ -219,6 +223,55 @@ void main() {
     await t.pump();
     await t.pump(const Duration(milliseconds: 500));
     expect(find.text('Confirm'), findsOneWidget);
+    expect(t.takeException(), isNull);
+  });
+  test(
+      'only Luggage may use the legacy contract, without unsupported notes fields',
+      () async {
+    Global.currentFactory = FactoryProfile.byId('mira-loma-luggage');
+    final a = Adapter((o) async => ResponseBody.fromString(
+            jsonEncode({
+              'result': 0,
+              'data': [fixture().toJson()]
+            }),
+            200,
+            headers: {
+              Headers.contentTypeHeader: ['application/json']
+            }));
+    final d = Dio(BaseOptions(baseUrl: 'https://example.test'))
+      ..httpClientAdapter = a;
+    final r = fixture();
+    r.qcInspectionRequestItems.first.qcInspectionRequestItemOptions.first
+        .exceptionNotes = 'not supported';
+    await QCInspectionService.saveLegacyQCInspectionRequest([r], client: d);
+    expect(a.calls.single.path, '/inventory/qc-inspection-requests');
+    expect(a.calls.single.queryParameters.containsKey('failureAcknowledged'),
+        false);
+    expect(a.calls.single.data, isNot(contains('exceptionNotes')));
+    Global.currentFactory = FactoryProfile.byId('colton-injection');
+    await expectLater(
+        QCInspectionService.saveLegacyQCInspectionRequest([r], client: d),
+        throwsA(isA<QCSubmissionException>()));
+    expect(a.calls, hasLength(1));
+  });
+  testWidgets(
+      'Luggage retains legacy QC without calling prepare or requiring new notes',
+      (t) async {
+    Global.currentFactory = FactoryProfile.byId('mira-loma-luggage');
+    int calls = 0;
+    await page(t, (r, {required failureAcknowledged}) async {
+      calls++;
+      expect(failureAcknowledged, false);
+      return r;
+    });
+    await t.tap(find.byKey(const ValueKey('qc-yes-10')));
+    await t.pump();
+    expect(find.byKey(const ValueKey('qc-notes-10')), findsNothing);
+    await t.tap(find.widgetWithText(ElevatedButton, 'Confirm'));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 500));
+    expect(calls, 1);
+    expect(find.text('Confirm and submit Fail'), findsNothing);
     expect(t.takeException(), isNull);
   });
 }
