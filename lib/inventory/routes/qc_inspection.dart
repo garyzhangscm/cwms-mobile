@@ -267,15 +267,17 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              Text(
-                'QUALITY CHECK',
+              Expanded(
+                  child: Text(
+                QCReviewStrings(context)
+                    .choose('QUALITY CHECK', '质量检查', '品質檢查'),
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: const Color(0xFFBFD5FF),
                   letterSpacing: 1.4,
                   fontWeight: FontWeight.w700,
                 ),
-              ),
-              const Spacer(),
+              )),
+              const SizedBox(width: 8),
               Text(
                 '$step / $total',
                 style: theme.textTheme.labelLarge?.copyWith(
@@ -295,7 +297,9 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            '$completed of ${enabled.length} checks completed',
+            Localizations.localeOf(context).languageCode == 'es'
+                ? '$completed de ${enabled.length} puntos completados'
+                : '$completed of ${enabled.length} checks completed',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: const Color(0xFFD8E4F7),
             ),
@@ -352,10 +356,12 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
     );
 
     if (enabledQCInspectionRequestItemOptions.isEmpty) {
-      return const Expanded(
+      return Expanded(
         child: Center(
           child: Text(
-            'No enabled inspection checks are available for this rule. Ask an administrator to review the QC configuration.',
+            QCReviewStrings(context).choose(
+                'No enabled inspection checks are available for this rule. Ask an administrator to review the QC configuration.',
+                '此规则没有已启用的检查项，请联系管理员检查质检配置。'),
             textAlign: TextAlign.center,
           ),
         ),
@@ -528,7 +534,10 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              option.qcRuleItem?.checkPoint ?? '',
+                              option.qcRuleItem?.displayCheckPoint(
+                                      Localizations.localeOf(context)
+                                          .languageCode) ??
+                                  '',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),

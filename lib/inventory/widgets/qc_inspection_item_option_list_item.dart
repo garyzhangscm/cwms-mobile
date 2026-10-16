@@ -86,7 +86,9 @@ class _QCInspectionItemOptionListItemState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                option.qcRuleItem?.checkPoint ?? '',
+                option.qcRuleItem?.displayCheckPoint(
+                        Localizations.localeOf(context).languageCode) ??
+                    '',
                 style: const TextStyle(
                   height: 1.3,
                   fontSize: 17,

@@ -203,12 +203,14 @@ class MyApp extends StatelessWidget {
             //我们只支持美国英语和中文简体
             supportedLocales: [
               const Locale('en', 'US'), // 美国英语
+              const Locale('es', 'US'), // Spanish
               const Locale('zh', 'CN'), // 中文简体
               //其它Locales
             ],
             localizationsDelegates: [
               // 本地化的代理类
               GlobalMaterialLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               CWMSLocalizationsDelegate()
             ],
@@ -220,8 +222,11 @@ class MyApp extends StatelessWidget {
               } else {
                 //跟随系统
                 Locale locale;
-                if (supportedLocales.contains(_locale)) {
-                  locale = _locale!;
+                if (_locale != null &&
+                    supportedLocales.any((value) =>
+                        value.languageCode == _locale.languageCode)) {
+                  locale = supportedLocales.firstWhere(
+                      (value) => value.languageCode == _locale.languageCode);
                 } else {
                   //如果系统语言不是中文简体或美国英语，则默认使用美国英语
                   locale = Locale('en', 'US');
@@ -308,12 +313,14 @@ class MyApp extends StatelessWidget {
       //我们只支持美国英语和中文简体
       supportedLocales: [
         const Locale('en', 'US'), // 美国英语
+              const Locale('es', 'US'), // Spanish
         const Locale('zh', 'CN'), // 中文简体
         //其它Locales
       ],
       localizationsDelegates: [
         // 本地化的代理类
         GlobalMaterialLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         DecLocalizationsDelegate()
       ],

@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-15",
+  "appId": "0ff64904-5fd2-4b65-96ec-896a0e29afcc",
+  "scope": "Spanish language selector, QC question translations and QC prompts; untranslated app interface uses English fallback",
+  "publications": [
+    {
+      "platform": "android",
+      "release": "1.62.4+5",
+      "patch": 14,
+      "track": "stable",
+      "active": true,
+      "artifacts": [
+        {
+          "architecture": "arm",
+          "sha256": "b290945ac134a7e335f6c37f30ed84a06d430b9ecd899b2734922e59df33e558",
+          "bytes": 1722934
+        },
+        {
+          "architecture": "aarch64",
+          "sha256": "34d5fd3828ab8494d5d537abaad7da2bd6adf1d0ef77a55977a0b3f957cd0ecb",
+          "bytes": 1663304
+        },
+        {
+          "architecture": "x86_64",
+          "sha256": "052b28fb5079ad36fbf05006f4c241c753316602981d00e7dce2abe5075a5a27",
+          "bytes": 1605064
+        }
+      ]
+    },
+    {
+      "platform": "ios",
+      "release": "1.62.4+6",
+      "patch": 3,
+      "track": "stable",
+      "active": true,
+      "artifacts": [
+        {
+          "architecture": "aarch64",
+          "sha256": "2203dcaffdab126456dce2d03767126355ad9f0cf8e22b2b775cb0933fe05f59",
+          "bytes": 2558006
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "mobileTestsPassed": 139,
+    "androidStagingRuntime": "Patch 14 downloaded, restarted and successful launch reported",
+    "newNativePlugins": false,
+    "newIconGlyphs": false
+  }
+}

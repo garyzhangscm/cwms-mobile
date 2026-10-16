@@ -10,19 +10,27 @@ QCRuleItem _$QCRuleItemFromJson(Map<String, dynamic> json) {
   return QCRuleItem()
     ..id = json['id'] as int
     ..checkPoint = json['checkPoint']
+    ..checkPointEs = json['checkPointEs'] as String?
     ..enabled = json['enabled']
     ..qcRuleItemType = json['qcRuleItemType'] == null
-        ? null : EnumToString.fromString(QCRuleItemType.values, json['qcRuleItemType'] as String)
+        ? null
+        : EnumToString.fromString(
+            QCRuleItemType.values, json['qcRuleItemType'] as String)
     ..expectedValue = json['expectedValue']
     ..qcRuleItemComparator = json['qcRuleItemComparator'] == null
-        ? null : EnumToString.fromString(QCRuleItemComparator.values, json['qcRuleItemComparator'] as String);
+        ? null
+        : EnumToString.fromString(QCRuleItemComparator.values,
+            json['qcRuleItemComparator'] as String);
 }
 
-Map<String, dynamic> _$QCRuleItemToJson(QCRuleItem instance) => <String, dynamic>{
+Map<String, dynamic> _$QCRuleItemToJson(QCRuleItem instance) =>
+    <String, dynamic>{
       'id': instance.id,
       'checkPoint': instance.checkPoint,
-  'enabled': instance.enabled,
+      if (instance.checkPointEs != null) 'checkPointEs': instance.checkPointEs,
+      'enabled': instance.enabled,
       'qcRuleItemType': EnumToString.convertToString(instance.qcRuleItemType),
-    'expectedValue': instance.expectedValue,
-    'qcRuleItemComparator': EnumToString.convertToString(instance.qcRuleItemComparator),
+      'expectedValue': instance.expectedValue,
+      'qcRuleItemComparator':
+          EnumToString.convertToString(instance.qcRuleItemComparator),
     };

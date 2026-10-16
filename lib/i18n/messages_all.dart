@@ -10,6 +10,7 @@ import 'package:intl/message_lookup_by_library.dart';
 import 'package:intl/src/intl_helpers.dart';
 
 import 'messages_messages.dart' as messages_messages;
+import 'messages_es.dart' as messages_es;
 import 'messages_zh_CN.dart' as messages_zh_cn;
 
 typedef Future<dynamic> LibraryLoader();
@@ -18,6 +19,8 @@ Map<String, LibraryLoader> _deferredLibraries = {
   'messages': () => new Future.value(null),
 // English resources are generated under the generic messages locale.
   'en_US': () => new Future.value(null),
+  'es': () => new Future.value(null),
+  'es_US': () => new Future.value(null),
 // ignore: unnecessary_new
   'zh_CN': () => new Future.value(null),
 };
@@ -28,6 +31,9 @@ MessageLookupByLibrary? _findExact(localeName) {
       return messages_messages.messages;
     case 'en_US':
       return messages_messages.messages;
+    case 'es':
+    case 'es_US':
+      return messages_es.messages;
     case 'zh_CN':
       return messages_zh_cn.messages;
     default:

@@ -4,7 +4,7 @@ import 'messages_all.dart'; //1
 
 class CWMSLocalizations {
   static Future<CWMSLocalizations> load(Locale locale) {
-    final String name = locale.countryCode!.isEmpty ? locale.languageCode : locale.toString();
+    final String name = (locale.countryCode ?? '').isEmpty ? locale.languageCode : locale.toString();
     final String localeName = Intl.canonicalizedLocale(name);
     //2
     return initializeMessages(localeName).then((b) {
@@ -413,7 +413,7 @@ class CWMSLocalizationsDelegate extends LocalizationsDelegate<CWMSLocalizations>
 
   //是否支持某个Local
   @override
-  bool isSupported(Locale locale) => ['en', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => ['en', 'es', 'zh'].contains(locale.languageCode);
 
   // Flutter会调用此类加载相应的Locale资源类
   @override

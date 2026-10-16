@@ -3,13 +3,42 @@ import 'package:flutter/widgets.dart';
 class QCReviewStrings {
   QCReviewStrings(BuildContext context)
       : zh = Localizations.localeOf(context).languageCode == 'zh',
-        traditional = Localizations.localeOf(context).countryCode == 'TW';
-  final bool zh, traditional;
-  String choose(String en, String cn, [String? tw]) => !zh
-      ? en
-      : traditional
-          ? tw ?? cn
-          : cn;
+        traditional = Localizations.localeOf(context).countryCode == 'TW',
+        es = Localizations.localeOf(context).languageCode == 'es';
+  final bool zh, traditional, es;
+  String choose(String en, String cn, [String? tw]) => es
+      ? (_spanish[en] ?? en)
+      : !zh
+          ? en
+          : traditional
+              ? tw ?? cn
+              : cn;
+  static const _spanish = <String, String>{
+    "Yes": "Sí",
+    "No": "No",
+    "This answer does not meet the acceptance standard. Verify the observation and record the exception.":
+        "Esta respuesta no cumple con el criterio de aceptación. Verifique lo observado y registre la incidencia.",
+    "Exception notes": "Notas de la incidencia",
+    "Describe the observed issue.": "Describa el problema observado.",
+    "Enter exception notes for every failed check (1–2000 characters).":
+        "Escriba una nota para cada punto que no cumpla (de 1 a 2000 caracteres).",
+    "Complete all required checks before submitting. A missing answer is pending, not a Fail.":
+        "Complete todos los puntos obligatorios antes de enviar. Una respuesta en blanco queda pendiente; no es un resultado no conforme.",
+    "Confirm nonconforming results": "Confirmar resultados no conformes",
+    "These checks failed. Confirm the answers and notes reflect actual observations. Submitting retains a Fail result.":
+        "Estos puntos no cumplen. Confirme que las respuestas y las notas reflejan lo observado. Al enviar, se conservará el resultado no conforme.",
+    "Return to inspection": "Volver a la inspección",
+    "Confirm and submit Fail": "Confirmar y enviar como no conforme",
+    "Acceptance standard": "Criterio de aceptación",
+    "Actual answer": "Respuesta registrada",
+    "Enter a valid, finite number.": "Ingrese un número válido y finito.",
+    "Check submission status": "Verificar el estado del envío",
+    "No completed result was found. Your answers are retained; review before submitting again.":
+        "No se encontró un resultado completado. Sus respuestas se conservaron; revíselas antes de volver a enviar.",
+    "QUALITY CHECK": "INSPECCIÓN DE CALIDAD",
+    "No enabled inspection checks are available for this rule. Ask an administrator to review the QC configuration.":
+        "Esta regla no tiene puntos de inspección habilitados. Pida al administrador que revise la configuración de calidad."
+  };
   String get yes => choose('Yes', '是');
   String get no => choose('No', '否');
   String get warning => choose(

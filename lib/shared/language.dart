@@ -34,6 +34,7 @@ class LanguageRoute extends StatelessWidget {
         children: <Widget>[
           _buildLanguageItem("中文简体", "zh_CN"),
           _buildLanguageItem("English", "en_US"),
+          _buildLanguageItem("Español", "es_US"),
           _buildLanguageItem(gm.auto, null),
         ],
       ),
