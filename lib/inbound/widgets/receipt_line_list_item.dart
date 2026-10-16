@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/inbound/models/receipt_line.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/inbound/models/receipt_line.dart';
 import 'package:flutter/material.dart';
 
 class ReceiptLineListItem extends StatefulWidget {
@@ -58,11 +58,12 @@ class _ReceiptLineListItemState extends State<ReceiptLineListItem> {
                   //     widget.order.totalOpenPickQuantity == 0 ?
                   //                Colors.grey : Colors.white,
                   title: Text(
-                    (itemName?.trim().isNotEmpty ?? false)
+                    uiText(
+                        context,(itemName?.trim().isNotEmpty ?? false)
                         ? itemName!
                         : (lineNumber?.trim().isNotEmpty ?? false)
                             ? 'Line $lineNumber'
-                            : 'Item unavailable',
+                            : 'Item unavailable'),
                     textScaleFactor: .9,
                     style: TextStyle(
                       height: 1.15,

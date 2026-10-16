@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:flutter/material.dart';
 import 'auth/models/menu_group.dart';
 import 'auth/services/menu_service.dart';
 import 'i18n/localization_intl.dart';
@@ -56,7 +56,7 @@ class _MenusState extends State<Menus> {
     return Scaffold(
       backgroundColor: workspaceBackground,
       appBar: AppBar(
-          title: Text(zh ? '工作台' : 'Workspace'),
+          title: Text(uiText(context,zh ? '工作台' : 'Workspace')),
           backgroundColor: workspaceBackground,
           foregroundColor: workspaceNavy,
           elevation: 0,
@@ -64,7 +64,7 @@ class _MenusState extends State<Menus> {
       endDrawer: MyDrawer(),
       body: SafeArea(
           child: WorkspaceNavigation(
-              title: zh ? '工作台' : 'Workspace',
+              title: uiText(context,zh ? '工作台' : 'Workspace'),
               destinations: List.generate(
                   groups.length,
                   (i) => ListTile(
@@ -92,15 +92,17 @@ class _MenusState extends State<Menus> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 WorkspaceHeader(
-                                    title: zh
+                                    title: uiText(
+                                        context,zh
                                         ? '让每一步作业，更有序。'
-                                        : 'Ready for the work ahead.',
-                                    subtitle: zh
+                                        : 'Ready for the work ahead.'),
+                                    subtitle: uiText(
+                                        context,zh
                                         ? '从收货到生产，在这里开启你的工作。'
-                                        : 'Your operations, connected. Choose a module to get started.'),
+                                        : 'Your operations, connected. Choose a module to get started.')),
                                 const SizedBox(height: 28),
                                 Row(children: [
-                                  Text(zh ? '全部应用' : 'All applications',
+                                  Text(uiText(context,zh ? '全部应用' : 'All applications'),
                                       style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w700,
@@ -116,22 +118,24 @@ class _MenusState extends State<Menus> {
                                   Center(
                                       child: Column(children: [
                                     const SizedBox(height: 28),
-                                    Text(zh
+                                    Text(uiText(
+                                        context,zh
                                         ? '暂时无法加载应用'
-                                        : 'Unable to load applications'),
+                                        : 'Unable to load applications')),
                                     TextButton.icon(
                                         onPressed: _retrieveMenus,
                                         icon: const Icon(Icons.refresh),
-                                        label: Text(zh ? '重新加载' : 'Try again'))
+                                        label: Text(uiText(context,zh ? '重新加载' : 'Try again')))
                                   ]))
                                 else if (visible.isEmpty)
                                   Padding(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 32),
                                       child: Text(
-                                          zh
+                                          uiText(
+                                              context,zh
                                               ? '暂无可用应用'
-                                              : 'No applications available',
+                                              : 'No applications available'),
                                           style: const TextStyle(
                                               color: Color(0xFF748297))))
                                 else

@@ -1,5 +1,5 @@
 
-import 'dart:async';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
 import 'dart:collection';
 import 'dart:core';
 
@@ -146,7 +146,7 @@ class _PickByOrderPageState extends State<PickByOrderPage> {
                         focusNode: _orderNumberControllerFocusNode,
                         decoration: InputDecoration(
                           labelText: CWMSLocalizations.of(context).orderNumber,
-                          hintText: "please input order number",
+                          hintText: uiText(context,"please input order number"),
                           suffixIcon:
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line

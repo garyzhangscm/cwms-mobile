@@ -1,5 +1,6 @@
 
-import 'dart:core';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -156,7 +157,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
           children: <Widget>[
              RichText(
               text: TextSpan(
-                text: 'click to see the item to be picked',
+                text: uiText(context, "click to see the item to be picked"),
                 style: new TextStyle(
                     color: Colors.blue,
                     decoration: TextDecoration.underline,
@@ -182,7 +183,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
         builder: (BuildContext context) {
           var child = Column(
               children: <Widget>[
-                ListTile(title:  Text("item list")),
+                ListTile(title:  Text(uiText(context,"item list"))),
                 _buildPickableItemList(context)
               ],
           );

@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
 import 'package:cwms_mobile/shared/models/factory_profile.dart';
 import 'package:dio/dio.dart';
@@ -86,7 +86,7 @@ class _LaunchPageState extends State<LaunchPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F5F9),
       appBar: AppBar(
-          title: const Text('Claytech One'),
+          title:  Text(uiText(context, "Claytech One")),
           backgroundColor: const Color(0xFFF3F5F9),
           foregroundColor: navy,
           elevation: 0,
@@ -100,12 +100,13 @@ class _LaunchPageState extends State<LaunchPage> {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const SizedBox(height: 12),
-            Text(_chinese ? '选择工厂' : 'Choose your factory',
+            Text(uiText(context,_chinese ? '选择工厂' : 'Choose your factory'),
                 style: const TextStyle(
                     fontSize: 25, fontWeight: FontWeight.w700, color: navy)),
             const SizedBox(height: 8),
             Text(
-                _chinese ? '点选工作地点，即可登录。' : 'Select your workplace to sign in.',
+                uiText(
+                    context,_chinese ? '点选工作地点，即可登录。' : 'Select your workplace to sign in.'),
                 style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
             const SizedBox(height: 26),
             for (var i = 0; i < FactoryProfile.values.length; i++)
@@ -113,14 +114,15 @@ class _LaunchPageState extends State<LaunchPage> {
             if (_error != null)
               Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(_error!,
+                  child: Text(uiErrorText(context,_error!),
                       style: const TextStyle(
                           color: Color(0xFFB42318), fontSize: 14))),
             const SizedBox(height: 16),
             Text(
-                _chinese
+                uiText(
+                    context,_chinese
                     ? '系统会记住您上次选择的工厂。'
-                    : 'Your last selected factory will be remembered.',
+                    : 'Your last selected factory will be remembered.'),
                 style: const TextStyle(fontSize: 12, color: Color(0xFF718096))),
           ]),
         )),
@@ -178,7 +180,8 @@ class _LaunchPageState extends State<LaunchPage> {
                     if (selected)
                       Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text(_chinese ? '上次选择' : 'Last selected',
+                          child: Text(uiText(
+                                  context,_chinese ? '上次选择' : 'Last selected'),
                               style: TextStyle(
                                   fontSize: 12, color: colors[index]))),
                   ])),

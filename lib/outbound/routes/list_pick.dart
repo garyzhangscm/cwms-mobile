@@ -1,4 +1,5 @@
-import 'dart:math';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:math';
 
 import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -180,11 +181,12 @@ class _ListPickPageState extends State<ListPickPage> {
           return
             AlertDialog(
               title: Text(""),
-              content: Text("current list ${_currentPickList?.number} is done"),
+              content: Text(uiTemplate(context, "current list {0} is done",
+                  [_currentPickList?.number])),
               actions: <Widget>[
 
                 ElevatedButton(
-                  child: Text("Confirm"),
+                  child: Text(uiText(context,"Confirm")),
                   onPressed: () {
                     Navigator.of(context).pop(true); //关闭对话框
                     returnToPreviewPage();
@@ -272,13 +274,13 @@ class _ListPickPageState extends State<ListPickPage> {
       body:
           Column(
             children: <Widget>[
-              buildTwoSectionInformationRow("List Number:", _currentPickList?.number ?? ""),
-              buildTwoSectionInformationRow("Pick Number:", _currentPick?.number ?? ""),
-              buildTwoSectionInformationRow("Location:", _currentPick?.sourceLocation?.name ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"List Number:"), _currentPickList?.number ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Pick Number:"), _currentPick?.number ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Location:"), _currentPick?.sourceLocation?.name ?? ""),
               _currentPick == null ? Container() : _buildLocationInput(context),
               _currentPick == null ? Container() : _buildLPNInput(context),
-              buildTwoSectionInformationRow("Item Number:",  _currentPick?.item?.name ?? ""),
-              buildTwoSectionInformationRow("Pick Quantity:", _currentPick?.quantity.toString() ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Item Number:"),  _currentPick?.item?.name ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Pick Quantity:"), _currentPick?.quantity.toString() ?? ""),
               _currentPick == null ? Container() : _buildQuantityInput(context),
               _buildButtons(context),
             ],

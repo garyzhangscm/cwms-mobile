@@ -1,4 +1,5 @@
-import 'package:cwms_mobile/shared/adaptive_layout.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:collection/collection.dart';
 
 import 'package:badges/badges.dart' as badge;
@@ -349,7 +350,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                                 _buildValidatedSelectionField(
                                     _packageTypeField,
                                     _getItemPackageTypeItems().isEmpty
-                                        ? const Text("Not configured")
+                                        ?  Text(uiText(context,"Not configured"))
                                         : DropdownButton(
                                             items: _getItemPackageTypeItems(),
                                             value: _selectedItemPackageType,
@@ -399,22 +400,23 @@ class _ReceivingPageState extends State<ReceivingPage> {
                                     decoration: const InputDecoration(),
                                     validator: (v) {
                                       if (v?.trim().isEmpty ?? true)
-                                        return "please type in quantity";
+                                        return uiText(
+                                            context,"please type in quantity");
                                       final receivingQuantity =
                                           int.tryParse(v!.trim());
                                       if (receivingQuantity == null ||
                                           receivingQuantity <= 0)
-                                        return "please type in a valid quantity";
+                                        return uiText(context,"please type in a valid quantity");
                                       if (!_validateOverReceiving(
                                           _currentReceiptLine!,
                                           receivingQuantity))
-                                        return "over receive is not allowed";
+                                        return uiText(context,"over receive is not allowed");
                                       return null;
                                     }),
                                 _buildValidatedSelectionField(
                                     _unitOfMeasureField,
                                     _getItemUnitOfMeasures().isEmpty
-                                        ? const Text("Not configured")
+                                        ?  Text(uiText(context,"Not configured"))
                                         : DropdownButton(
                                             hint: Text(l10n.pleaseSelect),
                                             items: _getItemUnitOfMeasures(),
@@ -481,7 +483,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
         Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(workspaceIsChinese(context) ? '收货作业' : 'RECEIVING',
+          Text(uiText(
+                  context,workspaceIsChinese(context) ? '收货作业' : 'RECEIVING'),
               style: TextStyle(
                   color: Color(0xFFB7C9E4),
                   fontSize: 10,
@@ -489,11 +492,12 @@ class _ReceivingPageState extends State<ReceivingPage> {
                   letterSpacing: 1.5)),
           const SizedBox(height: 3),
           Text(
-              receiptNumber.isEmpty
+              uiText(
+                  context,receiptNumber.isEmpty
                   ? (workspaceIsChinese(context)
                       ? '扫描或选择收货单'
                       : 'Scan or choose a receipt')
-                  : receiptNumber,
+                  : receiptNumber),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -754,7 +758,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
           // 校验ITEM NUMBER（不能为空）
           validator: (v) {
             if (v?.trim().isEmpty ?? true) {
-              return "please scan in receipt";
+              return uiText(context,"please scan in receipt");
             }
             return null;
           }),
@@ -1531,7 +1535,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text(CWMSLocalizations.of(context).error),
-              content: Text("Can't find receipt by number ${receiptNumber}"),
+              content: Text(uiTemplate(context,
+                  "Can't find receipt by number {0}", [receiptNumber])),
               actions: [
                 ElevatedButton(
                   child: Text("OK"),
@@ -1670,9 +1675,10 @@ class _ReceivingPageState extends State<ReceivingPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                workspaceIsChinese(context)
+                                uiText(
+                                    context,workspaceIsChinese(context)
                                     ? '选择一张收货单开始操作'
-                                    : 'Select a receipt to get started',
+                                    : 'Select a receipt to get started'),
                                 style: const TextStyle(
                                   color: Color(0xFF748297),
                                   fontSize: 13,
@@ -2059,7 +2065,7 @@ class _ReceiptChooserListState extends State<_ReceiptChooserList> {
                   onPressed: _loadNextPage,
                   icon: const Icon(Icons.refresh_rounded, size: 18),
                   label:
-                      Text(workspaceIsChinese(context) ? '重新加载' : 'Try again'),
+                      Text(uiText(context,workspaceIsChinese(context) ? '重新加载' : 'Try again')),
                 ),
               ),
             );
@@ -2075,9 +2081,10 @@ class _ReceiptChooserListState extends State<_ReceiptChooserList> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : Text(
-                      workspaceIsChinese(context)
+                      uiText(
+                          context,workspaceIsChinese(context)
                           ? '继续下滑加载更多'
-                          : 'Scroll for more',
+                          : 'Scroll for more'),
                       style: const TextStyle(color: Color(0xFF748297)),
                     ),
             ),

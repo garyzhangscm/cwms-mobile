@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/shared/adaptive_layout.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -68,7 +68,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Inbound QC")),
+      appBar: AppBar(title:  Text(uiText(context,"Inbound QC"))),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -84,7 +84,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
                     if (_qcMessage != null)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Text(_qcMessage!,
+                        child: Text(uiText(context,_qcMessage!),
                             key: const Key('inbound-qc-message')),
                       ),
                     const SizedBox(height: 12),
@@ -120,14 +120,14 @@ class _InboundQCPageState extends State<InboundQCPage> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text("Inbound quality check",
+              children:  [
+                Text(uiText(context,"Inbound quality check"),
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 21,
                         fontWeight: FontWeight.w700)),
                 SizedBox(height: 4),
-                Text("Scan an LPN to begin inspection",
+                Text(uiText(context,"Scan an LPN to begin inspection"),
                     style: TextStyle(color: Color(0xB8FFFFFF), fontSize: 14)),
               ],
             ),
@@ -146,7 +146,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
       onFieldSubmitted: (_) => _onLPNScanned(),
       decoration: InputDecoration(
         labelText: CWMSLocalizations.of(context).lpn,
-        hintText: "Scan or enter LPN",
+        hintText: uiText(context,"Scan or enter LPN"),
         prefixIcon: const Icon(Icons.qr_code_scanner),
         filled: true,
         fillColor: Theme.of(context)
@@ -285,13 +285,14 @@ class _InboundQCPageState extends State<InboundQCPage> {
         await showDialog<void>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Unfinished QC task'),
-            content: const Text(
-                'This legacy task has a PASS summary, but all checkpoints are pending and no inspection time is recorded. Complete the inspection before submitting.'),
+            title:  Text(uiText(context, "Unfinished QC task")),
+            content:  Text(
+                uiText(context,
+                "This legacy task has a PASS summary, but all checkpoints are pending and no inspection time is recorded. Complete the inspection before submitting.")),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('OK'),
+                child:  Text(uiText(context, "OK")),
               )
             ],
           ),
@@ -389,7 +390,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Select inventory for QC'),
+          title:  Text(uiText(context, "Select inventory for QC")),
           content: SizedBox(
             width: 420,
             height: 300,
@@ -404,7 +405,8 @@ class _InboundQCPageState extends State<InboundQCPage> {
                       : Icons.check_circle_outline),
                   title: Text(inventory.item?.name ?? inventory.lpn ?? ''),
                   subtitle: Text(
-                      '${inventory.lpn ?? ""} · Qty ${inventory.quantity ?? 0}'),
+                      uiTemplate(context, "{0} · Qty {1}",
+                      [inventory.lpn ?? "",inventory.quantity ?? 0])),
                   onTap: () => setDialogState(() => selectedIndex = index),
                 );
               },

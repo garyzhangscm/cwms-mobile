@@ -1,4 +1,5 @@
-import 'package:cwms_mobile/shared/adaptive_layout.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:cwms_mobile/shared/routes/app_information.dart';
@@ -101,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () =>
                     Navigator.of(context).popUntil((route) => route.isFirst),
                 child: Text(
-                    workspaceIsChinese(context) ? '切换工厂' : 'Switch factory')),
+                    uiText(context,workspaceIsChinese(context) ? '切换工厂' : 'Switch factory'))),
         ],
         backgroundColor: workspaceBackground,
         foregroundColor: workspaceNavy,
@@ -190,13 +191,14 @@ class _LoginPageState extends State<LoginPage> {
                   Center(
                       child: TextButton(
                     onPressed: () => openAppPrivacy(context),
-                    child: Text(workspaceIsChinese(context)
+                    child: Text(uiText(
+                        context,workspaceIsChinese(context)
                         ? '隐私政策'
-                        : 'Privacy Policy'),
+                        : 'Privacy Policy')),
                   )),
                   const SizedBox(height: 2),
                   Center(
-                      child: Text('Secure access to your operations',
+                      child: Text(uiText(context, "Secure access to your operations"),
                           style: TextStyle(
                               color: Color(0xFF8A97A9), fontSize: 12))),
                 ],
@@ -226,7 +228,7 @@ class _LoginPageState extends State<LoginPage> {
         Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Claytech One',
+             Text(uiText(context, "Claytech One"),
                 style: TextStyle(
                     color: workspaceNavy,
                     fontSize: 16,
@@ -234,9 +236,10 @@ class _LoginPageState extends State<LoginPage> {
                     letterSpacing: 2)),
             const SizedBox(height: 3),
             Text(
-                workspaceIsChinese(context)
+                uiText(
+                    context,workspaceIsChinese(context)
                     ? '欢迎回来，登录以继续工作'
-                    : 'Welcome back. Sign in to continue.',
+                    : 'Welcome back. Sign in to continue.'),
                 style: const TextStyle(color: Color(0xFF7B8798), fontSize: 12)),
             if (serverUrl.isNotEmpty)
               Text(serverUrl,
@@ -347,27 +350,28 @@ class _LoginPageState extends State<LoginPage> {
           });
         },
       ),
-      const Text("Remember Me", style: TextStyle(color: Color(0xFF61718A))),
+       Text(uiText(context,"Remember Me"), style: TextStyle(color: Color(0xFF61718A))),
     ]);
   }
 
   Widget _buildWarehouseControl(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Padding(
+       Padding(
         padding: EdgeInsets.only(left: 4, bottom: 6),
-        child: Text('Warehouse',
+        child: Text(uiText(context, "Warehouse"),
             style: TextStyle(color: Color(0xFF73839A), fontSize: 12)),
       ),
       getDropDownButtonsColumnForWarehouse(),
       if (_warehouseError != null)
         Row(children: [
           Expanded(
-              child: Text(_warehouseError!,
+              child: Text(uiErrorText(context,_warehouseError!),
                   style:
                       const TextStyle(color: Color(0xFFD85D67), fontSize: 12))),
           TextButton(
               onPressed: _loadWarehouses,
-              child: Text(workspaceIsChinese(context) ? '重试' : 'Retry')),
+              child: Text(uiText(
+                  context,workspaceIsChinese(context) ? '重试' : 'Retry'))),
         ]),
     ]);
   }
@@ -376,12 +380,13 @@ class _LoginPageState extends State<LoginPage> {
     return TextFormField(
         controller: _rfCodeController, //设置controller
         decoration: InputDecoration(
-            labelText: "RF code",
-            hintText: "RF code",
+            labelText: uiText(context,"RF code"),
+            hintText: uiText(context,"RF code"),
             prefixIcon: Icon(Icons.web)),
         //
         validator: (v) {
-          return v!.trim().length > 0 ? null : "Please input a valid RF";
+          return uiOptionalText(
+              context,v!.trim().length > 0 ? null : "Please input a valid RF");
         });
   }
 
@@ -394,7 +399,7 @@ class _LoginPageState extends State<LoginPage> {
             prefixIcon: Icon(Icons.web)),
         //
         validator: (v) {
-          return v!.trim().length > 0 ? null : "Please input a valid location";
+          return uiOptionalText(context,v!.trim().length > 0 ? null : "Please input a valid location");
         });
   }
 
@@ -402,8 +407,8 @@ class _LoginPageState extends State<LoginPage> {
     return TextFormField(
       controller: _pwdController,
       decoration: InputDecoration(
-          labelText: "password",
-          hintText: "please input password",
+          labelText: uiText(context,"password"),
+          hintText: uiText(context,"please input password"),
           prefixIcon: Icon(Icons.lock),
           suffixIcon: IconButton(
             icon: Icon(pwdShow ? Icons.visibility_off : Icons.visibility),
@@ -416,7 +421,8 @@ class _LoginPageState extends State<LoginPage> {
       obscureText: !pwdShow,
       //校验密码（不能为空）
       validator: (v) {
-        return v!.trim().isNotEmpty ? null : "password is required";
+        return uiOptionalText(
+            context,v!.trim().isNotEmpty ? null : "password is required");
       },
     );
   }
@@ -427,13 +433,14 @@ class _LoginPageState extends State<LoginPage> {
           controller: _unameController,
           onChanged: (_) => _scheduleWarehouseLoad(),
           decoration: InputDecoration(
-            labelText: "username",
-            hintText: "please input username",
+            labelText: uiText(context,"username"),
+            hintText: uiText(context,"please input username"),
             prefixIcon: Icon(Icons.person),
           ),
           // 校验用户名（不能为空）
           validator: (v) {
-            return v!.trim().isNotEmpty ? null : "username is required";
+            return uiOptionalText(
+                context,v!.trim().isNotEmpty ? null : "username is required");
           }),
       onFocusChange: (hasFocus) {
         if (!hasFocus) {
@@ -453,16 +460,16 @@ class _LoginPageState extends State<LoginPage> {
           enableInteractiveSelection: Global.currentFactory == null,
           onChanged: (_) => _scheduleWarehouseLoad(),
           decoration: InputDecoration(
-            labelText: "company code",
+            labelText: uiText(context,"company code"),
             suffixIcon: Global.currentFactory != null
                 ? const Icon(Icons.lock)
                 : null,
-            hintText: "please input your company code",
+            hintText: uiText(context,"please input your company code"),
             prefixIcon: Icon(Icons.person),
           ),
           // 校验company code（不能为空）
           validator: (v) {
-            return v!.trim().isNotEmpty ? null : "company code is required";
+            return uiOptionalText(context,v!.trim().isNotEmpty ? null : "company code is required");
           }),
       onFocusChange: (hasFocus) {
         if (!hasFocus) {
@@ -508,13 +515,14 @@ class _LoginPageState extends State<LoginPage> {
                         );
                       }).toList(),
                 hint: Text(
-                  _warehousesLoading
+                  uiText(
+                      context,_warehousesLoading
                       ? (workspaceIsChinese(context)
                           ? '正在加载仓库…'
                           : 'Loading warehouses…')
                       : (workspaceIsChinese(context)
                           ? (Global.currentFactory != null ? '输入用户名后加载仓库' : '请输入公司代码和用户名')
-                          : (Global.currentFactory != null ? 'Enter username to load warehouses' : 'Enter company code and username')),
+                          : (Global.currentFactory != null ? 'Enter username to load warehouses' : 'Enter company code and username'))),
                   style:
                       const TextStyle(color: Color(0xFF8B8B8B), fontSize: 14),
                 ), // setting hint

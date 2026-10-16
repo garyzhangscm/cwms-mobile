@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/inventory/models/inventory_status.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/lpn_ocr_service.dart';
@@ -92,22 +92,22 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add LPN'),
+        title:  Text(uiText(context, "Add LPN")),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.characters,
-          decoration: const InputDecoration(hintText: 'Enter LPN'),
+          decoration:  InputDecoration(hintText: uiText(context, "Enter LPN")),
           onSubmitted: (value) => Navigator.pop(context, value),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child:  Text(uiText(context, "Cancel")),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Add'),
+            child:  Text(uiText(context, "Add")),
           ),
         ],
       ),
@@ -116,9 +116,10 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
     if (normalized == null) {
       if (value != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(
-                'LPN must start with L or R and contain at least 6 characters.'),
+                uiText(context,
+                "LPN must start with L or R and contain at least 6 characters.")),
           ),
         );
       }
@@ -132,22 +133,22 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit LPN'),
+        title:  Text(uiText(context, "Edit LPN")),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.characters,
-          decoration: const InputDecoration(labelText: 'LPN'),
+          decoration:  InputDecoration(labelText: uiText(context, "LPN")),
           onSubmitted: (value) => Navigator.pop(context, value),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child:  Text(uiText(context, "Cancel")),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Save'),
+            child:  Text(uiText(context, "Save")),
           ),
         ],
       ),
@@ -201,17 +202,17 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Operation'),
+        title:  Text(uiText(context, "Confirm Operation")),
         content: Text(_operation == _LpnOperation.move
             ? 'Move ${_selectedLpns.length} LPN(s) to ${_locationController.text.trim()}?'
             : 'Update ${_selectedLpns.length} LPN(s) to ${_selectedStatus!.description ?? _selectedStatus!.name}?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+              child:  Text(uiText(context, "Cancel"))),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Execute')),
+              child:  Text(uiText(context, "Execute"))),
         ],
       ),
     );
@@ -298,10 +299,10 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Multiple LPN Capture'),
+        title:  Text(uiText(context, "Multiple LPN Capture")),
         actions: [
           IconButton(
-            tooltip: 'Add LPN manually',
+            tooltip: uiText(context, "Add LPN manually"),
             onPressed: _executing ? null : _addManual,
             icon: const Icon(Icons.add),
           ),
@@ -312,7 +313,7 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
           padding: const EdgeInsets.all(16),
           children: [
             _section(
-              title: '1. Capture LPNs',
+              title: uiText(context, "1. Capture LPNs"),
               child: Row(
                 children: [
                   Expanded(
@@ -321,7 +322,7 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
                               ? null
                               : () => _pickImage(ImageSource.camera),
                           icon: const Icon(Icons.camera_alt_outlined),
-                          label: const Text('Take Photo'))),
+                          label:  Text(uiText(context, "Take Photo")))),
                   const SizedBox(width: 12),
                   Expanded(
                       child: OutlinedButton.icon(
@@ -329,7 +330,7 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
                               ? null
                               : () => _pickImage(ImageSource.gallery),
                           icon: const Icon(Icons.photo_library_outlined),
-                          label: const Text('Choose Photo'))),
+                          label:  Text(uiText(context, "Choose Photo")))),
                 ],
               ),
             ),
@@ -337,36 +338,39 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
               const SizedBox(height: 12),
               const LinearProgressIndicator(),
               const SizedBox(height: 8),
-              Text(_processing
+              Text(uiText(
+                  context,_processing
                   ? 'Reading LPNs from photo...'
-                  : 'Executing operation...'),
+                  : 'Executing operation...')),
             ],
             if (_message != null && !_processing) ...[
               const SizedBox(height: 8),
-              Text(_message!),
+              Text(uiText(context,_message!)),
             ],
             const SizedBox(height: 12),
             _section(
-              title: '2. Select LPNs (${_selectedLpns.length}/${_lpns.length})',
+              title: uiTemplate(context, "2. Select LPNs ({0}/{1})",
+                  [_selectedLpns.length,_lpns.length]),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 TextButton(
                     onPressed: _lpns.isEmpty ? null : () => _toggleAll(true),
-                    child: const Text('All')),
+                    child:  Text(uiText(context, "All"))),
                 TextButton(
                     onPressed:
                         _selectedLpns.isEmpty ? null : () => _toggleAll(false),
-                    child: const Text('Clear')),
+                    child:  Text(uiText(context, "Clear"))),
                 IconButton(
-                    tooltip: 'Add LPN',
+                    tooltip: uiText(context, "Add LPN"),
                     onPressed: _executing ? null : _addManual,
                     icon: const Icon(Icons.add)),
               ]),
               child: _lpns.isEmpty
-                  ? const Padding(
+                  ?  Padding(
                       padding: EdgeInsets.symmetric(vertical: 28),
                       child: Center(
                           child: Text(
-                              'No LPNs yet. Capture a photo or add one manually.')))
+                              uiText(context,
+                              "No LPNs yet. Capture a photo or add one manually."))))
                   : ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 320),
                       child: ListView.separated(
@@ -388,15 +392,15 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
                             title: Text(lpn,
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w600)),
-                            subtitle: Text('LPN ${index + 1}'),
+                            subtitle: Text(uiTemplate(context, "LPN {0}", [index + 1])),
                             trailing: Wrap(children: [
                               IconButton(
-                                  tooltip: 'Edit LPN',
+                                  tooltip: uiText(context, "Edit LPN"),
                                   onPressed:
                                       _executing ? null : () => _editLpn(index),
                                   icon: const Icon(Icons.edit_outlined)),
                               IconButton(
-                                  tooltip: 'Remove LPN',
+                                  tooltip: uiText(context, "Remove LPN"),
                                   onPressed: _executing
                                       ? null
                                       : () => setState(() {
@@ -412,19 +416,19 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
             ),
             const SizedBox(height: 12),
             _section(
-              title: '3. Choose Operation',
+              title: uiText(context, "3. Choose Operation"),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SegmentedButton<_LpnOperation>(
-                      segments: const [
+                      segments:  [
                         ButtonSegment(
                             value: _LpnOperation.move,
-                            label: Text('Move'),
+                            label: Text(uiText(context, "Move")),
                             icon: Icon(Icons.drive_file_move_outlined)),
                         ButtonSegment(
                             value: _LpnOperation.updateStatus,
-                            label: Text('Update Status'),
+                            label: Text(uiText(context, "Update Status")),
                             icon: Icon(Icons.sync_alt)),
                       ],
                       selected: _operation == null
@@ -441,23 +445,24 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
                       TextField(
                           controller: _locationController,
                           enabled: !_executing,
-                          decoration: const InputDecoration(
-                              labelText: 'Destination Location',
+                          decoration:  InputDecoration(
+                              labelText: uiText(context, "Destination Location"),
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.place_outlined),
-                              hintText: 'Enter location name')),
+                              hintText: uiText(context, "Enter location name"))),
                     ],
                     if (_operation == _LpnOperation.updateStatus) ...[
                       const SizedBox(height: 12),
                       DropdownButtonFormField<InventoryStatus>(
                         initialValue: _selectedStatus,
-                        decoration: const InputDecoration(
-                            labelText: 'Inventory Status',
+                        decoration:  InputDecoration(
+                            labelText: uiText(context, "Inventory Status"),
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.inventory_2_outlined)),
-                        hint: Text(_statusesLoading
+                        hint: Text(uiText(
+                            context,_statusesLoading
                             ? 'Loading statuses...'
-                            : 'Select status'),
+                            : 'Select status')),
                         items: _statuses
                             .map((status) => DropdownMenuItem(
                                 value: status,
@@ -479,7 +484,7 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
                         ? null
                         : _execute,
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('Execute Selected LPNs')),
+                label:  Text(uiText(context, "Execute Selected LPNs"))),
           ],
         ),
       ),
@@ -552,7 +557,8 @@ class _LpnExecutionDialogState extends State<_LpnExecutionDialog> {
   Widget build(BuildContext context) {
     final failed = _results.where((result) => result.contains('Failed')).length;
     return AlertDialog(
-      title: Text(_done ? 'Operation Complete' : 'Executing Operation'),
+      title: Text(uiText(
+          context,_done ? 'Operation Complete' : 'Executing Operation')),
       content: SizedBox(
         width: 460,
         height: 300,
@@ -565,11 +571,12 @@ class _LpnExecutionDialogState extends State<_LpnExecutionDialog> {
                 value:
                     widget.lpns.isEmpty ? 0 : _completed / widget.lpns.length),
             const SizedBox(height: 8),
-            Text('Processed $_completed / ${widget.lpns.length}'),
+            Text(uiTemplate(context, "Processed {0} / {1}",
+                [_completed,widget.lpns.length])),
             const SizedBox(height: 12),
             Expanded(
               child: _results.isEmpty
-                  ? const Center(child: Text('Starting...'))
+                  ?  Center(child: Text(uiText(context, "Starting...")))
                   : ListView.separated(
                       itemCount: _results.length,
                       separatorBuilder: (_, __) => const Divider(height: 1),
@@ -591,7 +598,8 @@ class _LpnExecutionDialogState extends State<_LpnExecutionDialog> {
             ),
             if (_done) ...[
               const SizedBox(height: 8),
-              Text('$failed failed, ${_results.length - failed} succeeded.'),
+              Text(uiTemplate(context, "{0} failed, {1} succeeded.",
+                  [failed,_results.length - failed])),
             ],
           ],
         ),
@@ -601,7 +609,7 @@ class _LpnExecutionDialogState extends State<_LpnExecutionDialog> {
           FilledButton(
             onPressed: () =>
                 Navigator.pop(context, List<String>.from(_results)),
-            child: const Text('Close'),
+            child:  Text(uiText(context, "Close")),
           ),
       ],
     );

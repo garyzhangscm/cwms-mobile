@@ -1,5 +1,5 @@
 
-import 'dart:collection';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:collection';
 import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -105,7 +105,7 @@ class _PickByBulkPageState extends State<PickByBulkPage> {
                         focusNode: _bulkPickNumberFocusNode,
                         decoration: InputDecoration(
                           labelText: CWMSLocalizations.of(context).bulkPick,
-                          hintText: "please input bulk pick number",
+                          hintText: uiText(context,"please input bulk pick number"),
                           suffixIcon:
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line

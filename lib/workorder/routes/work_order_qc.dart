@@ -1,5 +1,5 @@
 
-import 'dart:core';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:core';
 import 'dart:io';
 import 'dart:math';
 
@@ -206,7 +206,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
                               padding: EdgeInsets.symmetric(
                                   vertical: 10.0, horizontal: 20.0),
                               child: Text(
-                                'No. ${imageUrl} image',
+                                uiTemplate(context, "No. {0} image", [imageUrl]),
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20.0,

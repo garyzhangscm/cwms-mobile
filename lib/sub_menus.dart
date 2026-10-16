@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:flutter/material.dart';
 import 'auth/models/menu_sub_group.dart';
 import 'i18n/localization_intl.dart';
 import 'shared/MyDrawer.dart';
@@ -29,10 +29,10 @@ class _SubMenusState extends State<SubMenus> {
 
   String _inventoryOperationTitle(String title) {
     final normalized = title.trim().toLowerCase();
-    if (normalized == 'inventory lost and found') return 'Lost & Found';
-    if (normalized == 'partial inventory move') return 'Partial Move';
-    if (normalized == 'inventory putaway') return 'Putaway';
-    if (normalized == 'inventory qc') return 'QC';
+    if (normalized == 'inventory lost and found') return uiText(context, "Lost & Found");
+    if (normalized == 'partial inventory move') return uiText(context, "Partial Move");
+    if (normalized == 'inventory putaway') return uiText(context, "Putaway");
+    if (normalized == 'inventory qc') return uiText(context, "QC");
     return title;
   }
 
@@ -101,18 +101,19 @@ class _SubMenusState extends State<SubMenus> {
                             children: [
                               WorkspaceHeader(
                                   title: title,
-                                  subtitle: zh
+                                  subtitle: uiText(
+                                      context,zh
                                       ? '选择作业，开始处理。'
-                                      : 'Choose an operation to get started.'),
+                                      : 'Choose an operation to get started.')),
                               const SizedBox(height: 28),
-                              Text(zh ? '作业功能' : 'Operations',
+                              Text(uiText(context,zh ? '作业功能' : 'Operations'),
                                   style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w700,
                                       color: workspaceNavy)),
                               const SizedBox(height: 16),
                               if (menus.isEmpty)
-                                Text(zh ? '暂无可用作业' : 'No operations available'),
+                                Text(uiText(context,zh ? '暂无可用作业' : 'No operations available')),
                               WorkspaceGrid(
                                   children:
                                       List.generate(menus.length, (index) {

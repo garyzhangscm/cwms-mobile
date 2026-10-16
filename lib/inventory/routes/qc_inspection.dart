@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/inventory/services/qc_failure_review.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/inventory/services/qc_failure_review.dart';
 import 'package:cwms_mobile/inventory/widgets/qc_review_strings.dart';
 import 'package:cwms_mobile/shared/updates/update_activity.dart';
 import 'package:cwms_mobile/shared/global.dart';
@@ -121,7 +121,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
         resizeToAvoidBottomInset: true,
         backgroundColor: const Color(0xFFF6F7FB),
         appBar: AppBar(
-          title: const Text("Claytech One - QC"),
+          title:  Text(uiText(context,"Claytech One - QC")),
           backgroundColor: const Color(0xFFF6F7FB),
           elevation: 0,
         ),
@@ -131,13 +131,14 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
                 ? Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(_prepareError!, textAlign: TextAlign.center),
+                      child: Text(uiErrorText(context,_prepareError!), textAlign: TextAlign.center),
                     ),
                   )
                 : _qcInspectionRequest!.qcInspectionRequestItems.isEmpty
-                    ? const Center(
+                    ?  Center(
                         child: Text(
-                          'No inspection checks are available. Review the QC configuration.',
+                          uiText(context,
+                              "No inspection checks are available. Review the QC configuration."),
                         ),
                       )
                     : Form(
@@ -471,7 +472,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(c).pop(),
-            child: const Text('OK'),
+            child:  Text(uiText(context, "OK")),
           ),
         ],
       ),
@@ -523,7 +524,7 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${_qcInspectionRequest!.number ?? ''} · ${failures.length} Fail',
+                      uiTemplate(context, "{0} · {1} Fail", [_qcInspectionRequest!.number ?? '',failures.length]),
                     ),
                     const SizedBox(height: 12),
                     Text(labels.explanation),

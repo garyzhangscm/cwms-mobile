@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
 import 'dart:collection';
 import 'package:collection/collection.dart';
 
@@ -128,7 +128,7 @@ class _SystemDrivenWorkState extends State<SystemDrivenWork> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text("Claytech One - System Driven Work")),
+      appBar: AppBar(title: Text(uiText(context,"Claytech One - System Driven Work"))),
       resizeToAvoidBottomInset: true,
       body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

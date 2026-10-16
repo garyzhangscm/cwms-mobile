@@ -1,6 +1,7 @@
 
 
-import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
@@ -106,13 +107,13 @@ class _InventoryListItemState extends State<InventoryListItem> {
                     },
                     itemBuilder:
                         (BuildContext context) => <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
+                             PopupMenuItem<String>(
                               value: "change_quantity",
-                              child: Text("Change Quantity"),
+                              child: Text(uiText(context,"Change Quantity")),
                             ),
-                            const PopupMenuItem<String>(
+                             PopupMenuItem<String>(
                               value: "change_status",
-                              child: Text("Change Status"),
+                              child: Text(uiText(context,"Change Status")),
                             ),
                         ],
                   ),
@@ -281,7 +282,8 @@ class _InventoryListItemState extends State<InventoryListItem> {
                                 validator: (v) {
 
                                   if (v?.trim().isEmpty ?? true) {
-                                    return "please type in the quantity";
+                                    return uiText(
+                                  context,"please type in the quantity");
                                   }
                                   return null;
                                 }),

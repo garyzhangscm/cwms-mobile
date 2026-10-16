@@ -1,4 +1,4 @@
-import 'ota_update_scope.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'ota_update_scope.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
@@ -166,13 +166,14 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
       await showDialog<void>(
           context: dialogContext,
           builder: (context) => AlertDialog(
-                title: const Text('Apply downloaded update'),
-                content: const Text(
-                    'Finish your current task and check its result. Open the app switcher, swipe Claytech One up to close it, then reopen the app to apply the update.'),
+                title:  Text(uiText(context, "Apply downloaded update")),
+                content:  Text(
+                    uiText(context,
+                    "Finish your current task and check its result. Open the app switcher, swipe Claytech One up to close it, then reopen the app to apply the update.")),
                 actions: [
                   FilledButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'))
+                      child:  Text(uiText(context, "OK")))
                 ],
               ));
       if (mounted) setState(() => closing = false);
@@ -181,16 +182,17 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
     final confirmed = await showDialog<bool>(
         context: dialogContext,
         builder: (context) => AlertDialog(
-              title: const Text('Close app to apply update?'),
-              content: const Text(
-                  'Check that your last operation completed successfully. Unsaved entries will be lost. After closing, tap the app icon to reopen it.'),
+              title:  Text(uiText(context, "Close app to apply update?")),
+              content:  Text(
+                  uiText(context,
+                  "Check that your last operation completed successfully. Unsaved entries will be lost. After closing, tap the app icon to reopen it.")),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Cancel')),
+                    child:  Text(uiText(context, "Cancel"))),
                 FilledButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Close app'))
+                    child:  Text(uiText(context, "Close app")))
               ],
             ));
     if (!mounted) return;
@@ -243,29 +245,34 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                                controller.mandatory
+                                                uiText(
+                                                    context,controller.mandatory
                                                     ? 'Required update ready'
-                                                    : 'App update ready',
+                                                    : 'App update ready'),
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .titleLarge),
                                             const SizedBox(height: 8),
                                             Text(
-                                                '$release · Patch ${controller.current} -> ${controller.next}'),
+                                                uiTemplate(context,
+                                                "{0} · Patch {1} -> {2}", [release,controller.current,controller.next])),
                                             const SizedBox(height: 8),
-                                            Text(controller
+                                            Text(uiText(
+                                                context,controller
                                                     .policy.message.isEmpty
                                                 ? 'Close and reopen the app to apply the update.'
-                                                : controller.policy.message),
+                                                : controller.policy.message)),
                                             if (controller.mandatory)
-                                              const Text(
-                                                  'Update before starting another operation.'),
+                                               Text(
+                                                  uiText(context,
+                                                  "Update before starting another operation.")),
                                             const SizedBox(height: 12),
                                             Wrap(spacing: 12, children: [
                                               if (!controller.mandatory)
                                                 TextButton(
                                                     onPressed: controller.defer,
-                                                    child: const Text('Later')),
+                                                    child:  Text(uiText(
+                                                        context, "Later"))),
                                               FilledButton(
                                                   onPressed: closing ||
                                                           UpdateActivity
@@ -273,9 +280,10 @@ class _OtaUpdateGateState extends State<OtaUpdateGate>
                                                       ? null
                                                       : () =>
                                                           _close(innerContext),
-                                                  child: Text(isIOS
+                                                  child: Text(uiText(
+                                                      context,isIOS
                                                       ? 'How to apply update'
-                                                      : 'Close and reopen')),
+                                                      : 'Close and reopen'))),
                                             ]),
                                           ])),
                                 ))),

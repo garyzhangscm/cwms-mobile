@@ -1,4 +1,5 @@
-import '../../shared/updates/update_activity.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import '../../shared/updates/update_activity.dart';
 import '../services/production_submission.dart';
 import '../services/defective_machines.dart';
 import 'package:cwms_mobile/common/models/reason_code.dart';
@@ -62,9 +63,10 @@ class _WorkOrderProduceInventoryPageState
   String? _reasonError;
   bool _reasonsLoaded = false;
   bool _reasonPromptShown = false;
-  String get _pageTitle => widget.defective
+  String get _pageTitle => uiText(
+      context,widget.defective
       ? (workspaceIsChinese(context) ? '废品报产' : 'Defective')
-      : CWMSLocalizations.of(context).workOrderProduce;
+      : CWMSLocalizations.of(context).workOrderProduce);
 
   // input batch id
 
@@ -186,14 +188,15 @@ class _WorkOrderProduceInventoryPageState
     final reason = await showDialog<ReasonCode>(
         context: context,
         builder: (context) => AlertDialog(
-              title: Text(zh ? '选择废品原因' : 'Choose defective reason'),
+              title: Text(uiText(context,zh ? '选择废品原因' : 'Choose defective reason')),
               content: SizedBox(
                   width: 360,
                   child: _validReasonCodes.isEmpty
                       ? Text(_reasonError ??
-                          (zh
+                          uiText(
+                              context,(zh
                               ? '暂无可用原因，请重试。'
-                              : 'No reasons available. Please retry.'))
+                              : 'No reasons available. Please retry.')))
                       : ListView(shrinkWrap: true, children: [
                           for (final reason in _validReasonCodes)
                             ListTile(
@@ -207,7 +210,7 @@ class _WorkOrderProduceInventoryPageState
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text(zh ? '关闭' : 'Close'))
+                    child: Text(uiText(context,zh ? '关闭' : 'Close')))
               ],
             ));
     if (!mounted) return;
@@ -219,17 +222,19 @@ class _WorkOrderProduceInventoryPageState
       CWMSLocalizations.of(context).inventoryStatus,
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
-            _selectedInventoryStatus == null
+            uiText(
+                context,_selectedInventoryStatus == null
                 ? 'DMG / Damaged'
-                : '${_selectedInventoryStatus!.name} · ${_selectedInventoryStatus!.description ?? "Damaged"}',
+                : '${_selectedInventoryStatus!.name} · ${uiText(context,_selectedInventoryStatus!.description ?? "Damaged")}'),
             style: const TextStyle(
                 fontWeight: FontWeight.w600, color: Color(0xFFB45309))),
         if (_statusError != null)
-          Text(_statusError!, style: const TextStyle(color: Colors.red)),
+          Text(uiErrorText(context,_statusError!), style: const TextStyle(color: Colors.red)),
         if (_selectedInventoryStatus == null)
           TextButton(
               onPressed: _loadStatuses,
-              child: Text(workspaceIsChinese(context) ? '重试' : 'Retry')),
+              child: Text(uiText(
+                  context,workspaceIsChinese(context) ? '重试' : 'Retry'))),
       ]));
 
   Widget _buildDefectiveQuantity() {
@@ -248,9 +253,10 @@ class _WorkOrderProduceInventoryPageState
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
-                hintText: workspaceIsChinese(context)
+                hintText: uiText(
+                    context,workspaceIsChinese(context)
                     ? '废品数量'
-                    : 'Defective quantity'),
+                    : 'Defective quantity')),
             validator: (value) => (int.tryParse(value ?? '') ?? 0) > 0
                 ? null
                 : (workspaceIsChinese(context)
@@ -318,11 +324,12 @@ class _WorkOrderProduceInventoryPageState
             children: <Widget>[
               if (_bomFailed)
                 ListTile(
-                  title: const Text(
-                      'Unable to load material consumption details.'),
+                  title:  Text(
+                      uiText(
+                      context, "Unable to load material consumption details.")),
                   trailing: TextButton(
                     onPressed: () => _loadMatchedBillOfMaterial(retry: true),
-                    child: const Text('Retry'),
+                    child:  Text(uiText(context, "Retry")),
                   ),
                 ),
               buildTwoSectionInformationRowWithWidget(
@@ -464,7 +471,7 @@ class _WorkOrderProduceInventoryPageState
                                       // 校验ITEM NUMBER（不能为空）
                                       validator: (v) {
                                         if (v!.trim().isEmpty) {
-                                          return "please type in quantity";
+                                          return uiText(context,"please type in quantity");
                                         }
                                         return null;
                                       }),
@@ -581,9 +588,10 @@ class _WorkOrderProduceInventoryPageState
                     setState(() => _readyToConfirm = true);
                   }
                 },
-          child: Text(widget.defective
+          child: Text(uiText(
+              context,widget.defective
               ? (workspaceIsChinese(context) ? '确认废品报产' : 'Confirm Defective')
-              : CWMSLocalizations.of(context).confirm),
+              : CWMSLocalizations.of(context).confirm)),
         ));
   }
 
@@ -598,7 +606,7 @@ class _WorkOrderProduceInventoryPageState
                 onPressed: _chooseDefectiveReason,
                 icon: const Icon(Icons.list_rounded),
                 label: Text(_selectedReasonCode?.name ??
-                    (workspaceIsChinese(context)
+                    uiText(context,workspaceIsChinese(context)
                         ? '选择废品原因'
                         : 'Choose defective reason')))
           else
@@ -620,11 +628,12 @@ class _WorkOrderProduceInventoryPageState
               },
             ),
           if (_reasonError != null)
-            Text(_reasonError!, style: const TextStyle(color: Colors.orange)),
+            Text(uiErrorText(context,_reasonError!), style: const TextStyle(color: Colors.orange)),
           if (_reasonError != null)
             TextButton(
                 onPressed: _loadReasons,
-                child: Text(workspaceIsChinese(context) ? '重试' : 'Retry')),
+                child: Text(uiText(
+                    context,workspaceIsChinese(context) ? '重试' : 'Retry'))),
         ]));
   }
 

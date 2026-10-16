@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request_action.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_result.dart';
@@ -60,7 +60,8 @@ class _CycleCountRequestPageState extends State<CycleCountRequestPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("Claytech One - Cycle Count - ${_cycleCountRequest?.location?.name}")),
+      appBar: AppBar(title: Text(uiTemplate(context, "Claytech One - Cycle Count - {0}",
+              [_cycleCountRequest?.location?.name]))),
       resizeToAvoidBottomInset: true,
       body: _buildInventorySummaryList(context),
       bottomNavigationBar:_buildBottomNavigationBar(context),

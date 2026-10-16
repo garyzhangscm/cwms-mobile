@@ -1,5 +1,5 @@
 
-import 'dart:collection';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:collection';
 import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -109,7 +109,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
                         focusNode: _waveNumberFocusNode,
                         decoration: InputDecoration(
                           labelText: CWMSLocalizations.of(context).waveNumber,
-                          hintText: "please input wave number",
+                          hintText: uiText(context,"please input wave number"),
                           suffixIcon:
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line

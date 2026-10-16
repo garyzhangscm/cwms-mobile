@@ -1,5 +1,5 @@
 
-import 'dart:core';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -112,7 +112,7 @@ class _PickByBatchPageState extends State<PickByBatchPage> {
                         focusNode: _pickNumberFocusNode,
                         decoration: InputDecoration(
                           labelText: CWMSLocalizations.of(context).pick,
-                          hintText: "please input pick number",
+                          hintText: uiText(context,"please input pick number"),
                           suffixIcon:
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line

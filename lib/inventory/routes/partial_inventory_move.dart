@@ -1,4 +1,5 @@
-import 'dart:async';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
@@ -106,7 +107,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Claytech One - Partial Inventory Move")),
+      appBar: AppBar(title: Text(uiText(context,"Claytech One - Partial Inventory Move"))),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -224,10 +225,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             // 校验ITEM NUMBER（不能为空）
             validator: (v) {
               if (v!.trim().isEmpty) {
-                return "please type in quantity";
+                return uiText(context,"please type in quantity");
               }
               if (!_validateQuantity()) {
-                return "over receive is not allowed";
+                return uiText(context,"over receive is not allowed");
               }
               return null;
             }),
@@ -600,7 +601,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                   _inventoryDepositRequests[index].newLpn!),
               subtitle: Column(children: <Widget>[
                 Row(children: <Widget>[
-                  Text("From LPN: ",
+                  Text(uiText(context,"From LPN: "),
                       textScaleFactor: .9,
                       style: TextStyle(
                         height: 1.15,

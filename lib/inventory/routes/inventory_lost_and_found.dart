@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart' as badge;
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
 import 'package:cwms_mobile/inventory/models/inventory_status.dart';
@@ -295,7 +295,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
                       // 校验ITEM NUMBER（不能为空）
                       validator: (v) {
                         if (v!.trim().isEmpty) {
-                          return "please type in quantity";
+                          return uiText(context,"please type in quantity");
                         }
 
                         return null;

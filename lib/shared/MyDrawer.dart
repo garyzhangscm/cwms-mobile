@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/states/profile_change_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -76,9 +76,10 @@ class MyDrawer extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title: Text(workspaceIsChinese(context)
+              title: Text(uiText(
+                  context,workspaceIsChinese(context)
                   ? '关于 Claytech One'
-                  : 'About Claytech One'),
+                  : 'About Claytech One')),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(MaterialPageRoute<void>(

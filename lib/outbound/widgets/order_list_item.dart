@@ -1,6 +1,6 @@
 
 
-import 'package:cwms_mobile/outbound/models/order.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/outbound/models/order.dart';
 import 'package:flutter/material.dart';
 
 class OrderListItem extends StatefulWidget {
@@ -154,7 +154,7 @@ class _OrderListItemState extends State<OrderListItem> {
                         children: [
                           Icon(widget.highPriorityFlag ?
                             Icons.star : Icons.star_border),
-                          Text("High priority"),
+                          Text(uiText(context,"High priority")),
 
                         ],
                       ),
@@ -166,7 +166,7 @@ class _OrderListItemState extends State<OrderListItem> {
                       children: [
                         Icon(widget.sharedFlag ?
                             Icons.share : Icons.share_outlined),
-                        Text(" Share"),
+                        Text(uiText(context," Share")),
                       ],
                     ),
                   ),
@@ -176,7 +176,7 @@ class _OrderListItemState extends State<OrderListItem> {
                       Column(
                         children: [
                           Icon(Icons.delete), //我们的自定义图标
-                          Text("Remove"),
+                          Text(uiText(context,"Remove")),
                         ],
                       )
                  ),

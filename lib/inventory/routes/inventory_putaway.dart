@@ -1,4 +1,4 @@
-import '../services/putaway_sync_queue.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import '../services/putaway_sync_queue.dart';
 import '../services/putaway_sync_gateway.dart';
 import 'dart:async';
 
@@ -104,15 +104,16 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage>
                   color: state == 'online' ? Colors.green : Colors.orange)),
           const SizedBox(width: 8),
           Expanded(
-              child: Text('$label · ${_queue?.pendingCount ?? 0} pending',
+              child: Text(uiTemplate(context, "{0} · {1} pending",
+                      [uiText(context,label),_queue?.pendingCount ?? 0]),
                   style: const TextStyle(fontSize: 12))),
           if (state == 'login')
             TextButton(
                 onPressed: () => Navigator.of(context).pushNamed('login_page'),
-                child: const Text('Sign in')),
+                child:  Text(uiText(context, "Sign in"))),
           if (_queue != null)
             TextButton(
-                child: const Text('Sync'),
+                child:  Text(uiText(context, "Sync")),
                 onPressed: () {
                   unawaited(_queue!.kick());
                 }),
@@ -149,7 +150,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Claytech One - Inventory Putaway")),
+      appBar: AppBar(title: Text(uiText(context,"Claytech One - Inventory Putaway"))),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -185,7 +186,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage>
         autofocus: true,
         decoration: InputDecoration(
           labelText: CWMSLocalizations.of(context).lpn,
-          hintText: "please input LPN",
+          hintText: uiText(context,"please input LPN"),
           suffixIcon: IconButton(
             onPressed: () => _clearLPN(),
             icon: Icon(Icons.close),
@@ -321,10 +322,11 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage>
                 : Colors.amberAccent,
         padding: const EdgeInsets.all(12),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('LPN: ${request.lpn}'),
-          Text('Item: ${request.itemName ?? '—'}'),
-          Text('Quantity: ${request.quantity?.toString() ?? '—'}'),
-          Text(message, style: const TextStyle(fontSize: 12)),
+          Text(uiTemplate(context, "LPN: {0}", [request.lpn])),
+          Text(uiTemplate(context, "Item: {0}", [request.itemName ?? '—'])),
+          Text(uiTemplate(
+              context, "Quantity: {0}", [request.quantity?.toString() ?? '—'])),
+          Text(uiText(context,message), style: const TextStyle(fontSize: 12)),
           if (!pending && !completed)
             TextButton(
                 onPressed: () async {
@@ -339,7 +341,7 @@ class _InventoryPutawayPageState extends State<InventoryPutawayPage>
                           context, 'Could not save retry. Please try again.');
                   }
                 },
-                child: const Text('Retry this LPN')),
+                child:  Text(uiText(context, "Retry this LPN"))),
         ]));
   }
 

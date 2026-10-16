@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'spanish_ui.dart';import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'messages_all.dart'; //1
 
@@ -381,7 +381,7 @@ class CWMSLocalizations {
       return _mapRep[menuI18n];
     }
     else {
-      return defaultText;
+      return localizedUi(defaultText);
     }
   }
 

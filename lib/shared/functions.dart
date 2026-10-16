@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:convert';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -39,7 +39,7 @@ void showToast(
   toastLength = Toast.LENGTH_SHORT,
 }) {
   Fluttertoast.showToast(
-    msg: text,
+    msg: localizedUi(text),
     toastLength: toastLength,
     gravity: gravity,
     timeInSecForIosWeb: 1,
@@ -54,7 +54,7 @@ void showErrorToast(
   toastLength = Toast.LENGTH_SHORT,
 }) {
   Fluttertoast.showToast(
-    msg: text,
+    msg: localizedUi(text),
     toastLength: toastLength,
     gravity: gravity,
     timeInSecForIosWeb: 1,
@@ -145,7 +145,7 @@ showErrorDialog(BuildContext context, String message) {
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
     title: Text(CWMSLocalizations.of(context).error),
-    content: Text(message),
+    content: Text(uiErrorText(context,message)),
     actions: [
       okButton,
     ],
@@ -162,7 +162,7 @@ showErrorDialog(BuildContext context, String message) {
 
 showBlockedErrorDialog(BuildContext context, String message) async {
   await showBlockedDialog(
-      context, CWMSLocalizations.of(context).error, message);
+      context, CWMSLocalizations.of(context).error, uiErrorText(context,message));
 }
 
 showBlockedWarningDialog(BuildContext context, String message) async {
@@ -181,8 +181,8 @@ showBlockedDialog(BuildContext context, String title, String message) async {
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(title),
-    content: Text(message),
+    title: Text(uiText(context,title)),
+    content: Text(uiText(context,message)),
     actions: [
       okButton,
     ],
@@ -209,7 +209,7 @@ showWarningDialog(BuildContext context, String message) {
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
     title: Text(CWMSLocalizations.of(context).warning),
-    content: Text(message),
+    content: Text(uiText(context,message)),
     actions: [
       okButton,
     ],
@@ -244,8 +244,8 @@ Future<bool?> showYesNoDialog(BuildContext context, String title,
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(title),
-    content: Text(message),
+    title: Text(uiText(context,title)),
+    content: Text(uiText(context,message)),
     actions: [
       okButton,
       cancelButton,
@@ -293,8 +293,8 @@ Future<bool?> showYesNoCancelDialog(
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(title),
-    content: Text(message),
+    title: Text(uiText(context,title)),
+    content: Text(uiText(context,message)),
     actions: [yesButton, noButton, cancelButton],
   );
 

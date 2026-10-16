@@ -1,4 +1,5 @@
-import 'dart:async';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
 import 'dart:math';
 
 import 'package:badges/badges.dart' as badge;
@@ -177,13 +178,13 @@ class _PickPageState extends State<PickPage> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text("Claytech One - Pick")),
+      appBar: AppBar(title: Text(uiText(context,"Claytech One - Pick"))),
       resizeToAvoidBottomInset: true,
       body:
           Column(
             children: <Widget>[
-              buildTwoSectionInformationRow("Work Number:", widget.workNumber),
-              buildTwoSectionInformationRow("Location:", widget.currentPick.sourceLocation?.name ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Work Number:"), widget.workNumber),
+              buildTwoSectionInformationRow(uiText(context,"Location:"), widget.currentPick.sourceLocation?.name ?? ""),
               _buildLocationInput(context),
               _buildLPNInput(context),
               buildTwoSectionInformationRowWithWidget(
@@ -193,34 +194,34 @@ class _PickPageState extends State<PickPage> {
               // add the batch pick quantity only if the quantity to be picked is more than the single pick
               // _currentPick.batchPickQuantity > _currentPick.quantity - _currentPick.pickedQuantity ?
               (widget.currentPick.batchPickQuantity ?? 0) > 0 ?
-                  buildTwoSectionInformationRow("Batch Pick Quantity:",
+                  buildTwoSectionInformationRow(uiText(context,"Batch Pick Quantity:"),
                       widget.currentPick.batchPickQuantity.toString() +
                           (_pickableInventoryItemPackageType == null ? "" :
                               _getPickQuantityIndicator(widget.currentPick.batchPickQuantity!)))
                   :
-                  buildTwoSectionInformationRow("Pick Quantity:",
+                  buildTwoSectionInformationRow(uiText(context,"Pick Quantity:"),
                       widget.currentPick.quantity.toString() +
                       (_pickableInventoryItemPackageType == null ? "" :
                       _getPickQuantityIndicator(widget.currentPick.quantity!))) ,
-              buildTwoSectionInformationRow("Picked Quantity:",
+              buildTwoSectionInformationRow(uiText(context,"Picked Quantity:"),
                   widget.currentPick.pickedQuantity.toString() +
                       (_pickableInventoryItemPackageType == null ? "" :
                       _getPickQuantityIndicator(widget.currentPick.pickedQuantity!))),
               (widget.currentPick.batchPickQuantity ?? 0) > 0 ?
-                  buildTwoSectionInformationRow("Remaining Quantity:",
+                  buildTwoSectionInformationRow(uiText(context,"Remaining Quantity:"),
                       widget.currentPick.batchPickQuantity!.toString() +
                           (_pickableInventoryItemPackageType == null ? "" :
                           _getPickQuantityIndicator(widget.currentPick.batchPickQuantity!)))
                   :
-                  buildTwoSectionInformationRow("Remaining Quantity:",
+                  buildTwoSectionInformationRow(uiText(context,"Remaining Quantity:"),
                       (widget.currentPick.quantity! - widget.currentPick.pickedQuantity!).toString() +
                           (_pickableInventoryItemPackageType == null ? "" :
                           _getPickQuantityIndicator(widget.currentPick.quantity! - widget.currentPick.pickedQuantity!))),
-              buildTwoSectionInformationRow("Inventory Quantity:",
+              buildTwoSectionInformationRow(uiText(context,"Inventory Quantity:"),
                       _lpnQuantity.toString() +
                       (_pickableInventoryItemPackageType == null ? "" :
                       _getPickQuantityIndicator(_lpnQuantity))),
-              widget.destinationLPN.isEmpty? Container() : buildTwoSectionInformationRow("Destination LPN:", widget.destinationLPN),
+              widget.destinationLPN.isEmpty? Container() : buildTwoSectionInformationRow(uiText(context,"Destination LPN:"), widget.destinationLPN),
               _buildQuantityInput(context),
               _buildButtons(context),
             ],
@@ -431,7 +432,7 @@ class _PickPageState extends State<PickPage> {
             ),
             Expanded(
               child: Text(
-                'Pick Error',
+                uiText(context, "Pick Error"),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -568,7 +569,7 @@ class _PickPageState extends State<PickPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Choose a Pick'),
+          title:  Text(uiText(context, "Choose a Pick")),
           content:
             SingleChildScrollView(
               physics: ScrollPhysics(),
@@ -606,8 +607,8 @@ class _PickPageState extends State<PickPage> {
                                 title: Text(
                                     "${widget.assignedPicks[index].sourceLocation?.name ?? ""} : " +
                                         "${widget.assignedPicks[index].item?.name ?? ""}"),
-                                subtitle: Text("Qty: ${widget.assignedPicks[index].quantity!}," +
-                                    " Remaining Qty: ${widget.assignedPicks[index].quantity! - widget.assignedPicks[index].pickedQuantity!}"),
+                                subtitle: Text(uiTemplate(
+                            context, "Qty: {0}, Remaining Qty: {1}", [widget.assignedPicks[index].quantity!,widget.assignedPicks[index].quantity! - widget.assignedPicks[index].pickedQuantity!])),
 
 
                               )

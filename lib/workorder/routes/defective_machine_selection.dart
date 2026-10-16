@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:flutter/material.dart';
 import '../../shared/workspace_ui.dart';
 import '../models/work_order.dart';
 import '../services/defective_machines.dart';
@@ -115,17 +115,19 @@ class _DefectiveMachineSelectionPageState
         } catch (_) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(_zh
+              content: Text(uiText(
+                  context,_zh
                   ? '报产资料加载失败，请重试。'
-                  : 'Unable to load reporting details. Please retry.')));
+                  : 'Unable to load reporting details. Please retry.'))));
           return;
         }
       }
       if (order.item == null || order.item!.itemPackageTypes.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(_zh
+            content: Text(uiText(
+                context,_zh
                 ? '物料或包装资料缺失，请刷新或检查配置。'
-                : 'Item or package details are missing. Refresh or check configuration.')));
+                : 'Item or package details are missing. Refresh or check configuration.'))));
         return;
       }
       await Navigator.pushNamed(context, 'work_order_defective_inventory',
@@ -143,9 +145,9 @@ class _DefectiveMachineSelectionPageState
   @override
   Widget build(BuildContext context) => Scaffold(
       backgroundColor: const Color(0xFFF3F5F9),
-      appBar: AppBar(title: Text(_zh ? '废品报产' : 'Defective'), actions: [
+      appBar: AppBar(title: Text(uiText(context,_zh ? '废品报产' : 'Defective')), actions: [
         IconButton(
-            tooltip: _zh ? '刷新' : 'Refresh',
+            tooltip: uiText(context,_zh ? '刷新' : 'Refresh'),
             onPressed:
                 _refreshing || _opening ? null : () => _load(refresh: true),
             icon: const Icon(Icons.refresh_rounded)),
@@ -157,16 +159,17 @@ class _DefectiveMachineSelectionPageState
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(_zh ? '选择机器' : 'Choose a machine',
+              Text(uiText(context,_zh ? '选择机器' : 'Choose a machine'),
                   style: Theme.of(context)
                       .textTheme
                       .headlineSmall
                       ?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               Text(
-                  _zh
+                  uiText(
+                      context,_zh
                       ? '点击正在生产的机器，开始废品报产。'
-                      : 'Select your assigned machine to report defective output.',
+                      : 'Select your assigned machine to report defective output.'),
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium
@@ -177,18 +180,18 @@ class _DefectiveMachineSelectionPageState
         if (_refreshing && _machines.isNotEmpty)
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Text(_zh ? '正在更新机器资料…' : 'Updating machines…',
+              child: Text(uiText(context,_zh ? '正在更新机器资料…' : 'Updating machines…'),
                   style: Theme.of(context).textTheme.bodySmall)),
         if (_error != null && _machines.isNotEmpty)
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(children: [
                 Expanded(
-                    child: Text(_error!,
+                    child: Text(uiErrorText(context,_error!),
                         style: const TextStyle(color: Colors.orange))),
                 TextButton(
                     onPressed: () => _load(refresh: true),
-                    child: Text(_zh ? '重试' : 'Retry')),
+                    child: Text(uiText(context,_zh ? '重试' : 'Retry'))),
               ])),
         Expanded(
             child: _loading
@@ -198,16 +201,17 @@ class _DefectiveMachineSelectionPageState
                         child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                            Text(_error!),
+                            Text(uiErrorText(context,_error!)),
                             TextButton(
                                 onPressed: _load,
-                                child: Text(_zh ? '重试' : 'Retry'))
+                                child: Text(uiText(context,_zh ? '重试' : 'Retry')))
                           ]))
                     : _machines.isEmpty
                         ? Center(
-                            child: Text(_zh
+                            child: Text(uiText(
+                                context,_zh
                                 ? '暂无已分配有效工单的机器'
-                                : 'No machines with active assigned work orders'))
+                                : 'No machines with active assigned work orders')))
                         : RefreshIndicator(
                             onRefresh: () => _load(refresh: true),
                             child: ListView.builder(
@@ -250,7 +254,7 @@ class _DefectiveMachineSelectionPageState
                       },
                 icon: const Icon(Icons.qr_code_scanner_rounded),
                 label:
-                    Text(_zh ? '扫描／输入机器编号' : 'Scan / enter machine number'))),
+                    Text(uiText(context,_zh ? '扫描／输入机器编号' : 'Scan / enter machine number')))),
       ])));
 
   Widget _card(DefectiveMachine machine) => Material(

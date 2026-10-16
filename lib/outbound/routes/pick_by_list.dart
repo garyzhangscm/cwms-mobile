@@ -1,5 +1,5 @@
 
-import 'dart:core';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -137,7 +137,7 @@ class _PickByListPageState extends State<PickByListPage> {
                         focusNode: _pickListNumberFocusNode,
                         decoration: InputDecoration(
                           labelText: CWMSLocalizations.of(context).pickList,
-                          hintText: "please input pick list",
+                          hintText: uiText(context,"please input pick list"),
                           suffixIcon:
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
@@ -171,7 +171,7 @@ class _PickByListPageState extends State<PickByListPage> {
                     focusNode: _newLPNNumberFocusNode,
                     decoration: InputDecoration(
                       labelText: CWMSLocalizations.of(context).lpn,
-                      hintText: "please input a new lpn",
+                      hintText: uiText(context,"please input a new lpn"),
                       suffixIcon:
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
@@ -212,7 +212,7 @@ class _PickByListPageState extends State<PickByListPage> {
                       },
 
                     ),
-                    Text("Retain LPN for LPN Pick"),
+                    Text(uiText(context,"Retain LPN for LPN Pick")),
 
                   ]
               ),

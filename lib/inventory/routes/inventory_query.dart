@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/shared/adaptive_layout.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/inventory_delete_policy.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -67,10 +67,10 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Claytech One - Inventory"),
+        title: Text(uiText(context,"Claytech One - Inventory")),
         actions: [
           IconButton(
-            tooltip: 'Multiple LPN Capture',
+            tooltip: uiText(context, "Multiple LPN Capture"),
             icon: const Icon(Icons.document_scanner_outlined),
             onPressed: () async {
               final lpns =
@@ -79,7 +79,10 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                     content: Text(
-                        '${lpns.length} LPN(s) captured for the next operation.')),
+                        uiTemplate(
+                        context,
+                        "{0} LPN(s) captured for the next operation.",
+                        [lpns.length]))),
               );
             },
           ),
@@ -112,11 +115,14 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                   content: Text(
-                                      '${lpns.length} LPN(s) captured for the next operation.')),
+                                      uiTemplate(
+                                      context,
+                                      "{0} LPN(s) captured for the next operation.",
+                                      [lpns.length]))),
                             );
                           },
                           icon: const Icon(Icons.document_scanner_outlined),
-                          label: const Text('Multiple LPN Capture'),
+                          label:  Text(uiText(context, "Multiple LPN Capture")),
                         ),
                         OutlinedButton.icon(
                           onPressed: _deletingLpn ? null : _openDeleteLpn,
@@ -128,7 +134,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
                                       CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.delete_outline),
-                          label: const Text('Delete LPN'),
+                          label:  Text(uiText(context, "Delete LPN")),
                           style: OutlinedButton.styleFrom(
                             foregroundColor:
                                 Theme.of(context).colorScheme.error,
@@ -263,12 +269,12 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('Delete LPN'),
+          title:  Text(uiText(context, "Delete LPN")),
           content: TextFormField(
             initialValue: enteredLpn,
             autofocus: true,
             textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(labelText: 'LPN'),
+            decoration:  InputDecoration(labelText: uiText(context, "LPN")),
             onChanged: (value) => setDialogState(() => enteredLpn = value),
             onFieldSubmitted: (value) {
               if (value.trim().isNotEmpty) {
@@ -279,13 +285,13 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
+              child:  Text(uiText(context, "Cancel")),
             ),
             TextButton(
               onPressed: enteredLpn.trim().isEmpty
                   ? null
                   : () => Navigator.of(dialogContext).pop(enteredLpn.trim()),
-              child: const Text('Find'),
+              child:  Text(uiText(context, "Find")),
             ),
           ],
         ),
@@ -332,28 +338,31 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete LPN?'),
+        title:  Text(uiText(context, "Delete LPN?")),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('LPN: ${inventory.lpn}'),
-            Text('Item: ${inventory.item?.name ?? '-'}'),
-            Text('Location: ${inventory.location?.name}'),
-            Text('Quantity: ${inventory.quantity ?? '-'}'),
+            Text(uiTemplate(context, "LPN: {0}", [inventory.lpn])),
+            Text(uiTemplate(
+                context, "Item: {0}", [inventory.item?.name ?? '-'])),
+            Text(uiTemplate(
+                context, "Location: {0}", [inventory.location?.name])),
+            Text(uiTemplate(
+                context, "Quantity: {0}", [inventory.quantity ?? '-'])),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child:  Text(uiText(context, "Cancel")),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child:  Text(uiText(context, "Delete")),
           ),
         ],
       ),

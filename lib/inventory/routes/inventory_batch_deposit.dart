@@ -1,4 +1,5 @@
-import 'dart:async';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
 import 'dart:math';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -64,7 +65,8 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
     return Scaffold(
       appBar: AppBar(
           title: Text(
-              "Claytech One ${CWMSLocalizations.of(context).batchDepositInventory}")),
+              uiTemplate(context, "Claytech One {0}",
+              [CWMSLocalizations.of(context).batchDepositInventory]))),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -111,7 +113,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         backgroundColor: Theme.of(context).primaryColor,
       ),
       onPressed: _isThereAvailableInventoryForDeposit() ? _depositAll : null,
-      child: Text("Deposit All"),
+      child: Text(uiText(context,"Deposit All")),
     );
   }
 
@@ -123,13 +125,13 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
       ),
       onPressed:
           _isThereAvailableInventoryForDeposit() ? _depositSelectedLPN : null,
-      child: Text("Deposit Selected LPN"),
+      child: Text(uiText(context,"Deposit Selected LPN")),
     );
   }
 
   Widget _buildSortByCriteria(BuildContext context) {
     return buildTwoSectionInputRow(
-        "Sort By",
+        uiText(context,"Sort By"),
         DropdownButton(
           // hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
           items: _getSortByCriteriaItems(),

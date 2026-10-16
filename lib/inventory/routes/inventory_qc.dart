@@ -1,4 +1,4 @@
-import 'package:cwms_mobile/shared/adaptive_layout.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -75,7 +75,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Claytech One - Inventory QC")),
+      appBar: AppBar(title: Text(uiText(context,"Claytech One - Inventory QC"))),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -119,14 +119,14 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
         Expanded(
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-              Text("Inventory quality check",
+                children:  [
+              Text(uiText(context,"Inventory quality check"),
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 21,
                       fontWeight: FontWeight.w700)),
               SizedBox(height: 4),
-              Text("Scan an LPN to review QC status",
+              Text(uiText(context,"Scan an LPN to review QC status"),
                   style: TextStyle(color: Color(0xB8FFFFFF), fontSize: 14)),
             ])),
       ]),
@@ -140,7 +140,7 @@ class _InventoryQCPageState extends State<InventoryQCPage> {
       autofocus: true,
       decoration: InputDecoration(
         labelText: CWMSLocalizations.of(context).lpn,
-        hintText: "Scan or enter LPN",
+        hintText: uiText(context,"Scan or enter LPN"),
         prefixIcon: const Icon(Icons.qr_code_scanner),
         filled: true,
         fillColor: Theme.of(context)

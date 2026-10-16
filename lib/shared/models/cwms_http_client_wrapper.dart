@@ -1,5 +1,5 @@
 
-import 'dart:io';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:io';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/shared/functions.dart';
@@ -195,7 +195,7 @@ class CWMSHttpClientAdapter {
         if (_isTokenTimeout(response.statusCode!)) {
 
             return CWMSHttpResponse.failureFromError(
-                UnauthorisedException(message: "Not Auth", code: response.statusCode!));
+                UnauthorisedException(message: localizedUi("Not Auth"), code: response.statusCode!));
 
         }
         // 接口调用成功

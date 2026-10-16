@@ -1,4 +1,4 @@
-import '../updates/ota_update_scope.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import '../updates/ota_update_scope.dart';
 import 'package:cwms_mobile/shared/workspace_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -32,7 +32,7 @@ class _AppInformationPageState extends State<AppInformationPage> {
     return Scaffold(
       backgroundColor: workspaceBackground,
       appBar:
-          AppBar(title: Text(zh ? '关于 Claytech One' : 'About Claytech One')),
+          AppBar(title: Text(uiText(context,zh ? '关于 Claytech One' : 'About Claytech One'))),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -40,14 +40,14 @@ class _AppInformationPageState extends State<AppInformationPage> {
             child: ListView(padding: const EdgeInsets.all(20), children: [
               const Icon(Icons.layers_rounded, size: 48, color: workspaceNavy),
               const SizedBox(height: 12),
-              const Center(
-                  child: Text('Claytech One',
+               Center(
+                  child: Text(uiText(context, "Claytech One"),
                       style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
                           color: workspaceNavy))),
               const SizedBox(height: 6),
-              const Center(child: Text('olivet international inc.')),
+               Center(child: Text(uiText(context, "olivet international inc."))),
               FutureBuilder<PackageInfo>(
                 future: _packageInfo,
                 builder: (_, snapshot) => Center(
@@ -62,9 +62,10 @@ class _AppInformationPageState extends State<AppInformationPage> {
                 Center(
                     child: TextButton(
                   onPressed: updater!.checking ? null : updater.check,
-                  child: Text(updater.checking
+                  child: Text(uiText(
+                      context,updater.checking
                       ? (zh ? '正在检查更新…' : 'Checking for updates...')
-                      : (zh ? '检查更新' : 'Check for updates')),
+                      : (zh ? '检查更新' : 'Check for updates'))),
                 )),
                 if (updater.error != null)
                   Text(updater.error!, textAlign: TextAlign.center),
@@ -72,32 +73,33 @@ class _AppInformationPageState extends State<AppInformationPage> {
                     !updater.checking &&
                     updater.error == null &&
                     !updater.ready)
-                  Center(child: Text(zh ? '已是最新版本' : 'App is up to date')),
+                  Center(child: Text(uiText(
+                          context,zh ? '已是最新版本' : 'App is up to date'))),
               ],
               const SizedBox(height: 24),
               Card(
                   child: Column(children: [
                 ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined),
-                    title: Text(zh ? '隐私政策' : 'Privacy Policy'),
+                    title: Text(uiText(context,zh ? '隐私政策' : 'Privacy Policy')),
                     onTap: () => openAppPrivacy(context)),
                 const Divider(height: 1),
                 ListTile(
                     leading: const Icon(Icons.support_agent_outlined),
-                    title: Text(zh ? '技术支持' : 'Technical Support'),
+                    title: Text(uiText(context,zh ? '技术支持' : 'Technical Support')),
                     onTap: () => _openPublicPage(context,
                         zh ? '技术支持' : 'Technical Support', appSupportUrl)),
                 const Divider(height: 1),
                 ListTile(
                     leading: const Icon(Icons.description_outlined),
-                    title: Text(zh ? '开源许可' : 'Open-source Licenses'),
+                    title: Text(uiText(context,zh ? '开源许可' : 'Open-source Licenses')),
                     onTap: () => showLicensePage(
                         context: context,
                         applicationName: 'Claytech One',
                         applicationVersion: '1.62.3')),
               ])),
               const SizedBox(height: 20),
-              Text(zh ? '联系我们' : 'Contact',
+              Text(uiText(context,zh ? '联系我们' : 'Contact'),
                   style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               const SelectableText(
@@ -168,13 +170,14 @@ class _PublicInformationPageState extends State<PublicInformationPage> {
                   child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Text(zh
+                        Text(uiText(
+                            context,zh
                             ? '页面加载失败，请检查网络后重试。'
-                            : 'Could not load this page. Check your connection and retry.'),
+                            : 'Could not load this page. Check your connection and retry.')),
                         const SizedBox(height: 12),
                         FilledButton(
                             onPressed: _retry,
-                            child: Text(zh ? '重试' : 'Retry')),
+                            child: Text(uiText(context,zh ? '重试' : 'Retry'))),
                         const SizedBox(height: 12),
                         SelectableText(widget.url),
                       ])))

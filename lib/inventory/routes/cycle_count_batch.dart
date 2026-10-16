@@ -1,4 +1,5 @@
-import 'package:cwms_mobile/i18n/localization_intl.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_batch.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request.dart';
 import 'package:cwms_mobile/inventory/models/cycle_count_request_action.dart';
@@ -55,7 +56,7 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("Claytech One - Cycle Count")),
+      appBar: AppBar(title: Text(uiText(context,"Claytech One - Cycle Count"))),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -80,12 +81,13 @@ class _CycleCountBatchPageState extends State<CycleCountBatchPage> {
     return TextFormField(
         controller: _batchIdController,
         decoration: InputDecoration(
-          labelText: "batch ID",
-          hintText: "please input batch id",
+          labelText: uiText(context,"batch ID"),
+          hintText: uiText(context,"please input batch id"),
         ),
         // 校验用户名（不能为空）
         validator: (v) {
-          return v!.trim().isNotEmpty ? null : "batch ID is required";
+          return uiOptionalText(
+              context,v!.trim().isNotEmpty ? null : "batch ID is required");
         });
   }
 

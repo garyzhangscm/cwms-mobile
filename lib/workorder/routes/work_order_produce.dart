@@ -1,4 +1,4 @@
-import 'dart:collection';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:collection';
 import 'dart:core';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -27,9 +27,10 @@ class WorkOrderProducePage extends StatefulWidget {
 }
 
 class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
-  String get _pageTitle => widget.defective
+  String get _pageTitle => uiText(
+      context,widget.defective
       ? (workspaceIsChinese(context) ? '废品报产' : 'Defective')
-      : CWMSLocalizations.of(context).workOrderProduce;
+      : CWMSLocalizations.of(context).workOrderProduce);
   // input batch id
   TextEditingController _workOrderNumberController =
       new TextEditingController();
@@ -149,7 +150,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Select a work order and production line",
+                  uiText(context,"Select a work order and production line"),
                   style: TextStyle(
                     color: Colors.white.withOpacity(.72),
                     fontSize: 14,

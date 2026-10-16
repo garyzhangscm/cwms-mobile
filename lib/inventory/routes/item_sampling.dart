@@ -1,5 +1,5 @@
 
-import 'dart:io';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:io';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -67,7 +67,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text("Claytech One - Item Sampling")),
+      appBar: AppBar(title: Text(uiText(context,"Claytech One - Item Sampling"))),
       resizeToAvoidBottomInset: true,
       body:
           Column(

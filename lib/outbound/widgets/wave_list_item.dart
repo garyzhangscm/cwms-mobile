@@ -1,6 +1,6 @@
 
 
-import 'package:flutter/material.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:flutter/material.dart';
 
 import '../models/wave.dart';
 
@@ -102,7 +102,7 @@ class _WaveListItemState extends State<WaveListItem> {
                       Column(
                         children: [
                           Icon(Icons.delete), //我们的自定义图标
-                          Text("Remove"),
+                          Text(uiText(context,"Remove")),
                         ],
                       )
                  ),

@@ -1,5 +1,5 @@
 
-import 'dart:core';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:core';
 import 'dart:developer';
 import 'dart:io';
 
@@ -60,9 +60,10 @@ class _QRCodeViewState extends State<QRCodeView> {
                 children: <Widget>[
                   if (result != null)
                     Text(
-                        'Barcode Type: ${result?.format.name}   Data: ${result?.code}')
+                        uiTemplate(context, "Barcode Type: {0}   Data: {1}",
+                        [result?.format.name,result?.code]))
                   else
-                    const Text('Scan a code'),
+                     Text(uiText(context, "Scan a code")),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -77,7 +78,8 @@ class _QRCodeViewState extends State<QRCodeView> {
                             child: FutureBuilder(
                               future: controller?.getFlashStatus(),
                               builder: (context, snapshot) {
-                                return Text('Flash: ${snapshot.data}');
+                                return Text(uiTemplate(
+                                    context, "Flash: {0}", [snapshot.data]));
                               },
                             )),
                       ),
@@ -93,9 +95,10 @@ class _QRCodeViewState extends State<QRCodeView> {
                               builder: (context, snapshot) {
                                 if (snapshot.data != null) {
                                   return Text(
-                                      'Camera facing ${snapshot.data}');
+                                      uiTemplate(context,
+                                      "Camera facing {0}", [snapshot.data]));
                                 } else {
-                                  return const Text('loading');
+                                  return  Text(uiText(context, "loading"));
                                 }
                               },
                             )),
@@ -112,7 +115,7 @@ class _QRCodeViewState extends State<QRCodeView> {
                           onPressed: () async {
                             await controller?.pauseCamera();
                           },
-                          child: const Text('pause',
+                          child:  Text(uiText(context, "pause"),
                               style: TextStyle(fontSize: 20)),
                         ),
                       ),
@@ -122,7 +125,7 @@ class _QRCodeViewState extends State<QRCodeView> {
                           onPressed: () async {
                             await controller?.resumeCamera();
                           },
-                          child: const Text('resume',
+                          child:  Text(uiText(context, "resume"),
                               style: TextStyle(fontSize: 20)),
                         ),
                       )
@@ -185,7 +188,7 @@ class _QRCodeViewState extends State<QRCodeView> {
     log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('no Permission')),
+         SnackBar(content: Text(uiText(context, "no Permission"))),
       );
     }
   }

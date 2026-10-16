@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:flutter/material.dart';
 
 const workspaceNavy = Color(0xFF142D4E);
 const workspaceBlue = Color(0xFF2864DC);
@@ -55,11 +55,11 @@ class WorkspaceHeader extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Row(children: [
+           Row(children: [
             Icon(Icons.layers_outlined, color: Color(0xFF91B8FF), size: 17),
             SizedBox(width: 8),
             Expanded(
-                child: Text('CLAYTECH ONE / WORKSPACE',
+                child: Text(uiText(context, "CLAYTECH ONE / WORKSPACE"),
                     style: TextStyle(
                         color: Color(0xFFB7C9E4),
                         fontSize: 10,
@@ -67,14 +67,14 @@ class WorkspaceHeader extends StatelessWidget {
                         fontWeight: FontWeight.w600))),
           ]),
           const SizedBox(height: 10),
-          Text(title,
+          Text(uiText(context,title),
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   height: 1.2)),
           const SizedBox(height: 4),
-          Text(subtitle,
+          Text(uiText(context,subtitle),
               style: const TextStyle(
                   color: Color(0xFFB7C9E4), fontSize: 12, height: 1.35)),
         ]),
@@ -114,25 +114,40 @@ class WorkspaceTile extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 100),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            child: Row(children: [
+            child: Builder(builder: (context) {
+              final icon =
               Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                       color: color.withValues(alpha: .09),
                       borderRadius: BorderRadius.circular(15)),
-                  child: Icon(workspaceIcon(identity), color: color, size: 24)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  child: Icon(workspaceIcon(identity), color: color, size: 24));
+              final spanish =
+                  Localizations.localeOf(context).languageCode == 'es';
+              final label = Text(uiText(context,
+              title),
+              maxLines: spanish ? null: 2,
+                    overflow:
+                      spanish ? TextOverflow.visible: TextOverflow.ellipsis,
                     style: const TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.w600,
                         color: workspaceNavy,
-                        height: 1.16)),
-              ),
-            ]),
+                        height: 1.16));
+              if (Localizations.localeOf(context).languageCode == 'es' &&
+                  MediaQuery.sizeOf(context).width < 1000) {
+                return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+                    children: [icon, const SizedBox(height: 10),
+            label]);
+              }
+              return Row(children: [
+                icon,
+                const SizedBox(width: 10),
+                Expanded(child: label)
+              ]);
+            }),
           ),
         ),
       ),
@@ -207,9 +222,9 @@ class WorkspaceNavigation extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 24),
                       children: [
-                        const Padding(
+                         Padding(
                             padding: EdgeInsets.all(12),
-                            child: Text('CLAYTECH ONE',
+                            child: Text(uiText(context, "CLAYTECH ONE"),
                                 style: TextStyle(
                                     color: workspaceNavy,
                                     fontWeight: FontWeight.w700,
@@ -217,7 +232,7 @@ class WorkspaceNavigation extends StatelessWidget {
                         const SizedBox(height: 16),
                         ListTile(
                             leading: const Icon(Icons.grid_view_rounded),
-                            title: Text(zh ? '工作台' : 'Workspace'),
+                            title: Text(uiText(context,zh ? '工作台' : 'Workspace')),
                             onTap: () => Navigator.of(context).popUntil(
                                 (route) =>
                                     route.settings.name == 'menus_page' ||
@@ -226,12 +241,12 @@ class WorkspaceNavigation extends StatelessWidget {
                         const Divider(height: 32),
                         ListTile(
                             leading: const Icon(Icons.badge_outlined),
-                            title: Text(zh ? '作业配置' : 'Work profile'),
+                            title: Text(uiText(context,zh ? '作业配置' : 'Work profile')),
                             onTap: () => Navigator.of(context)
                                 .pushNamed('work_profile')),
                         ListTile(
                             leading: const Icon(Icons.language),
-                            title: Text(zh ? '语言' : 'Language'),
+                            title: Text(uiText(context,zh ? '语言' : 'Language')),
                             onTap: () =>
                                 Navigator.of(context).pushNamed('language')),
                       ]))),

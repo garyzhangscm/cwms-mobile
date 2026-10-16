@@ -1,4 +1,5 @@
-import 'package:cwms_mobile/shared/adaptive_layout.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'dart:async';
 
 import 'package:cwms_mobile/common/services/rf.dart';
@@ -155,10 +156,10 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
           builder: (context) {
             return AlertDialog(
               title: Text(""),
-              content: Text("No more inventory on the RF"),
+              content: Text(uiText(context,"No more inventory on the RF")),
               actions: <Widget>[
                 ElevatedButton(
-                  child: Text("Confirm"),
+                  child: Text(uiText(context,"Confirm")),
                   onPressed: () {
                     _lpnController.clear();
                     inventoryDepositRequest = null;
@@ -247,7 +248,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     final request = inventoryDepositRequest;
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: Text("Claytech One - Deposit")),
+      appBar: AppBar(title: Text(uiText(context,"Claytech One - Deposit"))),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: TabletContent(
@@ -309,7 +310,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text("Confirm"),
+                      :  Text(uiText(context,"Confirm")),
                 ),
               ),
             ],
@@ -380,7 +381,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   Widget _buildDestinationLocationRow(BuildContext context) {
     if (inventoryDepositRequest == null) {
       // there's no more to deposit
-      return buildTwoSectionInformationRow("Location:", "");
+      return buildTwoSectionInformationRow(uiText(context,"Location:"), "");
     } else if (inventoryDepositRequest?.nextLocation == null) {
       // the inventory has no destination location assigned yet, let the user
       // to allocate one or manually choose one destination
@@ -389,7 +390,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         child: Row(children: <Widget>[
           Padding(
             padding: EdgeInsets.only(right: 10),
-            child: Text("Location:", textAlign: TextAlign.left),
+            child: Text(uiText(context,"Location:"), textAlign: TextAlign.left),
           ),
           IconButton(
             onPressed: () => _allocateLocation(),
@@ -400,7 +401,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     } else {
       // there's already destination location assigned, show the location
       return buildTwoSectionInformationRow(
-        "Location:",
+        uiText(context,"Location:"),
         inventoryDepositRequest?.nextLocation?.name ?? "",
       );
     }
@@ -672,11 +673,11 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
           builder: (context) {
             return AlertDialog(
               scrollable: true,
-              title: Text('Relabel'),
+              title: Text(uiText(context, "Relabel")),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Please relabel the following inventory into a new LPN"),
+                  Text(uiText(context,"Please relabel the following inventory into a new LPN")),
                   SizedBox(
                     height: 100,
                     width: MediaQuery.of(context).size.width,
@@ -688,10 +689,11 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                               itemQuantityMap.keys.elementAt(index);
                           return ListTile(
                             title: Text(itemName),
-                            subtitle: Text("quantity: " +
-                                itemQuantityMap[itemName].toString() +
-                                ", LPN: " +
-                                (inventoryDepositRequest.lpn ?? "")),
+                            subtitle: Text(uiTemplate(
+                                context, "quantity: {0}, LPN: {1}", [
+                                itemQuantityMap[itemName].toString() ,
+                                (inventoryDepositRequest.lpn ?? "")
+                            ])),
                           );
                         }),
                   ),
@@ -699,7 +701,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                     controller: _relabelLPNController,
                     autofocus: true,
                     decoration: InputDecoration(
-                      hintText: "New LPN",
+                      hintText: uiText(context,"New LPN"),
                       suffixIcon: IconButton(
                         onPressed: () {
                           _relabelLPNController.clear();
@@ -842,7 +844,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.expand_more),
-              label: Text(_loadingMoreInventory ? "Loading..." : "Load more"),
+              label: Text(uiText(
+                  context,_loadingMoreInventory ? "Loading..." : "Load more")),
             ),
         ],
       ),

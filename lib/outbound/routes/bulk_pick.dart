@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart' as badge;
+import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -117,12 +117,12 @@ class _BulkPickPageState extends State<BulkPickPage> {
       body:
           Column(
             children: <Widget>[
-              buildTwoSectionInformationRow("Work Number:", _currentBulkPick?.number ?? ""),
-              buildTwoSectionInformationRow("Location:", _currentBulkPick?.sourceLocation?.name ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Work Number:"), _currentBulkPick?.number ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Location:"), _currentBulkPick?.sourceLocation?.name ?? ""),
               _buildLocationInput(context),
               _buildLPNInput(context),
-              buildTwoSectionInformationRow("Item Number:", _currentBulkPick?.item?.name ?? ""),
-              buildTwoSectionInformationRow("Pick Quantity:", _currentBulkPick?.quantity.toString() ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Item Number:"), _currentBulkPick?.item?.name ?? ""),
+              buildTwoSectionInformationRow(uiText(context,"Pick Quantity:"), _currentBulkPick?.quantity.toString() ?? ""),
               _buildQuantityInput(context),
               _buildButtons(context),
             ],
