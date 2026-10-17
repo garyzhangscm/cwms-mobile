@@ -20,18 +20,50 @@ class PickAdapter implements HttpClientAdapter {
   Completer<void>? gate;
   bool fail = false;
   bool picked = false;
+  bool planned = false;
+  bool availabilityFails = false;
+  String orderNumber = 'TEST-ORDER';
+  int orderId = 11;
+  int lineId = 1;
+  int sourceQuantity = 40;
   bool confirmFails = false;
   Completer<void>? confirmGate;
   @override
   Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? body,
       Future<void>? cancel) async {
     calls.add(options);
+    if (options.path.endsWith('/manual-pick-availability')) {
+      return ResponseBody.fromString(
+          jsonEncode({
+            'result': availabilityFails ? 1 : 0,
+            'message': availabilityFails ? 'Availability unavailable' : '',
+            'data': {
+              'orderId': orderId,
+              'remainingQuantity': picked ? 0 : 40,
+              'canPick': !picked,
+              'lines': [
+                {
+                  'orderLineId': lineId,
+                  'number': '1',
+                  'remainingQuantity': picked ? 0 : 40
+                }
+              ]
+            }
+          }),
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json']
+          });
+    }
     if (options.path.endsWith('/preprinted-manual-pick') &&
         options.method == 'GET') {
       return ResponseBody.fromString(
           jsonEncode({
             'result': 0,
-            'data': {'sourceQuantity': 40, 'pickableQuantity': 40}
+            'data': {
+              'sourceQuantity': sourceQuantity,
+              'pickableQuantity': picked ? 0 : 40
+            }
           }),
           200,
           headers: {
@@ -95,11 +127,16 @@ class PickAdapter implements HttpClientAdapter {
           'data': order
               ? [
                   {
-                    'id': 11,
-                    'number': 'TEST-ORDER',
+                    'id': orderId,
+                    'number': orderNumber,
                     'allowForManualPick': true,
                     'orderLines': [
-                      {'id': 1, 'number': '1', 'openQuantity': picked ? 0 : 40}
+                      {
+                        'id': lineId,
+                        'number': '1',
+                        'openQuantity': planned || picked ? 0 : 40,
+                        'item': {'id': 1, 'name': 'DEMO-ITEM'}
+                      }
                     ]
                   }
                 ]
@@ -270,4 +307,66 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets(
+      'DEMO-REPICK-40 cancellation leaves shipment demand 40: reopen and cap split to 40',
+      (tester) async {
+    adapter.planned = true;
+    adapter.orderNumber = 'DEMO-REPICK-40';
+    adapter.orderId = 111;
+    adapter.lineId = 222;
+    adapter.sourceQuantity = 325;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'DEMO-REPICK-40');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.byType(TextFormField), findsNWidgets(2));
+    expect(find.textContaining("no open quantity left"), findsNothing);
+    expect(
+        adapter.calls
+            .where((r) => r.path.endsWith('/manual-pick-availability')),
+        hasLength(1));
+    await tester.enterText(find.byType(TextFormField).last, 'L000000001');
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+    expect(find.text('Maximum to pick: 40'), findsOneWidget);
+    final dialogFields = find.descendant(
+        of: find.byType(AlertDialog), matching: find.byType(TextFormField));
+    expect(dialogFields, findsNWidgets(2));
+    // A 325-unit source cannot be submitted as a full-pallet pick against 40 units of demand.
+    await tester.enterText(dialogFields.first, '325');
+    await tester.tap(find.text('Confirm pick'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter a quantity within the remaining demand'),
+        findsOneWidget);
+    expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
+    await tester.enterText(dialogFields.first, '40');
+    await tester.pump();
+    await tester.enterText(dialogFields.last, 'L000000002');
+    await tester.tap(find.text('Confirm pick'));
+    await tester.pumpAndSettle();
+    final submissions = adapter.calls.where((r) =>
+        r.method == 'POST' && r.path.endsWith('/preprinted-manual-pick'));
+    expect(submissions, hasLength(1));
+    expect(submissions.single.queryParameters['quantity'], 40);
+    expect(submissions.single.queryParameters['expectedQuantity'], 325);
+    expect(find.text('Order picking complete'), findsOneWidget);
+    expect(
+        adapter.calls
+            .where((r) => r.path.endsWith('/manual-pick-availability')),
+        hasLength(2));
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+      'availability error blocks picking instead of trusting cached order demand',
+      (tester) async {
+    adapter.availabilityFails = true;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Availability unavailable'), findsOneWidget);
+    expect(find.byType(TextFormField), findsOneWidget);
+    expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
+    expect(tester.takeException(), isNull);
+  });
 }

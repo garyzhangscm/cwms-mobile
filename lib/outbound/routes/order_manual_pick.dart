@@ -44,6 +44,7 @@ class __PreprintedOrderManualPickPageState
   FocusNode _orderNumberFocusNode = FocusNode();
 
   Order? _currentOrder;
+  Map<int, int> _remainingByLine = {};
 
   bool _readyToConfirm = true;
   bool _loadingOrder = false;
@@ -219,11 +220,11 @@ class __PreprintedOrderManualPickPageState
             return ListTile(
               title: Text(CWMSLocalizations.of(context).item +
                   ':' +
-                  (_currentOrder?.orderLines[index].item!.name ?? "")),
+                  (_currentOrder?.orderLines[index].item?.name ?? "")),
               subtitle: Text(CWMSLocalizations.of(context).expectedQuantity +
                   ':' +
-                  (_currentOrder?.orderLines[index].openQuantity.toString() ??
-                      "")),
+                  (_remainingByLine[_currentOrder?.orderLines[index].id] ?? 0)
+                      .toString()),
             );
           }),
     );
@@ -235,6 +236,7 @@ class __PreprintedOrderManualPickPageState
     _orderNumberController.text = "";
     setState(() {
       _currentOrder = null;
+      _remainingByLine = {};
     });
     _orderNumberFocusNode.requestFocus();
     _readyToConfirm = true;
@@ -247,10 +249,6 @@ class __PreprintedOrderManualPickPageState
       return;
     }
     if (_loadingOrder) return;
-    if (_currentOrder?.number == number) {
-      _lpnFocusNode.requestFocus();
-      return;
-    }
     final generation = ++_orderLookupGeneration;
     setState(() {
       _loadingOrder = true;
@@ -258,18 +256,22 @@ class __PreprintedOrderManualPickPageState
     });
     try {
       final order = await OrderService.getOrderByNumber(number);
+      final availability = order.allowForManualPick == true
+          ? await OrderService.getManualPickAvailability(order.id!)
+          : null;
       if (!mounted ||
           generation != _orderLookupGeneration ||
           _orderNumberController.text.trim() != number) return;
       if (order.allowForManualPick != true) {
         await showBlockedErrorDialog(
             context, 'order $number is marked as not for manual pick');
-      } else if (!isOrderOpenForManualPick(order)) {
+      } else if (availability!.remainingQuantity <= 0) {
         await showBlockedErrorDialog(context,
             "there's no open quantity left for manual pick of order $number");
       } else {
         setState(() {
           _currentOrder = order;
+          _remainingByLine = availability.remainingByLine;
           _orderNumberController.text = number;
           _lpnController.clear();
         });
@@ -303,12 +305,8 @@ class __PreprintedOrderManualPickPageState
     super.dispose();
   }
 
-  bool isOrderOpenForManualPick(Order order) {
-    order.orderLines.forEach((orderLine) => printLongLogMessage(
-        "number: ${orderLine.number}, open quantity:${orderLine.openQuantity}"));
-    return order.orderLines
-        .any((orderLine) => (orderLine.openQuantity ?? 0) > 0);
-  }
+  bool isOrderOpenForManualPick(Order order) =>
+      _remainingByLine.values.any((quantity) => quantity > 0);
 
   Widget _buildPickToShipStageInput(BuildContext context) {
     return buildTwoSectionInputRow(
@@ -565,9 +563,15 @@ class __PreprintedOrderManualPickPageState
 
   Future<void> _refreshOrderInformation() async {
     final number = _currentOrder!.number!;
+    final generation = _orderLookupGeneration;
     final order = await OrderService.getOrderByNumber(number);
-    if (!mounted) return;
+    final availability =
+        await OrderService.getManualPickAvailability(order.id!);
+    if (!mounted ||
+        generation != _orderLookupGeneration ||
+        _orderNumberController.text.trim() != number) return;
     _currentOrder = order;
+    _remainingByLine = availability.remainingByLine;
     printLongLogMessage("Refresh order and load all open quantites");
 
     if (!isOrderOpenForManualPick(_currentOrder!)) {

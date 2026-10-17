@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -9,7 +8,53 @@ import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/http_client.dart';
 import 'package:dio/dio.dart';
 
+class ManualPickAvailability {
+  final Map<int, int> remainingByLine;
+  final int remainingQuantity;
+  ManualPickAvailability(this.remainingByLine, this.remainingQuantity);
+}
+
 class OrderService {
+  static Future<ManualPickAvailability> getManualPickAvailability(
+      int orderId) async {
+    final response = await CWMSHttpClient.getDio().get(
+      'outbound/orders/$orderId/manual-pick-availability',
+      queryParameters: {'warehouseId': Global.currentWarehouse!.id},
+    );
+    final dynamic body =
+        response.data is Map ? response.data : json.decode(response.toString());
+    if (body['result'] != 0) {
+      throw WebAPICallException(body['message']?.toString() ??
+          'Could not refresh manual-pick quantities');
+    }
+    final data = body['data'];
+    if (data is! Map ||
+        data['orderId'] != orderId ||
+        data['lines'] is! List ||
+        data['remainingQuantity'] is! int) {
+      throw WebAPICallException(
+          'Invalid manual-pick quantities. Reload the order.');
+    }
+    final remaining = <int, int>{};
+    for (final row in data['lines']) {
+      if (row is! Map ||
+          row['orderLineId'] is! int ||
+          row['remainingQuantity'] is! int ||
+          row['remainingQuantity'] < 0 ||
+          remaining.containsKey(row['orderLineId'])) {
+        throw WebAPICallException(
+            'Invalid manual-pick quantities. Reload the order.');
+      }
+      remaining[row['orderLineId'] as int] = row['remainingQuantity'] as int;
+    }
+    final total = remaining.values.fold<int>(0, (sum, value) => sum + value);
+    if (total != data['remainingQuantity'] || data['canPick'] != (total > 0)) {
+      throw WebAPICallException(
+          'Manual-pick quantities changed. Reload the order.');
+    }
+    return ManualPickAvailability(Map<int, int>.unmodifiable(remaining), total);
+  }
+
   // Get all cycle count requests by batch id
   static Future<Order> getOrderByNumber(String orderNumber) async {
     Dio httpClient = CWMSHttpClient.getDio();
