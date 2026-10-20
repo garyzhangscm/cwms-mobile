@@ -1,0 +1,364 @@
+{
+  "rows": [
+    {
+      "id": 12,
+      "checkPoint": "Does the appearance match sample?",
+      "checkPointEs": "¿Coincide la apariencia con la muestra?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 13,
+      "checkPoint": "Does the weight match the sample?",
+      "checkPointEs": "¿Coincide el peso con el de la muestra?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 14,
+      "checkPoint": "Does the color match the sample?",
+      "checkPointEs": "¿Coincide el color con el de la muestra?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 15,
+      "checkPoint": "Are all the functions right?",
+      "checkPointEs": "¿Funcionan correctamente todas las funciones?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 16,
+      "checkPoint": "Does the product have any flashing? ",
+      "checkPointEs": "¿Tiene el producto alguna rebaba?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 17,
+      "checkPoint": "Is the product deformed in any way? ",
+      "checkPointEs": "¿Presenta el producto alguna deformación?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 18,
+      "checkPoint": "If the product has multiple parts, is the product able to be assembled?",
+      "checkPointEs": "Si el producto tiene varias piezas, ¿se pueden ensamblar correctamente?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 19,
+      "checkPoint": "Are there any broken parts?",
+      "checkPointEs": "¿Hay piezas rotas?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 20,
+      "checkPoint": "Is the label correct? ",
+      "checkPointEs": "¿Es correcta la etiqueta?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 21,
+      "checkPoint": "Is the packaging (carton/ wrap) ok?",
+      "checkPointEs": "¿Está en buenas condiciones el embalaje (caja de cartón o envoltura)?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 22,
+      "checkPoint": "Are there any missing parts?",
+      "checkPointEs": "¿Falta alguna pieza?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 44,
+      "checkPoint": "What is the Weight? ",
+      "checkPointEs": "¿Cuál es el peso?",
+      "enabled": 0,
+      "type": "NUMBER",
+      "expectedValue": "0",
+      "comparator": "GREAT_OR_EQUAL"
+    },
+    {
+      "id": 45,
+      "checkPoint": "Test",
+      "checkPointEs": "Prueba",
+      "enabled": 0,
+      "type": "STRING",
+      "expectedValue": "0",
+      "comparator": "LIKE"
+    },
+    {
+      "id": 48,
+      "checkPoint": "have you verify the machines settings",
+      "checkPointEs": "¿Ha verificado los ajustes de la máquina?",
+      "enabled": 0,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 60,
+      "checkPoint": "Inspection qty",
+      "checkPointEs": "Cantidad inspeccionada",
+      "enabled": 0,
+      "type": "NUMBER",
+      "expectedValue": "0",
+      "comparator": "GREAT_THAN"
+    },
+    {
+      "id": 91,
+      "checkPoint": "Does the appearance of the product match the Approval Sample? ",
+      "checkPointEs": "¿Coincide la apariencia del producto con la de la muestra aprobada?",
+      "enabled": 0,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 92,
+      "checkPoint": "Does the color of the product match the Approval Sample?",
+      "checkPointEs": "¿Coincide el color del producto con el de la muestra aprobada?",
+      "enabled": 0,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 93,
+      "checkPoint": "Does the weight of the product match the Approval Sample?",
+      "checkPointEs": "¿Coincide el peso del producto con el de la muestra aprobada?",
+      "enabled": 0,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 94,
+      "checkPoint": "Do the labels match the labels of the Approval Sample?",
+      "checkPointEs": "¿Coinciden las etiquetas con las de la muestra aprobada?",
+      "enabled": 0,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 95,
+      "checkPoint": "Do the functions of the product match the Approval Ssmple?",
+      "checkPointEs": "¿Coinciden las funciones del producto con las de la muestra aprobada?",
+      "enabled": 0,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 96,
+      "checkPoint": "Does the product match the Specification Sheet?",
+      "checkPointEs": "¿Cumple el producto con la hoja de especificaciones?",
+      "enabled": 0,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 61,
+      "checkPoint": "Is there any issue with the overall appearance of the suitcase?",
+      "checkPointEs": "¿Hay algún problema con la apariencia general de la maleta?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 62,
+      "checkPoint": "Is there any issue with the suitcase's handle and pull rod?",
+      "checkPointEs": "¿Hay algún problema con el asa y el mango telescópico de la maleta?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 63,
+      "checkPoint": "Is there any issue with the suitcase's wheels?",
+      "checkPointEs": "¿Hay algún problema con las ruedas de la maleta?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 64,
+      "checkPoint": "Is there any issue with the inside of the suitcase",
+      "checkPointEs": "¿Hay algún problema con el interior de la maleta?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 65,
+      "checkPoint": "Is there any issue with the suitcase's packaging?",
+      "checkPointEs": "¿Hay algún problema con el embalaje de la maleta?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 66,
+      "checkPoint": "Is there any other issue with the suitcase?",
+      "checkPointEs": "¿Hay algún otro problema con la maleta?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 67,
+      "checkPoint": "Does the weight of this board meet the standard?",
+      "checkPointEs": "¿Cumple el peso de esta lámina con el estándar?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 68,
+      "checkPoint": "Does the thickness of this board meet the standard?",
+      "checkPointEs": "¿Cumple el espesor de esta lámina con el estándar?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 69,
+      "checkPoint": "Does this board material meet the standard dimensions?",
+      "checkPointEs": "¿Cumple esta lámina con las dimensiones estándar?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 70,
+      "checkPoint": "Is there a color difference between this board and the sample?",
+      "checkPointEs": "¿Hay alguna diferencia de color entre esta lámina y la muestra?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 71,
+      "checkPoint": "Is there any bubbling on this piece of board?",
+      "checkPointEs": "¿Tiene burbujas esta lámina?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 72,
+      "checkPoint": "Does this piece of board contain impurities?",
+      "checkPointEs": "¿Contiene impurezas esta lámina?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 73,
+      "checkPoint": "Does the film on this board have any color discrepancies or wrinkles?",
+      "checkPointEs": "¿La película de esta lámina presenta diferencias de color o arrugas?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 74,
+      "checkPoint": "Does the weight of this shell meet the standard?",
+      "checkPointEs": "¿Cumple el peso de esta carcasa con el estándar?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 75,
+      "checkPoint": "Does the thickness of this shell meet the standard?",
+      "checkPointEs": "¿Cumple el espesor de esta carcasa con el estándar?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 76,
+      "checkPoint": "Does this shell material meet the standard dimensions?",
+      "checkPointEs": "¿Cumple esta carcasa con las dimensiones estándar?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "true",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 77,
+      "checkPoint": "Is there a color difference between this shell and the sample?",
+      "checkPointEs": "¿Hay alguna diferencia de color entre esta carcasa y la muestra?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 78,
+      "checkPoint": "Is there any bubbling on this piece of shell?",
+      "checkPointEs": "¿Tiene burbujas esta carcasa?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    },
+    {
+      "id": 79,
+      "checkPoint": "Does this shell have any functional defects?",
+      "checkPointEs": "¿Tiene esta carcasa algún defecto funcional?",
+      "enabled": 1,
+      "type": "YESNO",
+      "expectedValue": "false",
+      "comparator": "EQUAL"
+    }
+  ]
+}

@@ -161,15 +161,24 @@ class WorkOrderQCService {
   }
 
 
-  static Future<WorkOrderQCSample> addWorkOrderQCSample(WorkOrderQCSample workOrderQCSample) async {
-    Dio httpClient = CWMSHttpClient.getDio();
+  static Future<WorkOrderQCSample> addWorkOrderQCSample(
+      WorkOrderQCSample workOrderQCSample, {Dio? client}) async {
+    final registrant = Global.currentUser?.username?.trim();
+    if (registrant == null || registrant.isEmpty) {
+      throw WebAPICallException(
+          'Please sign in again before registering a QC sample.');
+    }
+    final httpClient = client ?? CWMSHttpClient.getDio();
 
     printLongLogMessage("Start to add work order sample by number ${workOrderQCSample.number}");
     Response response = await httpClient.put(
         "workorder/qc-samples",
         queryParameters: {
           "warehouseId": Global.currentWarehouse!.id},
-        data:  jsonEncode(workOrderQCSample)
+        // The backend records the gateway user in the existing creation audit.
+        // Resolve this per submission so an RF reused by another user is correct.
+        options: Options(headers: {'username': registrant}),
+        data: jsonEncode(workOrderQCSample)
     );
 
     // printLongLogMessage("response from addWorkOrderQCSample: $response");
