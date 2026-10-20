@@ -143,7 +143,8 @@ class WorkOrderQCService {
   }
 
   static Future<List<WorkOrderQCRuleConfiguration>>
-      getMatchedWorkOrderQCRuleConfiguration(int workOrderQCSampleId) async {
+      getMatchedWorkOrderQCRuleConfiguration(int workOrderQCSampleId,
+          {bool samplingSummaryOnly = false}) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
     printLongLogMessage(
@@ -153,7 +154,10 @@ class WorkOrderQCService {
     );
 
     // printLongLogMessage("response from getWorkOrderQCRules: $response");
-    Map<String, dynamic> responseString = json.decode(response.toString());
+    Map<String, dynamic> responseString =
+        samplingSummaryOnly && response.data is Map
+            ? Map<String, dynamic>.from(response.data as Map)
+            : json.decode(response.toString());
 
     if (responseString["result"] as int != 0) {
       printLongLogMessage(
@@ -162,6 +166,9 @@ class WorkOrderQCService {
           ":" +
           responseString["message"]);
     }
+
+    final rows = responseString['data'] as List;
+    if (samplingSummaryOnly) return parseSamplingConfigurations(rows);
 
     List<WorkOrderQCRuleConfiguration> workOrderQCRuleConfigurationList =
         (responseString["data"] as List)
@@ -178,6 +185,26 @@ class WorkOrderQCService {
     return workOrderQCRuleConfigurationList;
   }
 
+  /// Sampling needs the matched rule identifiers and quantity, not nested
+  /// question text, work orders or production-line detail. The server still
+  /// performs the same matching and the inspection page loads trusted questions.
+  static List<WorkOrderQCRuleConfiguration> parseSamplingConfigurations(
+          List rows) =>
+      rows.map((value) {
+        final row = value as Map<String, dynamic>;
+        return WorkOrderQCRuleConfiguration.fromJson({
+          'id': row['id'],
+          'warehouseId': row['warehouseId'],
+          'qcQuantity': row['qcQuantity'],
+          'workOrderQCRuleConfigurationRules':
+              (row['workOrderQCRuleConfigurationRules'] as List?)
+                  ?.map((value) {
+            final rule = value as Map<String, dynamic>;
+            return {'id': rule['id'], 'qcRuleId': rule['qcRuleId']};
+          }).toList(),
+        });
+      }).toList();
+
   /// Read before starting/recovering a Sampling questionnaire. This never creates
   /// a request; the work-order PUT is not idempotent and must not be retried.
   static Future<List<QCInspectionRequest>> getSampleInspectionRequests(
@@ -188,9 +215,12 @@ class WorkOrderQCService {
         'warehouseId': Global.currentWarehouse!.id,
         'workOrderQCSampleNumber': sampleNumber,
         'type': 'BY_WORK_ORDER_SAMPLING',
+        'qcInspectionResult': 'PENDING',
       },
     );
-    final body = json.decode(response.toString()) as Map<String, dynamic>;
+    final body = response.data is Map
+        ? Map<String, dynamic>.from(response.data as Map)
+        : json.decode(response.toString()) as Map<String, dynamic>;
     if (body['result'] != 0 || body['data'] is! List) {
       throw WebAPICallException(
           body['message']?.toString() ?? 'Could not load sample inspections.');

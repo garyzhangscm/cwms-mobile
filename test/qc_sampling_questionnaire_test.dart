@@ -31,6 +31,70 @@ WorkOrderQCRuleConfiguration config(int quantity, List<int> ids) =>
           .toList();
 
 void main() {
+  test('lookup overlaps rules but creation waits for both reads', () async {
+    final inspections = Completer<List<QCInspectionRequest>>();
+    final configurations = Completer<List<WorkOrderQCRuleConfiguration>>();
+    final readsStarted = Completer<void>();
+    var readCount = 0, creates = 0;
+    void started() { if (++readCount == 2) readsStarted.complete(); }
+    final flow = QCSamplingQuestionnaire(
+      save: (_) async => sample(id: 10),
+      inspections: (_) { started(); return inspections.future; },
+      configurations: (_) { started(); return configurations.future; },
+      create: (_, __, ___) async { creates++; return inspection(); },
+    );
+    final result = flow.open(sample());
+    await readsStarted.future;
+    configurations.complete([config(4, [5, 5])]);
+    await Future<void>.delayed(Duration.zero);
+    expect(creates, 0);
+    inspections.complete([]);
+    expect((await result).id, 20);
+    expect(creates, 1);
+  });
+
+  test('pending recovery does not wait for slow speculative rule read', () async {
+    final rules = Completer<List<WorkOrderQCRuleConfiguration>>();
+    final task = inspection();
+    var creates = 0;
+    final flow = QCSamplingQuestionnaire(
+      save: (_) async => sample(id: 10),
+      inspections: (_) async => [task],
+      configurations: (_) => rules.future,
+      create: (_, __, ___) async { creates++; return inspection(); },
+    );
+    expect(await flow.open(sample()).timeout(const Duration(seconds: 1)), same(task));
+    rules.completeError(StateError('unused lookup failed'));
+    await Future<void>.delayed(Duration.zero);
+    expect(creates, 0);
+  });
+
+  test('failed inspection lookup cannot create even when rules succeed', () async {
+    var creates = 0;
+    final flow = QCSamplingQuestionnaire(
+      save: (_) async => sample(id: 10),
+      inspections: (_) async => throw TimeoutException('read failed'),
+      configurations: (_) async => [config(4, [5])],
+      create: (_, __, ___) async { creates++; return inspection(); },
+    );
+    await expectLater(flow.open(sample()), throwsA(isA<TimeoutException>()));
+    expect(creates, 0);
+  });
+
+  test('uncertain create retries only inspection recovery, not rule lookup', () async {
+    var rules = 0, creates = 0;
+    final flow = QCSamplingQuestionnaire(
+      save: (_) async => sample(id: 10),
+      inspections: (_) async => [],
+      configurations: (_) async { rules++; return [config(4, [5])]; },
+      create: (_, __, ___) async { creates++; throw TimeoutException('unknown'); },
+    );
+    await expectLater(flow.open(sample()), throwsA(isA<WebAPICallException>()));
+    await expectLater(flow.open(sample()), throwsA(isA<WebAPICallException>()));
+    expect(creates, 1);
+    expect(rules, 1);
+  });
+
   test('save once; deduplicate configured rules and preserve maximum quantity',
       () async {
     var saves = 0, creates = 0;

@@ -19,7 +19,8 @@ class QCSamplingQuestionnaire {
   })  : _isCurrentScope = isCurrentScope ?? (() => true),
         _save = save ?? WorkOrderQCService.addWorkOrderQCSample,
         _configurations = configurations ??
-            WorkOrderQCService.getMatchedWorkOrderQCRuleConfiguration,
+            ((id) => WorkOrderQCService.getMatchedWorkOrderQCRuleConfiguration(
+                id, samplingSummaryOnly: true)),
         _inspections =
             inspections ?? WorkOrderQCService.getSampleInspectionRequests,
         _create = create ?? WorkOrderQCService.getWorkOrderQCInspectionRequest;
@@ -41,6 +42,16 @@ class QCSamplingQuestionnaire {
   bool registrationUncertain = false;
   bool _creationUncertain = false;
   bool _busy = false;
+
+  // Capture speculative read errors even when an existing task is resumed or
+  // the inspection lookup fails. A failed rule read must not block resumption.
+  Future<_ConfigurationRead> _readConfigurations(int id) async {
+    try {
+      return _ConfigurationRead(await _configurations(id));
+    } catch (error, stack) {
+      return _ConfigurationRead(null, error, stack);
+    }
+  }
 
   Future<QCInspectionRequest> open(WorkOrderQCSample sample) async {
     if (_busy) throw StateError('QC Sampling is already processing.');
@@ -70,6 +81,12 @@ class QCSamplingQuestionnaire {
       final stored = savedSample!;
       stored.productionLineAssignment ??= sample.productionLineAssignment;
       if (request != null) return request!;
+      // Both reads depend only on the saved sample. Creation still waits for
+      // the duplicate/recovery check and scope validation. An uncertain create
+      // continues to perform recovery reads only.
+      final configurationRead = _creationUncertain
+          ? null
+          : _readConfigurations(stored.id!);
       // Also recovers a request created on this device before a lost response.
       final pending = (await _inspections(stored.number!))
           .where((r) =>
@@ -89,8 +106,13 @@ class QCSamplingQuestionnaire {
         throw WebAPICallException(
             'The questionnaire could not be confirmed. Check Inspection before starting another task.');
       }
-      final configurations = await _configurations(stored.id!);
+      final configurationResult = await configurationRead!;
       _checkScope();
+      if (configurationResult.error != null) {
+        Error.throwWithStackTrace(
+            configurationResult.error!, configurationResult.stack!);
+      }
+      final configurations = configurationResult.rows!;
       final ids = configurations
           .expand((c) => c.workOrderQCRuleConfigurationRules)
           .map((r) => r.qcRuleId)
@@ -126,4 +148,11 @@ class QCSamplingQuestionnaire {
       _busy = false;
     }
   }
+}
+
+class _ConfigurationRead {
+  const _ConfigurationRead(this.rows, [this.error, this.stack]);
+  final List<WorkOrderQCRuleConfiguration>? rows;
+  final Object? error;
+  final StackTrace? stack;
 }
