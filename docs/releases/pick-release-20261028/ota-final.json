@@ -1,0 +1,38 @@
+[
+  {
+    "release": "1.62.4+5",
+    "patch": 26,
+    "track": "stable",
+    "platform": "android"
+  },
+  {
+    "release": "1.62.4+6",
+    "patch": 13,
+    "track": "stable",
+    "platform": "ios"
+  },
+  {
+    "release": "1.62.5+7",
+    "patch": 4,
+    "track": "stable",
+    "platform": "android"
+  },
+  {
+    "release": "1.62.6+8",
+    "patch": 3,
+    "track": "stable",
+    "platform": "android"
+  },
+  {
+    "release": "1.62.7+9",
+    "patch": 2,
+    "track": "stable",
+    "platform": "android"
+  },
+  {
+    "release": "1.62.8+10",
+    "patch": 1,
+    "track": "stable",
+    "platform": "android"
+  }
+]

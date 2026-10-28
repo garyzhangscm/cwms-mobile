@@ -1,0 +1,14 @@
+{
+  "label": "android-5",
+  "nativeDifferences": [],
+  "oldNativeSoundChannel": false,
+  "assetDifferences": [
+    "fonts/MaterialIcons-Regular.otf"
+  ],
+  "baselineGlyphs": 87,
+  "patchGlyphs": 86,
+  "missingGlyphs": [],
+  "noAudioFileAdded": true,
+  "nativeDiffBypass": false,
+  "newCodeUsesExistingWebView": true
+}
