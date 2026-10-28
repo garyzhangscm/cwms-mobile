@@ -714,4 +714,8 @@ const spanishUiTranslations = <String, String>{
   "Move failed": "No se pudo mover el inventario",
   "A required update is ready. Finish reviewing your last operation, then close and reopen the app.":
       "Hay una actualización obligatoria lista. Termine de revisar su última operación y cierre y vuelva a abrir la aplicación.",
+  "Pending confirmation": "Pendiente de confirmación",
+  "Pending confirmation — scan saved": "Pendiente de confirmación — escaneo guardado",
+  "Pending confirmation. Check the LPN before submitting again.": "Pendiente de confirmación. Verifique el LPN antes de enviarlo de nuevo.",
+  "Pending confirmation. Reload RF inventory to check this LPN.": "Pendiente de confirmación. Recargue el inventario RF para verificar este LPN.",
 };

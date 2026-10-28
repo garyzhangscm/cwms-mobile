@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 
 import 'dart:core';
 
@@ -107,7 +108,7 @@ class _ProductionLineCheckInPageState extends State<ProductionLineCheckInPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).productionLineCheckIn)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).productionLineCheckIn)),
       resizeToAvoidBottomInset: true,
       body:
           Column(

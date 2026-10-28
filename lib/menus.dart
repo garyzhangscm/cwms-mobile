@@ -1,3 +1,7 @@
+import 'shared/scanning/scan_app_bar.dart';
+import 'shared/rfid_capability.dart';
+import 'auth/models/menu_sub_group.dart';
+import 'shared/qc_menu.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:flutter/material.dart';
 import 'auth/models/menu_group.dart';
 import 'auth/services/menu_service.dart';
@@ -44,18 +48,26 @@ class _MenusState extends State<Menus> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => RfidMenuGate(builder: _buildMenu);
+
+  Widget _buildMenu(BuildContext context) {
     final zh = workspaceIsChinese(context);
     final groups = (_menuGroup?.menuSubGroups ?? [])
         .where((group) => hasAvailableMenuGroup(context, group))
         .toList();
-    String title(int index) => CWMSLocalizations.of(context).getMenuDisplayText(
+    final qc = qcMenuItems(_menuGroup?.menuSubGroups ?? [],
+        (route) => hasRegisteredMenuRoute(context, route));
+    if (qc.isNotEmpty) groups.add(MenuSubGroup()
+      ..name = qcMenuIdentity ..text = 'QC' ..menus = qc);
+    String title(int index) => groups[index].name == qcMenuIdentity
+        ? (Localizations.localeOf(context).languageCode == 'es' ? 'Control de calidad' : zh ? '质量管理' : 'QC')
+        : CWMSLocalizations.of(context).getMenuDisplayText(
         groups[index].i18n ?? '',
         groups[index].text ?? groups[index].name ?? '');
     final visible = List.generate(groups.length, (i) => i);
     return Scaffold(
       backgroundColor: workspaceBackground,
-      appBar: AppBar(
+      appBar: ScanAppBar(
           title: Text(uiText(context,zh ? '工作台' : 'Workspace')),
           backgroundColor: workspaceBackground,
           foregroundColor: workspaceNavy,
@@ -100,6 +112,7 @@ class _MenusState extends State<Menus> {
                                         context,zh
                                         ? '从收货到生产，在这里开启你的工作。'
                                         : 'Your operations, connected. Choose a module to get started.')),
+                                const RfidHardwareNotice(),
                                 const SizedBox(height: 28),
                                 Row(children: [
                                   Text(uiText(context,zh ? '全部应用' : 'All applications'),

@@ -1,4 +1,7 @@
-import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/global.dart';
+import 'shared/scanning/web_audio_failure_player.dart';
+import 'package:flutter/foundation.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
 import 'package:cwms_mobile/shared/models/factory_profile.dart';
 import 'package:dio/dio.dart';
@@ -80,13 +83,31 @@ class _LaunchPageState extends State<LaunchPage> {
     }
   }
 
+  bool _testingSound = false;
+  Future<void> _testWarningSound() async {
+    if (_testingSound) return;
+    setState(() => _testingSound = true);
+    String message;
+    try {
+      await WebAudioFailurePlayer.shared.play();
+      message =
+          'Warning sound played. If you cannot hear it, check media volume.';
+    } catch (_) {
+      message = 'Unable to play warning sound on this device.';
+    }
+    if (!mounted) return;
+    setState(() => _testingSound = false);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     const navy = Color(0xFF142D4E);
     return Scaffold(
       backgroundColor: const Color(0xFFF3F5F9),
       appBar: AppBar(
-          title:  Text(uiText(context, "Claytech One")),
+          title: Text(uiText(context, "Claytech One")),
           backgroundColor: const Color(0xFFF3F5F9),
           foregroundColor: navy,
           elevation: 0,
@@ -100,13 +121,16 @@ class _LaunchPageState extends State<LaunchPage> {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const SizedBox(height: 12),
-            Text(uiText(context,_chinese ? '选择工厂' : 'Choose your factory'),
+            Text(uiText(context, _chinese ? '选择工厂' : 'Choose your factory'),
                 style: const TextStyle(
                     fontSize: 25, fontWeight: FontWeight.w700, color: navy)),
             const SizedBox(height: 8),
             Text(
                 uiText(
-                    context,_chinese ? '点选工作地点，即可登录。' : 'Select your workplace to sign in.'),
+                    context,
+                    _chinese
+                        ? '点选工作地点，即可登录。'
+                        : 'Select your workplace to sign in.'),
                 style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
             const SizedBox(height: 26),
             for (var i = 0; i < FactoryProfile.values.length; i++)
@@ -114,16 +138,26 @@ class _LaunchPageState extends State<LaunchPage> {
             if (_error != null)
               Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(uiErrorText(context,_error!),
+                  child: Text(uiErrorText(context, _error!),
                       style: const TextStyle(
                           color: Color(0xFFB42318), fontSize: 14))),
             const SizedBox(height: 16),
             Text(
                 uiText(
-                    context,_chinese
-                    ? '系统会记住您上次选择的工厂。'
-                    : 'Your last selected factory will be remembered.'),
+                    context,
+                    _chinese
+                        ? '系统会记住您上次选择的工厂。'
+                        : 'Your last selected factory will be remembered.'),
                 style: const TextStyle(fontSize: 12, color: Color(0xFF718096))),
+            if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
+              Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: TextButton(
+                    onPressed: _testingSound ? null : _testWarningSound,
+                    child: Text(_testingSound
+                        ? 'Testing sound…'
+                        : 'Test warning sound'),
+                  )),
           ]),
         )),
       )),
@@ -180,8 +214,9 @@ class _LaunchPageState extends State<LaunchPage> {
                     if (selected)
                       Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text(uiText(
-                                  context,_chinese ? '上次选择' : 'Last selected'),
+                          child: Text(
+                              uiText(
+                                  context, _chinese ? '上次选择' : 'Last selected'),
                               style: TextStyle(
                                   fontSize: 12, color: colors[index]))),
                   ])),

@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/audit_count_request.dart';
 import 'package:cwms_mobile/inventory/models/audit_count_request_action.dart';
@@ -73,7 +74,7 @@ class _AuditCountRequestPageState extends State<AuditCountRequestPage> {
     // print("_CycleCountRequestPageState / rebuild!");
     printLongLogMessage("_auditCountRequest.location == null? ${_auditCountRequest?.location == null}");
     return Scaffold(
-      appBar: AppBar(title: Text("${CWMSLocalizations.of(context).auditCount} - ${_auditCountRequest?.location?.name}")),
+      appBar: ScanAppBar(title: Text("${CWMSLocalizations.of(context).auditCount} - ${_auditCountRequest?.location?.name}")),
       resizeToAvoidBottomInset: true,
       body: _buildInventoryList(context),
       bottomNavigationBar:_buildBottomNavigationBar(context),

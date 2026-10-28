@@ -1,3 +1,4 @@
+import 'scanning/scan_request_interceptor.dart';
 import 'updates/update_activity_interceptor.dart';
 import 'dart:io';
 import 'package:cwms_mobile/shared/RefreshTokenInterceptor.dart';
@@ -24,6 +25,7 @@ class CWMSHttpClient {
       HttpHeaders.acceptHeader: "application/json",
     },
   ))
+    ..interceptors.add(ScanRequestInterceptor())
     ..interceptors.add(UpdateActivityInterceptor());
 
   static Dio? _dioWithAuth;
@@ -32,6 +34,7 @@ class CWMSHttpClient {
     _dio = Dio(BaseOptions(
         baseUrl: Global.currentServer!.url!,
         headers: {HttpHeaders.acceptHeader: 'application/json'}))
+      ..interceptors.add(ScanRequestInterceptor())
       ..interceptors.add(UpdateActivityInterceptor());
     _dioWithAuth = null;
   }
@@ -59,6 +62,7 @@ class CWMSHttpClient {
       // receiveTimeout: 15000,
       // sendTimeout: 15000,
     ));
+    _dioWithAuth?.interceptors.add(ScanRequestInterceptor());
     _dioWithAuth?.interceptors.add(UpdateActivityInterceptor());
     _dioWithAuth?.interceptors.add(RefreshTokenInterceptor());
   }

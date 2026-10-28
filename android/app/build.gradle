@@ -31,6 +31,11 @@ if (flutterVersionName == null) {
 // apply plugin: 'kotlin-android'
 // apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
+// Explicit opt-in only. Standard production builds keep their existing identity.
+def lineClearanceTestBuild = (project.findProperty('dart-defines') ?: '').split(',').any {
+    try { return new String(it.decodeBase64(), 'UTF-8') == 'LINE_CLEARANCE_TEST=true' } catch (Exception ignored) { return false }
+}
+
 android {
     namespace "com.garyzhangscm.cwms.cwms_mobile"
     // compileSdkVersion 34
@@ -47,6 +52,7 @@ android {
     }
 
     dependencies {
+        implementation files('libs/DeviceAPI_ver20251103_release.aar')
         implementation 'com.android.support:multidex:1.0.3'
         implementation 'com.google.mlkit:text-recognition:16.0.1'
     }
@@ -67,6 +73,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.garyzhangscm.cwms.cwms_mobile"
+        if (lineClearanceTestBuild) applicationIdSuffix '.lineclearancetest'
         minSdkVersion flutter.minSdkVersion
         // minSdkVersion 19
         targetSdkVersion 33

@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:core';
 
@@ -105,7 +107,7 @@ class _PickByListPageState extends State<PickByListPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).listPick)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).listPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -312,6 +314,8 @@ class _PickByListPageState extends State<PickByListPage> {
   }
 
   void _onAddingNewLPN() async {
+    await ScanFeedback.run(() async {
+
 
 
     _currentDestinationLPN = "";
@@ -352,6 +356,8 @@ class _PickByListPageState extends State<PickByListPage> {
 
       }
     }
+  
+    });
   }
 
 

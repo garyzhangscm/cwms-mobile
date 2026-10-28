@@ -9,6 +9,7 @@ import 'package:cwms_mobile/workorder/models/work_order_qc_result.dart';
 import 'package:cwms_mobile/workorder/models/work_order_qc_rule_configuration.dart';
 import 'package:cwms_mobile/workorder/models/work_order_qc_sample.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 class WorkOrderQCService {
   // Get all cycle count requests by batch id
@@ -50,43 +51,70 @@ class WorkOrderQCService {
     }
   }
 
+  static final _latestUnavailableUntil = Expando<DateTime>();
+
   static Future<WorkOrderQCSample?>
       getWorkOrderQCSampleByProductionLineAssignment(
-          int productionLineAssignmentId) async {
-    Dio httpClient = CWMSHttpClient.getDio();
-
-    printLongLogMessage(
-        "Start to get work order sample by production line assignment id: ${productionLineAssignmentId}");
-    Response response =
-        await httpClient.get("workorder/qc-samples", queryParameters: {
-      "productionLineAssignmentId": productionLineAssignmentId,
-      "warehouseId": Global.currentWarehouse!.id
-    });
-
-    // printLongLogMessage("response from getWorkOrderQCSampleByProductionLineAssignment: $response");
-    Map<String, dynamic> responseString = json.decode(response.toString());
-
-    if (responseString["result"] as int != 0) {
-      printLongLogMessage(
-          "getWorkOrderQCSampleByProductionLineAssignment / Start to raise error with message: ${responseString["message"]}");
-      throw new WebAPICallException(responseString["result"].toString() +
-          ":" +
-          responseString["message"]);
+          int productionLineAssignmentId,
+          {Dio? client,
+          int? warehouseId}) async {
+    final http = client ?? CWMSHttpClient.getDio();
+    final warehouse = warehouseId ?? Global.currentWarehouse!.id;
+    if (warehouse == null ||
+        warehouse <= 0 ||
+        productionLineAssignmentId <= 0) {
+      throw ArgumentError(
+          'Valid warehouse and production line assignment required');
     }
-
-    List<WorkOrderQCSample> workOrderQCSamples =
-        (responseString["data"] as List)
-            .map((e) => WorkOrderQCSample.fromJson(e as Map<String, dynamic>))
-            .toList();
-
-    printLongLogMessage("get QC samples: ${workOrderQCSamples.length}");
-    // Sort the picks according to the current location. We
-    // will assign the closed pick to the user
-    if (workOrderQCSamples.length > 0) {
-      return workOrderQCSamples.first;
+    final query = {
+      'productionLineAssignmentId': productionLineAssignmentId,
+      'warehouseId': warehouse
+    };
+    final timer = Stopwatch()..start();
+    final unavailableUntil = _latestUnavailableUntil[http];
+    var legacy =
+        unavailableUntil != null && DateTime.now().isBefore(unavailableUntil);
+    Response response;
+    if (legacy) {
+      response = await http.get('workorder/qc-samples', queryParameters: query);
     } else {
-      return null;
+      try {
+        response = await http.get('workorder/qc-samples/assignment/latest',
+            queryParameters: query);
+      } on DioException catch (error) {
+        // Compatibility for servers that have not received the new endpoint.
+        // Never double a timed-out, unauthorized or failing request.
+        if (error.response?.statusCode != 404) rethrow;
+        legacy = true;
+        _latestUnavailableUntil[http] =
+            DateTime.now().add(const Duration(minutes: 5));
+        response =
+            await http.get('workorder/qc-samples', queryParameters: query);
+      }
     }
+    debugPrint(
+        '[QC Sampling timing] latest sample HTTP: ${timer.elapsedMilliseconds} ms; legacy=$legacy');
+    timer.reset();
+    final body = response.data is String
+        ? jsonDecode(response.data as String)
+        : response.data;
+    if (body is! Map || body['result'] != 0) {
+      throw WebAPICallException(body is Map
+          ? '${body['message'] ?? "QC sample lookup failed"}'
+          : 'Invalid QC sample response');
+    }
+    final rows = body['data'];
+    if (rows is! List || (!legacy && rows.length > 1)) {
+      throw WebAPICallException('Invalid latest QC sample response');
+    }
+    // Even on an older server, deserialize only the selected latest record.
+    final sample = rows.isEmpty
+        ? null
+        : WorkOrderQCSample.fromJson(
+            Map<String, dynamic>.from(rows.first as Map));
+    debugPrint(
+        '[QC Sampling timing] latest sample decode: ${timer.elapsedMilliseconds} ms; returned=${rows.length}');
+    return sample;
   }
 
   static Future<WorkOrderQCResult> recordWorkOrderQCResult(
@@ -197,8 +225,7 @@ class WorkOrderQCService {
           'warehouseId': row['warehouseId'],
           'qcQuantity': row['qcQuantity'],
           'workOrderQCRuleConfigurationRules':
-              (row['workOrderQCRuleConfigurationRules'] as List?)
-                  ?.map((value) {
+              (row['workOrderQCRuleConfigurationRules'] as List?)?.map((value) {
             final rule = value as Map<String, dynamic>;
             return {'id': rule['id'], 'qcRuleId': rule['qcRuleId']};
           }).toList(),

@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:math';
 
@@ -269,7 +271,7 @@ class _ListPickPageState extends State<ListPickPage> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).listPick)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).listPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -472,6 +474,8 @@ class _ListPickPageState extends State<ListPickPage> {
   }
 
   void _enterOnLPNController(int tryTime) async {
+    await ScanFeedback.run(() async {
+
 
     // if the location is empty, then ask the user to input the
     // right location
@@ -514,6 +518,8 @@ class _ListPickPageState extends State<ListPickPage> {
       return;
     }
 
+  
+    });
   }
 
 
@@ -540,6 +546,8 @@ class _ListPickPageState extends State<ListPickPage> {
   }
 
   void _onPickConfirm(PickList pickList, int confirmedQuantity) async {
+    await ScanFeedback.run(() async {
+
 
     int totalPickableQuantity = 0 ;
     pickList.picks.forEach((pick) {
@@ -608,6 +616,8 @@ class _ListPickPageState extends State<ListPickPage> {
 
     Navigator.pop(context, pickResult);
         **/
+  
+    });
   }
 
   void _reloadInventoryOnRF() {

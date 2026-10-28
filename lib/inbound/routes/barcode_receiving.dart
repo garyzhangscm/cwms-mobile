@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -167,6 +168,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
   }
 
   void _enterOnBarcodeController({int tryTime = 10}) async {
+    await ScanFeedback.run(() async {
+
     if (!mounted) return;
     if (_barcodeFocusNode.hasFocus) {
       printLongLogMessage(
@@ -187,6 +190,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
     }
 
     _barcodeFocusNode.requestFocus();
+  
+    });
   }
 
   // call the deposit form to deposit the inventory on the RF
@@ -210,6 +215,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
   }
 
   Future<bool> _processBarcode(String barcode) async {
+    return ScanFeedback.run(() async {
+
     var parameters = new Map();
 
     try {
@@ -337,6 +344,8 @@ class _BarcodeReceivingPageState extends State<BarcodeReceivingPage> {
         inventoryAttribute3,
         inventoryAttribute4,
         inventoryAttribute5);
+  
+    });
   }
 
   Future<bool> _onReceivingSingleLpnConfirm(

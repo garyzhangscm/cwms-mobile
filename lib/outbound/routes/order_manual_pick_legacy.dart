@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'dart:core';
 
@@ -86,7 +88,7 @@ class _LegacyOrderManualPickPageState extends State<LegacyOrderManualPickPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).manualPick)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).manualPick)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -384,6 +386,8 @@ class _LegacyOrderManualPickPageState extends State<LegacyOrderManualPickPage> {
   }
 
   _onOrderManualPickConfirm() async {
+    return ScanFeedback.run(() async {
+
     // make sure the user input an valid LPN
     if (_lpnController.text.isEmpty) {
       await showBlockedErrorDialog(context, "LPN is required");
@@ -522,6 +526,8 @@ class _LegacyOrderManualPickPageState extends State<LegacyOrderManualPickPage> {
     Navigator.of(context).pop();
 
     _refreshScreenAfterPickConfirm();
+  
+    });
   }
 
   _refreshScreenAfterPickConfirm() {

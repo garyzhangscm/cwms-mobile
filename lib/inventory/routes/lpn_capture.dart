@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/lpn_capture_request.dart';
@@ -66,7 +68,7 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
     _lpnCaptureRequest = ModalRoute.of(context)?.settings.arguments as LpnCaptureRequest;
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).captureLPN)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).captureLPN)),
       resizeToAvoidBottomInset: true,
       body:  Padding(
                padding: const EdgeInsets.all(16.0),
@@ -163,6 +165,8 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
 
 
   void _enterOnLPNController( ) async {
+    await ScanFeedback.run(() async {
+
 
     if (_lpnController.text.isEmpty) {
       return;
@@ -201,13 +205,19 @@ class _LpnCapturePageState extends State<LpnCapturePage> {
     _lpnController.clear();
     _lpnFocusNode.requestFocus();
 
+  
+    });
   }
 
 
   void _onConfirm() {
+    ScanFeedback.run(() async {
+
 
     _lpnCaptureRequest!.result = true;
     Navigator.pop(context, _lpnCaptureRequest);
+  
+    });
   }
 
 

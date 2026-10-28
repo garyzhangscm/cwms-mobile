@@ -22,8 +22,10 @@ class PutawayScan {
       {this.state = 'pending',
       this.message = '',
       this.quantity,
-      this.itemName = ''});
+      this.itemName = '',
+      this.failureAlerted = false});
   final String lpn;
+  bool failureAlerted;
   String state;
   String message;
   int? quantity;
@@ -35,10 +37,13 @@ class PutawayScan {
         'message': message,
         'quantity': quantity,
         'itemName': itemName,
-        'origins': origins
+        'origins': origins,
+        'failureAlerted': failureAlerted
       };
   factory PutawayScan.fromJson(Map<String, dynamic> json) =>
       PutawayScan(json['lpn'] as String,
+          failureAlerted:
+              json['failureAlerted'] as bool? ?? json['state'] == 'failed',
           state: (json['state'] == 'syncing' || json['state'] == 'saving')
               ? 'pending'
               : json['state'] as String,
@@ -56,7 +61,9 @@ class PutawaySyncQueue extends ChangeNotifier {
       required this.sessionMatches,
       required this.probe,
       required this.synchronize,
-      this.synchronizeSaved});
+      this.synchronizeSaved,
+      this.onFailure});
+  final Future<void> Function(String lpn, String message)? onFailure;
   final Future<String?> Function() read;
   final Future<void> Function(String) write;
   final bool Function() sessionMatches;
@@ -107,6 +114,7 @@ class PutawaySyncQueue extends ChangeNotifier {
       if (old.state == 'failed') {
         old.state = 'pending';
         old.message = '';
+        old.failureAlerted = false;
         await _save();
         notifyListeners();
       }
@@ -125,6 +133,27 @@ class PutawaySyncQueue extends ChangeNotifier {
       rethrow;
     }
     notifyListeners();
+  }
+
+  bool canRemoveFailed(String lpn) => entries.any((entry) =>
+      entry.lpn == lpn && entry.state == 'failed' && entry.origins.isEmpty);
+
+  /// Remove a rejected local scan only when no movement checkpoint exists.
+  /// Pending/partially moved entries retain their reconciliation history.
+  Future<bool> removeFailed(String lpn) async {
+    final index = entries.indexWhere((entry) =>
+        entry.lpn == lpn && entry.state == 'failed' && entry.origins.isEmpty);
+    if (index < 0) return false;
+    final removed = entries.removeAt(index);
+    try {
+      await _save();
+    } catch (_) {
+      entries.insert(index.clamp(0, entries.length), removed);
+      notifyListeners();
+      rethrow;
+    }
+    notifyListeners();
+    return true;
   }
 
   Future<void> clearCompleted() async {
@@ -174,8 +203,15 @@ class PutawaySyncQueue extends ChangeNotifier {
             break;
           }
         }
+        final shouldAlert = entry.state == 'failed' && !entry.failureAlerted;
+        if (shouldAlert) entry.failureAlerted = true;
         await _save();
         notifyListeners();
+        if (shouldAlert && onFailure != null) {
+          unawaited(
+              Future<void>.sync(() => onFailure!(entry.lpn, entry.message))
+                  .catchError((_) {}));
+        }
       }
     } on PutawaySyncFailure catch (error) {
       connection = error.loginRequired
@@ -202,3 +238,5 @@ class PutawaySyncQueue extends ChangeNotifier {
     super.dispose();
   }
 }
+
+// Failed scans without movement history can be removed locally.

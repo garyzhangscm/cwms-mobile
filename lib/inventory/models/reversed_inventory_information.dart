@@ -1,3 +1,4 @@
+import '../../shared/scanning/scan_result_feedback.dart';
 
 class ReversedInventoryInformation{
   ReversedInventoryInformation(
@@ -35,10 +36,20 @@ class ReversedInventoryInformation{
   String? locationName;
   String? workOrderNumber;
   String? receiptNumber;
-  bool? reverseInProgress;
-  bool? reverseResult;
-  String? result;
+  bool? _reverseInProgress;
+  bool? get reverseInProgress => _reverseInProgress;
+  set reverseInProgress(bool? value) { _reverseInProgress = value; _updateScanFeedback(); }
+  bool? _reverseResult;
+  bool? get reverseResult => _reverseResult;
+  set reverseResult(bool? value) { _reverseResult = value; _updateScanFeedback(); }
+  String? _result;
+  String? get result => _result;
+  set result(String? value) { _result = value; _updateScanFeedback(); }
 
 
 
+  final _scanFeedback = ScanResultFeedback();
+  bool get pendingConfirmation => _scanFeedback.pending;
+  void _updateScanFeedback() => _scanFeedback.update(
+      _reverseInProgress == true, _reverseResult == true, _result);
 }

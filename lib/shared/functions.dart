@@ -1,4 +1,6 @@
-import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:convert';
+import 'scanning/scan_feedback.dart';
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
+import 'dart:convert';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -134,6 +136,11 @@ printLongLogMessage(String message) {
 }
 
 showErrorDialog(BuildContext context, String message) {
+  final scan = ScanFeedback.current;
+  final pending = ScanFeedback.reportError(message);
+  if (pending)
+    message =
+        "Pending confirmation. Do not submit this LPN again until its result is checked.\n$message";
   // set up the button
   Widget okButton = ElevatedButton(
     child: Text("OK"),
@@ -144,8 +151,12 @@ showErrorDialog(BuildContext context, String message) {
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(CWMSLocalizations.of(context).error),
-    content: Text(uiErrorText(context,message)),
+    title: Text(
+        pending ? "Pending confirmation" : CWMSLocalizations.of(context).error,
+        style: scan == null || scan.completed
+            ? null
+            : TextStyle(color: pending ? Colors.orange : Colors.red)),
+    content: Text(uiErrorText(context, message)),
     actions: [
       okButton,
     ],
@@ -161,8 +172,19 @@ showErrorDialog(BuildContext context, String message) {
 }
 
 showBlockedErrorDialog(BuildContext context, String message) async {
+  final scan = ScanFeedback.current;
+  final pending = ScanFeedback.reportError(message);
   await showBlockedDialog(
-      context, CWMSLocalizations.of(context).error, uiErrorText(context,message));
+      context,
+      pending ? 'Pending confirmation' : CWMSLocalizations.of(context).error,
+      pending
+          ? 'Pending confirmation. Do not submit this LPN again until its result is checked.\n$message'
+          : uiErrorText(context, message),
+      scanErrorColor: scan == null || scan.completed
+          ? null
+          : pending
+              ? Colors.orange
+              : Colors.red);
 }
 
 showBlockedWarningDialog(BuildContext context, String message) async {
@@ -170,7 +192,8 @@ showBlockedWarningDialog(BuildContext context, String message) async {
       context, CWMSLocalizations.of(context).warning, message);
 }
 
-showBlockedDialog(BuildContext context, String title, String message) async {
+showBlockedDialog(BuildContext context, String title, String message,
+    {Color? scanErrorColor}) async {
   // set up the button
   Widget okButton = ElevatedButton(
     child: Text("OK"),
@@ -181,8 +204,10 @@ showBlockedDialog(BuildContext context, String title, String message) async {
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(uiText(context,title)),
-    content: Text(uiText(context,message)),
+    title: Text(uiText(context, title),
+        style:
+            scanErrorColor == null ? null : TextStyle(color: scanErrorColor)),
+    content: Text(uiText(context, message)),
     actions: [
       okButton,
     ],
@@ -209,7 +234,7 @@ showWarningDialog(BuildContext context, String message) {
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
     title: Text(CWMSLocalizations.of(context).warning),
-    content: Text(uiText(context,message)),
+    content: Text(uiText(context, message)),
     actions: [
       okButton,
     ],
@@ -244,8 +269,8 @@ Future<bool?> showYesNoDialog(BuildContext context, String title,
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(uiText(context,title)),
-    content: Text(uiText(context,message)),
+    title: Text(uiText(context, title)),
+    content: Text(uiText(context, message)),
     actions: [
       okButton,
       cancelButton,
@@ -293,8 +318,8 @@ Future<bool?> showYesNoCancelDialog(
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text(uiText(context,title)),
-    content: Text(uiText(context,message)),
+    title: Text(uiText(context, title)),
+    content: Text(uiText(context, message)),
     actions: [yesButton, noButton, cancelButton],
   );
 

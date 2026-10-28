@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/inventory_delete_policy.dart';
@@ -66,7 +68,7 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ScanAppBar(
         title: Text(uiText(context,"Claytech One - Inventory")),
         actions: [
           IconButton(
@@ -232,6 +234,8 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
   }
 
   _onInventoryQuery() async {
+    return ScanFeedback.run(() async {
+
     showLoading(context);
     List<Inventory> inventories = await InventoryService.findInventory(
       locationName: _locationController.text,
@@ -261,6 +265,8 @@ class _InventoryQueryPageState extends State<InventoryQueryPage> {
       Navigator.of(context)
           .pushNamed("inventory_display", arguments: inventories);
     }
+  
+    });
   }
 
   Future<void> _openDeleteLpn() async {

@@ -1,11 +1,8 @@
-
-
+import '../../shared/scanning/scan_result_feedback.dart';
 import 'package:cwms_mobile/warehouse_layout/models/warehouse_location.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'inventory.dart';
-
-
 
 ///这个标注是告诉生成器，这个类是需要生成Model类的
 @JsonSerializable()
@@ -16,9 +13,8 @@ import 'inventory.dart';
 // can group them together in the same deposit request
 // Currently we will only group items in the same LPN,
 // but not multiple LPNs
-class InventoryDepositRequest{
+class InventoryDepositRequest {
   InventoryDepositRequest() {
-
     lpn = "";
     newLpn = "";
 
@@ -46,7 +42,6 @@ class InventoryDepositRequest{
     result = "";
   }
 
-
   InventoryDepositRequest.fromInventory(Inventory inventory) {
     lpn = inventory.lpn;
     newLpn = inventory.lpn;
@@ -54,15 +49,12 @@ class InventoryDepositRequest{
       nextLocation = inventory.inventoryMovements[0].location;
       nextLocationName = nextLocation!.name;
       nextLocationId = nextLocation!.id;
-    }
-    else {
-
+    } else {
       nextLocation = null;
       nextLocationName = "";
       nextLocationId = null;
     }
     multipleNextLocationFlag = false;
-
 
     currentLocationName = inventory.location?.name;
 
@@ -77,15 +69,12 @@ class InventoryDepositRequest{
 
     quantity = inventory.quantity;
 
-
     inventoryIdList = {};
     inventoryIdList.add(inventory.id!);
-
 
     requestInProcess = false;
     requestResult = false;
     result = "";
-
   }
 
   // add a inventory to the existing deposit request
@@ -102,30 +91,27 @@ class InventoryDepositRequest{
       multipleInventoryStatusFlag = true;
     }
 
-
     // see if we have multiple locations
 
     int? newInventoryNextLocationId;
     if (inventory.inventoryMovements.isNotEmpty) {
-      newInventoryNextLocationId = nextLocation!.id;
+      newInventoryNextLocationId =
+          inventory.inventoryMovements.first.location?.id ??
+              inventory.inventoryMovements.first.locationId;
     }
-    if (newInventoryNextLocationId != nextLocationId) {
-
+    if (multipleNextLocationFlag == true ||
+        newInventoryNextLocationId != nextLocationId) {
       nextLocationName = "==MIXED Destination==";
       multipleNextLocationFlag = true;
       nextLocationId = null;
       nextLocation = null;
     }
     if (currentLocationName != inventory.location?.name) {
-
       nextLocationName = "==MIXED Location==";
     }
 
     quantity = quantity! + inventory.quantity!;
     inventoryIdList.add(inventory.id!);
-
-
-
   }
 
   String? lpn;
@@ -150,11 +136,17 @@ class InventoryDepositRequest{
 
   Set<int> inventoryIdList = new Set();
 
-  bool? requestInProcess;
-  bool? requestResult;
-  String? result;
-
-
-
-
+  bool? _requestInProcess;
+  bool? get requestInProcess => _requestInProcess;
+  set requestInProcess(bool? value) { _requestInProcess = value; _updateScanFeedback(); }
+  bool? _requestResult;
+  bool? get requestResult => _requestResult;
+  set requestResult(bool? value) { _requestResult = value; _updateScanFeedback(); }
+  String? _result;
+  String? get result => _result;
+  set result(String? value) { _result = value; _updateScanFeedback(); }
+  final _scanFeedback = ScanResultFeedback();
+  bool get pendingConfirmation => _scanFeedback.pending;
+  void _updateScanFeedback() => _scanFeedback.update(
+      _requestInProcess == true, _requestResult == true, _result);
 }

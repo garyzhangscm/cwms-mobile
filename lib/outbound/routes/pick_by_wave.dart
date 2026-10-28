@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:collection';
 import 'dart:core';
@@ -79,7 +80,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWave)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).pickByWave)),
       resizeToAvoidBottomInset: true,
       body:
           Column(

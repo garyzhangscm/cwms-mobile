@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'dart:io';
 
 import 'package:carousel_slider/carousel_slider.dart';
@@ -90,7 +91,7 @@ class _WorkOrderQCSamplingPageState extends State<WorkOrderQCSamplingPage> {
     return PopScope(
       canPop: !_busy,
       child: Scaffold(
-        appBar: AppBar(title: Text(CWMSLocalizations.of(context).qcSampling)),
+        appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).qcSampling)),
         resizeToAvoidBottomInset: true,
         body: Padding(
           padding: const EdgeInsets.all(16.0),

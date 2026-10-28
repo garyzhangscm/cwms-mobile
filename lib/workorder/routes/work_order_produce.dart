@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:collection';
 import 'dart:core';
 
@@ -76,7 +77,7 @@ class _WorkOrderProducePageState extends State<WorkOrderProducePage> {
     // printLongLogMessage("rebuild work order produce");
 
     return Scaffold(
-      appBar: AppBar(title: Text(_pageTitle)),
+      appBar: ScanAppBar(title: Text(_pageTitle)),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(

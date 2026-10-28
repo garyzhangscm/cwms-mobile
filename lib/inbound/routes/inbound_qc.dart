@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -68,7 +70,7 @@ class _InboundQCPageState extends State<InboundQCPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:  Text(uiText(context,"Inbound QC"))),
+      appBar: ScanAppBar(title:  Text(uiText(context,"Inbound QC"))),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -317,6 +319,8 @@ class _InboundQCPageState extends State<InboundQCPage> {
   }
 
   Future<void> _onLPNScanned() async {
+    return ScanFeedback.run(() async {
+
     if (_busy) return;
     var lpn = _lpnController.text.trim();
     if (lpn.isEmpty) return;
@@ -357,6 +361,8 @@ class _InboundQCPageState extends State<InboundQCPage> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  
+    });
   }
 
   void setupDisplay(Inventory inventory) {

@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/inventory/models/inventory_status.dart';
 import 'package:cwms_mobile/inventory/services/inventory.dart';
 import 'package:cwms_mobile/inventory/services/inventory_status.dart';
@@ -88,6 +90,8 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
   }
 
   Future<void> _addManual() async {
+    return ScanFeedback.run(() async {
+
     final controller = TextEditingController();
     final value = await showDialog<String>(
       context: context,
@@ -126,6 +130,8 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
       return;
     }
     if (!_lpns.contains(normalized)) setState(() => _lpns.add(normalized));
+  
+    });
   }
 
   Future<void> _editLpn(int index) async {
@@ -247,8 +253,9 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
     if (results != null) {
       final failed =
           results.where((result) => result.contains('Failed')).length;
+      final pending = results.where((result) => result.contains('Pending confirmation')).length;
       _resetAfterOperation();
-      _showMessage(failed == 0
+      _showMessage(pending > 0 ? '$pending LPN(s) pending confirmation. Check before retrying.' : failed == 0
           ? 'All ${results.length} LPN(s) completed successfully.'
           : '${results.length - failed} succeeded, $failed failed.');
     }
@@ -268,6 +275,8 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
   }
 
   Future<String> _executeSingleLpn(String lpn) async {
+    return ScanFeedback.run(() async {
+
     try {
       if (_operation == _LpnOperation.move) {
         await InventoryService.moveInventory(
@@ -285,8 +294,11 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
       }
       return '$lpn: Success (${inventories.length} record(s))';
     } catch (error) {
-      return '$lpn: Failed - $error';
+      final pending = ScanFeedback.reportError(error.toString(), error: error);
+      return pending ? '$lpn: Pending confirmation - check before retrying' : '$lpn: Failed - $error';
     }
+  
+    });
   }
 
   void _showMessage(String message) {
@@ -298,7 +310,7 @@ class _MultipleLpnCapturePageState extends State<MultipleLpnCapturePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ScanAppBar(
         title:  Text(uiText(context, "Multiple LPN Capture")),
         actions: [
           IconButton(
@@ -556,6 +568,7 @@ class _LpnExecutionDialogState extends State<_LpnExecutionDialog> {
   @override
   Widget build(BuildContext context) {
     final failed = _results.where((result) => result.contains('Failed')).length;
+    final pending = _results.where((result) => result.contains('Pending confirmation')).length;
     return AlertDialog(
       title: Text(uiText(
           context,_done ? 'Operation Complete' : 'Executing Operation')),
@@ -583,6 +596,7 @@ class _LpnExecutionDialogState extends State<_LpnExecutionDialog> {
                       itemBuilder: (_, index) {
                         final result = _results[index];
                         final isFailed = result.contains('Failed');
+                        final isPending = result.contains('Pending confirmation');
                         return ListTile(
                           dense: true,
                           contentPadding: EdgeInsets.zero,
@@ -590,16 +604,17 @@ class _LpnExecutionDialogState extends State<_LpnExecutionDialog> {
                               isFailed
                                   ? Icons.error_outline
                                   : Icons.check_circle_outline,
-                              color: isFailed ? Colors.red : Colors.green),
+                              color: isPending ? Colors.orange : isFailed ? Colors.red : Colors.green),
                           title: Text(result),
                         );
                       },
                     ),
             ),
+            if (_done && pending > 0) Text('$pending pending confirmation'),
             if (_done) ...[
               const SizedBox(height: 8),
               Text(uiTemplate(context, "{0} failed, {1} succeeded.",
-                  [failed,_results.length - failed])),
+                  [failed,_results.length - failed - pending])),
             ],
           ],
         ),

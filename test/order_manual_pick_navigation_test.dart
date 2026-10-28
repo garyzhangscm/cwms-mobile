@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/outbound/services/preprinted_manual_pick.dart';
 import 'package:cwms_mobile/outbound/routes/order_manual_pick_legacy.dart';
 import 'package:cwms_mobile/shared/models/factory_profile.dart';
 import 'dart:async';
@@ -19,33 +20,103 @@ class PickAdapter implements HttpClientAdapter {
   final calls = <RequestOptions>[];
   Completer<void>? gate;
   bool fail = false;
+  bool queued = false;
+  bool queueReadFails = false;
+  final queueRows = <Map<String, dynamic>>[];
+  int currentPicked = 40;
+  bool currentPickFails = false;
   bool picked = false;
   bool planned = false;
   bool availabilityFails = false;
+  bool reservationRequired = false;
+  bool allowManual = true;
+  bool failRefreshAfterPick = false;
+  bool get availabilityError =>
+      availabilityFails || (picked && failRefreshAfterPick);
   String orderNumber = 'TEST-ORDER';
   int orderId = 11;
   int lineId = 1;
   int sourceQuantity = 40;
+  int remainingQuantity = 40;
+  int remainingAfterPick = 0;
+  int? palletSize;
+  int get remaining => picked ? remainingAfterPick : remainingQuantity;
+  int pickableQuantity = 40;
+  bool previewFails = false;
   bool confirmFails = false;
   Completer<void>? confirmGate;
   @override
   Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? body,
       Future<void>? cancel) async {
     calls.add(options);
+    if (options.path == 'inventory/inventories') {
+      return ResponseBody.fromString(jsonEncode({'result':0, 'data':[
+        {'id':101, 'lpn':'NEW-SPLIT-LPN', 'quantity':25, 'pickId':1},
+        {'id':102, 'lpn':'WHOLE-LPN', 'quantity':15, 'pickId':1},
+        {'id':103, 'lpn':'UNPICKED', 'quantity':30, 'pickId':null}
+      ]}),200,headers:{Headers.contentTypeHeader:['application/json']});
+    }
+    if (options.path.endsWith('/picks')) {
+      return ResponseBody.fromString(jsonEncode({
+        'result': currentPickFails ? 1 : 0,
+        'data': [{'id': 1, 'pickedQuantity': currentPicked}]
+      }), 200, headers: {Headers.contentTypeHeader: ['application/json']});
+    }
+    if (options.path.endsWith('/manual-pick-queue/capabilities')) {
+      return ResponseBody.fromString(
+          jsonEncode({
+            'result': 0,
+            'data': {'schema': 'manual-pick-queue-v1', 'enabled': queued}
+          }),
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json']
+          });
+    }
+    if (options.path.endsWith('/manual-pick-queue')) {
+      if (options.method == 'POST') {
+        final row = {
+          'requestId': options.queryParameters['requestId'],
+          'sourceLpn': options.queryParameters['sourceLpn'],
+          'quantity': options.queryParameters['quantity'],
+          'state': 'QUEUED'
+        };
+        queueRows.add(row);
+        return ResponseBody.fromString(
+            jsonEncode({'result': 0, 'data': row}), 200,
+            headers: {
+              Headers.contentTypeHeader: ['application/json']
+            });
+      }
+      if (queueReadFails)
+        throw DioException(
+            requestOptions: options, type: DioExceptionType.connectionTimeout);
+      return ResponseBody.fromString(
+          jsonEncode({'result': 0, 'data': queueRows}), 200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json']
+          });
+    }
     if (options.path.endsWith('/manual-pick-availability')) {
       return ResponseBody.fromString(
           jsonEncode({
-            'result': availabilityFails ? 1 : 0,
-            'message': availabilityFails ? 'Availability unavailable' : '',
+            'result': availabilityError ? 1 : 0,
+            'message': availabilityError ? 'Availability unavailable' : '',
             'data': {
               'orderId': orderId,
-              'remainingQuantity': picked ? 0 : 40,
-              'canPick': !picked,
+              'reservationRequired': reservationRequired,
+              'allocationMode': reservationRequired
+                  ? 'RESERVATION_REQUIRED'
+                  : queued
+                      ? 'ITEM_QUANTITY'
+                      : 'CLASSIC',
+              'remainingQuantity': remaining,
+              'canPick': remaining > 0,
               'lines': [
                 {
                   'orderLineId': lineId,
                   'number': '1',
-                  'remainingQuantity': picked ? 0 : 40
+                  'remainingQuantity': remaining
                 }
               ]
             }
@@ -59,10 +130,11 @@ class PickAdapter implements HttpClientAdapter {
         options.method == 'GET') {
       return ResponseBody.fromString(
           jsonEncode({
-            'result': 0,
+            'result': previewFails ? 1 : 0,
+            'message': previewFails ? 'Invalid source LPN scope' : '',
             'data': {
               'sourceQuantity': sourceQuantity,
-              'pickableQuantity': picked ? 0 : 40
+              'pickableQuantity': picked ? 0 : pickableQuantity
             }
           }),
           200,
@@ -129,13 +201,34 @@ class PickAdapter implements HttpClientAdapter {
                   {
                     'id': orderId,
                     'number': orderNumber,
-                    'allowForManualPick': true,
+                    'allowForManualPick': allowManual,
                     'orderLines': [
                       {
                         'id': lineId,
                         'number': '1',
                         'openQuantity': planned || picked ? 0 : 40,
-                        'item': {'id': 1, 'name': 'DEMO-ITEM'}
+                        'expectedQuantity': 40,
+                        'item': {
+                          'id': 1,
+                          'name': 'DEMO-ITEM',
+                          if (palletSize != null)
+                            'defaultItemPackageType': {
+                              'id': 21,
+                              'name': 'Main',
+                              'stockItemUnitOfMeasure': {
+                                'id': 31,
+                                'quantity': 1,
+                                'unitOfMeasure': {'id': 1, 'name': 'PCS'}
+                              },
+                              'itemUnitOfMeasures': [
+                                {
+                                  'id': 32,
+                                  'quantity': palletSize,
+                                  'unitOfMeasure': {'id': 4, 'name': 'PL'}
+                                }
+                              ]
+                            }
+                        }
                       }
                     ]
                   }
@@ -184,6 +277,31 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  for (final useStage in [true, false]) {
+    testWidgets(
+        'ship stage defaults checked and RF remains optional ($useStage)',
+        (tester) async {
+      await open(tester);
+      await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+      await tester.testTextInput.receiveAction(TextInputAction.go);
+      await tester.pumpAndSettle();
+      expect(tester.widget<Checkbox>(find.byType(Checkbox)).value, isTrue);
+      if (!useStage) {
+        await tester.tap(find.byType(Checkbox));
+        await tester.pumpAndSettle();
+        expect(tester.widget<Checkbox>(find.byType(Checkbox)).value, isFalse);
+      }
+      await tester.enterText(find.byType(TextFormField).last, 'TEST-LPN');
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+      final submitted = adapter.calls.singleWhere((r) =>
+          r.path.endsWith('/preprinted-manual-pick') && r.method == 'POST');
+      expect(submitted.queryParameters['destination'],
+          useStage ? '@SHIP_STAGE' : Global.getLastLoginRFCode());
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('Luggage retains its existing backend workflow', (tester) async {
     Global.currentFactory = FactoryProfile.byId('mira-loma-luggage');
     await open(tester);
@@ -208,6 +326,22 @@ void main() {
     expect(calls, hasLength(1));
     expect(calls.single.queryParameters['number'], 'TEST-ORDER');
     expect(tester.takeException(), isNull);
+  });
+  testWidgets('new unreserved order explains Allocate and cannot start a Pick',
+      (tester) async {
+    adapter.reservationRequired = true;
+    adapter.allowManual = false;
+    adapter.remainingQuantity = 0;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(
+        find.textContaining('Reserve quantity before picking'), findsOneWidget);
+    expect(adapter.calls.every((r) => r.method == 'GET'), true);
+    expect(
+        adapter.calls.where((r) => r.path.endsWith('/preprinted-manual-pick')),
+        isEmpty);
   });
   testWidgets('iPhone Go loads order once and focuses a usable LPN field',
       (tester) async {
@@ -279,8 +413,7 @@ void main() {
       adapter.confirmFails = rejected;
       await tester.enterText(find.byType(TextFormField).last, 'TEST-LPN');
       await tester.tap(find.text('Confirm'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Confirm pick'));
+      expect(find.text('Confirm pallet pick'), findsNothing);
       for (var i = 0; i < 15; i++) {
         await tester.pump(const Duration(milliseconds: 20));
       }
@@ -291,6 +424,15 @@ void main() {
       expect(adapter.calls.where((r) => r.path == 'outbound/orders'),
           hasLength(1));
       expect(find.text('Order picking complete'), findsNothing);
+      // Keyboard callbacks must not replace the active order during a pick.
+      tester
+          .widget<TextField>(find.byType(TextField).first)
+          .onSubmitted
+          ?.call('TEST-ORDER');
+      await tester.pump();
+      expect(adapter.calls.where((r) => r.path == 'outbound/orders'),
+          hasLength(1));
+      expect(tester.widget<Checkbox>(find.byType(Checkbox)).onChanged, isNull);
       adapter.confirmGate!.complete();
       await tester.pumpAndSettle();
       if (rejected) {
@@ -298,6 +440,8 @@ void main() {
         expect(find.text('TEST-LPN'), findsOneWidget);
         expect(find.text('Order picking complete'), findsNothing);
       } else {
+        expect(adapter.calls.where((r) => r.path == 'outbound/orders'),
+            hasLength(1));
         expect(find.text('Order picking complete'), findsOneWidget);
         expect(find.text('Error'), findsNothing);
         await tester.tap(find.text('OK'));
@@ -307,6 +451,98 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets('confirmed pick with failed refresh hides old pallet counts',
+      (tester) async {
+    adapter.palletSize = 36;
+    adapter.sourceQuantity = 36;
+    adapter.pickableQuantity = 36;
+    adapter.remainingQuantity = 84;
+    adapter.failRefreshAfterPick = true;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.text('Estimated: 3 pallets'), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField).last, 'L000000001');
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+    expect(
+        find.textContaining(
+            'Pick confirmed, but the order could not be refreshed'),
+        findsOneWidget);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Reload the order to see'), findsOneWidget);
+    expect(find.textContaining('Estimated:'), findsNothing);
+    expect(find.text('84 PCS remaining'), findsNothing);
+  });
+  testWidgets(
+      'remaining pallets update after confirmed pick without package or order reload',
+      (tester) async {
+    adapter.palletSize = 36;
+    adapter.sourceQuantity = 36;
+    adapter.pickableQuantity = 36;
+    adapter.remainingQuantity = 84;
+    adapter.remainingAfterPick = 48;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.text('Estimated: 3 pallets'), findsOneWidget);
+    expect(find.text('84 PCS remaining'), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField).last, 'L000000001');
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+    expect(find.text('Estimated: 2 pallets'), findsOneWidget);
+    expect(find.text('48 PCS remaining'), findsOneWidget);
+    expect(find.text('1 full pallet + 12 PCS'), findsOneWidget);
+    expect(
+        adapter.calls.where((r) => r.path == 'outbound/orders'), hasLength(1));
+    expect(adapter.calls.where((r) => r.path.contains('itemPackageTypes')),
+        isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+      'full pallet below order demand submits its exact source quantity',
+      (tester) async {
+    adapter.sourceQuantity = 20;
+    adapter.pickableQuantity = 20;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).last, 'L000000001');
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+    expect(find.text('Confirm pallet pick'), findsNothing);
+    final post = adapter.calls.singleWhere((r) =>
+        r.method == 'POST' && r.path.endsWith('/preprinted-manual-pick'));
+    expect(post.queryParameters['quantity'], 20);
+    expect(post.queryParameters['expectedQuantity'], 20);
+    expect(post.queryParameters['newLpn'], '');
+    expect(
+        adapter.calls.where((r) => r.path == 'outbound/orders'), hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final quantity in [0, -1, 41]) {
+    testWidgets(
+        'invalid preview quantity $quantity never submits automatically',
+        (tester) async {
+      adapter.pickableQuantity = quantity;
+      await open(tester);
+      await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+      await tester.testTextInput.receiveAction(TextInputAction.go);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).last, 'L000000001');
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('No valid picking quantity'), findsOneWidget);
+      expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets(
       'DEMO-REPICK-40 cancellation leaves shipment demand 40: reopen and cap split to 40',
       (tester) async {
@@ -368,5 +604,232 @@ void main() {
     expect(find.byType(TextFormField), findsOneWidget);
     expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
     expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+      'preview error closes once and focus changes do not resubmit the same LPN',
+      (tester) async {
+    adapter.previewFails = true;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.tap(find.text('Next Step'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).last, 'W100000237376');
+    await tester.tap(find.text('Confirm').first);
+    await tester.pumpAndSettle();
+    int previews() => adapter.calls
+        .where((r) =>
+            r.method == 'GET' && r.path.endsWith('/preprinted-manual-pick'))
+        .length;
+    expect(previews(), 1);
+    expect(find.textContaining('Invalid source LPN scope'), findsOneWidget);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    final input = tester.widget<TextField>(find.byType(TextField).last);
+    for (var i = 0; i < 3; i++) {
+      input.focusNode!.requestFocus();
+      await tester.pump();
+      input.controller!.selection = const TextSelection.collapsed(offset: 2);
+      input.focusNode!.unfocus();
+      await tester.pumpAndSettle();
+    }
+    expect(previews(), 1);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
+    // An explicit Confirm is a deliberate retry, even without editing the value.
+    await tester.tap(find.text('Confirm').first);
+    await tester.pumpAndSettle();
+    expect(previews(), 2);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    // Editing the barcode rearms automatic blur submission once.
+    await tester.enterText(find.byType(TextFormField).last, 'W10000237376');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    expect(previews(), 3);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(previews(), 3);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('picked pallet view shows individual LPNs and matched submitter', (tester) async {
+    adapter.queued=true;
+    adapter.remainingQuantity=0;
+    adapter.queueRows.add({'requestId':'a', 'state':'COMPLETED',
+      'sourceLpn':'OLD-SOURCE', 'pickId':1, 'quantity':40, 'submittedBy':'louise'});
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first,'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.text('click to see the item to be picked'), findsNothing);
+    await tester.ensureVisible(find.text('View Picked Pallets'));
+    await tester.tap(find.text('View Picked Pallets'));
+    await tester.pumpAndSettle();
+    expect(find.text('NEW-SPLIT-LPN'),findsOneWidget);
+    expect(find.text('WHOLE-LPN'),findsOneWidget);
+    expect(find.text('UNPICKED'),findsNothing);
+    expect(find.text('Qty: 25'),findsOneWidget);
+    expect(find.text('Submitted by louise'),findsNWidgets(2));
+    expect(adapter.calls.any((r)=>r.path.contains('picked-inventory-summary')),isFalse);
+    final query=adapter.calls.firstWhere((r)=>r.path=='inventory/inventories');
+    expect(query.queryParameters['pickIds'],'1');
+    expect(query.queryParameters['includeDetails'],false);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  test('no current picks never queries unfiltered inventory', () async {
+    adapter.currentPicked=0;
+    expect(await PreprintedManualPickService.pickedPallets(11),isEmpty);
+    expect(adapter.calls.any((r)=>r.path=='inventory/inventories'),isFalse);
+  });
+
+  testWidgets('another operator updates quantities without an interrupting dialog', (tester) async {
+    adapter.queued = true;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Remaining to pick —'), findsNothing);
+    adapter.remainingQuantity = 15;
+    adapter.queueRows.add({'requestId':'other', 'sourceLpn':'TEAM-PALLET',
+      'quantity':25, 'state':'QUEUED', 'submittedBy':'louise'});
+    await tester.pump(const Duration(seconds:2));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Submitted by louise'), findsOneWidget);
+    expect(find.textContaining('louise submitted another pallet'), findsOneWidget);
+    expect(find.textContaining('DEMO-ITEM: 15'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(adapter.calls.where((r)=>r.method=='POST'), isEmpty);
+    // The next identical snapshot does not create another banner.
+    await tester.pump(const Duration(seconds:2));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Remaining to pick —'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('zero remaining waits for worker then completes; next order clears inputs', (tester) async {
+    adapter.queued = true;
+    adapter.remainingQuantity = 0;
+    adapter.queueRows.add({'requestId':'test','state':'QUEUED','sourceLpn':'PALLET','quantity':40});
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.text('All quantities submitted'), findsOneWidget);
+    expect(find.text('Picking complete'), findsNothing);
+    adapter.queueRows.first['state']='COMPLETED';
+    await tester.pump(const Duration(seconds:2));
+    await tester.pumpAndSettle();
+    expect(find.text('Picking complete'), findsOneWidget);
+    expect(find.text('Pick history'), findsNothing);
+    expect(find.text('PALLET · 40'), findsNothing);
+    await tester.ensureVisible(find.text('Next Order'));
+    await tester.tap(find.text('Next Order'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextFormField>(find.byType(TextFormField).first).controller!.text, isEmpty);
+    expect(find.text('Picking complete'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('zero reservation does not imply complete; unpick restores scanner', (tester) async {
+    adapter.queued=true;
+    adapter.remainingQuantity=0;
+    adapter.currentPicked=10;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.text('Picking complete'), findsNothing);
+    adapter.currentPicked=40;
+    for (var i=0;i<6;i++) {
+      await tester.pump(const Duration(seconds:2));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Picking complete'), findsOneWidget);
+    adapter.remainingQuantity=40;
+    adapter.currentPicked=0;
+    for (var i=0;i<6;i++) {
+      await tester.pump(const Duration(seconds:2));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Picking complete'), findsNothing);
+    expect(find.byType(TextFormField), findsNWidgets(2));
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets(
+      'accept first pallet and scan second while both are still processing',
+      (tester) async {
+    adapter.queued = true;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    for (final lpn in ['L000000001', 'L000000002']) {
+      await tester.enterText(find.byType(TextFormField).last, lpn);
+      await tester.ensureVisible(find.text('Confirm'));
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+    }
+    expect(adapter.queueRows.length, 2);
+    expect(adapter.queueRows.every((r) => r['state'] == 'QUEUED'), isTrue);
+    expect(
+        adapter.calls.where((r) =>
+            r.path.endsWith('/preprinted-manual-pick') && r.method == 'POST'),
+        isEmpty);
+    expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField).last)
+            .controller!
+            .text,
+        isEmpty);
+    expect(find.text('Completed'), findsNothing);
+    adapter.queueRows.first['state'] = 'COMPLETED';
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+    expect(find.text('Completed'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+    await open(tester);
+    expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField).first)
+            .controller!
+            .text,
+        'TEST-ORDER');
+    expect(find.text('Completed'), findsNothing);
+    expect(
+        adapter.calls
+            .where((r) =>
+                r.path.endsWith('/manual-pick-queue') && r.method == 'POST')
+            .length,
+        2);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  });
+  testWidgets(
+      'reopened order restores server tasks and blocks scanning when a task needs review',
+      (tester) async {
+    adapter.queued = true;
+    adapter.queueRows.add({
+      'requestId': 'saved',
+      'sourceLpn': 'L000000001',
+      'quantity': 40,
+      'state': 'NEEDS_REVIEW'
+    });
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.text('Retry saved task'), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField).last, 'L000000002');
+    await tester.ensureVisible(find.text('Confirm'));
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+    expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
   });
 }

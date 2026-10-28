@@ -1,3 +1,4 @@
+import 'rfid_capability.dart';
 import 'package:flutter/material.dart';
 
 import '../auth/models/menu_sub_group.dart';
@@ -6,6 +7,7 @@ import '../auth/models/menu_sub_group.dart';
 // Use the actual route table so unsupported links never become visible tiles.
 bool hasRegisteredMenuRoute(BuildContext context, String? link) {
   if (link == null || link.isEmpty) return false;
+  if (RfidCapability.isRfid(link) && !RfidCapability.visible) return false;
   return context
           .findAncestorWidgetOfExactType<MaterialApp>()
           ?.routes

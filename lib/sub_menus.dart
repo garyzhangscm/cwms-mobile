@@ -1,3 +1,7 @@
+import 'shared/scanning/scan_app_bar.dart';
+import 'shared/rfid_capability.dart';
+import 'qc_menu_page.dart';
+import 'shared/qc_menu.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:flutter/material.dart';
 import 'auth/models/menu_sub_group.dart';
 import 'i18n/localization_intl.dart';
@@ -5,7 +9,9 @@ import 'shared/MyDrawer.dart';
 import 'shared/menu_navigation.dart';
 import 'shared/workspace_ui.dart';
 import 'workorder/models/defective_production.dart';
+import 'workorder/models/rfid_check.dart';
 import 'workorder/services/defective_machines.dart';
+
 
 class SubMenus extends StatefulWidget {
   @override
@@ -37,9 +43,12 @@ class _SubMenusState extends State<SubMenus> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => RfidMenuGate(builder: _buildMenu);
+
+  Widget _buildMenu(BuildContext context) {
     final group = ModalRoute.of(context)!.settings.arguments as MenuSubGroup;
-    final menus = withDefectiveProductionMenu(group.menus)
+    if (group.name == qcMenuIdentity) return QcMenuPage(menus: group.menus);
+    final menus = withRfidCheckMenu(withDefectiveProductionMenu(group.menus))
         .where((menu) => hasRegisteredMenuRoute(context, menu.link))
         .toList();
     if (menus.any((menu) => menu.link == 'work_order_produce')) {
@@ -75,7 +84,7 @@ class _SubMenusState extends State<SubMenus> {
         group.name?.trim().toLowerCase() == 'inventory';
     return Scaffold(
       backgroundColor: workspaceBackground,
-      appBar: AppBar(
+      appBar: ScanAppBar(
           title: Text(title),
           backgroundColor: workspaceBackground,
           foregroundColor: workspaceNavy,
@@ -105,6 +114,7 @@ class _SubMenusState extends State<SubMenus> {
                                       context,zh
                                       ? '选择作业，开始处理。'
                                       : 'Choose an operation to get started.')),
+                              const RfidHardwareNotice(),
                               const SizedBox(height: 28),
                               Text(uiText(context,zh ? '作业功能' : 'Operations'),
                                   style: const TextStyle(
@@ -119,7 +129,11 @@ class _SubMenusState extends State<SubMenus> {
                                       List.generate(menus.length, (index) {
                                 final menu = menus[index];
                                 final menuTitle =
-                                    menu.link == 'work_order_defective'
+                                    menu.link == 'work_order_rfid_pallet'
+                                        ? (Localizations.localeOf(context).languageCode == 'es' ? 'Escaneo RFID de palé' : 'RFID Pallet Scan')
+                                        : menu.link == 'work_order_rfid_check'
+                                        ? (Localizations.localeOf(context).languageCode == 'es' ? 'Verificación de etiqueta RFID' : 'RFID Label Check')
+                                        : menu.link == 'work_order_defective'
                                         ? (zh ? '废品报产' : 'Defective')
                                         : CWMSLocalizations.of(context)
                                             .getMenuDisplayText(menu.i18n ?? '',

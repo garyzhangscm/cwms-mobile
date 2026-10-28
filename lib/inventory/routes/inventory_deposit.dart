@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'dart:async';
@@ -144,6 +146,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
   }
 
   Future<void> _displayInventoryForDeposit() async {
+    return ScanFeedback.run(() async {
+
     printLongLogMessage(
         "inventory_deposit / _displayInventoryForDeposit: start to display the ${inventoryOnRF.length} inventory on the RF for deposit");
 
@@ -185,6 +189,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         // _locationController.text = "";
       });
     }
+  
+    });
   }
 
   void _refreshInventoryOnRF({int? maxLPNCount}) {
@@ -248,7 +254,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     final request = inventoryDepositRequest;
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: Text(uiText(context,"Claytech One - Deposit"))),
+      appBar: ScanAppBar(title: Text(uiText(context,"Claytech One - Deposit"))),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: TabletContent(
@@ -872,6 +878,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   void _onDepositConfirm(
       InventoryDepositRequest inventoryDepositRequest) async {
+    await ScanFeedback.run(() async {
+
     // let's
     bool result =
         await _confirmInventoryDepositRequest(inventoryDepositRequest);
@@ -916,6 +924,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
         await _removeInventoryOnRf(inventoryDepositRequest);
       }
     }
+  
+    });
   }
 
   Future<void> _depositLPNsWithSameDestination(
@@ -962,6 +972,8 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
 
   Future<bool> _confirmInventoryDepositRequest(
       InventoryDepositRequest inventoryDepositRequest) async {
+    return ScanFeedback.run(() async {
+
     final perf = Stopwatch()..start();
     printLongLogMessage(
         "[PERF] deposit start lpn=${inventoryDepositRequest.lpn} items=${inventoryDepositRequest.inventoryIdList.length}");
@@ -1046,11 +1058,15 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
             "current RF's location is changed to ${destinationLocation.name}"));
 
     return true;
+  
+    });
   }
 
   Future<void> _onDepositConfirmAsync(
       InventoryDepositRequest inventoryDepositRequest,
       {int retryTime = 0}) async {
+    return ScanFeedback.run(() async {
+
     printLongLogMessage(
         "start to deposit invenotry ${inventoryDepositRequest.lpn}");
 
@@ -1082,22 +1098,9 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
       printLongLogMessage(
           "Get error, let's prepare for retry, we have retried $retryTime, capped at ${CWMSHttpClient.timeoutRetryTime}");
       if (err is DioException) {
-        // err.type == DioErrorType.connectTimeout &&) {
-        // for timeout error and we are still in the retry threshold, let's try again
-
-        if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
-          Future.delayed(
-              const Duration(milliseconds: 2000),
-              () => _onDepositConfirmAsync(inventoryDepositRequest,
-                  retryTime: retryTime + 1));
-        } else {
-          // do nothing as we already running out of retry time
-          showErrorDialog(
-              context,
-              "Fail to deposit LPN: " +
-                  inventoryDepositRequest.lpn! +
-                  " after trying ${CWMSHttpClient.timeoutRetryTime} times");
-        }
+        if (ScanFeedback.isUncertain(err)) ScanFeedback.current?.uncertain = true;
+        if (mounted) showErrorDialog(context,
+            'Pending confirmation. Check the LPN before submitting again.');
       } else if (err is WebAPICallException) {
         // for any other error display it
         final webAPICallException = err;
@@ -1116,5 +1119,7 @@ class _InventoryDepositPageState extends State<InventoryDepositPage> {
     _locationFocusNode.requestFocus();
 
     await _removeInventoryOnRf(inventoryDepositRequest);
+  
+    });
   }
 }

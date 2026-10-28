@@ -1,3 +1,4 @@
+import '../../shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:flutter/material.dart';
 
@@ -146,6 +147,11 @@ class _ManualPickSplitDialogState extends State<ManualPickSplitDialog> {
                     'newLpn': partial ? newLpn.text.trim() : '',
                     'keepOriginal': keepOriginal
                   });
+                else {
+                  ScanFeedback.run(() async {
+                    ScanFeedback.reportError('Invalid LPN or picking quantity');
+                  });
+                }
               },
               child: Text(t('Confirm pick', 'Confirmar preparación')))
         ],

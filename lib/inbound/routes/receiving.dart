@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:collection/collection.dart';
@@ -272,7 +274,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
     final l10n = CWMSLocalizations.of(context);
     return Scaffold(
       backgroundColor: workspaceBackground,
-      appBar: AppBar(title: Text(l10n.receiving)),
+      appBar: ScanAppBar(title: Text(l10n.receiving)),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -1028,6 +1030,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   void _onRecevingConfirm(
       ReceiptLine receiptLine, int confirmedQuantity, String lpn) async {
+    await ScanFeedback.run(() async {
+
     if (_getItemPackageTypeItems().isEmpty) {
       showErrorToast(
         CWMSLocalizations.of(context).itemNotReceivableNoPackageType,
@@ -1063,6 +1067,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
       printLongLogMessage("start to receive multiple LPNs in one transaction");
       _onRecevingMultiLpnConfirm(receiptLine, confirmedQuantity, lpn);
     }
+  
+    });
   }
 
   Future<bool> _validateQuantityForSingleLPN(int confirmedQuantity) async {
@@ -1142,6 +1148,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   void _onRecevingSingleLpnConfirm(
       ReceiptLine receiptLine, int confirmedQuantity, String lpn) async {
+    await ScanFeedback.run(() async {
+
     // TO-DO:Current we don't support the location code. Will add
     //      it later
 
@@ -1257,6 +1265,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
     }
 
     _refreshScreenAfterReceive(qcRequired);
+  
+    });
   }
 
   void _printLPNLabel(Inventory inventory) {
@@ -1328,6 +1338,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
 
   void _onRecevingMultiLpnConfirm(
       ReceiptLine receiptLine, int confirmedQuantity, String lpn) async {
+    await ScanFeedback.run(() async {
+
     // let's see how many LPNs we will need
     int lpnCount = _getRequiredLPNCount(confirmedQuantity);
 
@@ -1384,10 +1396,14 @@ class _ReceivingPageState extends State<ReceivingPage> {
       // receive with multiple LPNs
       _receiveMultipleLpns(receiptLine, lpnCaptureRequest);
     }
+  
+    });
   }
 
   void _receiveMultipleLpns(
       ReceiptLine receiptLine, LpnCaptureRequest lpnCaptureRequest) async {
+    await ScanFeedback.run(() async {
+
     bool qcRequired = false;
 
     printLongLogMessage("2. _receiveMultipleLpns / showLoading");
@@ -1468,6 +1484,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
       pr!.hide();
     }
     _refreshScreenAfterReceive(qcRequired);
+  
+    });
   }
 
   _setupProgressBar() {
@@ -1913,6 +1931,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
   }
 
   void _enterOnLPNController({int tryTime = 10}) async {
+    await ScanFeedback.run(() async {
+
     if (!_validateReceivingSelections()) {
       _readyToConfirm = true;
       return;
@@ -1964,6 +1984,8 @@ class _ReceivingPageState extends State<ReceivingPage> {
     setState(() {
       // enable the confirm button
       _readyToConfirm = true;
+    });
+  
     });
   }
 }

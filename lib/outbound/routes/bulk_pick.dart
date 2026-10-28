@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -112,7 +114,7 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).bulkPick)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).bulkPick)),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -312,6 +314,8 @@ class _BulkPickPageState extends State<BulkPickPage> {
   }
 
   void _enterOnLPNController(int tryTime) async {
+    await ScanFeedback.run(() async {
+
 
     // if the location is empty, then ask the user to input the
     // right location
@@ -359,6 +363,8 @@ class _BulkPickPageState extends State<BulkPickPage> {
       _quantityFocusNode.requestFocus();
     }
 
+  
+    });
   }
 
   void _enterOnQuantityController(int tryTime) async {
@@ -410,6 +416,8 @@ class _BulkPickPageState extends State<BulkPickPage> {
   }
 
   void _onPickConfirm(BulkPick bulkPick, int confirmedQuantity) async {
+    await ScanFeedback.run(() async {
+
 
     // over pick for bulk pick is not allowed
     if (confirmedQuantity > _currentBulkPick!.quantity! - _currentBulkPick!.pickedQuantity!) {
@@ -489,6 +497,8 @@ class _BulkPickPageState extends State<BulkPickPage> {
 
 
     Navigator.pop(context, pickResult);
+  
+    });
   }
 
   void _reloadInventoryOnRF() {

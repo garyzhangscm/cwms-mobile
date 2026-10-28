@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 
 import 'dart:core';
 
@@ -119,7 +120,7 @@ class _ProductionLineCheckOutPageState extends State<ProductionLineCheckOutPage>
       length: 2,
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        appBar: AppBar(
+        appBar: ScanAppBar(
           title: Text(CWMSLocalizations.of(context).productionLineCheckOut),
           bottom: TabBar(
             controller: _tabController,

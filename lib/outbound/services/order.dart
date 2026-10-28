@@ -11,7 +11,10 @@ import 'package:dio/dio.dart';
 class ManualPickAvailability {
   final Map<int, int> remainingByLine;
   final int remainingQuantity;
-  ManualPickAvailability(this.remainingByLine, this.remainingQuantity);
+  final String? allocationMode;
+  final bool reservationRequired;
+  ManualPickAvailability(this.remainingByLine, this.remainingQuantity,
+      {this.allocationMode, this.reservationRequired = false});
 }
 
 class OrderService {
@@ -52,7 +55,9 @@ class OrderService {
       throw WebAPICallException(
           'Manual-pick quantities changed. Reload the order.');
     }
-    return ManualPickAvailability(Map<int, int>.unmodifiable(remaining), total);
+    return ManualPickAvailability(Map<int, int>.unmodifiable(remaining), total,
+        allocationMode: data['allocationMode'] as String?,
+        reservationRequired: data['reservationRequired'] == true);
   }
 
   // Get all cycle count requests by batch id

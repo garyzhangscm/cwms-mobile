@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
 import 'dart:collection';
@@ -107,7 +109,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(uiText(context,"Claytech One - Partial Inventory Move"))),
+      appBar: ScanAppBar(title: Text(uiText(context,"Claytech One - Partial Inventory Move"))),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -324,16 +326,22 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   // otherwise, list all the items and let the user choose one
   // to move
   void _onLoadingLPNInformation() async {
+    await ScanFeedback.run(() async {
+
     if (_lpnController.text.isEmpty) {
       showErrorDialog(context, "please input the LPN number");
       return;
     }
 
     _loadItemsFromLPN(_lpnController.text);
+  
+    });
   }
 
   /// Get the items from the LPN
   Future<void> _loadItemsFromLPN(String lpn) async {
+    return ScanFeedback.run(() async {
+
     final normalizedLpn = lpn.trim();
     if (normalizedLpn.isEmpty || _loadingLpn) {
       // if the user hasn't input the LPN, return an empty list
@@ -392,6 +400,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       _loadingLpn = false;
       if (mounted) Navigator.of(context).pop();
     }
+  
+    });
   }
 
   Widget _buildButtons(BuildContext context) {
@@ -710,7 +720,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                 ),
               ]),
             ]),
-            tileColor: Colors.amberAccent,
+            tileColor: _inventoryDepositRequests[index].pendingConfirmation
+                ? Colors.orange.shade50 : Colors.red.shade100,
           ));
     }
   }
@@ -729,6 +740,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   }
 
   void _onAddingLPN() {
+    ScanFeedback.run(() async {
+
     // showLoading(context);
     // move the inventory being scanned onto RF
     printLongLogMessage("==>> Start to adding LPN for deposit");
@@ -775,6 +788,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     _lpnFocusNode.requestFocus();
 
     // showToast(CWMSLocalizations.of(context)!.actionComplete);
+  
+    });
   }
 
   Future<WarehouseLocation> _getCachedRfLocation() async {
@@ -788,6 +803,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   Future<void> _moveInventoryAsync(
       InventoryDepositRequest inventoryDepositRequest, String unitOfMeasure,
       {int? inventoryId, int retryTime = 0}) async {
+    return ScanFeedback.run(() async {
+
     const maxMoveRetries = 2;
     final totalPerf = Stopwatch()..start();
     try {
@@ -820,13 +837,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       printLongLogMessage(
           "Move failed for ${inventoryDepositRequest.lpn}, attempt $retryTime/$maxMoveRetries: $err");
 
-      if (err is DioException && retryTime < maxMoveRetries) {
-        await Future.delayed(const Duration(seconds: 2));
-        if (mounted) {
-          return _moveInventoryAsync(inventoryDepositRequest, unitOfMeasure,
-              inventoryId: inventoryId, retryTime: retryTime + 1);
-        }
-        return;
+      if (ScanFeedback.isUncertain(err)) {
+        ScanFeedback.current?.uncertain = true;
       }
 
       if (!mounted) return;
@@ -835,12 +847,14 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       final message = err is WebAPICallException
           ? err.errMsg()
           : (err is DioException
-              ? "Request timed out after $maxMoveRetries retries"
+              ? "Pending confirmation. Check this LPN before submitting again."
               : err.toString());
       inventoryDepositRequest.result =
           "$message, LPN: ${inventoryDepositRequest.lpn}";
       setState(() {});
     }
+  
+    });
   }
 
   void _reloadInventoryOnRF({int refreshCount = 0}) {

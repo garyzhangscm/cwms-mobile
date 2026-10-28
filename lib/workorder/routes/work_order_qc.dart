@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:core';
 import 'dart:io';
@@ -77,7 +78,7 @@ class _WorkOrderQCPageState extends State<WorkOrderQCPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).workOrderQC)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).workOrderQC)),
       resizeToAvoidBottomInset: true,
       body:
           Column(

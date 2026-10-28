@@ -1,3 +1,4 @@
+import '../workorder/routes/line_clearance_test.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/states/profile_change_notifier.dart';
 import 'package:flutter/material.dart';
@@ -64,6 +65,7 @@ class MyDrawer extends StatelessWidget {
         var gm = CWMSLocalizations.of(context);
         return ListView(
           children: <Widget>[
+            if (lineClearanceTestEnabled) ListTile(leading: const Icon(Icons.fact_check_outlined), title: const Text('Line Clearance · TEST'), onTap: () { Navigator.pop(context); Navigator.pushNamed(context, 'line_clearance_test'); }),
             ListTile(
               leading: const Icon(Icons.language),
               title: Text(gm.language),

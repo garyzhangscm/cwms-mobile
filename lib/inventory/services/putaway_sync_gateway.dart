@@ -1,3 +1,6 @@
+import '../../shared/scanning/scan_feedback.dart';
+import '../../shared/scanning/server_connection.dart';
+import '../../shared/scanning/rf_inventory_count_query.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,6 +49,7 @@ class PutawaySyncGateway {
     return _queues.putIfAbsent(gateway.key, () async {
       final prefs = await SharedPreferences.getInstance();
       final queue = PutawaySyncQueue(
+          onFailure: (_, __) => ScanFeedback.playFailure(),
           read: () async => prefs.getString(gateway.key),
           write: (value) async {
             if (!await prefs.setString(gateway.key, value))
@@ -80,9 +84,25 @@ class PutawaySyncGateway {
           'Accept': 'application/json'
         });
     final dio = clientFactory?.call(options) ?? Dio(options);
+    final connectionProfile = ConnectionProfile(
+        server, warehouseId, companyId, rfCode, Global.currentUser!.token!);
     try {
-      final response = await dio.request(path,
+      Future<Response<dynamic>> send() => dio.request(path,
           queryParameters: query, data: data, options: Options(method: method));
+      final response = method == 'GET' && path == '/inventory/inventories/count'
+          ? await RfInventoryCountQuery.share(connectionProfile.scope, send)
+          : await send();
+      // A shared read may originate in the monitor, which accepts all HTTP
+      // statuses. Preserve this gateway's original error handling.
+      if ((response.statusCode ?? 0) < 200 ||
+          (response.statusCode ?? 0) >= 300) {
+        throw DioException.badResponse(
+            statusCode: response.statusCode ?? 0,
+            requestOptions: response.requestOptions,
+            response: response);
+      }
+      ServerConnectionMonitor.shared
+          .note(server, response.statusCode, scope: connectionProfile.scope);
       final obj =
           response.data is String ? jsonDecode(response.data) : response.data;
       if (obj is! Map || obj['result'] != 0 || obj['data'] == null) {
@@ -93,6 +113,9 @@ class PutawaySyncGateway {
       }
       return obj['data'];
     } on DioException catch (error) {
+      ServerConnectionMonitor.shared.note(server, error.response?.statusCode,
+          transportFailure: error.response == null,
+          scope: connectionProfile.scope);
       final status = error.response?.statusCode;
       if (status == 401)
         throw PutawaySyncFailure(
@@ -104,7 +127,7 @@ class PutawaySyncGateway {
       if (error.type != DioExceptionType.badResponse ||
           status != null && status >= 500) {
         throw PutawaySyncFailure(
-            'Waiting for the Colton server. Your scan is saved.',
+            'Pending confirmation. Your scan is saved; checking the server result.',
             retryable: true);
       }
       throw PutawaySyncFailure('Server rejected this request (HTTP $status).');

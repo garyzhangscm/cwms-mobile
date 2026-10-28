@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/workorder/routes/line_clearance_test.dart';
 import 'shared/updates/update_route_observer.dart';
 import 'shared/updates/ota_update_gate.dart';
 import 'dart:io';
@@ -48,6 +49,8 @@ import 'package:provider/single_child_widget.dart';
 
 import 'package:cwms_mobile/sub_menus.dart';
 import 'package:flutter/material.dart';
+import 'workorder/routes/rfid_check.dart';
+import 'workorder/routes/rfid_pallet_scan.dart';
 
 import 'auth/routes/login.dart';
 
@@ -191,14 +194,14 @@ class MyApp extends StatelessWidget {
             ),
 
             navigatorKey: navigatorKey,
-            navigatorObservers: [_updateObserver],
-            builder: (context, child) => OtaUpdateGate(
+            navigatorObservers: lineClearanceTestEnabled ? [] : [_updateObserver],
+            builder: (context, child) => lineClearanceTestEnabled ? (child ?? const SizedBox.shrink()) : OtaUpdateGate(
                 navigatorKey: navigatorKey,
                 child: child ?? const SizedBox.shrink()),
             onGenerateTitle: (context) {
               return CWMSLocalizations.of(context).title;
             },
-            home: LaunchPage(enableDebugAutoConnect: enableDebugAutoConnect),
+            home: lineClearanceTestEnabled ? const LineClearanceTestLaunchPage() : LaunchPage(enableDebugAutoConnect: enableDebugAutoConnect),
             locale: localeModel.getLocale(),
             //我们只支持美国英语和中文简体
             supportedLocales: [
@@ -235,10 +238,11 @@ class MyApp extends StatelessWidget {
               }
             },
             routes: {
+              if (lineClearanceTestEnabled) 'line_clearance_test': (context) => const LineClearanceTestPage(),
               "login_page": (context) => LoginPage(),
               "language": (context) => LanguageRoute(),
               "work_profile": (context) => WorkProfileInfoPage(),
-              "menus_page": (context) => Menus(),
+              "menus_page": (context) => lineClearanceTestEnabled ? const LineClearanceTestPage() : Menus(),
               "sub_menus_page": (context) => SubMenus(),
               "cycle_count_batch": (context) => CycleCountBatchPage(),
               "cycle_count_request": (context) => CycleCountRequestPage(),
@@ -254,6 +258,8 @@ class MyApp extends StatelessWidget {
               "inventory_display": (context) => InventoryDetailPage(),
               "inventory_putaway": (context) => InventoryPutawayPage(),
               "pick_by_work_order": (context) => PickByWorkOrderPage(),
+              "work_order_rfid_pallet": (context) => const RfidPalletScanPage(),
+              "work_order_rfid_check": (context) => const RfidCheckPage(),
               "work_order_produce": (context) => WorkOrderProducePage(),
               "work_order_defective": (context) =>
                   const DefectiveMachineSelectionPage(),
@@ -271,7 +277,7 @@ class MyApp extends StatelessWidget {
                   ProductionLineCheckOutPage(),
               "qc_inspection": (context) => QCInspectionPage(),
               "inventory_qc": (context) => InventoryQCPage(),
-              "app_upgrade": (context) => AppUpgradePage(),
+              "app_upgrade": (context) => lineClearanceTestEnabled ? const LineClearanceTestPage() : AppUpgradePage(),
               "lpn_capture": (context) => LpnCapturePage(),
               "multiple_lpn_capture": (context) =>
                   const MultipleLpnCapturePage(),

@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:core';
@@ -105,7 +107,7 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).pickByWorkOrder)),
       resizeToAvoidBottomInset: true,
       body:
         Padding(
@@ -674,6 +676,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
   }
 
   _onWorkOrderMaualPickConfirm() async {
+    return ScanFeedback.run(() async {
+
 
     // make sure the user input an valid LPN
     if (_lpnController.text.isEmpty) {
@@ -830,6 +834,8 @@ class _WorkOrderManualPickPageState extends State<WorkOrderManualPickPage> {
     Navigator.of(context).pop();
     _refreshScreenAfterPickConfirm();
 
+  
+    });
   }
   _refreshScreenAfterPickConfirm(){
     // after we sucessfully pick the LPN, clear the LPN field

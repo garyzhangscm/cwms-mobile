@@ -17,6 +17,8 @@ import 'package:cwms_mobile/workorder/routes/work_order_qc_sampling.dart';
 import 'package:cwms_mobile/inventory/models/qc_inspection_request.dart';
 
 class SamplingAdapter implements HttpClientAdapter {
+  SamplingAdapter({this.existing = false});
+  final bool existing;
   final calls = <RequestOptions>[];
   @override
   Future<ResponseBody> fetch(
@@ -32,8 +34,19 @@ class SamplingAdapter implements HttpClientAdapter {
           'workOrderNumber': 'TEST-WO'
         }
       ];
-    } else if (o.path == 'workorder/qc-samples' && o.method == 'GET') {
-      data = [];
+    } else if ((o.path == 'workorder/qc-samples/assignment/latest' ||
+            o.path == 'workorder/qc-samples') &&
+        o.method == 'GET') {
+      data = existing && o.path.endsWith('/latest')
+          ? [
+              {
+                'id': 10,
+                'number': 'SAMPLE-EXISTING',
+                'warehouseId': 1,
+                'imageUrls': ''
+              }
+            ]
+          : [];
     } else if (o.path == 'workorder/qc-samples' && o.method == 'PUT') {
       data = {
         ...jsonDecode(o.data as String) as Map<String, dynamic>,
@@ -75,6 +88,57 @@ class SamplingAdapter implements HttpClientAdapter {
 }
 
 void main() {
+  for (final modify in [true, false]) {
+    testWidgets(
+        'latest existing sample supports ${modify ? "modify" : "add new"} without loading history',
+        (tester) async {
+      Global.currentFactory = null;
+      Global.currentWarehouse = Warehouse()..id = 1;
+      Global.currentUser = User()
+        ..username = 'QC-TEST'
+        ..token = 'mock';
+      Global.lastLoginRF = RF();
+      Global.currentServer = CWMSSiteInformation()
+        ..url = 'https://example.test/';
+      CWMSHttpClient.resetForServer();
+      final adapter = SamplingAdapter(existing: true);
+      CWMSHttpClient.getDio().httpClientAdapter = adapter;
+      await tester.pumpWidget(ChangeNotifierProvider<UserModel>(
+        create: (_) => UserModel(),
+        child: MaterialApp(
+          localizationsDelegates: [
+            CWMSLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate
+          ],
+          supportedLocales: const [Locale('en'), Locale('es')],
+          home: WorkOrderQCSamplingPage(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'TEST-LINE');
+      await tester.testTextInput.receiveAction(TextInputAction.next);
+      await tester.pumpAndSettle();
+      expect(find.text('Add or Modify'), findsOneWidget);
+      expect(
+          adapter.calls
+              .where((c) => c.path == 'workorder/qc-samples/assignment/latest'),
+          hasLength(1));
+      expect(adapter.calls.where((c) => c.path == 'workorder/qc-samples'),
+          isEmpty);
+      await tester.tap(find.text(modify ? 'Yes' : 'No'));
+      await tester.pumpAndSettle();
+      final number = tester
+          .widget<TextFormField>(find.byType(TextFormField).last)
+          .controller!
+          .text;
+      expect(number, modify ? 'SAMPLE-EXISTING' : '');
+      expect(adapter.calls.where((c) => c.method != 'GET'), isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets(
       'Sampling registers once, opens exact QC task, and resumes after back',
       (tester) async {
@@ -119,6 +183,10 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.next);
     await tester.pumpAndSettle();
     expect(find.text('TEST-WO'), findsOneWidget);
+    expect(
+        adapter.calls
+            .where((c) => c.path == 'workorder/qc-samples/assignment/latest'),
+        hasLength(1));
     await tester.enterText(find.byType(TextFormField).last, 'SAMPLE-TEST');
     // A scanner submit invokes the same number-field callback.
     await tester.testTextInput.receiveAction(TextInputAction.done);

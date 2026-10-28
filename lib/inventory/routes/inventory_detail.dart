@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'package:cwms_mobile/shared/adaptive_layout.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -23,7 +24,7 @@ class _InventoryDetailPageState extends State<InventoryDetailPage> {
         ">>>> start to show inventory details with ${_inventories.length} records");
 
     return Scaffold(
-        appBar: AppBar(title: Text(CWMSLocalizations.of(context).inventory)),
+        appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).inventory)),
         resizeToAvoidBottomInset: true,
         body: TabletContent(
             maxWidth: 980, child: _buildInventoryList(context, _inventories))

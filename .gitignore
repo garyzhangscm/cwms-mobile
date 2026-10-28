@@ -46,3 +46,6 @@ app.*.map.json
 
 # Internal release archives are stored locally only.
 /release/
+
+# Vendor SDK downloaded locally; do not commit vendor binaries.
+/android/app/libs/DeviceAPI*.aar

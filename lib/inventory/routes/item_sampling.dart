@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:io';
 
@@ -67,7 +68,7 @@ class _ItemSamplingPageState extends State<ItemSamplingPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(uiText(context,"Claytech One - Item Sampling"))),
+      appBar: ScanAppBar(title: Text(uiText(context,"Claytech One - Item Sampling"))),
       resizeToAvoidBottomInset: true,
       body:
           Column(

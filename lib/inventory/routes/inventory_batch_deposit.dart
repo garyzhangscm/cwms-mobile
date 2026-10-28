@@ -1,5 +1,7 @@
+import '../../shared/scanning/scan_feedback.dart';
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
-import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -45,6 +47,11 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
 
   InventoryBatchDepositSortByCriteria? _selectedSortByCriteria;
 
+  bool _batchBusy = false;
+  bool _loadingInventory = false;
+  String? _loadError;
+  int _loadGeneration = 0;
+  bool _resolvingDestination = false;
   Timer? _timer; // timer to refresh inventory on RF every 2 second
 
   @override
@@ -63,15 +70,20 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Text(
-              uiTemplate(context, "Claytech One {0}",
+      appBar: ScanAppBar(
+          title: Text(uiTemplate(context, "Claytech One {0}",
               [CWMSLocalizations.of(context).batchDepositInventory]))),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
+            if (_loadingInventory) const LinearProgressIndicator(),
+            if (_loadError != null)
+              TextButton(
+                  onPressed: () => _reloadInventoryOnRF(),
+                  child: Text(uiText(context,
+                      'Could not load deposit inventory. Tap to retry.'))),
             _buildTopSelection(context),
             _buildSortByCriteria(context),
             _buildDepositRequestList(context)
@@ -95,14 +107,9 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         //就是字child的垂直布局方向，向上还是向下
         verticalDirection: VerticalDirection.down,
         children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.45,
-            child: _buildDepositAllButton(context),
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.45,
-            child: _buildDepositSelectedLPNButton(context),
-          ),
+          Expanded(child: _buildDepositAllButton(context)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildDepositSelectedLPNButton(context)),
         ]);
   }
 
@@ -112,8 +119,13 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         foregroundColor: Colors.white,
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      onPressed: _isThereAvailableInventoryForDeposit() ? _depositAll : null,
-      child: Text(uiText(context,"Deposit All")),
+      onPressed: !_batchBusy &&
+              !_loadingInventory &&
+              _loadError == null &&
+              _isThereAvailableInventoryForDeposit()
+          ? _depositAll
+          : null,
+      child: Text(uiText(context, "Deposit All")),
     );
   }
 
@@ -123,15 +135,19 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         foregroundColor: Colors.white,
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      onPressed:
-          _isThereAvailableInventoryForDeposit() ? _depositSelectedLPN : null,
-      child: Text(uiText(context,"Deposit Selected LPN")),
+      onPressed: !_batchBusy &&
+              !_loadingInventory &&
+              _loadError == null &&
+              _isThereAvailableInventoryForDeposit()
+          ? _depositSelectedLPN
+          : null,
+      child: Text(uiText(context, "Deposit Selected LPN")),
     );
   }
 
   Widget _buildSortByCriteria(BuildContext context) {
     return buildTwoSectionInputRow(
-        uiText(context,"Sort By"),
+        uiText(context, "Sort By"),
         DropdownButton(
           // hint: Text(CWMSLocalizations.of(context)!.pleaseSelect),
           items: _getSortByCriteriaItems(),
@@ -194,7 +210,17 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
     _selectedLPNMap.clear();
   }
 
-  Future<void> _deposit(
+  Future<void> _deposit(List<InventoryDepositRequest> requests) async {
+    if (_batchBusy || _loadingInventory || _loadError != null) return;
+    setState(() => _batchBusy = true);
+    try {
+      await _runDeposit(requests);
+    } finally {
+      if (mounted) setState(() => _batchBusy = false);
+    }
+  }
+
+  Future<void> _runDeposit(
       List<InventoryDepositRequest> inventoryDepositRequests) async {
     final batchPerf = Stopwatch()..start();
     printLongLogMessage(
@@ -251,21 +277,31 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
       final batch = requests.sublist(start, end);
       printLongLogMessage(
           "[PERF] batch deposit client window ${start + 1}-$end/${requests.length}");
-      await Future.wait(batch.map((request) async {
+      await Future.wait(batch.map((request) async => ScanFeedback.run(() async {
         if (!mounted) return;
         setState(() {
           request.requestInProcess = true;
           request.requestResult = false;
           request.result = "";
         });
-        final result = await worker(request);
+        Tuple2<bool, String> result;
+        try {
+          result = await worker(request);
+        } catch (error) {
+          if (error is! WebAPICallException) {
+            ScanFeedback.current?.uncertain = true;
+          }
+          // A transport error can follow a successful move: never auto-repeat it.
+          result = const Tuple2(false,
+              'Deposit not confirmed. Reload RF inventory before retrying.');
+        }
         if (!mounted) return;
         setState(() {
           request.requestInProcess = false;
           request.requestResult = result.item1;
           request.result = result.item2;
         });
-      }));
+      }, fresh: true)));
     }
   }
 
@@ -299,6 +335,9 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
         _buildDepositDetail("${labels.quantity}: ${request.quantity}"),
         _buildDepositDetail(
             "${labels.location}: ${request.currentLocationName ?? ''}"),
+        if (request.result?.isNotEmpty == true)
+          Text(request.pendingConfirmation ? "Pending confirmation. Reload RF inventory to check this LPN." : request.result!,
+              style: TextStyle(color: request.pendingConfirmation ? Colors.orange.shade800 : Colors.red, fontSize: 14)),
         if (!inProcess && !completed)
           _buildDepositDetail(
               "${labels.nextLocation}: ${request.nextLocationName ?? ''}"),
@@ -306,7 +345,7 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
     );
     // Let each record grow with its text so the separator stays below it.
     const contentPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
-    if (inProcess || completed) {
+    if (inProcess || completed || request.result?.isNotEmpty == true) {
       return ListTile(
         contentPadding: contentPadding,
         title: title,
@@ -318,7 +357,10 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : null,
-        tileColor: completed && !inProcess ? Colors.lightGreen : null,
+        tileColor: completed && !inProcess ? Colors.lightGreen
+            : request.result?.isNotEmpty == true
+              ? request.pendingConfirmation ? Colors.orange.shade50 : Colors.red.shade50
+              : null,
       );
     }
     return CheckboxListTile(
@@ -326,11 +368,11 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
       title: title,
       subtitle: subtitle,
       value: _selectedLPNMap[key] ?? false,
-      onChanged: (bool? selected) {
-        setState(() {
-          _selectedLPNMap[key] = selected ?? false;
-        });
-      },
+      onChanged: _batchBusy
+          ? null
+          : (bool? selected) {
+              setState(() => _selectedLPNMap[key] = selected ?? false);
+            },
       tileColor: Colors.white,
     );
   }
@@ -349,47 +391,66 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
 
   @override
   void dispose() {
-    super.dispose();
-    // remove any timer so we won't need to load the next work again after
-    // the user return from this page
+    _loadGeneration++;
     _timer?.cancel();
+    _destinationLocationFieldController.dispose();
+    super.dispose();
   }
 
-  void _reloadInventoryOnRF({int refreshCount = 0}) {
-    InventoryService.getInventoryOnCurrentRF().then((inventoryList) async {
-      // load location information
-
-      WarehouseLocation rfLocation =
-          await WarehouseLocationService.getWarehouseLocationByName(
-              Global.getLastLoginRFCode());
-
-      inventoryList.forEach((inventory) async {
-        inventory.location = rfLocation;
-        if (inventory.inventoryMovements.isNotEmpty &&
-            inventory.inventoryMovements[0].locationId != null &&
-            inventory.inventoryMovements[0].location == null) {
-          WarehouseLocation nextLocation =
-              await WarehouseLocationService.getWarehouseLocationById(
-                  inventory.inventoryMovements[0].locationId!);
-          inventory.inventoryMovements[0].location = nextLocation;
+  Future<void> _reloadInventoryOnRF({int refreshCount = 0}) async {
+    if (_batchBusy) return;
+    final generation = ++_loadGeneration;
+    setState(() {
+      _loadingInventory = true;
+      _loadError = null;
+    });
+    try {
+      final inventoryList = await InventoryService.getInventoryOnCurrentRF();
+      if (!mounted || generation != _loadGeneration) return;
+      if (inventoryList.isNotEmpty) {
+        final rf = await WarehouseLocationService.getWarehouseLocationByName(
+            Global.getLastLoginRFCode());
+        final nextIds = inventoryList
+            .where((i) => i.inventoryMovements.isNotEmpty)
+            .map((i) => i.inventoryMovements.first)
+            .where((m) => m.location == null && m.locationId != null)
+            .map((m) => m.locationId!)
+            .toSet();
+        final locations = <int, WarehouseLocation>{};
+        // Hydrate each destination once, and finish before grouping LPNs.
+        await Future.wait(nextIds.map((id) async {
+          locations[id] =
+              await WarehouseLocationService.getWarehouseLocationById(id);
+        }));
+        for (final inventory in inventoryList) {
+          inventory.location = rf;
+          if (inventory.inventoryMovements.isNotEmpty) {
+            final movement = inventory.inventoryMovements.first;
+            movement.location ??= locations[movement.locationId];
+            if (movement.location == null) {
+              throw StateError('Deposit destination is unavailable');
+            }
+          }
         }
-      });
-
+      }
+      if (!mounted || generation != _loadGeneration) return;
       setState(() {
         inventoryOnRF = inventoryList;
-        // setup the inventory deposit requests
-        // so we can display the request list
         _setupInventoryDepositRequest();
-
-        if (refreshCount > 0) {
-          _timer = Timer(new Duration(seconds: 2), () {
-            this._reloadInventoryOnRF(refreshCount: refreshCount - 1);
-          });
-        } else {
-          _timer?.cancel();
-        }
+        _loadingInventory = false;
       });
-    });
+      _timer?.cancel();
+      if (refreshCount > 0) {
+        _timer = Timer(const Duration(seconds: 2),
+            () => _reloadInventoryOnRF(refreshCount: refreshCount - 1));
+      }
+    } catch (_) {
+      if (!mounted || generation != _loadGeneration) return;
+      setState(() {
+        _loadingInventory = false;
+        _loadError = 'load failed';
+      });
+    }
   }
 
   // setup the inventory deposit request from the inventory on the RF
@@ -423,16 +484,12 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
 
     printLongLogMessage(
         "we get ${_inventoryDepositRequests.keys.length} LPNs and ${_inventoryDepositRequests.values.length} deposit record");
-    setState(() {
-      _inventoryDepositRequests;
-      _selectedLPNMap;
-    });
   }
 
   List<InventoryDepositRequest> _getSelectedInventoryDepositRequests() {
     return _inventoryDepositRequests.entries
         .where((element) =>
-            _selectedLPNMap[element.key]! && !isRequestProcessed(element.value))
+            (_selectedLPNMap[element.key] ?? false) && !isRequestProcessed(element.value))
         .map((e) => e.value)
         .toList();
   }
@@ -495,17 +552,26 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
               ElevatedButton(
                   child: Text(CWMSLocalizations.of(context).confirm),
                   onPressed: () async {
-                    if (_destinationLocationFieldController.text.isEmpty) {
+                    if (_resolvingDestination) return;
+                    if (_destinationLocationFieldController.text
+                        .trim()
+                        .isEmpty) {
                       showErrorToast("please fill in the destination location");
                     } else {
+                      _resolvingDestination = true;
                       try {
                         WarehouseLocation destinationLocation =
                             await WarehouseLocationService
                                 .getWarehouseLocationByName(
                                     _destinationLocationFieldController.text);
-                        Navigator.pop(context, destinationLocation);
-                      } on WebAPICallException catch (ex) {
-                        showErrorToast(ex.errMsg());
+                        if (mounted && context.mounted)
+                          Navigator.pop(context, destinationLocation);
+                      } catch (ex) {
+                        showErrorToast(ex is WebAPICallException
+                            ? ex.errMsg()
+                            : 'Could not verify destination');
+                      } finally {
+                        _resolvingDestination = false;
                       }
                     }
                   }),
@@ -540,6 +606,19 @@ class _InventoryBatchDepositPageState extends State<InventoryBatchDepositPage> {
 
   Future<Tuple2<bool, String>> _depositInventory(
       InventoryDepositRequest inventoryDepositRequest) async {
+    if (inventoryDepositRequest.multipleNextLocationFlag == true) {
+      for (final id in inventoryDepositRequest.inventoryIdList) {
+        final inventory = inventoryOnRF.firstWhereOrNull((i) => i.id == id);
+        if (inventory == null ||
+            inventory.inventoryMovements.isEmpty ||
+            inventory.inventoryMovements.first.location == null) {
+          return const Tuple2(false,
+              'Destination missing. Reload inventory or use individual Deposit.');
+        }
+      }
+    } else if (inventoryDepositRequest.nextLocation == null) {
+      return const Tuple2(false, 'Destination missing. Reload inventory.');
+    }
     for (int i = 0; i < inventoryDepositRequest.inventoryIdList.length; i++) {
       int inventoryId = inventoryDepositRequest.inventoryIdList.elementAt(i);
       // we will need to get the destination for the inventory from the inventory itself

@@ -1,3 +1,4 @@
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -15,6 +16,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SplitAdapter implements HttpClientAdapter {
   final calls = <RequestOptions>[];
   bool timeout = false;
+  bool queued = false;
+  bool completed = true;
   bool allowCancel = false;
   Completer<void>? gate;
   @override
@@ -38,7 +41,9 @@ class SplitAdapter implements HttpClientAdapter {
     return ResponseBody.fromString(
         jsonEncode({
           'result': 0,
-          'data': {'completed': true}
+          'data': queued
+              ? {'requestId': o.queryParameters['requestId'], 'state': 'QUEUED'}
+              : {'completed': completed}
         }),
         200,
         headers: {
@@ -69,6 +74,29 @@ void main() {
     'keepOriginal': false,
     'destination': 'RF-TEST'
   };
+
+  test(
+      'queue acceptance frees scanner and timeout retry retains queue endpoint and UUID',
+      () async {
+    final adapter = SplitAdapter()
+      ..queued = true
+      ..timeout = true;
+    CWMSHttpClient.getDio().httpClientAdapter = adapter;
+    await expectLater(
+        PreprintedManualPickService.submit({...details, 'queued': true}),
+        throwsA(isA<DioException>()));
+    expect((await PreprintedManualPickService.pending())!['queued'], true);
+    adapter.timeout = false;
+    await PreprintedManualPickService.submit(details);
+    expect(adapter.calls.every((r) => r.path.endsWith('/manual-pick-queue')),
+        isTrue);
+    expect(adapter.calls[0].queryParameters, adapter.calls[1].queryParameters);
+    expect(await PreprintedManualPickService.pending(), isNull);
+    await PreprintedManualPickService.submit(
+        {...details, 'queued': true, 'sourceLpn': 'L000000003'});
+    expect(adapter.calls.last.queryParameters['requestId'],
+        isNot(adapter.calls.first.queryParameters['requestId']));
+  });
   test(
       'timeout keeps exact request ID and LPN roles; retry acknowledgement clears it',
       () async {
@@ -85,6 +113,28 @@ void main() {
     expect(adapter.calls, hasLength(2));
     expect(adapter.calls[0].queryParameters, adapter.calls[1].queryParameters);
     expect(await PreprintedManualPickService.pending(), isNull);
+  });
+  test('server accepted but not completed is pending and silent', () async {
+    var alarms = 0;
+    ScanFeedback.failurePlayer = () async {
+      alarms++;
+    };
+    addTearDown(() {
+      ScanFeedback.failurePlayer = null;
+    });
+    final adapter = SplitAdapter()..completed = false;
+    CWMSHttpClient.getDio().httpClientAdapter = adapter;
+    await ScanFeedback.run(() async {
+      try {
+        await PreprintedManualPickService.submit(details);
+        fail('Expected a pending result');
+      } catch (error) {
+        expect(ScanFeedback.reportError(error.toString()), isTrue);
+      }
+    });
+    expect(await PreprintedManualPickService.pending(), isNotNull);
+    expect(alarms, 0);
+    expect(adapter.calls, hasLength(1));
   });
   test('simultaneous confirmations share one request', () async {
     final adapter = SplitAdapter()..gate = Completer<void>();

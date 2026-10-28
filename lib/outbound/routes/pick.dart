@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
 import 'dart:math';
@@ -178,7 +180,7 @@ class _PickPageState extends State<PickPage> {
 
     return Scaffold(
 
-      appBar: AppBar(title: Text(uiText(context,"Claytech One - Pick"))),
+      appBar: ScanAppBar(title: Text(uiText(context,"Claytech One - Pick"))),
       resizeToAvoidBottomInset: true,
       body:
           Column(
@@ -689,6 +691,8 @@ class _PickPageState extends State<PickPage> {
   }
 
   void _enterOnLPNController(int tryTime) async {
+    await ScanFeedback.run(() async {
+
 
     // if the location is empty, then ask the user to input the
     // right location
@@ -729,6 +733,8 @@ class _PickPageState extends State<PickPage> {
       return;
     }
 
+  
+    });
   }
 
   Future<int> validateLPNByQuantity(String lpn) async{
@@ -765,6 +771,8 @@ class _PickPageState extends State<PickPage> {
   }
 
   void _onPickConfirm(Pick pick, int confirmedQuantity) async {
+    await ScanFeedback.run(() async {
+
 
     // save the result into a local variable as the confirmed quantity
     // will need to be returned.
@@ -868,6 +876,8 @@ class _PickPageState extends State<PickPage> {
 
 
     Navigator.pop(context, pickResult);
+  
+    });
   }
 
 

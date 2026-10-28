@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import '../../shared/updates/update_activity.dart';
 import '../services/production_submission.dart';
@@ -312,7 +314,7 @@ class _WorkOrderProduceInventoryPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_pageTitle)),
+      appBar: ScanAppBar(title: Text(_pageTitle)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -867,6 +869,8 @@ class _WorkOrderProduceInventoryPageState
   }
 
   void _enterOnLPNController(int tryTime) async {
+    await ScanFeedback.run(() async {
+
     // we may come here when the user scan / press
     // enter in the LPN controller. In either case, we will need to make sure
     // the lpn doesn't have focus before we start confirm
@@ -911,9 +915,13 @@ class _WorkOrderProduceInventoryPageState
       // enable the confirm button
       _readyToConfirm = true;
     });
+  
+    });
   }
 
   Future<void> _onWorkOrderProduceConfirm() async {
+    return ScanFeedback.run(() async {
+
     if (_submitting) return;
     final pending = _submission
         .run(() => UpdateActivity.instance.run(_submitWorkOrderProduce));
@@ -927,6 +935,8 @@ class _WorkOrderProduceInventoryPageState
         });
       }
     }
+  
+    });
   }
 
   Future<void> _submitWorkOrderProduce() async {
@@ -1213,6 +1223,8 @@ class _WorkOrderProduceInventoryPageState
   }
 
   Future<void> _produceMultipleLpns(LpnCaptureRequest lpnCaptureRequest) async {
+    return ScanFeedback.run(() async {
+
     showLoading(context);
     // make sure the user input a valid LPN
     try {
@@ -1284,6 +1296,8 @@ class _WorkOrderProduceInventoryPageState
     Navigator.of(context).pop();
 
     _refreshScreenAfterProducing();
+  
+    });
   }
 
   _setupProgressBar() {

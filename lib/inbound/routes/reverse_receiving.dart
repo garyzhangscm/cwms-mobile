@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'dart:math';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
@@ -71,7 +73,7 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
 
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).reverseReceiving)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).reverseReceiving)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -103,6 +105,8 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
 
   }
   void _addReversedInventory() async {
+    await ScanFeedback.run(() async {
+
     if (_lpnController.text.isEmpty) {
       showErrorDialog(context, "please input the LPN number");
       return;
@@ -127,9 +131,13 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
 
     _lpnFocusNode.requestFocus();
 
+  
+    });
   }
 
   void _addReversedInventorySync(ReversedInventoryInformation reversedInventoryInformation, {int retryTime = 0}) {
+    ScanFeedback.run(() async {
+
 
     InventoryService.findInventory(lpn :_lpnController.text, includeDetails: true).then((inventories) async {
       printLongLogMessage("find ${inventories.length} inventories");
@@ -252,26 +260,17 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
     })
     .catchError((err) {
 
-      if (err is DioException ) {
-        // for timeout error and we are still in the retry threshold, let's try again
-        // retry after 2 second
-
-        if (retryTime <= CWMSHttpClient.timeoutRetryTime) {
-          Future.delayed(const Duration(milliseconds: 2000),
-                  () => _addReversedInventorySync(reversedInventoryInformation, retryTime: retryTime + 1));
-        }
-        else {
-          setState(() {
-            reversedInventoryInformation.reverseResult = false;
-            reversedInventoryInformation.reverseInProgress = false;
-            reversedInventoryInformation.result = "Fail to reverse LPN: " +
-                (reversedInventoryInformation.lpn ?? "" )
-                + " after trying ${CWMSHttpClient.timeoutRetryTime}  times";
-            _reversedInventories;
-          });
-        }
-      }
-      else if (err is WebAPICallException){
+      if (err is DioException) {
+        if (ScanFeedback.isUncertain(err)) ScanFeedback.current?.uncertain = true;
+        if (!mounted) return;
+        setState(() {
+          reversedInventoryInformation.reverseResult = false;
+          reversedInventoryInformation.reverseInProgress = false;
+          reversedInventoryInformation.result = ScanFeedback.current?.uncertain == true
+              ? 'Pending confirmation. Check this LPN before submitting again.'
+              : 'Server rejected this LPN request.';
+        });
+      } else if (err is WebAPICallException){
         // for any other error display it
         final webAPICallException = err;
         setState(() {
@@ -290,6 +289,8 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
           _reversedInventories;
         });
       }
+    });
+  
     });
   }
 
@@ -548,7 +549,8 @@ class _ReverseReceivingPageState extends State<ReverseReceivingPage> {
                   ]
               ),
 
-              tileColor: Colors.amberAccent,
+              tileColor: _reversedInventories[index].pendingConfirmation
+                ? Colors.orange.shade50 : Colors.red.shade100,
             )
         );
 

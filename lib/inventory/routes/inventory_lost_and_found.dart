@@ -1,3 +1,5 @@
+import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:badges/badges.dart' as badge;
 import 'package:cwms_mobile/i18n/localization_intl.dart';
 import 'package:cwms_mobile/inventory/models/inventory.dart';
@@ -177,7 +179,7 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(title: Text(CWMSLocalizations.of(context).inventoryAdjust)),
+      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).inventoryAdjust)),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -401,6 +403,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   // if the user scan in a barcode, then we will parse the barcode and
   // automatically populate all the values
   Future<bool> _processBarcode(Map<String, String> parameters) async {
+    return ScanFeedback.run(() async {
+
 
 
     if (parameters.containsKey("inventoryStatusId")) {
@@ -472,6 +476,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
 
     return true;
+  
+    });
   }
 
 
@@ -803,6 +809,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   }
 
   void _adjustMultipleLpns(LpnCaptureRequest lpnCaptureRequest) async {
+    await ScanFeedback.run(() async {
+
 
     showLoading(context);
     // make sure the user input a valid LPN
@@ -887,6 +895,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
 
     _refreshScreenAfterAdjust();
 
+  
+    });
   }
 
   _setupProgressBar() {
@@ -938,6 +948,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
   }
 
   void _enterOnLPNController({int tryTime = 10}) async {
+    await ScanFeedback.run(() async {
+
     // we may come here when the user scan / press
     // enter in the LPN controller. In either case, we will need to make sure
     // the lpn doesn't have focus before we start confirm
@@ -974,6 +986,8 @@ class _InventoryLostFoundPageState extends State<InventoryLostFoundPage> {
     }
 
 
+  
+    });
   }
 
 
