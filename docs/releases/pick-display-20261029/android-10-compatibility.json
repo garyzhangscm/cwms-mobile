@@ -1,0 +1,12 @@
+{
+  "label": "android-10",
+  "nativeDifferences": [],
+  "oldNativeSoundChannel": true,
+  "assetDifferences": [],
+  "baselineGlyphs": 86,
+  "patchGlyphs": 86,
+  "missingGlyphs": [],
+  "noAudioFileAdded": true,
+  "nativeDiffBypass": false,
+  "newCodeUsesExistingWebView": true
+}
