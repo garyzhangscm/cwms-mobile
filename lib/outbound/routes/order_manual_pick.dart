@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../models/pick_rejection.dart';
 import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import '../models/remaining_pallet_demand.dart';
@@ -60,6 +61,7 @@ class __PreprintedOrderManualPickPageState
   bool _statusRefreshing = false;
   int _statusRefreshTicks = 5;
   bool _viewingPallets = false;
+  Map<int, int>? _pickedByItem;
   String? _quantityNotice;
   String? _recentOtherSubmitter;
   bool _queueSnapshotLoaded = false;
@@ -69,16 +71,20 @@ class __PreprintedOrderManualPickPageState
   }
 
   String _palletSubmitter(Map<String, dynamic> row) {
-    final tasks = _queueTasks.where((task) => task['pickId'] != null &&
-        '${task['pickId']}' == '${row['pickId']}');
+    final tasks = _queueTasks.where((task) =>
+        task['pickId'] != null && '${task['pickId']}' == '${row['pickId']}');
     return tasks.isEmpty ? 'Unknown' : _submitter(tasks.first);
   }
-  bool get _allSubmitted => _queueEnabled && _remainingIsCurrent &&
-      _pendingManualPick == null && _remainingByLine.isNotEmpty &&
+
+  bool get _allSubmitted =>
+      _queueEnabled &&
+      _remainingIsCurrent &&
+      _pendingManualPick == null &&
+      _remainingByLine.isNotEmpty &&
       _remainingByLine.values.every((quantity) => quantity == 0);
   bool get _tasksPending => _queueTasks.any((r) => r['state'] != 'COMPLETED');
-  bool get _pickingComplete => _allSubmitted && !_queueOffline &&
-      !_tasksPending && _completionVerified;
+  bool get _pickingComplete =>
+      _allSubmitted && !_queueOffline && !_tasksPending && _completionVerified;
 
   String? _retryingTask;
   List<Map<String, dynamic>> _queueTasks = [];
@@ -97,10 +103,17 @@ class __PreprintedOrderManualPickPageState
           generation != _orderLookupGeneration ||
           _currentOrder?.id != orderId) return;
       final knownRequests = _queueTasks.map((r) => r['requestId']).toSet();
-      final otherNewTasks = _queueSnapshotLoaded ? tasks.where((r) =>
-          !knownRequests.contains(r['requestId']) && _submitter(r) != 'Unknown' &&
-          _submitter(r).toLowerCase() != (Global.currentUser?.username ?? '').toLowerCase()).toList() : <Map<String, dynamic>>[];
-      if (otherNewTasks.isNotEmpty) _recentOtherSubmitter = _submitter(otherNewTasks.first);
+      final otherNewTasks = _queueSnapshotLoaded
+          ? tasks
+              .where((r) =>
+                  !knownRequests.contains(r['requestId']) &&
+                  _submitter(r) != 'Unknown' &&
+                  _submitter(r).toLowerCase() !=
+                      (Global.currentUser?.username ?? '').toLowerCase())
+              .toList()
+          : <Map<String, dynamic>>[];
+      if (otherNewTasks.isNotEmpty)
+        _recentOtherSubmitter = _submitter(otherNewTasks.first);
       _queueSnapshotLoaded = true;
       final previouslyCompleted = _queueTasks
           .where((row) => row['state'] == 'COMPLETED')
@@ -115,7 +128,9 @@ class __PreprintedOrderManualPickPageState
       });
       if (hasNewCompletion) _reloadInventoryOnRF();
       _statusRefreshTicks++;
-      if (hasNewCompletion || otherNewTasks.isNotEmpty || _statusRefreshTicks >= 5) {
+      if (hasNewCompletion ||
+          otherNewTasks.isNotEmpty ||
+          _statusRefreshTicks >= 5) {
         unawaited(_refreshQueuedAvailability());
       }
     } catch (_) {
@@ -145,7 +160,9 @@ class __PreprintedOrderManualPickPageState
                   style: TextStyle(color: Colors.red)),
             if (_queueTasks.isEmpty)
               const Text('No submitted pallets for this order.'),
-            ..._queueTasks.where((row) => row['state'] != 'COMPLETED').map((row) {
+            ..._queueTasks
+                .where((row) => row['state'] != 'COMPLETED')
+                .map((row) {
               final completed = row['state'] == 'COMPLETED';
               final failed = row['state'] == 'NEEDS_REVIEW';
               return ListTile(
@@ -162,7 +179,8 @@ class __PreprintedOrderManualPickPageState
                               ? Colors.red
                               : Colors.blue),
                   title: Text('${row['sourceLpn']} · ${row['quantity']}'),
-                  subtitle: Text('Submitted by ${_submitter(row)}\n${completed ? 'Completed' : failed ? (row['errorMessage']?.toString() ?? 'Needs review') : 'Accepted — processing'}'),
+                  subtitle: Text(
+                      'Submitted by ${_submitter(row)}\n${completed ? 'Completed' : failed ? (row['errorMessage']?.toString() ?? 'Needs review') : 'Accepted — processing'}'),
                   trailing: failed
                       ? TextButton(
                           onPressed: _retryingTask != null
@@ -267,12 +285,15 @@ class __PreprintedOrderManualPickPageState
                 Text(uiText(context,
                     "Pick awaiting confirmation. Press Confirm to resume. Keep both labels; do not split again.")),
               _buildOrderNumberInput(context),
-              if (_quantityNotice != null) Card(child: ListTile(
-                leading: const Icon(Icons.info_outline, color: Colors.blue),
-                title: Text(_quantityNotice!),
-                trailing: IconButton(icon: const Icon(Icons.close),
-                    onPressed: () => setState(() => _quantityNotice = null)),
-              )),
+              if (_quantityNotice != null)
+                Card(
+                    child: ListTile(
+                  leading: const Icon(Icons.info_outline, color: Colors.blue),
+                  title: Text(_quantityNotice!),
+                  trailing: IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => setState(() => _quantityNotice = null)),
+                )),
               // build a hypelink to allow the user to click and show
               // what the user will need to pick and the remain quantity to be picked
 
@@ -282,12 +303,16 @@ class __PreprintedOrderManualPickPageState
                   ? Container()
                   : _buildPickToShipStageInput(context),
               // allow user to scan in LPN
-              if (_currentOrder != null && !_allSubmitted) _buildLPNInput(context),
+              if (_currentOrder != null && !_allSubmitted)
+                _buildLPNInput(context),
               // allow user to input LPN
               _buildButtons(context),
-              if (_queueEnabled && _currentOrder != null &&
-                  (_tasksPending || _queueOffline)) _buildQueue(),
+              if (_queueEnabled &&
+                  _currentOrder != null &&
+                  (_tasksPending || _queueOffline))
+                _buildQueue(),
               if (_allSubmitted) _buildCompletionCard(),
+              if (_currentOrder != null) _buildPickedSummary(),
               if (_currentOrder != null)
                 RemainingPalletsCard(
                   lines: RemainingPalletDemand.forOrder(
@@ -405,6 +430,7 @@ class __PreprintedOrderManualPickPageState
     _orderNumberController.text = "";
     setState(() {
       _currentOrder = null;
+      _pickedByItem = null;
       _remainingByLine = {};
       _remainingIsCurrent = false;
       _queueTasks = [];
@@ -434,10 +460,12 @@ class __PreprintedOrderManualPickPageState
     setState(() {
       _loadingOrder = true;
       _currentOrder = null;
+      _pickedByItem = null;
     });
     try {
       final order = await OrderService.getOrderByNumber(number);
-      final availability = await OrderService.getManualPickAvailability(order.id!);
+      final availability =
+          await OrderService.getManualPickAvailability(order.id!);
       if (!mounted ||
           generation != _orderLookupGeneration ||
           _orderNumberController.text.trim() != number) return;
@@ -446,7 +474,8 @@ class __PreprintedOrderManualPickPageState
         await showBlockedErrorDialog(context,
             'Reserve quantity before picking this order. Open Sales Orders > Allocate, reserve the required quantity, then reload the order on your phone.');
       } else if (order.allowForManualPick != true) {
-        await showBlockedErrorDialog(context, 'order $number is marked as not for manual pick');
+        await showBlockedErrorDialog(
+            context, 'order $number is marked as not for manual pick');
       } else if (availability.remainingQuantity <= 0 &&
           availability.allocationMode != 'ITEM_QUANTITY') {
         await showBlockedErrorDialog(context,
@@ -471,6 +500,7 @@ class __PreprintedOrderManualPickPageState
           _lpnController.clear();
         });
         if (queueEnabled) await _refreshQueue();
+        if (!queueEnabled) unawaited(_refreshPickedSummary());
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && generation == _orderLookupGeneration) {
             _lpnFocusNode.requestFocus();
@@ -591,10 +621,12 @@ class __PreprintedOrderManualPickPageState
         buildTwoButtonRow(
             context,
             ElevatedButton(
-              onPressed:
-                  _currentOrder == null || !_readyToConfirm || _confirmingPick || _allSubmitted
-                      ? null
-                      : _onConfirmButtonClick,
+              onPressed: _currentOrder == null ||
+                      !_readyToConfirm ||
+                      _confirmingPick ||
+                      _allSubmitted
+                  ? null
+                  : _onConfirmButtonClick,
               child: Text(CWMSLocalizations.of(context).confirm),
             ),
             badge.Badge(
@@ -629,11 +661,17 @@ class __PreprintedOrderManualPickPageState
   Future<void> _onOrderManualPickConfirm() async {
     return ScanFeedback.run(() async {
       if (!mounted || _confirmingPick || _currentOrder == null) return;
-      if (_queueEnabled && _remainingIsCurrent && _pendingManualPick == null && _remainingByLine.values.fold<int>(0, (sum, value) => sum + value) <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No reserved quantity remains. Open Allocate to reserve stock before picking.')));
-      return;
-    }
-    if (_queueEnabled && _queueBlocked && _pendingManualPick == null) {
+      if (_queueEnabled &&
+          _remainingIsCurrent &&
+          _pendingManualPick == null &&
+          _remainingByLine.values.fold<int>(0, (sum, value) => sum + value) <=
+              0) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'No reserved quantity remains. Open Allocate to reserve stock before picking.')));
+        return;
+      }
+      if (_queueEnabled && _queueBlocked && _pendingManualPick == null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
                 'Check the pending tasks before scanning another pallet.')));
@@ -667,11 +705,9 @@ class __PreprintedOrderManualPickPageState
       } catch (error) {
         if (mounted) {
           Navigator.of(context).pop();
-          await showBlockedErrorDialog(
-              context,
-              error is WebAPICallException
-                  ? error.errMsg()
-                  : 'Could not load picking quantities. Please try again.');
+          await _showPickRejection(error is WebAPICallException
+              ? error.errMsg()
+              : 'Could not load picking quantities. Please try again.');
         }
         return;
       }
@@ -806,32 +842,54 @@ class __PreprintedOrderManualPickPageState
     _statusRefreshing = true;
     try {
       final availability = await OrderService.getManualPickAvailability(id);
-      if (!mounted || generation != _orderLookupGeneration || _currentOrder?.id != id) return;
+      if (!mounted ||
+          generation != _orderLookupGeneration ||
+          _currentOrder?.id != id) return;
       final changed = _remainingIsCurrent &&
           (_remainingByLine.length != availability.remainingByLine.length ||
-           _remainingByLine.entries.any((e) => availability.remainingByLine[e.key] != e.value));
-      final externalChange = changed && !_confirmingPick && _pendingManualPick == null;
-      final expected = _currentOrder!.orderLines.fold<int>(0,
-          (sum, line) => sum + (line.expectedQuantity ?? 0) - (line.shippedQuantity ?? 0));
+              _remainingByLine.entries
+                  .any((e) => availability.remainingByLine[e.key] != e.value));
+      final externalChange =
+          changed && !_confirmingPick && _pendingManualPick == null;
+      final expected = _currentOrder!.orderLines.fold<int>(
+          0,
+          (sum, line) =>
+              sum + (line.expectedQuantity ?? 0) - (line.shippedQuantity ?? 0));
+      final picks = await PreprintedManualPickService.currentPicks(id);
+      final pickedByItem = <int, int>{};
+      for (final row in picks) {
+        final item = (row['itemId'] as num?)?.toInt();
+        final quantity = (row['pickedQuantity'] as num?)?.toInt() ?? 0;
+        if (item != null && quantity > 0)
+          pickedByItem.update(item, (value) => value + quantity,
+              ifAbsent: () => quantity);
+      }
       bool complete = false;
       if (availability.remainingQuantity == 0 && !_tasksPending) {
-        final picks = await PreprintedManualPickService.currentPicks(id);
-        final picked = picks.fold<int>(0,
-            (sum, row) => sum + ((row['pickedQuantity'] as num?)?.toInt() ?? 0));
+        final picked = picks.fold<int>(
+            0,
+            (sum, row) =>
+                sum + ((row['pickedQuantity'] as num?)?.toInt() ?? 0));
         complete = expected > 0 && picked == expected;
       }
-      if (!mounted || generation != _orderLookupGeneration ||
+      if (!mounted ||
+          generation != _orderLookupGeneration ||
           _currentOrder?.id != id) return;
       setState(() {
         if (externalChange) {
           final quantities = availability.remainingByLine.entries.map((e) {
-            final lines = _currentOrder!.orderLines.where((line) => line.id == e.key);
-            final item = lines.isEmpty ? 'Line ${e.key}' : (lines.first.item?.name ?? 'Line ${e.key}');
+            final lines =
+                _currentOrder!.orderLines.where((line) => line.id == e.key);
+            final item = lines.isEmpty
+                ? 'Line ${e.key}'
+                : (lines.first.item?.name ?? 'Line ${e.key}');
             return '$item: ${e.value}';
           }).join(', ');
-          _quantityNotice = '${_recentOtherSubmitter == null ? 'Order quantities changed' : '${_recentOtherSubmitter} submitted another pallet; order quantities changed'}. Remaining to pick — $quantities. Review the updated quantity before confirming.';
+          _quantityNotice =
+              '${_recentOtherSubmitter == null ? 'Order quantities changed' : '${_recentOtherSubmitter} submitted another pallet; order quantities changed'}. Remaining to pick — $quantities. Review the updated quantity before confirming.';
         }
         _recentOtherSubmitter = null;
+        _pickedByItem = pickedByItem;
         _remainingByLine = availability.remainingByLine;
         _remainingIsCurrent = true;
         _completionVerified = complete;
@@ -841,6 +899,7 @@ class __PreprintedOrderManualPickPageState
     } catch (_) {
       if (mounted && generation == _orderLookupGeneration) {
         setState(() {
+          _pickedByItem = null;
           _remainingIsCurrent = false;
           _completionVerified = false;
         });
@@ -851,25 +910,142 @@ class __PreprintedOrderManualPickPageState
   }
 
   Widget _buildCompletionCard() => Card(
-    child: Padding(padding: const EdgeInsets.all(16), child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(_pickingComplete ? 'Picking complete' :
-            _tasksPending ? 'All quantities submitted' : 'No reserved quantity remaining',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,
-                color: _pickingComplete ? Colors.green : null)),
-        const SizedBox(height: 8),
-        Text(_pickingComplete ? 'All required quantities have been picked. This does not mean the order has shipped.' :
-            _tasksPending ? 'Processing remaining pallets. Any errors will appear above.' :
-            'Checking the order. If picking is unfinished, reserve more stock in Allocate.'),
-        if (_pickingComplete) Wrap(spacing: 8, children: [
-          ElevatedButton(onPressed: _clearField, child: const Text('Next Order')),
-          TextButton(onPressed: _viewingPallets ? null : _showPickedPallets,
-              child: Text(_viewingPallets ? 'Loading pallets…' : 'View Picked Pallets')),
-        ]),
-      ],
-    )),
-  );
+        child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    _pickingComplete
+                        ? 'Picking complete'
+                        : _tasksPending
+                            ? 'All quantities submitted'
+                            : 'No reserved quantity remaining',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: _pickingComplete ? Colors.green : null)),
+                const SizedBox(height: 8),
+                Text(_pickingComplete
+                    ? 'All required quantities have been picked. This does not mean the order has shipped.'
+                    : _tasksPending
+                        ? 'Processing remaining pallets. Any errors will appear above.'
+                        : 'Checking the order. If picking is unfinished, reserve more stock in Allocate.'),
+                if (_pickingComplete)
+                  Wrap(spacing: 8, children: [
+                    ElevatedButton(
+                        onPressed: _clearField,
+                        child: const Text('Next Order')),
+                  ]),
+              ],
+            )),
+      );
+
+  Future<void> _showPickRejection(String message) async {
+    final rejection = PickRejection.parse(message);
+    if (rejection == null) {
+      await showBlockedErrorDialog(context, message);
+      return;
+    }
+    ScanFeedback.reportError(rejection.reason);
+    await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+              title: Text(rejection.title),
+              content: SingleChildScrollView(
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text('LPN: ${rejection.lpn}'),
+                    Text('Current location: ${rejection.location}'),
+                    const SizedBox(height: 16),
+                    Text(rejection.reason),
+                    const SizedBox(height: 12),
+                    Text(rejection.nextAction),
+                  ])),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('Scan Another LPN'))
+              ],
+            ));
+    if (mounted) {
+      _lpnController.clear();
+      _lpnFocusNode.requestFocus();
+    }
+  }
+
+  Future<void> _refreshPickedSummary() async {
+    final id = _currentOrder?.id;
+    final generation = _orderLookupGeneration;
+    if (id == null) return;
+    try {
+      final picks = await PreprintedManualPickService.currentPicks(id);
+      final totals = <int, int>{};
+      for (final row in picks) {
+        final item = (row['itemId'] as num?)?.toInt();
+        final quantity = (row['pickedQuantity'] as num?)?.toInt() ?? 0;
+        if (item != null && quantity > 0)
+          totals.update(item, (v) => v + quantity, ifAbsent: () => quantity);
+      }
+      if (mounted &&
+          generation == _orderLookupGeneration &&
+          _currentOrder?.id == id) setState(() => _pickedByItem = totals);
+    } catch (_) {
+      if (mounted && generation == _orderLookupGeneration)
+        setState(() => _pickedByItem = null);
+    }
+  }
+
+  Widget _buildPickedSummary() {
+    final items = <int, String>{};
+    for (final line in _currentOrder!.orderLines) {
+      if (line.item?.id != null)
+        items[(line.item?.id)!] = line.item?.name ?? 'Item ${line.item?.id}';
+    }
+    return SizedBox(
+        width: double.infinity,
+        child: Card(
+            margin: const EdgeInsets.only(top: 16),
+            elevation: 0,
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xffdfe6ef))),
+            child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Picked so far',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xff163253))),
+                      const SizedBox(height: 8),
+                      if (_pickedByItem == null)
+                        Text(_remainingIsCurrent
+                            ? 'Updating picked quantities…'
+                            : 'Picked quantity unavailable. Reload the order.')
+                      else
+                        for (final item in items.entries)
+                          Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                  '${item.value}: ${_pickedByItem![item.key] ?? 0} picked')),
+                      if (_pickedByItem?.values
+                              .any((quantity) => quantity > 0) ==
+                          true)
+                        TextButton(
+                            onPressed:
+                                _viewingPallets ? null : _showPickedPallets,
+                            child: Text(_viewingPallets
+                                ? 'Loading pallets…'
+                                : 'View Picked Pallets')),
+                    ]))));
+  }
 
   Future<void> _showPickedPallets() async {
     final id = _currentOrder?.id;
@@ -879,21 +1055,39 @@ class __PreprintedOrderManualPickPageState
     try {
       final rows = await PreprintedManualPickService.pickedPallets(id);
       if (!mounted || generation != _orderLookupGeneration) return;
-      await showModalBottomSheet<void>(context: context, builder: (_) => SafeArea(
-        child: Column(children: [
-          const ListTile(title: Text('Currently picked pallets')),
-          Expanded(child: ListView(children: rows.map((row) => ListTile(
-            title: Text(row['lpn']?.toString().trim().isNotEmpty == true ? row['lpn'].toString() : 'LPN unavailable'),
-            subtitle: Text('Submitted by ${_palletSubmitter(row)}'),
-            trailing: Text('Qty: ${row['quantity'] ?? 0}'),
-          )).toList())),
-        ]),
-      ));
+      await showModalBottomSheet<void>(
+          context: context,
+          builder: (_) => SafeArea(
+                child: Column(children: [
+                  const ListTile(title: Text('Currently picked pallets')),
+                  Expanded(
+                      child: ListView(
+                          children: rows
+                              .map((row) => ListTile(
+                                    title: Text(row['lpn']
+                                                ?.toString()
+                                                .trim()
+                                                .isNotEmpty ==
+                                            true
+                                        ? row['lpn'].toString()
+                                        : 'LPN unavailable'),
+                                    subtitle: Text(
+                                        'Submitted by ${_palletSubmitter(row)}'),
+                                    trailing:
+                                        Text('Qty: ${row['quantity'] ?? 0}'),
+                                  ))
+                              .toList())),
+                ]),
+              ));
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not load picked pallets. Please try again.')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Could not load picked pallets. Please try again.')));
     } finally {
-      if (mounted) setState(() => _viewingPallets = false);
+      if (mounted) {
+        setState(() => _viewingPallets = false);
+        unawaited(_refreshQueuedAvailability());
+      }
     }
   }
 
@@ -917,6 +1111,7 @@ class __PreprintedOrderManualPickPageState
         _orderNumberController.text.trim() != number) return;
     _remainingByLine = availability.remainingByLine;
     _remainingIsCurrent = true;
+    unawaited(_refreshPickedSummary());
 
     if (!isOrderOpenForManualPick(_currentOrder!)) {
       await showBlockedDialog(context, 'Order picking complete',

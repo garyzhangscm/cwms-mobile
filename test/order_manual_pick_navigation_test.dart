@@ -43,6 +43,7 @@ class PickAdapter implements HttpClientAdapter {
   int get remaining => picked ? remainingAfterPick : remainingQuantity;
   int pickableQuantity = 40;
   bool previewFails = false;
+  String previewError = 'Invalid source LPN scope';
   bool confirmFails = false;
   Completer<void>? confirmGate;
   @override
@@ -50,17 +51,32 @@ class PickAdapter implements HttpClientAdapter {
       Future<void>? cancel) async {
     calls.add(options);
     if (options.path == 'inventory/inventories') {
-      return ResponseBody.fromString(jsonEncode({'result':0, 'data':[
-        {'id':101, 'lpn':'NEW-SPLIT-LPN', 'quantity':25, 'pickId':1},
-        {'id':102, 'lpn':'WHOLE-LPN', 'quantity':15, 'pickId':1},
-        {'id':103, 'lpn':'UNPICKED', 'quantity':30, 'pickId':null}
-      ]}),200,headers:{Headers.contentTypeHeader:['application/json']});
+      return ResponseBody.fromString(
+          jsonEncode({
+            'result': 0,
+            'data': [
+              {'id': 101, 'lpn': 'NEW-SPLIT-LPN', 'quantity': 25, 'pickId': 1},
+              {'id': 102, 'lpn': 'WHOLE-LPN', 'quantity': 15, 'pickId': 1},
+              {'id': 103, 'lpn': 'UNPICKED', 'quantity': 30, 'pickId': null}
+            ]
+          }),
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json']
+          });
     }
     if (options.path.endsWith('/picks')) {
-      return ResponseBody.fromString(jsonEncode({
-        'result': currentPickFails ? 1 : 0,
-        'data': [{'id': 1, 'pickedQuantity': currentPicked}]
-      }), 200, headers: {Headers.contentTypeHeader: ['application/json']});
+      return ResponseBody.fromString(
+          jsonEncode({
+            'result': currentPickFails ? 1 : 0,
+            'data': [
+              {'id': 1, 'itemId': 1, 'pickedQuantity': currentPicked}
+            ]
+          }),
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json']
+          });
     }
     if (options.path.endsWith('/manual-pick-queue/capabilities')) {
       return ResponseBody.fromString(
@@ -131,7 +147,7 @@ class PickAdapter implements HttpClientAdapter {
       return ResponseBody.fromString(
           jsonEncode({
             'result': previewFails ? 1 : 0,
-            'message': previewFails ? 'Invalid source LPN scope' : '',
+            'message': previewFails ? previewError : '',
             'data': {
               'sourceQuantity': sourceQuantity,
               'pickableQuantity': picked ? 0 : pickableQuantity
@@ -654,38 +670,94 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('picked pallet view shows individual LPNs and matched submitter', (tester) async {
-    adapter.queued=true;
-    adapter.remainingQuantity=0;
-    adapter.queueRows.add({'requestId':'a', 'state':'COMPLETED',
-      'sourceLpn':'OLD-SOURCE', 'pickId':1, 'quantity':40, 'submittedBy':'louise'});
+  testWidgets('picked pallet view shows individual LPNs and matched submitter',
+      (tester) async {
+    adapter.queued = true;
+    adapter.remainingQuantity = 0;
+    adapter.queueRows.add({
+      'requestId': 'a',
+      'state': 'COMPLETED',
+      'sourceLpn': 'OLD-SOURCE',
+      'pickId': 1,
+      'quantity': 40,
+      'submittedBy': 'louise'
+    });
     await open(tester);
-    await tester.enterText(find.byType(TextFormField).first,'TEST-ORDER');
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
     await tester.testTextInput.receiveAction(TextInputAction.go);
     await tester.pumpAndSettle();
     expect(find.text('click to see the item to be picked'), findsNothing);
     await tester.ensureVisible(find.text('View Picked Pallets'));
     await tester.tap(find.text('View Picked Pallets'));
     await tester.pumpAndSettle();
-    expect(find.text('NEW-SPLIT-LPN'),findsOneWidget);
-    expect(find.text('WHOLE-LPN'),findsOneWidget);
-    expect(find.text('UNPICKED'),findsNothing);
-    expect(find.text('Qty: 25'),findsOneWidget);
-    expect(find.text('Submitted by louise'),findsNWidgets(2));
-    expect(adapter.calls.any((r)=>r.path.contains('picked-inventory-summary')),isFalse);
-    final query=adapter.calls.firstWhere((r)=>r.path=='inventory/inventories');
-    expect(query.queryParameters['pickIds'],'1');
-    expect(query.queryParameters['includeDetails'],false);
+    expect(find.text('NEW-SPLIT-LPN'), findsOneWidget);
+    expect(find.text('WHOLE-LPN'), findsOneWidget);
+    expect(find.text('UNPICKED'), findsNothing);
+    expect(find.text('Qty: 25'), findsOneWidget);
+    expect(find.text('Submitted by louise'), findsNWidgets(2));
+    expect(
+        adapter.calls.any((r) => r.path.contains('picked-inventory-summary')),
+        isFalse);
+    final query =
+        adapter.calls.firstWhere((r) => r.path == 'inventory/inventories');
+    expect(query.queryParameters['pickIds'], '1');
+    expect(query.queryParameters['includeDetails'], false);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets(
+      'picked summary and details available before completion; unpick refreshes summary',
+      (tester) async {
+    adapter.queued = true;
+    adapter.remainingQuantity = 20;
+    adapter.currentPicked = 20;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(find.text('DEMO-ITEM: 20 picked'), findsOneWidget);
+    expect(find.text('View Picked Pallets'), findsOneWidget);
+    expect(
+        adapter.calls.any((r) => r.path == 'inventory/inventories'), isFalse);
+    adapter.currentPicked = 0;
+    adapter.remainingQuantity = 40;
+    await tester.pump(const Duration(seconds: 12));
+    await tester.pumpAndSettle();
+    expect(find.text('DEMO-ITEM: 0 picked'), findsOneWidget);
+    expect(find.text('View Picked Pallets'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('verified rejection explains location and returns to scanning without a write', (tester) async {
+    adapter.previewFails = true;
+    adapter.previewError = 'Order Operation Exception-PICK_REJECTION_V1:${jsonEncode({'title':'Pallet unavailable for picking','lpn':'L0000281044','location':'TRANS_SHIPPING','reason':'This pallet is already in the transfer shipping area.','nextAction':'Scan another pallet.'})}';
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first,'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).last,'L0000281044');
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pallet unavailable for picking'), findsOneWidget);
+    expect(find.text('Current location: TRANS_SHIPPING'), findsOneWidget);
+    await tester.tap(find.text('Scan Another LPN'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(tester.widget<TextFormField>(find.byType(TextFormField).last).controller!.text,isEmpty);
+    expect(adapter.calls.where((r) => r.method == 'POST'),isEmpty);
     await tester.pumpWidget(const SizedBox());
   });
 
   test('no current picks never queries unfiltered inventory', () async {
-    adapter.currentPicked=0;
-    expect(await PreprintedManualPickService.pickedPallets(11),isEmpty);
-    expect(adapter.calls.any((r)=>r.path=='inventory/inventories'),isFalse);
+    adapter.currentPicked = 0;
+    expect(await PreprintedManualPickService.pickedPallets(11), isEmpty);
+    expect(
+        adapter.calls.any((r) => r.path == 'inventory/inventories'), isFalse);
   });
 
-  testWidgets('another operator updates quantities without an interrupting dialog', (tester) async {
+  testWidgets(
+      'another operator updates quantities without an interrupting dialog',
+      (tester) async {
     adapter.queued = true;
     await open(tester);
     await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
@@ -693,34 +765,47 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Remaining to pick —'), findsNothing);
     adapter.remainingQuantity = 15;
-    adapter.queueRows.add({'requestId':'other', 'sourceLpn':'TEAM-PALLET',
-      'quantity':25, 'state':'QUEUED', 'submittedBy':'louise'});
-    await tester.pump(const Duration(seconds:2));
+    adapter.queueRows.add({
+      'requestId': 'other',
+      'sourceLpn': 'TEAM-PALLET',
+      'quantity': 25,
+      'state': 'QUEUED',
+      'submittedBy': 'louise'
+    });
+    await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
     expect(find.textContaining('Submitted by louise'), findsOneWidget);
-    expect(find.textContaining('louise submitted another pallet'), findsOneWidget);
+    expect(
+        find.textContaining('louise submitted another pallet'), findsOneWidget);
     expect(find.textContaining('DEMO-ITEM: 15'), findsOneWidget);
     expect(find.byType(AlertDialog), findsNothing);
-    expect(adapter.calls.where((r)=>r.method=='POST'), isEmpty);
+    expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
     // The next identical snapshot does not create another banner.
-    await tester.pump(const Duration(seconds:2));
+    await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
     expect(find.textContaining('Remaining to pick —'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('zero remaining waits for worker then completes; next order clears inputs', (tester) async {
+  testWidgets(
+      'zero remaining waits for worker then completes; next order clears inputs',
+      (tester) async {
     adapter.queued = true;
     adapter.remainingQuantity = 0;
-    adapter.queueRows.add({'requestId':'test','state':'QUEUED','sourceLpn':'PALLET','quantity':40});
+    adapter.queueRows.add({
+      'requestId': 'test',
+      'state': 'QUEUED',
+      'sourceLpn': 'PALLET',
+      'quantity': 40
+    });
     await open(tester);
     await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
     await tester.testTextInput.receiveAction(TextInputAction.go);
     await tester.pumpAndSettle();
     expect(find.text('All quantities submitted'), findsOneWidget);
     expect(find.text('Picking complete'), findsNothing);
-    adapter.queueRows.first['state']='COMPLETED';
-    await tester.pump(const Duration(seconds:2));
+    adapter.queueRows.first['state'] = 'COMPLETED';
+    await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
     expect(find.text('Picking complete'), findsOneWidget);
     expect(find.text('Pick history'), findsNothing);
@@ -728,30 +813,37 @@ void main() {
     await tester.ensureVisible(find.text('Next Order'));
     await tester.tap(find.text('Next Order'));
     await tester.pumpAndSettle();
-    expect(tester.widget<TextFormField>(find.byType(TextFormField).first).controller!.text, isEmpty);
+    expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField).first)
+            .controller!
+            .text,
+        isEmpty);
     expect(find.text('Picking complete'), findsNothing);
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('zero reservation does not imply complete; unpick restores scanner', (tester) async {
-    adapter.queued=true;
-    adapter.remainingQuantity=0;
-    adapter.currentPicked=10;
+  testWidgets(
+      'zero reservation does not imply complete; unpick restores scanner',
+      (tester) async {
+    adapter.queued = true;
+    adapter.remainingQuantity = 0;
+    adapter.currentPicked = 10;
     await open(tester);
     await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
     await tester.testTextInput.receiveAction(TextInputAction.go);
     await tester.pumpAndSettle();
     expect(find.text('Picking complete'), findsNothing);
-    adapter.currentPicked=40;
-    for (var i=0;i<6;i++) {
-      await tester.pump(const Duration(seconds:2));
+    adapter.currentPicked = 40;
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(seconds: 2));
       await tester.pumpAndSettle();
     }
     expect(find.text('Picking complete'), findsOneWidget);
-    adapter.remainingQuantity=40;
-    adapter.currentPicked=0;
-    for (var i=0;i<6;i++) {
-      await tester.pump(const Duration(seconds:2));
+    adapter.remainingQuantity = 40;
+    adapter.currentPicked = 0;
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(seconds: 2));
       await tester.pumpAndSettle();
     }
     expect(find.text('Picking complete'), findsNothing);
