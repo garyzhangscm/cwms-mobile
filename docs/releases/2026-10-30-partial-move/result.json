@@ -1,0 +1,12 @@
+{
+  "android-5": {
+    "patch": 31,
+    "channel": "stable",
+    "sourceVerified": true
+  },
+  "ios-6": {
+    "patch": 18,
+    "channel": "stable",
+    "sourceVerified": true
+  }
+}

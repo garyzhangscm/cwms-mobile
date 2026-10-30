@@ -356,14 +356,16 @@ class InventoryService {
   }
 
   static Future<void> printLPNLabel(String lpn,
-      [String? findPrinterByValue]) async {
+      [String? findPrinterByValue, String? printerOverride]) async {
     printLongLogMessage("Start calling printLPNLabel with lpn $lpn");
     // get the printer for printing LPN
     String printerName = "";
 
-    if (Global.getLastLoginRF().printerName != null &&
-        Global.getLastLoginRF().printerName?.isNotEmpty == true) {
-      printerName = Global.getLastLoginRF().printerName!;
+    if (printerOverride != null && printerOverride.trim().isNotEmpty) {
+      printerName = printerOverride.trim();
+    } else if (Global.lastLoginRF?.printerName != null &&
+        Global.lastLoginRF?.printerName?.isNotEmpty == true) {
+      printerName = Global.lastLoginRF?.printerName ?? '';
     } else if (Global.getRFConfiguration.printerName != null &&
         Global.getRFConfiguration.printerName!.isNotEmpty) {
       // if the RF doesn't have the default printer, then check if we can get one from the RF configuration

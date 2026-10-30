@@ -1,0 +1,36 @@
+{
+  "id": 765094,
+  "number": 31,
+  "channel": "stable",
+  "artifacts": [
+    {
+      "id": 1735867,
+      "patch_id": 765094,
+      "arch": "arm",
+      "platform": "android",
+      "hash": "3455df22dc00d413995030aed97aadb558d1b272dc74c5bbdc01898ac0ec73b9",
+      "size": 2172695,
+      "created_at": "2026-10-30T23:31:57.303890Z"
+    },
+    {
+      "id": 1735868,
+      "patch_id": 765094,
+      "arch": "aarch64",
+      "platform": "android",
+      "hash": "77c01373678bc42ca2c7e7a02c08c49c14358eb196d1805f7650f6acf1204131",
+      "size": 2048387,
+      "created_at": "2026-10-30T23:31:58.352757Z"
+    },
+    {
+      "id": 1735869,
+      "patch_id": 765094,
+      "arch": "x86_64",
+      "platform": "android",
+      "hash": "0115a417f23e1918bd5c5735f70746ee781d9c6f52e11b38e2317239ca318d47",
+      "size": 2027979,
+      "created_at": "2026-10-30T23:31:59.262443Z"
+    }
+  ],
+  "is_rolled_back": false,
+  "notes": null
+}

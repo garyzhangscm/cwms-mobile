@@ -20,6 +20,11 @@ class PickAdapter implements HttpClientAdapter {
   final calls = <RequestOptions>[];
   Completer<void>? gate;
   bool fail = false;
+  bool duplicate = false;
+  bool missingLpn = false;
+  bool wrongItem = false;
+  bool failItemDetails = false;
+  bool diagnosticLookupFails = false;
   bool queued = false;
   bool queueReadFails = false;
   final queueRows = <Map<String, dynamic>>[];
@@ -50,7 +55,35 @@ class PickAdapter implements HttpClientAdapter {
   Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? body,
       Future<void>? cancel) async {
     calls.add(options);
+    if (duplicate) {
+      dynamic data; String? message;
+      if (options.path.endsWith('/preprinted-manual-pick')) message='LPN TEST-LPN is not pickable.';
+      if (options.path == 'inventory/inventories' && options.queryParameters['lpn'] == 'TEST-LPN') data=[{'lpn':'TEST-LPN','quantity':40,'pickId':42}];
+      if (options.path == 'outbound/picks/42') data={'id':42,'warehouseId':1,'orderNumber':'TEST-ORDER','pickedQuantity':40,'status':'PENDING'};
+      if (options.path.endsWith('/manual-pick-queue')) data=[];
+      if (data != null || message != null) return ResponseBody.fromString(jsonEncode({'result':message == null ? 0 : 1,'message':message,'data':data}),200,headers:{Headers.contentTypeHeader:['application/json']});
+    }
+
+    if (wrongItem && options.path == 'inventory/items/2') {
+      return ResponseBody.fromString(jsonEncode({'result': failItemDetails ? 1 : 0, 'data':
+        {'id': 2, 'warehouseId': 1, 'name': 'WRONG-ITEM', 'description': 'Scanned blue container'}
+      }), 200, headers: {Headers.contentTypeHeader: ['application/json']});
+    }
     if (options.path == 'inventory/inventories') {
+      if (wrongItem && options.queryParameters.containsKey('lpn')) {
+        return ResponseBody.fromString(jsonEncode({'result': 0, 'data': [
+          {'lpn': options.queryParameters['lpn'], 'quantity': 40, 'itemId': 2}
+        ]}), 200, headers: {Headers.contentTypeHeader: ['application/json']});
+      }
+
+      if (options.queryParameters.containsKey('lpn') && (missingLpn || diagnosticLookupFails)) {
+        return ResponseBody.fromString(jsonEncode({
+          'result': diagnosticLookupFails ? 1 : 0,
+          'message': diagnosticLookupFails ? 'Lookup unavailable' : '',
+          'data': []
+        }), 200, headers: {Headers.contentTypeHeader: ['application/json']});
+      }
+
       return ResponseBody.fromString(
           jsonEncode({
             'result': 0,
@@ -291,6 +324,100 @@ void main() {
       home: OrderManualPickPage(),
     ));
     await tester.pumpAndSettle();
+  }
+
+  testWidgets('duplicate explanation returns focus to empty LPN without submitting', (tester) async {
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    adapter.duplicate=true;
+    await tester.enterText(find.byType(TextFormField).last, 'TEST-LPN');
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+    expect(find.text('LPN already picked'), findsOneWidget);
+    await tester.tap(find.text('Scan next pallet'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    final field=tester.widget<TextFormField>(find.byType(TextFormField).last);
+    expect(field.controller!.text, isEmpty);
+    expect(tester.widget<EditableText>(find.byType(EditableText).last).focusNode.hasFocus, isTrue);
+    expect(adapter.calls.where((r)=>r.method=='POST'), isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+
+  testWidgets('unknown LPN has actionable message and returns scanner focus without POST', (tester) async {
+    adapter.previewFails = true;
+    adapter.missingLpn = true;
+    await open(tester);
+    await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).last, 'MISSING-LPN');
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+    expect(find.text('LPN not found'), findsOneWidget);
+    expect(find.textContaining('was not found in this warehouse'), findsOneWidget);
+    expect(find.textContaining('Invalid source LPN scope'), findsNothing);
+    await tester.tap(find.text('Scan another pallet'));
+    await tester.pumpAndSettle();
+    final field = tester.widget<TextFormField>(find.byType(TextFormField).last);
+    expect(field.controller!.text, isEmpty);
+    expect(tester.widget<EditableText>(find.byType(EditableText).last).focusNode.hasFocus, isTrue);
+    expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final queued in [false, true]) {
+    testWidgets('successful pallet resumes editable focused LPN after submit (queued=$queued)', (tester) async {
+      adapter.queued = queued;
+      adapter.remainingQuantity = 80;
+      adapter.remainingAfterPick = 40;
+      await open(tester);
+      await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+      await tester.testTextInput.receiveAction(TextInputAction.go);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).last, 'TEST-LPN');
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+      final field = tester.widget<TextField>(find.byType(TextField).last);
+      expect(field.controller!.text, isEmpty);
+      expect(field.readOnly, isFalse);
+      expect(field.focusNode!.hasFocus, isTrue);
+      expect(tester.testTextInput.isVisible, isTrue);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+
+  for (final unavailable in [false, true]) {
+    testWidgets('wrong item explains actual and required items and resumes scanning (detailsUnavailable=$unavailable)', (tester) async {
+      adapter.previewFails = true;
+      adapter.previewError = "Can't find any order line from order to match with the LPN";
+      adapter.wrongItem = true;
+      adapter.failItemDetails = unavailable;
+      await open(tester);
+      await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
+      await tester.testTextInput.receiveAction(TextInputAction.go);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).last, 'TEST-LPN');
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+      expect(find.text('Item does not match this order'), findsOneWidget);
+      expect(find.textContaining('DEMO-ITEM'), findsWidgets);
+      expect(find.textContaining(unavailable ? 'Item details unavailable' : 'WRONG-ITEM — Scanned blue container'), findsOneWidget);
+      expect(find.textContaining("Can't find any order line"), findsNothing);
+      await tester.tap(find.text('Scan another pallet'));
+      await tester.pumpAndSettle();
+      final field = tester.widget<TextFormField>(find.byType(TextFormField).last);
+      expect(field.controller!.text, isEmpty);
+      expect(tester.widget<EditableText>(find.byType(EditableText).last).focusNode.hasFocus, isTrue);
+      expect(adapter.calls.where((r) => r.method == 'POST'), isEmpty);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
   }
 
   for (final useStage in [true, false]) {
@@ -625,6 +752,7 @@ void main() {
       'preview error closes once and focus changes do not resubmit the same LPN',
       (tester) async {
     adapter.previewFails = true;
+    adapter.diagnosticLookupFails = true;
     await open(tester);
     await tester.enterText(find.byType(TextFormField).first, 'TEST-ORDER');
     await tester.tap(find.text('Next Step'));
@@ -740,7 +868,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Pallet unavailable for picking'), findsOneWidget);
     expect(find.text('Current location: TRANS_SHIPPING'), findsOneWidget);
-    await tester.tap(find.text('Scan Another LPN'));
+    await tester.tap(find.text('Scan next pallet'));
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
     expect(tester.widget<TextFormField>(find.byType(TextFormField).last).controller!.text,isEmpty);

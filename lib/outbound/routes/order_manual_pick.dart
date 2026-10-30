@@ -658,6 +658,8 @@ class __PreprintedOrderManualPickPageState
     await _onOrderManualPickConfirm();
   }
 
+  bool _resumeLpnAfterPickAttempt = false;
+
   Future<void> _onOrderManualPickConfirm() async {
     return ScanFeedback.run(() async {
       if (!mounted || _confirmingPick || _currentOrder == null) return;
@@ -685,6 +687,15 @@ class __PreprintedOrderManualPickPageState
       } finally {
         _confirmingPick = false;
         if (mounted) setState(() => _readyToConfirm = true);
+        if (_resumeLpnAfterPickAttempt) {
+          _resumeLpnAfterPickAttempt = false;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && !_confirmingPick && _readyToConfirm &&
+                _currentOrder != null && _pendingManualPick == null && !_allSubmitted) {
+              _lpnFocusNode.requestFocus();
+            }
+          });
+        }
       }
     });
   }
@@ -817,7 +828,7 @@ class __PreprintedOrderManualPickPageState
     if (request['queued'] == true) {
       // Acceptance is not completion. Release the scanner while the server finishes the saved task.
       _lpnController.clear();
-      _lpnFocusNode.requestFocus();
+      _resumeLpnAfterPickAttempt = true;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           duration: Duration(seconds: 1),
           content: Text('Pallet accepted — remaining quantity is updating.')));
@@ -942,38 +953,66 @@ class __PreprintedOrderManualPickPageState
       );
 
   Future<void> _showPickRejection(String message) async {
-    final rejection = PickRejection.parse(message);
+    final orderId = _currentOrder?.id;
+    final orderNumber = _currentOrder?.number ?? '';
+    final lpn = _lpnController.text.trim();
+    var rejection = PickRejection.parse(message);
+    if (orderId != null && lpn.isNotEmpty) {
+      showLoading(context);
+      try {
+        final explanation = await PreprintedManualPickService.explainRejectedLpn(
+            orderId, orderNumber, lpn,
+            orderItemIds: _currentOrder!.orderLines.map((line) => line.item?.id).whereType<int>().toSet(),
+            requiredItems: _currentOrder!.orderLines.where((line) =>
+              !_remainingIsCurrent || (_remainingByLine[line.id] ?? 0) > 0).map((line) {
+                final item = line.item;
+                final name = item?.name?.trim() ?? '';
+                final description = item?.description?.trim() ?? '';
+                return name.isEmpty ? '' : '$name${description.isEmpty ? "" : " — $description"}';
+              }).where((name) => name.isNotEmpty).toList());
+        // Keep an explicit backend rejection when it already identifies the pallet.
+        if (explanation != null &&
+            (rejection == null || explanation.title != 'LPN not found')) {
+          rejection = explanation;
+        }
+      } finally {
+        if (mounted) Navigator.of(context).pop();
+      }
+    }
+    if (!mounted || _currentOrder?.id != orderId) return;
     if (rejection == null) {
       await showBlockedErrorDialog(context, message);
+      if (mounted && _currentOrder?.id == orderId) _resumeLpnAfterPickAttempt = true;
       return;
     }
-    ScanFeedback.reportError(rejection.reason);
+    final detail = rejection;
+    ScanFeedback.reportError(detail.reason);
     await showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) => AlertDialog(
-              title: Text(rejection.title),
+              title: Text(detail.title),
               content: SingleChildScrollView(
                   child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text('LPN: ${rejection.lpn}'),
-                    Text('Current location: ${rejection.location}'),
+                    Text('LPN: ${detail.lpn}'),
+                    if (detail.location != 'Unavailable') Text('Current location: ${detail.location}'),
                     const SizedBox(height: 16),
-                    Text(rejection.reason),
+                    Text(detail.reason),
                     const SizedBox(height: 12),
-                    Text(rejection.nextAction),
+                    Text(detail.nextAction),
                   ])),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('Scan Another LPN'))
+                    child: Text((detail.title == 'LPN not found' || detail.title == 'Item does not match this order') ? 'Scan another pallet' : 'Scan next pallet'))
               ],
             ));
-    if (mounted) {
+    if (mounted && _currentOrder?.id == orderId) {
       _lpnController.clear();
-      _lpnFocusNode.requestFocus();
+      _resumeLpnAfterPickAttempt = true;
     }
   }
 
@@ -1094,7 +1133,7 @@ class __PreprintedOrderManualPickPageState
   _refreshScreenAfterPickConfirm() {
     // after we sucessfully pick the LPN, clear the LPN field
     _lpnController.text = "";
-    _lpnFocusNode.requestFocus();
+    _resumeLpnAfterPickAttempt = true;
     _readyToConfirm = true;
 
     _reloadInventoryOnRF();

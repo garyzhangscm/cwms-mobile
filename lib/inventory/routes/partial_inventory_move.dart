@@ -1,7 +1,7 @@
 import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
-import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:async';
+import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
@@ -41,6 +41,8 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   TextEditingController _lpnController = new TextEditingController();
   GlobalKey _formKey = new GlobalKey<FormState>();
   TextEditingController _quantityController = new TextEditingController();
+  final _newLpnController = TextEditingController();
+  final _newLpnFocusNode = FocusNode();
   ItemUnitOfMeasure? _selectedItemUnitOfMeasure;
 
   List<Inventory> inventoryOnRF = [];
@@ -58,6 +60,16 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   Timer? _timer; // timer to refresh inventory on RF every 2 second
   WarehouseLocation? _cachedRfLocation;
   bool _loadingLpn = false;
+  bool _moving = false;
+  bool _refreshingRF = false;
+  bool _rfReady = false;
+  int _lookupVersion = 0;
+  String _loadedLpn = "";
+  String _pageError = "";
+  final Set<String> _uncertainLpns = {};
+  int _step = 0;
+  String? get _printerOverride => Global.currentFactory?.id == 'colton-injection'
+      ? 'Colton_new_lable_office' : null;
 
   List<InventoryDepositRequest> _inventoryDepositRequests = [];
 
@@ -100,57 +112,123 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
   @override
   void dispose() {
-    super.dispose();
     // remove any timer so we won't need to load the next work again after
     // the user return from this page
     _timer?.cancel();
+    _lpnController.dispose();
+    _quantityController.dispose();
+    _newLpnController.dispose();
+    _newLpnFocusNode.dispose();
+    _lpnFocusNode.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: ScanAppBar(title: Text(uiText(context,"Claytech One - Partial Inventory Move"))),
+      appBar: ScanAppBar(title: const Text('Partial Move')),
       resizeToAvoidBottomInset: true,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction, //开启自动校验
-          child: Column(
-            children: <Widget>[
+      endDrawer: MyDrawer(),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Row(children: List.generate(3, (i) => Expanded(child: Column(children: [
+              CircleAvatar(radius: 18,
+                backgroundColor: i == _step ? theme.colorScheme.primary : theme.colorScheme.surfaceContainerHighest,
+                foregroundColor: i == _step ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                child: Text('${i + 1}')),
+              const SizedBox(height: 8),
+              Text(['Source', 'Split', 'Deposit'][i], style: TextStyle(fontWeight: i == _step ? FontWeight.bold : FontWeight.normal)),
+            ])))),
+            const SizedBox(height: 28),
+            if (_pageError.isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 16), child: Text(_pageError, style: TextStyle(color: theme.colorScheme.error))),
+            if (_loadingLpn || _moving || _refreshingRF) const LinearProgressIndicator(),
+            if (_step == 0) ...[
+              Text('Scan the original pallet', style: theme.textTheme.titleLarge),
+              const SizedBox(height: 8),
+              const Text('Choose the pallet you want to split. Its remaining quantity will stay on the original LPN.'),
+              const SizedBox(height: 24),
               _buildLPNController(context),
-              _itemNames.isEmpty
-                  ? Container()
-                  : _itemNames.length == 1
-                      ? _buildItemInformation(context, _itemNames.first)
-                      : _builItemController(context),
-              _selectedItemName == ""
-                  ? Container()
-                  : _builItemDescriptionController(context),
-              _selectedItemName == ""
-                  ? Container()
-                  : _buildQuantityController(context),
-              _buildButtons(context),
-              _buildDepositRequestList(context)
+              const SizedBox(height: 20),
+              FilledButton(onPressed: _loadingLpn ? null : _onLoadingLPNInformation, child: const Text('Continue')),
+              if (inventoryOnRF.isNotEmpty) TextButton(onPressed: () => setState(() => _step = 2), child: Text('View pallets awaiting deposit (${inventoryOnRF.length})')),
             ],
-          ),
+            if (_step == 1) ...[
+              Text('Enter split details', style: theme.textTheme.titleLarge),
+              const SizedBox(height: 8),
+              Text('Original LPN: $_loadedLpn'),
+              const SizedBox(height: 20),
+              if (_itemNames.length == 1) _buildItemInformation(context, _itemNames.first)
+              else _builItemController(context),
+              if (_selectedItemName.isNotEmpty) ...[
+                _builItemDescriptionController(context),
+                _buildQuantityController(context),
+              ],
+              const SizedBox(height: 16),
+              TextFormField(key: const ValueKey('partial-new-lpn'), controller: _newLpnController,
+                focusNode: _newLpnFocusNode, enabled: !_moving,
+                decoration: const InputDecoration(labelText: 'New LPN', border: OutlineInputBorder(), helperText: 'Scan an unused label for the split quantity.'),
+                onChanged: (_) => setState(() {}), onFieldSubmitted: (_) => _onAddingLPN()),
+              const SizedBox(height: 24),
+              ElevatedButton(key: const ValueKey('partial-add'),
+                onPressed: !_moving && !_loadingLpn && _validateQuantity() && _newLpnController.text.trim().isNotEmpty ? _onAddingLPN : null,
+                child: const Text('Confirm split')),
+              TextButton(onPressed: _moving ? null : () {setState(() => _step = 0); _lpnFocusNode.requestFocus();}, child: const Text('Back')),
+            ],
+            if (_step == 2) ...[
+              Text(_moving ? 'Splitting pallet…' : 'Review & deposit', style: theme.textTheme.titleLarge),
+              const SizedBox(height: 8),
+              const Text('After a successful split, place the new pallet in its destination using Deposit.'),
+              const SizedBox(height: 20),
+              for (final request in _inventoryDepositRequests) Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(request.requestInProcess == true ? 'Processing' : request.requestResult == true ? 'Split completed' : 'Needs attention', style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 16),
+                  Text('New LPN: ${request.newLpn ?? 'Pending'}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text('Original LPN: ${request.lpn}'),
+                  Text('Item: ${request.itemName}'),
+                  Text('Quantity: ${request.quantity} (base units)'),
+                  if (request.requestResult == false && request.requestInProcess != true) Text(request.result ?? '', style: TextStyle(color: theme.colorScheme.error)),
+                  if (request.requestResult == true) ...[
+                    const SizedBox(height: 16),
+                    Text('Printer: ${_printerOverride ?? Global.lastLoginRF?.printerName ?? Global.getRFConfiguration.printerName ?? 'Device default'}'),
+                    OutlinedButton(onPressed: () => _printLPNLabel(request.newLpn!), child: const Text('Print label')),
+                  ],
+                ]))),
+              ElevatedButton(onPressed: _moving || !_rfReady || _refreshingRF || inventoryOnRF.isEmpty ? null : _startDeposit,
+                child: Text(CWMSLocalizations.of(context).depositInventory)),
+              TextButton(onPressed: _moving ? null : () { _clearLPN(); setState(() => _step = 0); }, child: const Text('Split another pallet')),
+            ],
+          ],
         ),
       ),
-      endDrawer: MyDrawer(),
     );
   }
 
   Widget _buildLPNController(BuildContext context) {
-    return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).lpn,
-        TextFormField(
+    return TextFormField(
+            key: const ValueKey('partial-source-lpn'),
             controller: _lpnController,
+            enabled: !_moving,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _onLoadingLPNInformation(),
+            onChanged: (_) {
+              setState(() {
+                _loadedLpn = '';
+              });
+            },
             autofocus: true,
             // 校验用户名（不能为空）
             focusNode: _lpnFocusNode,
             decoration: InputDecoration(
+              labelText: 'Original LPN',
+              border: const OutlineInputBorder(),
               suffixIcon: IconButton(
-                onPressed: () => _clearLPN(),
+                onPressed: _moving ? null : () => _clearLPN(),
                 icon: Icon(Icons.close),
               ),
             ),
@@ -159,12 +237,16 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                   ? null
                   : CWMSLocalizations.of(context)
                       .missingField(CWMSLocalizations.of(context).lpn);
-            }));
+            });
   }
 
   void _clearLPN() {
+    ++_lookupVersion;
+    _loadedLpn = '';
     setState(() {
       _lpnController.text = "";
+      _loadedLpn = "";
+      _newLpnController.clear();
       _itemNames = Set<String>();
       _itemMap.clear();
       _itemInventoryIdMap.clear();
@@ -221,16 +303,19 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         CWMSLocalizations.of(context).quantity,
         TextFormField(
             keyboardType: TextInputType.number,
+            key: const ValueKey('partial-quantity'),
             controller: _quantityController,
+            enabled: !_moving && !_loadingLpn,
+            onChanged: (_) => setState(() {}),
             autofocus: true,
             decoration: InputDecoration(isDense: true),
             // 校验ITEM NUMBER（不能为空）
             validator: (v) {
               if (v!.trim().isEmpty) {
-                return uiText(context,"please type in quantity");
+                return uiText(context, "please type in quantity");
               }
               if (!_validateQuantity()) {
-                return uiText(context,"over receive is not allowed");
+                return "Enter a positive quantity smaller than the quantity on the original LPN.";
               }
               return null;
             }),
@@ -268,7 +353,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     Item item = _itemMap[_selectedItemName]!;
 
     for (int i = 0;
-        i < item.defaultItemPackageType!.itemUnitOfMeasures.length;
+        i < (item.defaultItemPackageType?.itemUnitOfMeasures.length ?? 0);
         i++) {
       dropdownMenuItems.add(DropdownMenuItem(
         value: item.defaultItemPackageType?.itemUnitOfMeasures[i],
@@ -289,6 +374,9 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
       return;
     }
     _selectedItemUnitOfMeasure = units.firstWhereOrNull((element) =>
+            element.unitOfMeasure?.name?.trim().toUpperCase() == 'PCS' &&
+            (element.quantity ?? 0) > 0) ??
+        units.firstWhereOrNull((element) =>
             element.id ==
             item?.defaultItemPackageType?.defaultInboundReceivingUOM?.id) ??
         units.first;
@@ -305,7 +393,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
         availableQuantity == null) {
       return false;
     }
-    return enteredQuantity * unitQuantity <= availableQuantity;
+    return enteredQuantity * unitQuantity < availableQuantity;
   }
 
   List<DropdownMenuItem<String>> _getItemNames() {
@@ -327,80 +415,87 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
   // to move
   void _onLoadingLPNInformation() async {
     await ScanFeedback.run(() async {
+      if (_lpnController.text.isEmpty) {
+        showErrorDialog(context, "please input the LPN number");
+        return;
+      }
 
-    if (_lpnController.text.isEmpty) {
-      showErrorDialog(context, "please input the LPN number");
-      return;
-    }
-
-    _loadItemsFromLPN(_lpnController.text);
-  
+      await _loadItemsFromLPN(_lpnController.text);
     });
   }
 
   /// Get the items from the LPN
   Future<void> _loadItemsFromLPN(String lpn) async {
     return ScanFeedback.run(() async {
-
-    final normalizedLpn = lpn.trim();
-    if (normalizedLpn.isEmpty || _loadingLpn) {
-      // if the user hasn't input the LPN, return an empty list
-      return;
-    }
-    _loadingLpn = true;
-    setState(() {
-      _itemNames.clear();
-      _itemMap.clear();
-      _itemInventoryIdMap.clear();
-      _itemQuantityMap.clear();
-      _selectedItemName = "";
-      _quantityController.clear();
-      _selectedItemUnitOfMeasure = null;
-    });
-
-    showLoading(context);
-    try {
-      final inventories = await InventoryService.findInventory(
-          lpn: normalizedLpn, includeDetails: true);
-
-      if (!mounted) return;
-      if (inventories.isEmpty) {
-        showToast(CWMSLocalizations.of(context).noInventoryFound);
-        _clearLPN();
+      final normalizedLpn = lpn.trim();
+      if (normalizedLpn.isEmpty ||
+          _loadingLpn ||
+          _moving ||
+          normalizedLpn == _loadedLpn) {
+        // if the user hasn't input the LPN, return an empty list
         return;
       }
-
-      for (final inventory in inventories) {
-        final item = inventory.item;
-        final itemName = item?.name;
-        if (itemName == null) continue;
-        _itemNames.add(itemName);
-        _itemMap[itemName] = item!;
-        if (inventory.id != null) {
-          _itemInventoryIdMap
-              .putIfAbsent(itemName, () => [])
-              .add(inventory.id!);
-        }
-        _itemQuantityMap[itemName] =
-            (_itemQuantityMap[itemName] ?? 0) + (inventory.quantity ?? 0);
-      }
-
+      _loadingLpn = true;
+      final lookup = ++_lookupVersion;
+      _pageError = "";
       setState(() {
-        if (_itemNames.isNotEmpty) {
-          _selectedItemName = _itemNames.first;
-          _setDefaultItemUnitOfMeasure();
-        }
+        _itemNames.clear();
+        _itemMap.clear();
+        _itemInventoryIdMap.clear();
+        _itemQuantityMap.clear();
+        _selectedItemName = "";
+        _quantityController.clear();
+        _selectedItemUnitOfMeasure = null;
       });
-    } catch (err) {
-      if (mounted) {
-        showErrorDialog(context, "Unable to load LPN $normalizedLpn: $err");
-        _clearLPN();
+
+      try {
+        final inventories = await InventoryService.findInventory(
+            lpn: normalizedLpn, includeDetails: true);
+
+        if (!mounted ||
+            lookup != _lookupVersion ||
+            _lpnController.text.trim() != normalizedLpn) return;
+        if (inventories.isEmpty) {
+          _pageError = "LPN $normalizedLpn was not found. Scan another pallet.";
+          return;
+        }
+
+        for (final inventory in inventories) {
+          final item = inventory.item;
+          final itemName = item?.name;
+          if (itemName == null) continue;
+          _itemNames.add(itemName);
+          _itemMap[itemName] = item!;
+          if (inventory.id != null) {
+            _itemInventoryIdMap
+                .putIfAbsent(itemName, () => [])
+                .add(inventory.id!);
+          }
+          _itemQuantityMap[itemName] =
+              (_itemQuantityMap[itemName] ?? 0) + (inventory.quantity ?? 0);
+        }
+
+        setState(() {
+          if (_itemNames.isNotEmpty) {
+            _loadedLpn = normalizedLpn;
+            _step = 1;
+            _selectedItemName = _itemNames.first;
+            _setDefaultItemUnitOfMeasure();
+            if (_selectedItemUnitOfMeasure == null)
+              _pageError =
+                  "This item has no valid unit of measure. Check its package configuration.";
+          } else {
+            _pageError = "Item details could not be loaded for this LPN.";
+          }
+        });
+      } catch (err) {
+        if (mounted) {
+          _pageError = "Unable to load LPN $normalizedLpn. Please try again.";
+        }
+      } finally {
+        _loadingLpn = false;
+        if (mounted) setState(() {});
       }
-    } finally {
-      _loadingLpn = false;
-      if (mounted) Navigator.of(context).pop();
-    }
-  
     });
   }
 
@@ -412,7 +507,13 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
             foregroundColor: Colors.white,
             backgroundColor: Theme.of(context).primaryColor,
           ),
-          onPressed: _lpnController.text.isNotEmpty &&
+          key: const ValueKey('partial-add'),
+          onPressed: _newLpnController.text.trim().isNotEmpty &&
+                  !_moving &&
+                  !_loadingLpn &&
+                  _loadedLpn == _lpnController.text.trim() &&
+                  _validateQuantity() &&
+                  _lpnController.text.isNotEmpty &&
                   _selectedItemName != "" &&
                   _selectedItemUnitOfMeasure != null &&
                   _quantityController.text.isNotEmpty
@@ -433,7 +534,10 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
           child: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: ElevatedButton(
-              onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+              onPressed:
+                  _moving || !_rfReady || _refreshingRF || inventoryOnRF.isEmpty
+                      ? null
+                      : _startDeposit,
               child: Text(CWMSLocalizations.of(context).depositInventory),
             ),
           ),
@@ -475,7 +579,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                 ),
                 child:
                   ElevatedButton(
-                    onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
+                    onPressed: _moving || !_rfReady || _refreshingRF || inventoryOnRF.isEmpty ? null : _startDeposit,
                     child: Text(CWMSLocalizations.of(context)!.depositInventory),
                   ),
               )
@@ -499,8 +603,11 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
     // when we come back from the deposit page, we will refresh
     // 3 times as the deposit happens async so when we return from
     // the deposit page, the last deposit may not be actually done yet
+    if (!mounted) return;
     _reloadInventoryOnRF(refreshCount: 3);
-    _inventoryDepositRequests = [];
+    setState(() {
+      _inventoryDepositRequests = [];
+    });
   }
 
   Widget _buildDepositRequestList(BuildContext context) {
@@ -611,7 +718,7 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
                   _inventoryDepositRequests[index].newLpn!),
               subtitle: Column(children: <Widget>[
                 Row(children: <Widget>[
-                  Text(uiText(context,"From LPN: "),
+                  Text(uiText(context, "From LPN: "),
                       textScaleFactor: .9,
                       style: TextStyle(
                         height: 1.15,
@@ -721,74 +828,137 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
               ]),
             ]),
             tileColor: _inventoryDepositRequests[index].pendingConfirmation
-                ? Colors.orange.shade50 : Colors.red.shade100,
+                ? Colors.orange.shade50
+                : Colors.red.shade100,
           ));
     }
   }
 
-  void _printLPNLabel(String lpn) {
+  Future<void> _printLPNLabel(String lpn) async {
     showLoading(context);
-    InventoryService.printLPNLabel(lpn)
-        .then((value) => Navigator.of(context).pop())
-        .catchError((err) {
-      Navigator.of(context).pop();
-      printLongLogMessage(
-          "error while print LPN label, error message: \n ${err.toString()}");
+    Object? failure;
+    try {
+      await InventoryService.printLPNLabel(lpn, null, _printerOverride);
+    } catch (err) {
+      failure = err;
+    }
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    if (failure != null) {
+      final detail = failure is WebAPICallException
+          ? failure.errMsg()
+          : failure.toString();
+      final localPrinterFailed = detail.contains('/localplugin/printing/') ||
+          detail.contains('INTERNAL_SERVER_ERROR');
       showErrorDialog(context,
-          "error while print LPN label, error message: \n ${err.toString()}");
-    });
+          'Could not print the label for LPN $lpn.\n\n'
+          '${localPrinterFailed ? 'The warehouse print service returned an error. Please ask your administrator to check the print service and label printer.' : detail}\n\n'
+          'Printing does not undo the completed split. Do not split this pallet again.');
+    }
   }
 
   void _onAddingLPN() {
     ScanFeedback.run(() async {
+      if (_moving ||
+          _loadingLpn ||
+          _loadedLpn != _lpnController.text.trim() ||
+          !_validateQuantity()) return;
+      if (_uncertainLpns.contains(_loadedLpn)) {
+        setState(() {
+          _pageError =
+              "This LPN has a pending move. Check its source and RF inventory before submitting again.";
+        });
+        return;
+      }
+      final newLpn = _newLpnController.text.trim();
+      if (newLpn.isEmpty || newLpn.toUpperCase() == _loadedLpn.toUpperCase()) {
+        setState(() {
+          _pageError = 'Scan a new LPN different from the original LPN.';
+        });
+        _newLpnFocusNode.requestFocus();
+        return;
+      }
+      if (_uncertainLpns.contains(newLpn)) {
+        setState(() {
+          _pageError =
+              'This new LPN has a pending move. Verify the previous result first.';
+        });
+        return;
+      }
+      setState(() {
+        _moving = true;
+        _pageError = '';
+      });
+      try {
+        final existing = await InventoryService.findInventory(lpn: newLpn);
+        if (!mounted) return;
+        if (existing.isNotEmpty) {
+          setState(() {
+            _moving = false;
+            _pageError =
+                'New LPN $newLpn is already in use. Scan an unused label.';
+          });
+          _newLpnFocusNode.requestFocus();
+          return;
+        }
+      } catch (_) {
+        if (mounted)
+          setState(() {
+            _moving = false;
+            _pageError =
+                'Could not verify the new LPN. No move was submitted. Try again.';
+          });
+        return;
+      }
+      // move the inventory being scanned onto RF
+      printLongLogMessage("==>> Start to adding LPN for deposit");
+      printLongLogMessage("quantity: ${_quantityController.text}");
 
-    // showLoading(context);
-    // move the inventory being scanned onto RF
-    printLongLogMessage("==>> Start to adding LPN for deposit");
-    printLongLogMessage("quantity: ${_quantityController.text}");
+      InventoryDepositRequest inventoryDepositRequest =
+          new InventoryDepositRequest();
+      inventoryDepositRequest.lpn = _lpnController.text.trim();
+      int quantity = int.parse(_quantityController.text);
+      if (_selectedItemUnitOfMeasure != null) {
+        quantity *= _selectedItemUnitOfMeasure!.quantity!;
+        printLongLogMessage(
+            "by considering the selected UOM, the final quantity is ${quantity}");
+      }
 
-    InventoryDepositRequest inventoryDepositRequest =
-        new InventoryDepositRequest();
-    inventoryDepositRequest.lpn = _lpnController.text;
-    int quantity = int.parse(_quantityController.text);
-    if (_selectedItemUnitOfMeasure != null) {
-      quantity *= _selectedItemUnitOfMeasure!.quantity!;
-      printLongLogMessage(
-          "by considering the selected UOM, the final quantity is ${quantity}");
-    }
+      inventoryDepositRequest.quantity = quantity;
+      inventoryDepositRequest.itemName = _selectedItemName;
 
-    inventoryDepositRequest.quantity = quantity;
-    inventoryDepositRequest.itemName = _selectedItemName;
+      inventoryDepositRequest.requestInProcess = true;
+      inventoryDepositRequest.requestResult = false;
+      inventoryDepositRequest.result = "";
 
-    inventoryDepositRequest.requestInProcess = true;
-    inventoryDepositRequest.requestResult = false;
-    inventoryDepositRequest.result = "";
+      _inventoryDepositRequests.insert(0, inventoryDepositRequest);
+      _step = 2;
+      FocusScope.of(context).unfocus();
 
-    _inventoryDepositRequests.insert(0, inventoryDepositRequest);
+      // Quantity is already in base units. Do not send inventoryId: the
+      // legacy endpoint treats that parameter as a whole-inventory move.
+      final move = _moveInventoryAsync(inventoryDepositRequest, '',
+          destinationLpn: newLpn);
 
-    final inventoryIds =
-        _itemInventoryIdMap[_selectedItemName] ?? const <int>[];
-    final directInventoryId =
-        inventoryIds.length == 1 ? inventoryIds.first : null;
-    _moveInventoryAsync(inventoryDepositRequest,
-        _selectedItemUnitOfMeasure!.unitOfMeasure!.name!,
-        inventoryId: directInventoryId, retryTime: 0);
+      // Navigator.of(context).pop();
 
-    // Navigator.of(context).pop();
-    showToast("LPN putaway request sent");
-    setState(() {
-      _lpnController.text = "";
-      _itemNames = Set<String>();
-      _itemMap.clear();
-      _itemInventoryIdMap.clear();
-      _itemQuantityMap.clear();
-      _selectedItemName = "";
-    });
+      setState(() {
+        _lpnController.text = "";
+        _loadedLpn = "";
+        _newLpnController.clear();
+        _itemNames = Set<String>();
+        _itemMap.clear();
+        _itemInventoryIdMap.clear();
+        _itemQuantityMap.clear();
+        _selectedItemName = "";
+      });
 
-    _lpnFocusNode.requestFocus();
-
-    // showToast(CWMSLocalizations.of(context)!.actionComplete);
-  
+      await move;
+      if (mounted) {
+        setState(() {
+          _moving = false;
+        });
+      }
     });
   }
 
@@ -802,74 +972,101 @@ class _PartialInventoryMovePageState extends State<PartialInventoryMovePage> {
 
   Future<void> _moveInventoryAsync(
       InventoryDepositRequest inventoryDepositRequest, String unitOfMeasure,
-      {int? inventoryId, int retryTime = 0}) async {
+      {int? inventoryId,
+      int retryTime = 0,
+      required String destinationLpn}) async {
     return ScanFeedback.run(() async {
+      const maxMoveRetries = 2;
+      final totalPerf = Stopwatch()..start();
+      try {
+        final locationPerf = Stopwatch()..start();
+        final locationWasCached = _cachedRfLocation != null;
+        final rfLocation = await _getCachedRfLocation();
+        printLongLogMessage(
+            "[PERF] partial move location=${locationPerf.elapsedMilliseconds}ms cached=$locationWasCached");
+        final movePerf = Stopwatch()..start();
+        final resultInventories = await InventoryService.moveInventory(
+            destinationLpn: destinationLpn,
+            lpn: inventoryDepositRequest.lpn!,
+            quantity: inventoryDepositRequest.quantity!,
+            itemName: inventoryDepositRequest.itemName!,
+            unitOfMeasure: unitOfMeasure,
+            destinationLocation: rfLocation);
+        printLongLogMessage(
+            "[PERF] partial move API inventory=$inventoryId request=${movePerf.elapsedMilliseconds}ms total=${totalPerf.elapsedMilliseconds}ms result=${resultInventories.length}");
 
-    const maxMoveRetries = 2;
-    final totalPerf = Stopwatch()..start();
-    try {
-      final locationPerf = Stopwatch()..start();
-      final locationWasCached = _cachedRfLocation != null;
-      final rfLocation = await _getCachedRfLocation();
-      printLongLogMessage(
-          "[PERF] partial move location=${locationPerf.elapsedMilliseconds}ms cached=$locationWasCached");
-      final movePerf = Stopwatch()..start();
-      final resultInventories = await InventoryService.moveInventory(
-          inventoryId: inventoryId,
-          lpn: inventoryDepositRequest.lpn!,
-          quantity: inventoryDepositRequest.quantity!,
-          itemName: inventoryDepositRequest.itemName!,
-          unitOfMeasure: unitOfMeasure,
-          destinationLocation: rfLocation);
-      printLongLogMessage(
-          "[PERF] partial move API inventory=$inventoryId request=${movePerf.elapsedMilliseconds}ms total=${totalPerf.elapsedMilliseconds}ms result=${resultInventories.length}");
+        if (!mounted) return;
+        final returnedQuantity = resultInventories.fold<int>(
+            0, (total, inventory) => total + (inventory.quantity ?? 0));
+        if (resultInventories.isEmpty ||
+            returnedQuantity != inventoryDepositRequest.quantity ||
+            resultInventories.any((inventory) => inventory.lpn != destinationLpn)) {
+          _uncertainLpns.add(inventoryDepositRequest.lpn!);
+          _uncertainLpns.add(destinationLpn);
+          ScanFeedback.current?.uncertain = true;
+          throw StateError(
+              'Move result could not be verified. Check the original and new LPN before trying again.');
+        }
+        ScanFeedback.confirmed();
+        inventoryDepositRequest.newLpn = destinationLpn;
+        inventoryDepositRequest.requestInProcess = false;
+        inventoryDepositRequest.requestResult = true;
+        inventoryDepositRequest.result = "";
+        setState(() {});
+        await _reloadInventoryOnRF();
+      } catch (err) {
+        printLongLogMessage(
+            "Move failed for ${inventoryDepositRequest.lpn}, attempt $retryTime/$maxMoveRetries: $err");
 
-      if (!mounted) return;
-      _reloadInventoryOnRF();
-      inventoryDepositRequest.newLpn = resultInventories.isNotEmpty
-          ? resultInventories[0].lpn
-          : inventoryDepositRequest.lpn;
-      inventoryDepositRequest.requestInProcess = false;
-      inventoryDepositRequest.requestResult = true;
-      inventoryDepositRequest.result = "";
-      setState(() {});
-    } catch (err) {
-      printLongLogMessage(
-          "Move failed for ${inventoryDepositRequest.lpn}, attempt $retryTime/$maxMoveRetries: $err");
+        if (ScanFeedback.isUncertain(err)) {
+          ScanFeedback.current?.uncertain = true;
+          _uncertainLpns.add(inventoryDepositRequest.lpn!);
+          _uncertainLpns.add(destinationLpn);
+        }
 
-      if (ScanFeedback.isUncertain(err)) {
-        ScanFeedback.current?.uncertain = true;
+        if (!mounted) return;
+        inventoryDepositRequest.requestInProcess = false;
+        inventoryDepositRequest.requestResult = false;
+        final message = err is WebAPICallException
+            ? err.errMsg()
+            : (err is DioException
+                ? "Pending confirmation. Check this LPN before submitting again."
+                : err.toString());
+        inventoryDepositRequest.result =
+            "$message, LPN: ${inventoryDepositRequest.lpn}";
+        setState(() {});
       }
-
-      if (!mounted) return;
-      inventoryDepositRequest.requestInProcess = false;
-      inventoryDepositRequest.requestResult = false;
-      final message = err is WebAPICallException
-          ? err.errMsg()
-          : (err is DioException
-              ? "Pending confirmation. Check this LPN before submitting again."
-              : err.toString());
-      inventoryDepositRequest.result =
-          "$message, LPN: ${inventoryDepositRequest.lpn}";
-      setState(() {});
-    }
-  
     });
   }
 
-  void _reloadInventoryOnRF({int refreshCount = 0}) {
-    InventoryService.getInventoryOnCurrentRF().then((value) {
+  Future<void> _reloadInventoryOnRF({int refreshCount = 0}) async {
+    if (!mounted || _refreshingRF) return;
+    setState(() {
+      _refreshingRF = true;
+      _rfReady = false;
+    });
+    try {
+      final value = await InventoryService.getInventoryOnCurrentRF();
       if (!mounted) return;
       setState(() {
         inventoryOnRF = value;
-        if (refreshCount > 0) {
-          _timer = Timer(new Duration(seconds: 2), () {
-            this._reloadInventoryOnRF(refreshCount: refreshCount - 1);
-          });
-        } else {
-          _timer?.cancel();
-        }
+        _rfReady = true;
       });
-    });
+      _timer?.cancel();
+      if (refreshCount > 0)
+        _timer = Timer(const Duration(seconds: 2),
+            () => _reloadInventoryOnRF(refreshCount: refreshCount - 1));
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          _pageError =
+              'Could not refresh inventory on this device. Reopen this page before Deposit; do not repeat a successful move.';
+        });
+    } finally {
+      if (mounted)
+        setState(() {
+          _refreshingRF = false;
+        });
+    }
   }
 }

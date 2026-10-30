@@ -1,3 +1,4 @@
+import '../models/pick_rejection.dart';
 import 'package:dio/dio.dart';
 import '../../shared/scanning/scan_feedback.dart';
 import 'dart:convert';
@@ -28,6 +29,61 @@ class PreprintedManualPickService {
       return await operation();
     } finally {
       debugPrint('[PERF] manual-pick $phase=${timer.elapsedMilliseconds}ms');
+    }
+  }
+
+  /// Diagnostic reads run only after rejection, never on the successful scanning path.
+  static Future<PickRejection?> explainRejectedLpn(int orderId, String orderNumber, String lpn, {Set<int> orderItemIds = const {}, List<String> requiredItems = const []}) async {
+    final warehouse = Global.currentWarehouse?.id;
+    if (warehouse == null || lpn.trim().isEmpty) return null;
+    final client = CWMSHttpClient.getDio();
+    try {
+      final rows = _listData((await client.get('inventory/inventories',
+          queryParameters: {'warehouseId': warehouse, 'lpn': lpn, 'includeDetails': false},
+          options: Options(receiveTimeout: const Duration(seconds: 3)))
+          .timeout(const Duration(seconds: 4))).data)
+          .where((r) => r['lpn'] == lpn).toList();
+      if (Global.currentWarehouse?.id != warehouse) return null;
+      if (rows.isEmpty) return PickRejection.notFound(lpn);
+      if (rows.any((r) => (r['quantity'] as num? ?? 0) <= 0)) return null;
+      if (rows.any((r) => r['pickId'] == null && r['allocatedByPickId'] == null)) {
+        final ids = rows.map((r) => (r['itemId'] ?? (r['item'] is Map ? r['item']['id'] : null)) as num?).toList();
+        // Do not infer a mismatch from missing metadata, exhausted demand or a mixed matching pallet.
+        if (orderItemIds.isEmpty || ids.any((id) => id == null || orderItemIds.contains(id.toInt()))) return null;
+        final itemIds = ids.map((id) => id!.toInt()).toSet();
+        if (itemIds.length > 8) return null;
+        final labels = await Future.wait(itemIds.map((id) async {
+          try {
+            final embedded = rows.where((r) => r['item'] is Map && r['item']['id'] == id && r['item']['name'] is String).toList();
+            final item = embedded.isNotEmpty ? Map<String, dynamic>.from(embedded.first['item']) : _data((await client.get(
+                'inventory/items/$id', queryParameters: {'warehouseId': warehouse},
+                options: Options(receiveTimeout: const Duration(seconds: 3)))
+                .timeout(const Duration(seconds: 4))).data);
+            if (item['id'] != id || (item['warehouseId'] != null && item['warehouseId'] != warehouse)) return '';
+            final name = item['name']?.toString().trim() ?? '';
+            final description = item['description']?.toString().trim() ?? '';
+            return name.isEmpty ? '' : '$name${description.isEmpty ? "" : " — $description"}';
+          } catch (_) { return ''; }
+        }));
+        if (Global.currentWarehouse?.id != warehouse) return null;
+        return PickRejection.itemMismatch(lpn, labels.where((label) => label.isNotEmpty).toList(), requiredItems);
+      }
+      final ids = rows.map((r) => ((r['pickId'] ?? r['allocatedByPickId']) as num).toInt()).toSet();
+      if (ids.length > 8) return null;
+      final values = await Future.wait(ids.map((id) async => _data((await client.get(
+          'outbound/picks/$id', options: Options(receiveTimeout: const Duration(seconds: 3)))
+          .timeout(const Duration(seconds: 4))).data)));
+      final picks = <int, Map<String, dynamic>>{};
+      for (final p in values) {
+        if (p['warehouseId'] != warehouse) return null;
+        picks[(p['id'] as num).toInt()] = p;
+      }
+      // Queue lookup failure must not be interpreted as a completed operation.
+      final tasks = await queue(orderId).timeout(const Duration(seconds: 4));
+      if (Global.currentWarehouse?.id != warehouse) return null;
+      return PickRejection.occupied(lpn, orderNumber, rows, picks, tasks);
+    } catch (_) {
+      return null; // Retain the original error when live state cannot be verified.
     }
   }
 

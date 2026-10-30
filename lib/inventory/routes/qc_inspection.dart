@@ -233,11 +233,18 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
           decoration: BoxDecoration(
               color: const Color(0xFF182F52),
               borderRadius: BorderRadius.circular(14)),
-          child: Text('${item.qcRule?.name ?? ''} · $step / $total',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600)));
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${item.qcRule?.name ?? ''} · $step / $total',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              _buildQCRNumber(context, theme, compact: true),
+            ],
+          ));
     }
     return Container(
       width: double.infinity,
@@ -296,7 +303,9 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
+          _buildQCRNumber(context, theme),
+          const SizedBox(height: 10),
           Text(
             Localizations.localeOf(context).languageCode == 'es'
                 ? '$completed de ${enabled.length} puntos completados'
@@ -319,6 +328,35 @@ class _QCInspectionPageState extends State<QCInspectionPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildQCRNumber(BuildContext context, ThemeData theme,
+      {bool compact = false}) {
+    final strings = QCReviewStrings(context);
+    final number = _qcInspectionRequest?.number?.trim();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          strings.qcrNumber,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: const Color(0xFFBFD5FF),
+          ),
+        ),
+        const SizedBox(height: 3),
+        SelectableText(
+          number != null && number.isNotEmpty
+              ? number
+              : strings.qcrNumberUnavailable,
+          key: const ValueKey('qc-request-number'),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: Colors.white,
+            fontSize: compact ? 13 : 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 

@@ -14,6 +14,8 @@ class QCReviewStrings {
               ? tw ?? cn
               : cn;
   static const _spanish = <String, String>{
+    "QCR Number": "Número QCR",
+    "Not available": "No disponible",
     "Yes": "Sí",
     "No": "No",
     "This answer does not meet the acceptance standard. Verify the observation and record the exception.":
@@ -39,6 +41,8 @@ class QCReviewStrings {
     "No enabled inspection checks are available for this rule. Ask an administrator to review the QC configuration.":
         "Esta regla no tiene puntos de inspección habilitados. Pida al administrador que revise la configuración de calidad."
   };
+  String get qcrNumber => choose('QCR Number', 'QCR 编号', 'QCR 編號');
+  String get qcrNumberUnavailable => choose('Not available', '暂无编号', '暫無編號');
   String get yes => choose('Yes', '是');
   String get no => choose('No', '否');
   String get warning => choose(

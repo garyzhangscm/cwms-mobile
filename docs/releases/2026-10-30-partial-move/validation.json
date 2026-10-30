@@ -1,0 +1,14 @@
+{
+  "testsPassed": 51,
+  "androidRelease": "1.62.4+5",
+  "iosRelease": "1.62.4+6",
+  "scope": [
+    "partial move wizard",
+    "quantity split with supplied destination LPN",
+    "PCS default",
+    "Colton label printer selection",
+    "QC request number",
+    "manual pick rejection messages and focus recovery"
+  ],
+  "nativeReleaseCreated": false
+}

@@ -1,0 +1,18 @@
+{
+  "id": 765104,
+  "number": 18,
+  "channel": "stable",
+  "artifacts": [
+    {
+      "id": 1735887,
+      "patch_id": 765104,
+      "arch": "aarch64",
+      "platform": "ios",
+      "hash": "bf7723a0a3f99e658d3b942f86d0686af32ee1bafd31485c7ba3430b57043e73",
+      "size": 3181661,
+      "created_at": "2026-10-30T23:35:42.001277Z"
+    }
+  ],
+  "is_rolled_back": false,
+  "notes": null
+}
