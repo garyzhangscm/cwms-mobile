@@ -31,20 +31,44 @@ void main() {
     Global.currentUser = null;
   });
   test('fixed approved company and server mappings', () {
+    final preview = FactoryProfile.qcPreviewUrl.isNotEmpty;
     expect(FactoryProfile.values.map((f) => f.companyCode), [
-      const String.fromEnvironment('INJECTION_COMPANY_CODE'),
+      preview
+          ? const String.fromEnvironment('QC_PREVIEW_COMPANY_CODE',
+              defaultValue: String.fromEnvironment('INJECTION_COMPANY_CODE'))
+          : const String.fromEnvironment('INJECTION_COMPANY_CODE'),
       const String.fromEnvironment('INJECTION_COMPANY_CODE'),
       const String.fromEnvironment('INJECTION_COMPANY_CODE'),
       const String.fromEnvironment('LUGGAGE_COMPANY_CODE')
     ]);
     expect(FactoryProfile.values.first.url,
-        const String.fromEnvironment('COLTON_API_URL'));
-    expect(FactoryProfile.values[1].url,
-        const String.fromEnvironment('FAY_API_URL'));
+        preview ? FactoryProfile.qcPreviewUrl : const String.fromEnvironment('COLTON_API_URL'));
+    final fayPreview = FactoryProfile.fayQcPreviewUrl;
+    expect(FactoryProfile.values[1].url, fayPreview.isNotEmpty
+        ? fayPreview
+        : const String.fromEnvironment('FAY_API_URL'));
     expect(FactoryProfile.values[2].url, FactoryProfile.values[1].url);
     expect(FactoryProfile.values.last.url,
         const String.fromEnvironment('LUGGAGE_API_URL'));
   });
+  testWidgets('old QC preview selection uses the single Colton card', (tester) async {
+    if (FactoryProfile.qcPreviewUrl.isEmpty) return;
+    SharedPreferences.setMockInitialValues({'selected_factory': 'qc-preview'});
+    FactoryProfile? connected;
+    await tester.pumpWidget(app((profile) async {
+      connected = profile;
+      return CWMSSiteInformation();
+    }));
+    await tester.pumpAndSettle();
+    expect(find.text('QC Test · 4200'), findsNothing);
+    expect(find.text('Last selected'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('colton-injection')));
+    await tester.pumpAndSettle();
+    expect(connected?.url, FactoryProfile.qcPreviewUrl);
+    expect((await SharedPreferences.getInstance()).getString('selected_factory'),
+        'colton-injection');
+  });
+
   test('changing factory clears credentials even at identical URL', () async {
     final first = FactoryProfile.values[1], second = FactoryProfile.values[2];
     await Global.selectFactory(first, CWMSSiteInformation()..url = first.url);

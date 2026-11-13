@@ -1,3 +1,4 @@
+import '../../shared/widgets/qc_scan_header.dart';
 import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'package:cwms_mobile/shared/adaptive_layout.dart';
@@ -107,37 +108,11 @@ class _InboundQCPageState extends State<InboundQCPage> {
     );
   }
 
-  Widget _buildQCHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF172F50),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.verified_user_outlined,
-              color: Color(0xFF9FC5FF), size: 34),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children:  [
-                Text(uiText(context,"Inbound quality check"),
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 21,
-                        fontWeight: FontWeight.w700)),
-                SizedBox(height: 4),
-                Text(uiText(context,"Scan an LPN to begin inspection"),
-                    style: TextStyle(color: Color(0xB8FFFFFF), fontSize: 14)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildQCHeader(BuildContext context) => QcScanHeader(
+        title: uiText(context, 'Inbound quality check'),
+        subtitle: uiText(context, 'Scan an LPN to begin inspection'),
+        icon: Icons.verified_user_outlined,
+      );
 
   Widget _buildLPNScanner(BuildContext context) {
     return TextFormField(

@@ -267,7 +267,7 @@ class _RfidCheckPageState extends State<RfidCheckPage>
                     const SizedBox(height: 20),
                     OutlinedButton.icon(
                         onPressed: busy || ocrBusy ? null : photograph,
-                        icon: const Icon(Icons.photo_camera),
+                        icon: const Icon(Icons.camera_alt_outlined),
                         label: Text(ocrBusy
                             ? tr('Reading label…', 'Leyendo etiqueta…')
                             : tr('Take Photo', 'Tomar foto'))),
@@ -289,7 +289,7 @@ class _RfidCheckPageState extends State<RfidCheckPage>
                     const SizedBox(height: 16),
                     FilledButton.icon(
                         onPressed: busy || ocrBusy ? null : scan,
-                        icon: const Icon(Icons.sensors),
+                        icon: const Icon(Icons.qr_code_scanner),
                         label: Text(busy
                             ? tr('Reading…', 'Leyendo…')
                             : tr('Read RFID', 'Leer RFID'))),

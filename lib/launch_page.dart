@@ -1,5 +1,3 @@
-import 'shared/scanning/web_audio_failure_player.dart';
-import 'package:flutter/foundation.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:cwms_mobile/shared/global.dart';
 import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
@@ -83,24 +81,6 @@ class _LaunchPageState extends State<LaunchPage> {
     }
   }
 
-  bool _testingSound = false;
-  Future<void> _testWarningSound() async {
-    if (_testingSound) return;
-    setState(() => _testingSound = true);
-    String message;
-    try {
-      await WebAudioFailurePlayer.shared.play();
-      message =
-          'Warning sound played. If you cannot hear it, check media volume.';
-    } catch (_) {
-      message = 'Unable to play warning sound on this device.';
-    }
-    if (!mounted) return;
-    setState(() => _testingSound = false);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
-
   @override
   Widget build(BuildContext context) {
     const navy = Color(0xFF142D4E);
@@ -149,15 +129,6 @@ class _LaunchPageState extends State<LaunchPage> {
                         ? '系统会记住您上次选择的工厂。'
                         : 'Your last selected factory will be remembered.'),
                 style: const TextStyle(fontSize: 12, color: Color(0xFF718096))),
-            if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
-              Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: TextButton(
-                    onPressed: _testingSound ? null : _testWarningSound,
-                    child: Text(_testingSound
-                        ? 'Testing sound…'
-                        : 'Test warning sound'),
-                  )),
           ]),
         )),
       )),

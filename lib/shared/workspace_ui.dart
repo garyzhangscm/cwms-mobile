@@ -9,7 +9,7 @@ bool workspaceIsChinese(BuildContext context) =>
 
 IconData workspaceIcon(String name) {
   final value = name.toLowerCase();
-  if (value.contains('rfid')) return Icons.sensors;
+  if (value.contains('rfid')) return Icons.qr_code_scanner;
   if (value.contains("defective")) return Icons.error_outline;
   // Keep each operation visually distinct. These are semantic symbols rather
   // than one generic box recoloured for every menu item.
@@ -88,11 +88,15 @@ class WorkspaceTile extends StatelessWidget {
       required this.title,
       required this.identity,
       required this.index,
-      required this.onTap});
+      required this.onTap,
+      this.icon,
+      this.wrapTitle = false});
   final String title;
   final String identity;
   final int index;
   final VoidCallback? onTap;
+  final IconData? icon;
+  final bool wrapTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -122,14 +126,14 @@ class WorkspaceTile extends StatelessWidget {
                   decoration: BoxDecoration(
                       color: color.withValues(alpha: .09),
                       borderRadius: BorderRadius.circular(15)),
-                  child: Icon(workspaceIcon(identity), color: color, size: 24));
+                  child: Icon(this.icon ?? workspaceIcon(identity), color: color, size: 24));
               final spanish =
                   Localizations.localeOf(context).languageCode == 'es';
               final label = Text(uiText(context,
               title),
-              maxLines: spanish ? null: 2,
+              maxLines: spanish || wrapTitle ? null : 2,
                     overflow:
-                      spanish ? TextOverflow.visible: TextOverflow.ellipsis,
+                      spanish || wrapTitle ? TextOverflow.visible : TextOverflow.ellipsis,
                     style: const TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.w600,

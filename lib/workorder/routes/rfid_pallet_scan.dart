@@ -413,7 +413,7 @@ class _RfidPalletScanPageState extends State<RfidPalletScanPage>
                         pallet.atCapacity
                     ? null
                     : toggle,
-                icon: Icon(scanning ? Icons.stop : Icons.sensors),
+                icon: Icon(scanning ? Icons.cancel : Icons.qr_code_scanner),
                 label: Text(stopping
                     ? tr('Stopping…', 'Deteniendo…')
                     : scanning

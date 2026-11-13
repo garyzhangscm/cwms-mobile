@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cwms_mobile/auth/models/menu.dart';
 import 'package:cwms_mobile/auth/models/menu_sub_group.dart';
 import 'package:cwms_mobile/shared/qc_menu.dart';
 import 'package:cwms_mobile/qc_menu_page.dart';
+
+import 'package:cwms_mobile/shared/global.dart';
+import 'package:cwms_mobile/shared/http_client.dart';
+import 'package:cwms_mobile/shared/models/cwms_site_information.dart';
+import 'package:cwms_mobile/shared/models/factory_profile.dart';
+import 'package:cwms_mobile/warehouse_layout/models/warehouse.dart';
+import 'package:cwms_mobile/workorder/routes/qc_production_page.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Menu item(String route) => Menu()..name=route..text=route..link=route;
 MenuSubGroup group(List<String> routes) => MenuSubGroup()..menus=routes.map(item).toList();
@@ -37,4 +47,39 @@ void main() {
    await tester.pumpAndSettle();
    expect(find.text('Existing inbound page'), findsOneWidget);
  });
+
+ testWidgets('Production confirmation sits above quality checks and opens both scan flows', (tester) async {
+   if (FactoryProfile.qcPreviewUrl.isEmpty) return;
+   SharedPreferences.setMockInitialValues({});
+   Global.currentServer = CWMSSiteInformation()..url = FactoryProfile.qcPreviewUrl;
+   Global.currentWarehouse = Warehouse()..id = 1;
+   addTearDown(() {
+     Global.currentServer = null;
+     Global.currentWarehouse = null;
+   });
+   CWMSHttpClient.resetDio();
+   CWMSHttpClient.getDio().interceptors.add(InterceptorsWrapper(
+     onRequest: (request, handler) => handler.resolve(Response(
+       requestOptions: request,
+       statusCode: 200,
+       data: {'result': 0, 'data': {'enabled': true, 'actor': 'qc-test'}},
+     )),
+   ));
+   await tester.pumpWidget(MaterialApp(
+     routes: {'inbound_qc': (_) => const SizedBox()},
+     home: QcMenuPage(menus: [item('inbound_qc')]),
+   ));
+   await tester.pumpAndSettle();
+   final heading = find.text('Production Confirmation');
+   final checks = find.text('Quality checks');
+   expect(tester.getTopLeft(heading).dy, lessThan(tester.getTopLeft(checks).dy));
+   await tester.tap(find.text('Confirm'));
+   await tester.pumpAndSettle();
+   expect(tester.widget<QcProductionPage>(find.byType(QcProductionPage)).withdraw, isFalse);
+   await tester.pageBack();
+   await tester.pumpAndSettle();
+   await tester.tap(find.text('Production Pallet Exception'));
+   await tester.pumpAndSettle();
+   expect(tester.widget<QcProductionPage>(find.byType(QcProductionPage)).withdraw, isTrue);
+ }, variant: const TargetPlatformVariant({TargetPlatform.android, TargetPlatform.iOS}));
 }

@@ -43,8 +43,8 @@ class Global {
   static Future<void> selectFactory(
       FactoryProfile factory, CWMSSiteInformation server) async {
     final prefs = await SharedPreferences.getInstance();
-    final previousId =
-        currentFactory?.id ?? prefs.getString('selected_factory');
+    final previousId = currentFactory?.id ??
+        FactoryProfile.byId(prefs.getString('selected_factory'))?.id;
     if (previousId != factory.id) {
       // Factory identity matters even when two factories share an API URL.
       currentUser = null;

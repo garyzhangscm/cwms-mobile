@@ -172,7 +172,7 @@ class __PreprintedOrderManualPickPageState
                           ? Icons.check_circle
                           : failed
                               ? Icons.error_outline
-                              : Icons.schedule,
+                              : Icons.refresh_rounded,
                       color: completed
                           ? Colors.green
                           : failed

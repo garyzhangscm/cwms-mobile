@@ -9,6 +9,7 @@ import 'i18n/localization_intl.dart';
 import 'shared/MyDrawer.dart';
 import 'shared/menu_navigation.dart';
 import 'shared/workspace_ui.dart';
+import 'workorder/routes/qc_production_page.dart';
 
 class Menus extends StatefulWidget {
   @override
@@ -19,6 +20,7 @@ class _MenusState extends State<Menus> {
   MenuGroup? _menuGroup;
   bool _loading = true;
   bool _failed = false;
+  bool _qcConfirmationOnly = false;
 
   @override
   void initState() {
@@ -34,8 +36,14 @@ class _MenusState extends State<Menus> {
     try {
       final group = await MenuService.getAccessibleMenus();
       if (!mounted) return;
+      final hasQcShortcuts = qcMenuItems(group.menuSubGroups,
+          (route) => hasRegisteredMenuRoute(context, route)).isNotEmpty;
+      final qcConfirmationOnly = !hasQcShortcuts &&
+          await QcProductionApi.hasAccess();
+      if (!mounted) return;
       setState(() {
         _menuGroup = group;
+        _qcConfirmationOnly = qcConfirmationOnly;
         _loading = false;
       });
     } catch (_) {
@@ -57,7 +65,7 @@ class _MenusState extends State<Menus> {
         .toList();
     final qc = qcMenuItems(_menuGroup?.menuSubGroups ?? [],
         (route) => hasRegisteredMenuRoute(context, route));
-    if (qc.isNotEmpty) groups.add(MenuSubGroup()
+    if (qc.isNotEmpty || _qcConfirmationOnly) groups.add(MenuSubGroup()
       ..name = qcMenuIdentity ..text = 'QC' ..menus = qc);
     String title(int index) => groups[index].name == qcMenuIdentity
         ? (Localizations.localeOf(context).languageCode == 'es' ? 'Control de calidad' : zh ? '质量管理' : 'QC')
