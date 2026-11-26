@@ -1018,7 +1018,7 @@ class _ReserveWavePickPageState extends State<ReserveWavePickPage> {
                               onPressed: _busy
                                   ? null
                                   : () => _acceptSplitLabel(_splitLabel.text),
-                              icon: const Icon(Icons.arrow_forward),
+                              icon: const RotatedBox(quarterTurns: 2, child: Icon(Icons.arrow_back)),
                             ),
                           ),
                         ),
