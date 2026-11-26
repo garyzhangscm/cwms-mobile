@@ -1,7 +1,10 @@
-import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
+import 'reserve_wave_pick.dart';
+import '../../shared/scanning/scan_app_bar.dart';
 
-import 'package:cwms_mobile/i18n/spanish_ui.dart';import 'dart:collection';
+import 'dart:collection';
 import 'dart:core';
+
+import 'package:cwms_mobile/i18n/spanish_ui.dart';
 
 import 'package:cwms_mobile/exception/WebAPICallException.dart';
 import 'package:cwms_mobile/i18n/localization_intl.dart';
@@ -14,7 +17,7 @@ import 'package:cwms_mobile/outbound/services/pick.dart';
 import 'package:cwms_mobile/shared/MyDrawer.dart';
 import 'package:cwms_mobile/shared/functions.dart';
 import 'package:flutter/material.dart';
-import 'package:badges/badges.dart' as badge;
+import 'package:cwms_mobile/shared/workspace_ui.dart';
 import 'package:collection/collection.dart';
 
 import '../../shared/global.dart';
@@ -35,20 +38,20 @@ class PickByWavePage extends StatefulWidget{
 
 class _PickByWavePageState extends State<PickByWavePage> {
 
-  // input batch id
-  TextEditingController _waveNumberController = new TextEditingController();
-  GlobalKey _formKey = new GlobalKey<FormState>();
+  final _waveNumberController = TextEditingController();
   // all picks that assigned to current user
   List<Pick> assignedPicks = [];
 
   // a map of relationship between wave and pick id
   HashMap<String, Set<int>> wavePicks = new HashMap();
-  FocusNode _waveNumberFocusNode = FocusNode();
+  final _waveNumberFocusNode = FocusNode();
 
 
   List<Wave> assignedWaves = [];
 
 
+  bool _loadingWave = false;
+  String? _waveLookupError;
   Pick? currentPick;
 
   List<Inventory>  inventoryOnRF = [];
@@ -63,133 +66,156 @@ class _PickByWavePageState extends State<PickByWavePage> {
 
     inventoryOnRF = [];
 
-    _waveNumberFocusNode.addListener(() {
-      print("_waveNumberFocusNode.hasFocus: ${_waveNumberFocusNode.hasFocus}");
-      if (!_waveNumberFocusNode.hasFocus && _waveNumberController.text.isNotEmpty) {
-        // if we tab out, then add the wave to the list
-        _onAddingWave(10);
-
-      }
-    });
-
     _reloadInventoryOnRF();
 
   }
 
   @override
+  void dispose() {
+    _waveNumberFocusNode.dispose();
+    _waveNumberController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final labels = CWMSLocalizations.of(context);
+    final heading = Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: workspaceNavy,
+          fontWeight: FontWeight.w700,
+        );
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFFD8E0ED)),
+    );
 
     return Scaffold(
-      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).pickByWave)),
-      resizeToAvoidBottomInset: true,
-      body:
-          Column(
-            children: [
-              _buildWaveNumberScanner(context),
-              _buildButtons(context),
-              _buildWaveList(context)
-            ],
-          ),
-      // bottomNavigationBar: buildBottomNavigationBar(context)
+      backgroundColor: workspaceBackground,
+      appBar: ScanAppBar(
+        title: Text(labels.pickByWave),
+        backgroundColor: workspaceBackground,
+        foregroundColor: workspaceNavy,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
       endDrawer: MyDrawer(),
-    );
-  }
-
-  // scan in barcode to add a order into current batch
-  Widget _buildWaveNumberScanner(BuildContext context) {
-    return
-      Padding(
-          padding: const EdgeInsets.all(16.0),
-          child:
-              Column(
-                  children: <Widget>[
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: [
+                Card(
+                  margin: EdgeInsets.zero,
+                  elevation: 0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: border.borderSide,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.qr_code_scanner, color: workspaceBlue),
+                            const SizedBox(width: 10),
+                            Expanded(child: Text(uiText(context, 'Scan a wave'), style: heading)),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(uiText(context, 'Scan the Pick List barcode or enter the wave number.')),
+                        const SizedBox(height: 16),
                         TextFormField(
-                        controller: _waveNumberController,
-                        showCursor: true,
-                        autofocus: true,
-                        focusNode: _waveNumberFocusNode,
-                        decoration: InputDecoration(
-                          labelText: CWMSLocalizations.of(context).waveNumber,
-                          hintText: uiText(context,"please input wave number"),
-                          suffixIcon:
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                            mainAxisSize: MainAxisSize.min, // added line
-                            children: <Widget>[
-                              IconButton(
-                                onPressed: () => _waveNumberController.text = "",
-                                icon: Icon(Icons.close),
-                              ),
-                            ],
+                          controller: _waveNumberController,
+                          autofocus: true,
+                          focusNode: _waveNumberFocusNode,
+                          textInputAction: TextInputAction.search,
+                          onChanged: (_) => _clearWaveLookupError(),
+                          onFieldSubmitted: (_) => _onAddingWave(),
+                          decoration: InputDecoration(
+                            labelText: labels.waveNumber,
+                            errorText: _waveLookupError,
+                            errorMaxLines: 4,
+                            border: border,
+                            enabledBorder: border,
+                            suffixIcon: IconButton(
+                              tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
+                              onPressed: () {
+                                _waveNumberController.clear();
+                                _clearWaveLookupError();
+                                _waveNumberFocusNode.requestFocus();
+                              },
+                              icon: const Icon(Icons.close),
+                            ),
                           ),
-                        )
-
-                    )
-
-                  ]
-              )
-          );
-
-  }
-  Widget _buildButtons(BuildContext context) {
-
-    return Column(
-      children: [
-        buildThreeButtonRow(context,
-          ElevatedButton(
-              onPressed: () => _onAddingWave(10),
-              child: Text(CWMSLocalizations.of(context).addWave)
-          ),
-          ElevatedButton(
-              onPressed: _onStartingPicking,
-              child: Text(CWMSLocalizations.of(context).start)
-          ),
-          badge.Badge(
-              showBadge: true,
-              badgeStyle: badge.BadgeStyle(
-                padding: EdgeInsets.all(8),
-                badgeColor: Colors.deepPurple,
-              ),
-              badgeContent: Text(
-                inventoryOnRF.length.toString(),
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              child:
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: ElevatedButton(
-                    onPressed: inventoryOnRF.length == 0 ? null : _startDeposit,
-                    child: Text(CWMSLocalizations.of(context).depositInventory),
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: workspaceBlue,
+                            minimumSize: const Size(0, 48),
+                          ),
+                          onPressed: _loadingWave ? null : _onAddingWave,
+                          child: _loadingWave
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : Text(labels.addWave),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-          )
-        )
-      ]
-    );
-
-
-  }
-
-
-  Widget _buildWaveList(BuildContext context) {
-
-    return
-      Expanded(
-        child: ListView.separated(
-            separatorBuilder: (context, index) => Divider(
-              color: Colors.black,
+                const SizedBox(height: 20),
+                Text(uiText(context, 'Wave queue'), style: heading),
+                const SizedBox(height: 8),
+                if (assignedWaves.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(uiText(context, 'No waves in the queue.')),
+                  ),
+                for (var index = 0; index < assignedWaves.length; index++)
+                  WaveListItem(
+                    index: index,
+                    wave: assignedWaves[index],
+                    onRemove: _removeWave,
+                  ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _loadingWave || assignedWaves.isEmpty
+                            ? null
+                            : _onStartingPicking,
+                        child: Text(labels.start, textAlign: TextAlign.center),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: inventoryOnRF.isEmpty ? null : _startDeposit,
+                        child: Text(
+                          '${labels.depositInventory} (${inventoryOnRF.length})',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            itemCount: assignedWaves.length,
-            itemBuilder: (BuildContext context, int index) {
-
-              return WaveListItem(
-                index: index,
-                wave: assignedWaves[index],
-                onRemove:  (index) =>  _removeWave(index)
-              );
-            }),
-      );
+          ),
+        ),
+      ),
+    );
   }
+
   void _removeWave(int index) {
     print("will remove for wave: ${assignedWaves[index].number}");
     setState(() {
@@ -200,95 +226,59 @@ class _PickByWavePageState extends State<PickByWavePage> {
     });
   }
 
-  void _onAddingWave(int tryTime) async {
-
-    printLongLogMessage("_onAddingWave: Start to adding wave , tryTime = $tryTime");
-    if (tryTime <= 0) {
-      // do nothing as we run out of try time
-      return;
+  void _clearWaveLookupError() {
+    if (_waveLookupError != null) {
+      setState(() => _waveLookupError = null);
     }
-    printLongLogMessage("_onAddingWave / _waveNumberControllerFocusNode.hasFocus:   ${_waveNumberFocusNode.hasFocus}");
-    if (_waveNumberFocusNode.hasFocus) {
-      // printLongLogMessage("lpn controller still have focus, will wait for 100 ms and try again");
-      Future.delayed(const Duration(milliseconds: 100),
-              () => _onAddingWave(tryTime - 1));
-
-      return;
-
-    }
-    print("Will get information for ${_waveNumberController.text} ");
-
-    // check if hte order is already in the list
-    // if so, we won't bother refresh the list
-    if (_waveNumberController.text.isNotEmpty &&
-        !_waveAlreadyInList(_waveNumberController.text)) {
-
-      showLoading(context);
-      try {
-
-        Wave wave =
-            await WaveService.getWaveByNumber(_waveNumberController.text);
-
-        _assignWaveToUser(wave);
-        print("Will add wave ${wave.number} to the list");
-        _waveNumberController.clear();
-        _waveNumberFocusNode.requestFocus();
-
-        Navigator.of(context).pop();
-      }
-      on WebAPICallException catch(ex) {
-
-
-        Navigator.of(context).pop();
-        showErrorDialog(context, ex.errMsg());
-        //_orderNumberFocusNode.requestFocus();
-        return;
-
-      }
-    }
-    else {
-
-      _waveNumberController.clear();
-      _waveNumberFocusNode.requestFocus();
-    }
-
   }
-  void _assignWaveToUser(Wave wave) {
-    // only continue if the order is not in the list yet
 
-    int index = assignedWaves.indexWhere(
-            (element) => element.number == wave.number);
-    if (index < 0) {
+  Future<void> _onAddingWave() async {
+    if (_loadingWave) return;
+    final number = _waveNumberController.text.trim();
+    if (number.isEmpty || _waveAlreadyInList(number)) return;
 
+    setState(() {
+      _loadingWave = true;
+      _waveLookupError = null;
+    });
+    try {
+      final wave = await WaveService.getWaveByNumber(number);
+      if (ReserveWaveApi.available) {
+        final state = await ReserveWaveApi(wave.id!).lookup();
+        if (!mounted) return;
+        if (state != null && state['managed'] == true) {
+          _waveNumberController.clear();
+          await Navigator.of(context).push(MaterialPageRoute<void>(
+            builder: (_) => ReserveWavePickPage(wave: wave, data: state),
+          ));
+          return;
+        }
+      }
+      final picks = await PickService.getPicksByWave(wave.id!);
+      if (!mounted) return;
       setState(() {
         assignedWaves.add(wave);
-        _assignPickToUser(wave);
-
-
+        assignedPicks.addAll(picks);
+        wavePicks[wave.number!] = picks.map((pick) => pick.id!).toSet();
       });
+      _waveNumberController.clear();
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _waveLookupError = uiErrorText(
+            context,
+            error is WebAPICallException
+                ? error.errMsg()
+                : ReserveWaveApi.error(error),
+          );
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loadingWave = false);
+        _waveNumberFocusNode.requestFocus();
+      }
     }
-
-  }
-
-
-  void _assignPickToUser(Wave wave) async {
-    print("start to get the picks from wave ${wave.number}");
-    List<Pick> picksByWave =  await PickService.getPicksByWave(wave.id!);
-
-    printLongLogMessage("get ${picksByWave.length} picks from the wave ${wave.number}");
-    assignedPicks.addAll(picksByWave);
-
-    // save the relationship between the wave and the picks so that
-    // when we remove the wave from current assignment, we can
-    // remove the picks as well
-    Set<int> existingPicks = wavePicks[wave.number]!;
-
-    picksByWave.forEach((pick) => existingPicks.add(pick.id!));
-    wavePicks[wave.number!] = existingPicks;
-
-    print("_assignPickToUser: Now we have ${assignedPicks.length} picks from ${wavePicks.length} waves assigned");
-
-
   }
 
   void _deassignPickFromUser(Wave wave) {
@@ -513,6 +503,7 @@ class _PickByWavePageState extends State<PickByWavePage> {
 
     InventoryService.getInventoryOnCurrentRF()
         .then((value) {
+      if (!mounted) return;
       setState(() {
         inventoryOnRF = value;
       });

@@ -37,6 +37,60 @@ void main() {
     expect(find.text('1 full pallet + 160 PCS'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('shows pallets then CS then pieces, omitting zero components',
+      (tester) async {
+    await open(
+        tester,
+        const RemainingPalletsCard(lines: [
+          RemainingPalletDemand(
+              itemName: 'SAMPLE A',
+              quantity: 2289,
+              unit: 'PCS',
+              unitsPerPallet: 120,
+              unitsPerCase: 4),
+          RemainingPalletDemand(
+              itemName: 'SAMPLE B',
+              quantity: 2288,
+              unit: 'PCS',
+              unitsPerPallet: 120,
+              unitsPerCase: 4),
+          RemainingPalletDemand(
+              itemName: 'SAMPLE C',
+              quantity: 9,
+              unit: 'PCS',
+              unitsPerPallet: 120,
+              unitsPerCase: 4),
+          RemainingPalletDemand(
+              itemName: 'SAMPLE D',
+              quantity: 120,
+              unit: 'PCS',
+              unitsPerPallet: 120,
+              unitsPerCase: 4),
+        ]));
+    expect(find.text('19 full pallets + 2 CS + 1 PCS'), findsOneWidget);
+    expect(find.text('19 full pallets + 2 CS'), findsOneWidget);
+    expect(find.text('2 CS + 1 PCS'), findsOneWidget);
+    expect(find.text('1 full pallet'), findsOneWidget);
+    expect(
+        find.textContaining('120 PCS / pallet · 4 PCS / CS'), findsNWidgets(4));
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('missing pallet size can still show configured cases',
+      (tester) async {
+    await open(
+        tester,
+        const RemainingPalletsCard(lines: [
+          RemainingPalletDemand(
+              itemName: 'CASES ONLY',
+              quantity: 15,
+              unit: 'PCS',
+              unitsPerCase: 6),
+        ]));
+    expect(find.text('2 CS + 3 PCS'), findsOneWidget);
+    expect(find.text('Pallet size not configured'), findsOneWidget);
+    expect(find.textContaining('Estimated:'), findsNothing);
+    expect(find.text('Standard: 6 PCS / CS'), findsOneWidget);
+  });
   testWidgets(
       'missing configuration hides total estimate but preserves exact quantity',
       (tester) async {
@@ -75,10 +129,25 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await open(tester, const RemainingPalletsCard(lines: lines),
-          locale: locale, scale: 1.4);
+      await open(
+          tester,
+          const RemainingPalletsCard(lines: [
+            RemainingPalletDemand(
+                itemName: 'DEMO PRODUCT A',
+                quantity: 2289,
+                unit: 'PCS',
+                unitsPerPallet: 120,
+                unitsPerCase: 4),
+          ]),
+          locale: locale,
+          scale: 1.4);
       expect(tester.takeException(), isNull);
       expect(find.text('DEMO PRODUCT A'), findsOneWidget);
+      expect(
+          find.text(locale == 'es'
+              ? '19 palés completos + 2 CS + 1 PCS'
+              : '19 full pallets + 2 CS + 1 PCS'),
+          findsOneWidget);
     });
   }
 }

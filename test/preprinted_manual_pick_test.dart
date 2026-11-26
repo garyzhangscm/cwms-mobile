@@ -19,6 +19,7 @@ class SplitAdapter implements HttpClientAdapter {
   bool queued = false;
   bool completed = true;
   bool allowCancel = false;
+  bool completedBeforeCancel = false;
   Completer<void>? gate;
   @override
   Future<ResponseBody> fetch(
@@ -29,7 +30,10 @@ class SplitAdapter implements HttpClientAdapter {
       return ResponseBody.fromString(
           jsonEncode({
             'result': 0,
-            'data': {'cancelled': allowCancel, 'completed': false}
+            'data': {
+              'cancelled': allowCancel,
+              'completed': completedBeforeCancel
+            }
           }),
           200,
           headers: {
@@ -55,6 +59,70 @@ class SplitAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
+class GuidedSplitAdapter extends SplitAdapter {
+  var picked = false;
+  var relabeled = false;
+
+  Map<String, dynamic> get stock => {
+        'id': picked ? 42 : 41,
+        'locationId': 3,
+        'item': {'id': 5},
+        'quantity': picked ? 8 : 48,
+        'lpn': relabeled ? 'L000000003' : 'L000000001',
+      };
+
+  @override
+  Future<ResponseBody> fetch(
+      RequestOptions o, Stream<Uint8List>? body, Future<void>? cancel) async {
+    calls.add(o);
+    Object data;
+    if (o.path.endsWith('/preprinted-manual-pick')) {
+      expect(o.queryParameters['quantity'], 40);
+      expect(o.queryParameters['newLpn'], 'L000000002');
+      expect(o.queryParameters.containsKey('remainderLpn'), isFalse);
+      expect(picked, isFalse);
+      picked = true;
+      data = {'completed': true};
+    } else if (o.path.endsWith('/preprinted-lpns/validate')) {
+      expect(o.method, 'GET');
+      expect(o.queryParameters['warehouseId'], 1);
+      final label = o.queryParameters['lpn'];
+      if (label == 'L000000007') {
+        throw DioException(
+            requestOptions: o, type: DioExceptionType.receiveTimeout);
+      }
+      data = {
+        'issued': label != 'L000000004',
+        'reservedFor': label == 'L000000005' ? 'another-pick' : '',
+      };
+    } else if (o.path.endsWith('/inventories')) {
+      final label = o.queryParameters['lpn'];
+      data = switch (label) {
+        'L000000001' => [stock],
+        'L000000006' => [
+            {...stock, 'lpn': label}
+          ],
+        _ => [],
+      };
+    } else if (o.path.endsWith('/inventory/42')) {
+      data = stock;
+    } else if (o.path.endsWith('/inventories/42/relabel')) {
+      expect(o.queryParameters['newLPN'], 'L000000003');
+      expect(o.queryParameters['mergeWithExistingInventory'], isFalse);
+      expect(relabeled, isFalse);
+      relabeled = true;
+      throw DioException(
+          requestOptions: o, type: DioExceptionType.receiveTimeout);
+    } else {
+      throw StateError('Unexpected request ${o.path}');
+    }
+    return ResponseBody.fromString(jsonEncode({'result': 0, 'data': data}), 200,
+        headers: {
+          Headers.contentTypeHeader: ['application/json']
+        });
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() {
@@ -74,6 +142,103 @@ void main() {
     'keepOriginal': false,
     'destination': 'RF-TEST'
   };
+
+  testWidgets('both split steps reject unavailable labels before confirmation',
+      (tester) async {
+    final adapter = GuidedSplitAdapter();
+    CWMSHttpClient.getDio().httpClientAdapter = adapter;
+    Map<String, dynamic>? result;
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(
+          builder: (context) => Scaffold(
+                body: TextButton(
+                  onPressed: () async {
+                    result = await showDialog<Map<String, dynamic>>(
+                      context: context,
+                      builder: (_) => const GuidedManualPickSplitDialog(
+                        sourceLpn: 'L000000001',
+                        sourceQuantity: 48,
+                        pickableQuantity: 40,
+                      ),
+                    );
+                  },
+                  child: const Text('Open'),
+                ),
+              )),
+    ));
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    Future<void> scan(String label) async {
+      await tester.enterText(find.byType(TextField), label);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+    }
+
+    for (final step in ['New picked LPN', 'New remainder LPN']) {
+      expect(find.text(step), findsOneWidget);
+      for (final (label, error) in [
+        (
+          'L000000004',
+          'This LPN was not issued by this warehouse. Scan another label.'
+        ),
+        (
+          'L000000005',
+          'This LPN is already reserved or used. Scan another label.'
+        ),
+        ('L000000006', 'This LPN is already in use. Scan another label.'),
+        ('L000000007', 'Could not verify this LPN. Scan again.'),
+      ]) {
+        await scan(label);
+        expect(find.text(error), findsOneWidget);
+        expect(find.text(step), findsOneWidget);
+        expect(find.text('Confirm Pick'), findsNothing);
+        final input = tester.widget<TextField>(find.byType(TextField));
+        expect(input.controller!.text, isEmpty);
+        expect(input.focusNode!.hasFocus, isTrue);
+      }
+      if (step == 'New remainder LPN') {
+        await scan('L000000002');
+        expect(find.text('Scan a different preprinted LPN.'), findsOneWidget);
+      }
+      await scan(step == 'New picked LPN' ? 'L000000002' : 'L000000003');
+    }
+    expect(adapter.calls, isNotEmpty);
+    expect(adapter.calls.every((r) => r.method == 'GET'), isTrue);
+    expect(find.textContaining('Keep 8 units at the original location'),
+        findsOneWidget);
+    expect(result, isNull);
+    await tester.tap(find.text('Confirm Pick'));
+    await tester.pumpAndSettle();
+    expect(result, {
+      'quantity': 40,
+      'newLpn': 'L000000002',
+      'remainderLpn': 'L000000003',
+      'keepOriginal': false,
+    });
+  });
+
+  test('48 -> 40 + 8 recovers lost relabel response without repeating pick',
+      () async {
+    final adapter = GuidedSplitAdapter();
+    CWMSHttpClient.getDio().httpClientAdapter = adapter;
+    final request = {
+      ...details,
+      'expectedQuantity': 48,
+      'remainderLpn': 'L000000003'
+    };
+    await expectLater(PreprintedManualPickService.submit(request),
+        throwsA(isA<DioException>()));
+    final pending = await PreprintedManualPickService.pending();
+    expect(pending?['pickConfirmed'], isTrue);
+    expect(pending?['remainderInventoryId'], 42);
+    await PreprintedManualPickService.submit(request);
+    expect(await PreprintedManualPickService.pending(), isNull);
+    expect(adapter.calls.where((r) => r.method == 'POST'), hasLength(2));
+    expect(adapter.stock['quantity'], 8);
+    expect(adapter.stock['locationId'], 3);
+  });
 
   test(
       'queue acceptance frees scanner and timeout retry retains queue endpoint and UUID',
@@ -157,6 +322,35 @@ void main() {
     adapter.allowCancel = true;
     expect(await PreprintedManualPickService.cancelUnstarted(), true);
     expect(await PreprintedManualPickService.pending(), isNull);
+  });
+  test('split can rescan only when server confirms cancellation', () async {
+    final pending = {
+      ...details,
+      'requestId': 'existing-request',
+      'remainderLpn': 'L000000003',
+    };
+    SharedPreferences.setMockInitialValues({
+      'manual-pick-pending:https://example.test/api/:1:${Global.currentUser?.username}':
+          jsonEncode(pending),
+    });
+    final adapter = SplitAdapter();
+    CWMSHttpClient.getDio().httpClientAdapter = adapter;
+    expect(await PreprintedManualPickService.cancelUnstarted(), isFalse);
+    expect(await PreprintedManualPickService.pending(), pending);
+
+    adapter.completedBeforeCancel = true;
+    expect(await PreprintedManualPickService.cancelUnstarted(), isFalse);
+    expect(await PreprintedManualPickService.pending(), pending);
+
+    adapter.completedBeforeCancel = false;
+    adapter.allowCancel = true;
+    expect(await PreprintedManualPickService.cancelUnstarted(), isTrue);
+    expect(await PreprintedManualPickService.pending(), isNull);
+    expect(
+        adapter.calls.every((r) =>
+            r.path.endsWith('/cancel-unstarted') &&
+            r.queryParameters['requestId'] == pending['requestId']),
+        isTrue);
   });
   for (final originalForOrder in [false, true]) {
     testWidgets(

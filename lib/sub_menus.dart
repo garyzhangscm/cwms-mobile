@@ -48,9 +48,15 @@ class _SubMenusState extends State<SubMenus> {
   Widget _buildMenu(BuildContext context) {
     final group = ModalRoute.of(context)!.settings.arguments as MenuSubGroup;
     if (group.name == qcMenuIdentity) return QcMenuPage(menus: group.menus);
-    final menus = withRfidCheckMenu(withDefectiveProductionMenu(group.menus))
+    final availableMenus = withRfidCheckMenu(withDefectiveProductionMenu(group.menus))
         .where((menu) => hasRegisteredMenuRoute(context, menu.link))
         .toList();
+    const firstRow = ['pick_by_wave', 'order_manual_pick'];
+    final menus = [
+      for (final link in firstRow)
+        ...availableMenus.where((menu) => menu.link == link).take(1),
+      ...availableMenus.where((menu) => !firstRow.contains(menu.link)),
+    ];
     if (menus.any((menu) => menu.link == 'work_order_produce')) {
       // Pair related operations in the order used on the shop floor.
       const order = [
@@ -129,7 +135,11 @@ class _SubMenusState extends State<SubMenus> {
                                       List.generate(menus.length, (index) {
                                 final menu = menus[index];
                                 final menuTitle =
-                                    menu.link == 'work_order_rfid_pallet'
+                                    menu.link == 'pick_by_wave'
+                                        ? CWMSLocalizations.of(context).pickByWave
+                                        : menu.link == 'order_manual_pick'
+                                        ? CWMSLocalizations.of(context).manualPick
+                                        : menu.link == 'work_order_rfid_pallet'
                                         ? (Localizations.localeOf(context).languageCode == 'es' ? 'Escaneo RFID de palé' : 'RFID Pallet Scan')
                                         : menu.link == 'work_order_rfid_check'
                                         ? (Localizations.localeOf(context).languageCode == 'es' ? 'Verificación de etiqueta RFID' : 'RFID Label Check')

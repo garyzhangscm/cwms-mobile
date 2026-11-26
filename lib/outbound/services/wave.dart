@@ -16,10 +16,15 @@ class WaveService {
   static Future<Wave> getWaveByNumber(String waveNumber) async {
     Dio httpClient = CWMSHttpClient.getDio();
 
+    final warehouse = Global.currentWarehouse!;
     Response response = await httpClient.get(
         "outbound/waves",
-        queryParameters: {"number": waveNumber,
-          "warehouseId": Global.currentWarehouse!.id}
+        queryParameters: {
+          "number": waveNumber,
+          "warehouseId": warehouse.id,
+          "loadAttribute": false,
+        },
+        options: Options(receiveTimeout: const Duration(seconds: 20)),
     );
 
     // print("response from Order: $response");
@@ -35,12 +40,18 @@ class WaveService {
     = (responseString["data"] as List).map((e) => Wave.fromJson(e as Map<String, dynamic>))
         .toList();
 
-    if (waves.length > 0) {
-      return waves.first;
+    for (final wave in waves) {
+      if (wave.number == waveNumber) return wave;
     }
-    else {
-      throw new WebAPICallException("can't find wave by number ${waveNumber}");
-    }
+    final caseMatches = waves.where(
+      (wave) => wave.number?.toLowerCase() == waveNumber.toLowerCase(),
+    );
+    if (caseMatches.length == 1) return caseMatches.single;
+
+    throw WebAPICallException(
+      "Can't find Wave $waveNumber in warehouse ${warehouse.name ?? warehouse.id}. "
+      "Check the wave number and selected warehouse.",
+    );
 
   }
 

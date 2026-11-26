@@ -440,6 +440,7 @@ class _ReceivingPageState extends State<ReceivingPage> {
                                 l10n.lpn + ": ",
                                 Focus(
                                     child: SystemControllerNumberTextBox(
+                                        directInput: const {'fay-injection', 'fay-recycle'}.contains(Global.currentFactory?.id),
                                         type: "lpn",
                                         controller: _lpnController,
                                         readOnly: false,

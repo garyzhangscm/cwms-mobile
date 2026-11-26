@@ -75,19 +75,25 @@ class RemainingPalletsCard extends StatelessWidget {
                 Text(
                     t('Pallet size not configured',
                         'Cantidad por palé sin configurar'),
-                    style:
-                        const TextStyle(fontSize: 14, color: Color(0xff68778b)))
-              else ...[
+                    style: const TextStyle(
+                        fontSize: 14, color: Color(0xff68778b))),
+              if (line.unitsPerPallet != null || line.unitsPerCase != null) ...[
                 Text(
                     [
-                      if (line.fullPallets! > 0) full(line.fullPallets!),
-                      if (line.looseQuantity! > 0)
-                        '${line.looseQuantity} ${line.unit ?? t('units', 'unidades')}',
+                      if ((line.fullPallets ?? 0) > 0) full(line.fullPallets!),
+                      if ((line.fullCases ?? 0) > 0) '${line.fullCases} CS',
+                      if (line.loosePieces > 0)
+                        '${line.loosePieces} ${line.unit ?? t('units', 'unidades')}',
                     ].join(' + '),
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.w600)),
                 Text(
-                    '${t('Standard', 'Estándar')}: ${line.unitsPerPallet} ${line.unit ?? t('units', 'unidades')} / ${t('pallet', 'palé')}',
+                    '${t('Standard', 'Estándar')}: ${[
+                      if (line.unitsPerPallet != null)
+                        '${line.unitsPerPallet} ${line.unit ?? t('units', 'unidades')} / ${t('pallet', 'palé')}',
+                      if (line.unitsPerCase != null)
+                        '${line.unitsPerCase} ${line.unit ?? t('units', 'unidades')} / CS',
+                    ].join(' · ')}',
                     style: const TextStyle(
                         fontSize: 13, color: Color(0xff68778b))),
               ],

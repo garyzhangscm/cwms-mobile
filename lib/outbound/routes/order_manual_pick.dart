@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../shared/workspace_ui.dart';
 import '../models/pick_rejection.dart';
 import 'package:cwms_mobile/shared/scanning/scan_app_bar.dart';
 import 'package:cwms_mobile/shared/scanning/scan_feedback.dart';
@@ -44,6 +45,18 @@ class _PreprintedOrderManualPickPage extends StatefulWidget {
 
 class __PreprintedOrderManualPickPageState
     extends State<_PreprintedOrderManualPickPage> {
+  bool get _guidedSplitEnabled {
+    switch (Global.currentFactory?.id) {
+      case 'colton-injection':
+        return const bool.fromEnvironment('COLTON_GUIDED_MANUAL_PICK');
+      case 'fay-injection':
+      case 'fay-recycle':
+        return const bool.fromEnvironment('FAY_GUIDED_MANUAL_PICK');
+      default:
+        return false;
+    }
+  }
+
   // input batch id
   TextEditingController _orderNumberController = new TextEditingController();
   FocusNode _orderNumberFocusNode = FocusNode();
@@ -273,7 +286,11 @@ class __PreprintedOrderManualPickPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ScanAppBar(title: Text(CWMSLocalizations.of(context).manualPick)),
+      backgroundColor: _guidedSplitEnabled ? workspaceBackground : null,
+      appBar: ScanAppBar(
+        title: Text(CWMSLocalizations.of(context).manualPick),
+        backgroundColor: _guidedSplitEnabled ? workspaceBackground : null,
+      ),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -282,8 +299,11 @@ class __PreprintedOrderManualPickPageState
             children: [
               // input controller for order number
               if (_pendingManualPick != null)
-                Text(uiText(context,
-                    "Pick awaiting confirmation. Press Confirm to resume. Keep both labels; do not split again.")),
+                Text(uiText(
+                    context,
+                    _guidedSplitEnabled
+                        ? "Pick awaiting confirmation. Open Review Pending Pick for recovery options. Keep both labels."
+                        : "Pick awaiting confirmation. Press Confirm to resume. Keep both labels; do not split again.")),
               _buildOrderNumberInput(context),
               if (_quantityNotice != null)
                 Card(
@@ -331,41 +351,62 @@ class __PreprintedOrderManualPickPageState
   }
 
   Widget _buildOrderNumberInput(BuildContext context) {
-    return buildTwoSectionInputRow(
-        CWMSLocalizations.of(context).orderNumber,
-        TextFormField(
-            controller: _orderNumberController,
-            readOnly: _pendingManualPick != null || _confirmingPick,
-            showCursor: true,
-            autofocus: true,
-            focusNode: _orderNumberFocusNode,
-            textInputAction: TextInputAction.go,
-            onFieldSubmitted: (_) => _enterOnOrderController(10),
-            decoration: InputDecoration(
-              suffixIcon: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
-                mainAxisSize: MainAxisSize.min, // added line
-                children: <Widget>[
-                  TextButton(
-                    onPressed: _loadingOrder || _confirmingPick
-                        ? null
-                        : () => _enterOnOrderController(10),
-                    child: _loadingOrder
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text(CWMSLocalizations.of(context).nextStep),
-                  ),
-                  IconButton(
-                    onPressed: _pendingManualPick != null || _confirmingPick
-                        ? null
-                        : () => _clearField(),
-                    icon: Icon(Icons.close),
-                  ),
-                ],
+    final input = TextFormField(
+        controller: _orderNumberController,
+        readOnly: _pendingManualPick != null || _confirmingPick,
+        showCursor: true,
+        autofocus: true,
+        focusNode: _orderNumberFocusNode,
+        textInputAction: TextInputAction.go,
+        onFieldSubmitted: (_) => _enterOnOrderController(10),
+        decoration: InputDecoration(
+          labelText: _guidedSplitEnabled
+              ? CWMSLocalizations.of(context).orderNumber
+              : null,
+          border: _guidedSplitEnabled ? const OutlineInputBorder() : null,
+          suffixIcon: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+            mainAxisSize: MainAxisSize.min, // added line
+            children: <Widget>[
+              TextButton(
+                onPressed: _loadingOrder || _confirmingPick
+                    ? null
+                    : () => _enterOnOrderController(10),
+                child: _loadingOrder
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : Text(CWMSLocalizations.of(context).nextStep),
               ),
-            )));
+              IconButton(
+                onPressed: _pendingManualPick != null || _confirmingPick
+                    ? null
+                    : () => _clearField(),
+                icon: Icon(Icons.close),
+              ),
+            ],
+          ),
+        ));
+    if (!_guidedSplitEnabled) {
+      return buildTwoSectionInputRow(
+          CWMSLocalizations.of(context).orderNumber, input);
+    }
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Scan an order',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            input,
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildPickingInformation(BuildContext context) {
@@ -554,6 +595,27 @@ class __PreprintedOrderManualPickPageState
   }
 
   Widget _buildLPNInput(BuildContext context) {
+    if (_guidedSplitEnabled) {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            controller: _lpnController,
+            focusNode: _lpnFocusNode,
+            readOnly: _pendingManualPick != null || _confirmingPick,
+            onEditingComplete: () {},
+            onSubmitted: (value) {
+              if (value.trim().isNotEmpty) _onOrderManualPickConfirm();
+            },
+            decoration: const InputDecoration(
+              labelText: 'Scan pallet LPN',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+      );
+    }
     return buildTwoSectionInputRow(
       CWMSLocalizations.of(context).lpn + ": ",
       Focus(
@@ -599,7 +661,8 @@ class __PreprintedOrderManualPickPageState
   }
 
   void _handleLpnFocusChanged() {
-    if (!_lpnFocusNode.hasFocus) _enterOnLPNController(0);
+    if (!_guidedSplitEnabled && !_lpnFocusNode.hasFocus)
+      _enterOnLPNController(0);
   }
 
   Future<void> _enterOnLPNController(int _) async {
@@ -624,10 +687,12 @@ class __PreprintedOrderManualPickPageState
               onPressed: _currentOrder == null ||
                       !_readyToConfirm ||
                       _confirmingPick ||
-                      _allSubmitted
+                      (_allSubmitted && _pendingManualPick == null)
                   ? null
                   : _onConfirmButtonClick,
-              child: Text(CWMSLocalizations.of(context).confirm),
+              child: Text(_guidedSplitEnabled && _pendingManualPick != null
+                  ? 'Review Pending Pick'
+                  : CWMSLocalizations.of(context).confirm),
             ),
             badge.Badge(
               showBadge: true,
@@ -690,8 +755,12 @@ class __PreprintedOrderManualPickPageState
         if (_resumeLpnAfterPickAttempt) {
           _resumeLpnAfterPickAttempt = false;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && !_confirmingPick && _readyToConfirm &&
-                _currentOrder != null && _pendingManualPick == null && !_allSubmitted) {
+            if (mounted &&
+                !_confirmingPick &&
+                _readyToConfirm &&
+                _currentOrder != null &&
+                _pendingManualPick == null &&
+                !_allSubmitted) {
               _lpnFocusNode.requestFocus();
             }
           });
@@ -741,15 +810,20 @@ class __PreprintedOrderManualPickPageState
           ? {'quantity': sourceQuantity, 'newLpn': '', 'keepOriginal': false}
           : await showDialog<Map<String, dynamic>>(
               context: context,
-              builder: (_) => ManualPickSplitDialog(
-                  sourceLpn: source,
-                  sourceQuantity: sourceQuantity,
-                  pickableQuantity: pickableQuantity));
+              builder: (_) => _guidedSplitEnabled
+                  ? GuidedManualPickSplitDialog(
+                      sourceLpn: source,
+                      sourceQuantity: sourceQuantity,
+                      pickableQuantity: pickableQuantity)
+                  : ManualPickSplitDialog(
+                      sourceLpn: source,
+                      sourceQuantity: sourceQuantity,
+                      pickableQuantity: pickableQuantity));
       if (choice == null || !mounted) return;
       request = {
         'orderId': _currentOrder!.id!,
         'orderNumber': _currentOrder!.number!,
-        if (_queueEnabled) 'queued': true,
+        if (_queueEnabled && choice['remainderLpn'] == null) 'queued': true,
         'sourceLpn': source,
         'expectedQuantity': preview['sourceQuantity'],
         ...choice,
@@ -776,9 +850,16 @@ class __PreprintedOrderManualPickPageState
                     TextButton(
                         onPressed: () => Navigator.pop(context, 'retry'),
                         child: Text(uiText(context, "Retry"))),
-                    TextButton(
-                        onPressed: () => Navigator.pop(context, 'cancel'),
-                        child: Text(uiText(context, "Cancel if not started")))
+                    if (request['remainderLpn'] == null ||
+                        (_guidedSplitEnabled &&
+                            request['pickConfirmed'] != true))
+                      TextButton(
+                          onPressed: () => Navigator.pop(context, 'cancel'),
+                          child: Text(uiText(
+                              context,
+                              _guidedSplitEnabled
+                                  ? "Rescan if not started"
+                                  : "Cancel if not started")))
                   ]));
       if (!mounted) return;
       if (retry == 'cancel') {
@@ -789,6 +870,11 @@ class __PreprintedOrderManualPickPageState
             setState(() => _pendingManualPick = null);
             _clearField();
             _reloadInventoryOnRF();
+            if (_guidedSplitEnabled && request['remainderLpn'] != null) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content:
+                      Text('Pick was not started. Scan the order again.')));
+            }
           } else
             await showBlockedErrorDialog(context,
                 'This pick has already been reserved or processed. Retry it or ask a supervisor; do not split again.');
@@ -960,16 +1046,27 @@ class __PreprintedOrderManualPickPageState
     if (orderId != null && lpn.isNotEmpty) {
       showLoading(context);
       try {
-        final explanation = await PreprintedManualPickService.explainRejectedLpn(
-            orderId, orderNumber, lpn,
-            orderItemIds: _currentOrder!.orderLines.map((line) => line.item?.id).whereType<int>().toSet(),
-            requiredItems: _currentOrder!.orderLines.where((line) =>
-              !_remainingIsCurrent || (_remainingByLine[line.id] ?? 0) > 0).map((line) {
-                final item = line.item;
-                final name = item?.name?.trim() ?? '';
-                final description = item?.description?.trim() ?? '';
-                return name.isEmpty ? '' : '$name${description.isEmpty ? "" : " — $description"}';
-              }).where((name) => name.isNotEmpty).toList());
+        final explanation =
+            await PreprintedManualPickService.explainRejectedLpn(
+                orderId, orderNumber, lpn,
+                orderItemIds: _currentOrder!.orderLines
+                    .map((line) => line.item?.id)
+                    .whereType<int>()
+                    .toSet(),
+                requiredItems: _currentOrder!.orderLines
+                    .where((line) =>
+                        !_remainingIsCurrent ||
+                        (_remainingByLine[line.id] ?? 0) > 0)
+                    .map((line) {
+                      final item = line.item;
+                      final name = item?.name?.trim() ?? '';
+                      final description = item?.description?.trim() ?? '';
+                      return name.isEmpty
+                          ? ''
+                          : '$name${description.isEmpty ? "" : " — $description"}';
+                    })
+                    .where((name) => name.isNotEmpty)
+                    .toList());
         // Keep an explicit backend rejection when it already identifies the pallet.
         if (explanation != null &&
             (rejection == null || explanation.title != 'LPN not found')) {
@@ -982,7 +1079,8 @@ class __PreprintedOrderManualPickPageState
     if (!mounted || _currentOrder?.id != orderId) return;
     if (rejection == null) {
       await showBlockedErrorDialog(context, message);
-      if (mounted && _currentOrder?.id == orderId) _resumeLpnAfterPickAttempt = true;
+      if (mounted && _currentOrder?.id == orderId)
+        _resumeLpnAfterPickAttempt = true;
       return;
     }
     final detail = rejection;
@@ -998,7 +1096,8 @@ class __PreprintedOrderManualPickPageState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                     Text('LPN: ${detail.lpn}'),
-                    if (detail.location != 'Unavailable') Text('Current location: ${detail.location}'),
+                    if (detail.location != 'Unavailable')
+                      Text('Current location: ${detail.location}'),
                     const SizedBox(height: 16),
                     Text(detail.reason),
                     const SizedBox(height: 12),
@@ -1007,7 +1106,10 @@ class __PreprintedOrderManualPickPageState
               actions: [
                 TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: Text((detail.title == 'LPN not found' || detail.title == 'Item does not match this order') ? 'Scan another pallet' : 'Scan next pallet'))
+                    child: Text((detail.title == 'LPN not found' ||
+                            detail.title == 'Item does not match this order')
+                        ? 'Scan another pallet'
+                        : 'Scan next pallet'))
               ],
             ));
     if (mounted && _currentOrder?.id == orderId) {

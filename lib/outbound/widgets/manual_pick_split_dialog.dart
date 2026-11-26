@@ -1,4 +1,5 @@
 import '../../shared/scanning/scan_feedback.dart';
+import '../services/preprinted_manual_pick.dart';
 import 'package:cwms_mobile/i18n/spanish_ui.dart';
 import 'package:flutter/material.dart';
 
@@ -156,4 +157,219 @@ class _ManualPickSplitDialogState extends State<ManualPickSplitDialog> {
               child: Text(t('Confirm pick', 'Confirmar preparación')))
         ],
       );
+}
+
+class GuidedManualPickSplitDialog extends StatefulWidget {
+  const GuidedManualPickSplitDialog({
+    super.key,
+    required this.sourceLpn,
+    required this.sourceQuantity,
+    required this.pickableQuantity,
+  });
+
+  final String sourceLpn;
+  final int sourceQuantity;
+  final int pickableQuantity;
+
+  @override
+  State<GuidedManualPickSplitDialog> createState() =>
+      _GuidedManualPickSplitDialogState();
+}
+
+class _GuidedManualPickSplitDialogState
+    extends State<GuidedManualPickSplitDialog> {
+  late final _quantity =
+      TextEditingController(text: '${widget.pickableQuantity}');
+  final _label = TextEditingController();
+  final _focus = FocusNode();
+  int _step = 0;
+  String? _pickedLabel;
+  String? _remainderLabel;
+  String? _error;
+  bool _checking = false;
+
+  int get _count => int.tryParse(_quantity.text) ?? 0;
+
+  @override
+  void dispose() {
+    _quantity.dispose();
+    _label.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _goTo(int step) {
+    setState(() {
+      _step = step;
+      _error = null;
+      _label.text = (step == 1 ? _pickedLabel : _remainderLabel) ?? '';
+    });
+    if (step == 1 || step == 2) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _step == step) _focus.requestFocus();
+      });
+    }
+  }
+
+  void _rejectLabel(String message) {
+    setState(() {
+      _error = message;
+      _label.clear();
+    });
+    _focus.requestFocus();
+  }
+
+  Future<void> _acceptLabel(String input) async {
+    if (_checking) return;
+    final label = input.trim().toUpperCase();
+    if (!RegExp(r'^[A-Z][A-Z0-9]{7,11}$').hasMatch(label) ||
+        label.startsWith('DE') ||
+        label == widget.sourceLpn.toUpperCase() ||
+        label == (_step == 1 ? _remainderLabel : _pickedLabel)) {
+      _rejectLabel('Scan a different preprinted LPN.');
+      return;
+    }
+    setState(() {
+      _checking = true;
+      _error = null;
+    });
+    try {
+      final error = await PreprintedManualPickService.validateSplitLabel(label)
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) return;
+      if (error != null) {
+        _rejectLabel(error);
+        return;
+      }
+      if (_step == 1) {
+        _pickedLabel = label;
+      } else {
+        _remainderLabel = label;
+      }
+      _goTo(_step + 1);
+    } catch (_) {
+      if (mounted) _rejectLabel('Could not verify this LPN. Scan again.');
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = widget.sourceQuantity - _count;
+    final scanning = _step == 1 || _step == 2;
+    return AlertDialog(
+      title: Text(switch (_step) {
+        0 => 'Split pallet',
+        1 => '1 of 2 · Picked stock',
+        2 => '2 of 2 · Remaining stock',
+        _ => 'Review pallet split',
+      }),
+      content: SizedBox(
+        width: 440,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${widget.sourceLpn} · ${widget.sourceQuantity} units'),
+              const SizedBox(height: 12),
+              if (_step == 0)
+                TextField(
+                  controller: _quantity,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Quantity to pick',
+                    helperText: 'Maximum ${widget.pickableQuantity}',
+                    errorText: _error,
+                    border: const OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => setState(() => _error = null),
+                ),
+              if (scanning) ...[
+                Text(_step == 1
+                    ? 'Separate $_count units and scan their new LPN.'
+                    : 'Scan the new LPN for the $remaining units left on the original pallet.'),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _label,
+                  focusNode: _focus,
+                  readOnly: _checking,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  textInputAction: TextInputAction.done,
+                  onEditingComplete: () {},
+                  onSubmitted: _acceptLabel,
+                  onChanged: (_) => setState(() => _error = null),
+                  decoration: InputDecoration(
+                    labelText:
+                        _step == 1 ? 'New picked LPN' : 'New remainder LPN',
+                    errorText: _error,
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      tooltip: 'Scan label',
+                      icon: const Icon(Icons.camera_alt_outlined),
+                      onPressed: _checking
+                          ? null
+                          : () async {
+                              final scanned = await Navigator.of(context)
+                                  .pushNamed('qr_code_view');
+                              if (mounted &&
+                                  scanned is String &&
+                                  scanned.trim().isNotEmpty) {
+                                _label.text = scanned;
+                                await _acceptLabel(scanned);
+                              }
+                            },
+                    ),
+                  ),
+                ),
+                if (_checking) const LinearProgressIndicator(),
+              ],
+              if (_step == 3) ...[
+                Text('Pick $_count units · $_pickedLabel'),
+                const SizedBox(height: 8),
+                Text(
+                    'Keep $remaining units at the original location · $_remainderLabel'),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        if (_step == 0)
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'))
+        else
+          TextButton(
+              onPressed: _checking ? null : () => _goTo(_step - 1),
+              child: const Text('Back')),
+        FilledButton(
+          onPressed: _checking
+              ? null
+              : () {
+                  if (_step == 0) {
+                    if (_count <= 0 || _count > widget.pickableQuantity) {
+                      setState(() => _error =
+                          'Enter a quantity within the remaining demand.');
+                      return;
+                    }
+                    _goTo(1);
+                  } else if (scanning) {
+                    _acceptLabel(_label.text);
+                  } else {
+                    Navigator.pop(context, {
+                      'quantity': _count,
+                      'newLpn': _pickedLabel!,
+                      'remainderLpn': _remainderLabel!,
+                      'keepOriginal': false,
+                    });
+                  }
+                },
+          child: Text(_step == 3 ? 'Confirm Pick' : 'Next'),
+        ),
+      ],
+    );
+  }
 }

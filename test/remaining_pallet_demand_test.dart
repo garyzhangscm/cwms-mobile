@@ -21,6 +21,108 @@ Order orderWith(Item item) => Order()
       ..item = item
   ];
 void main() {
+  test('decomposes pallets, then cases, then remaining pieces exactly', () {
+    final item = Item()
+      ..defaultItemPackageType =
+          (pack(120)..itemUnitOfMeasures.add(uom('CS', 4)));
+    for (final quantity in [1, 3, 4, 9, 119, 120, 121, 2289]) {
+      final row =
+          RemainingPalletDemand.forOrder(orderWith(item), {10: quantity})
+              .single;
+      expect(row.fullPallets! * 120 + row.fullCases! * 4 + row.loosePieces,
+          quantity);
+      expect(row.loosePieces, lessThan(4));
+    }
+    final row =
+        RemainingPalletDemand.forOrder(orderWith(item), {10: 2289}).single;
+    expect(row.fullPallets, 19);
+    expect(row.fullCases, 2);
+    expect(row.loosePieces, 1);
+    expect(row.looseQuantity, 9); // Existing pallet-remainder API is unchanged.
+    expect(row.estimatedPallets, 20);
+  });
+  for (final name in ['CS', ' case ', 'CASES', 'CTN', 'Carton', 'CARTONS']) {
+    test('recognizes explicit case unit $name', () {
+      final item = Item()
+        ..defaultItemPackageType =
+            (pack(120)..itemUnitOfMeasures.add(uom(name, 6)));
+      final row =
+          RemainingPalletDemand.forOrder(orderWith(item), {10: 2289}).single;
+      expect(row.fullCases, 1);
+      expect(row.loosePieces, 3);
+    });
+  }
+  test('does not depend on pallet size being a multiple of case size', () {
+    final item = Item()
+      ..defaultItemPackageType =
+          (pack(10)..itemUnitOfMeasures.add(uom('CS', 4)));
+    final row =
+        RemainingPalletDemand.forOrder(orderWith(item), {10: 27}).single;
+    expect(row.fullPallets, 2);
+    expect(row.fullCases, 1);
+    expect(row.loosePieces, 3);
+  });
+  test('can show cases and pieces when pallet size is missing', () {
+    final item = Item()..defaultItemPackageType = (pack(6, palletName: 'CS'));
+    final row =
+        RemainingPalletDemand.forOrder(orderWith(item), {10: 15}).single;
+    expect(row.unitsPerPallet, isNull);
+    expect(row.fullCases, 2);
+    expect(row.loosePieces, 3);
+    expect(row.estimatedPallets, isNull);
+  });
+  test('invalid or conflicting case sizes preserve the exact PCS remainder',
+      () {
+    for (final cases in [
+      <ItemUnitOfMeasure>[],
+      [uom('CS', 0)],
+      [uom('CS', -6)],
+      [uom('CS', 121)],
+      [uom('CS', 6)..quantity = null],
+      [uom('CS', 6), uom('CTN', 12)],
+      [uom('CS', 6), uom('CTN', 0)],
+    ]) {
+      final item = Item()
+        ..defaultItemPackageType =
+            (pack(120)..itemUnitOfMeasures.addAll(cases));
+      final row =
+          RemainingPalletDemand.forOrder(orderWith(item), {10: 2289}).single;
+      expect(row.unitsPerCase, isNull);
+      expect(row.fullCases, isNull);
+      expect(row.loosePieces, 9);
+    }
+  });
+  test('duplicate case aliases with the same size are unambiguous', () {
+    final item = Item()
+      ..defaultItemPackageType =
+          (pack(120)..itemUnitOfMeasures.addAll([uom('CS', 6), uom('CTN', 6)]));
+    final row =
+        RemainingPalletDemand.forOrder(orderWith(item), {10: 2289}).single;
+    expect(row.fullCases, 1);
+    expect(row.loosePieces, 3);
+  });
+  test('cases come from the selected standard package, never another pack', () {
+    final item = Item()
+      ..defaultItemPackageType =
+          (pack(120)..itemUnitOfMeasures.add(uom('CS', 4)))
+      ..itemPackageTypes = [pack(144)..itemUnitOfMeasures.add(uom('CS', 6))];
+    final row =
+        RemainingPalletDemand.forOrder(orderWith(item), {10: 2289}).single;
+    expect(row.unitsPerCase, 4);
+  });
+  test('weight, stock cases and unknown base conversions are not called pieces',
+      () {
+    for (final stock in [uom('LB', 1), uom('CS', 1), uom('PCS', 2)]) {
+      final item = Item()
+        ..defaultItemPackageType = (pack(120)
+          ..stockItemUnitOfMeasure = stock
+          ..itemUnitOfMeasures.add(uom('CS', 6)));
+      final row =
+          RemainingPalletDemand.forOrder(orderWith(item), {10: 2289}).single;
+      expect(row.unitsPerCase, isNull);
+      expect(row.unit, stock.unitOfMeasure!.name);
+    }
+  });
   test(
       'remaining demand, full pallets and loose units use standard PL quantities',
       () {

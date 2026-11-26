@@ -7,10 +7,11 @@ import 'package:flutter/services.dart';
 
 class SystemControllerNumberTextBox extends StatefulWidget {
   SystemControllerNumberTextBox({required this.type, required this.controller, this.validator, this.readOnly = false,
-  this.showKeyboard = true, this.focusNode, this.autofocus = true, this.onValueChanged, this.onClear}
+  this.directInput = false, this.showKeyboard = true, this.focusNode, this.autofocus = true, this.onValueChanged, this.onClear}
        ) : super(key: ValueKey(type));
 
 
+  final bool directInput;
   final String type;
   final TextEditingController controller;
   final FormFieldValidator<String>? validator;
@@ -38,6 +39,7 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
   void initState() {
     super.initState();
 
+    if (widget.directInput) return;
     widget.focusNode?.addListener(() {
       print("widget.focusNode.hasFocus: ${widget.focusNode?.hasFocus}");
       if (widget.focusNode!.hasFocus) {
@@ -107,6 +109,43 @@ class _SystemControllerNumberTextBoxState extends State<SystemControllerNumberTe
 
   @override
   Widget build(BuildContext context) {
+    if (widget.directInput) {
+      // The receiving page listens for focus loss to submit. Keep accessory
+      // buttons out of the focus chain and outside the text hit area.
+      final input = TextFormField(
+        controller: widget.controller,
+        focusNode: widget.focusNode,
+        readOnly: widget.readOnly,
+        enabled: !widget.readOnly,
+        validator: widget.validator,
+        autocorrect: false,
+        enableSuggestions: false,
+        textInputAction: TextInputAction.done,
+      );
+      final actions = ExcludeFocus(
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          IconButton(icon: const Icon(Icons.double_arrow), onPressed: _generateNextAvailableNumber),
+          IconButton(icon: const Icon(Icons.close), onPressed: widget.controller.clear),
+          IconButton(icon: const Icon(Icons.keyboard_alt), onPressed: () {
+            widget.focusNode?.requestFocus();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && widget.focusNode?.hasFocus == true) {
+                SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+              }
+            });
+            WidgetsBinding.instance.scheduleFrame();
+          }),
+        ]),
+      );
+      return LayoutBuilder(builder: (context, constraints) {
+        if (constraints.maxWidth < 320) {
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            input, Align(alignment: Alignment.centerRight, child: actions),
+          ]);
+        }
+        return Row(children: [Expanded(child: input), actions]);
+      });
+    }
     return TextFormField(
               controller: widget.controller,
               validator: widget.validator,
